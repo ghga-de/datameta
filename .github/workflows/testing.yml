@@ -1,0 +1,41 @@
+name: Run unit tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        python-version: [3.9]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set conda package directory
+      run: |
+        mkdir /tmp/condapkgs
+        echo "CONDA_PKGS_DIRS=/tmp/condapkgs" >> $GITHUB_ENV
+    - name: Set up Python ${{ matrix.python-version }}
+      run: |
+        $CONDA/bin/conda create -p /tmp/condaenv python==${{ matrix.python-version }}'.*'
+    - name: Activate conda environment
+      run: |
+        echo "/tmp/condaenv/bin" >> $GITHUB_PATH
+        export PATH="/tmp/condaenv/bin:$PATH"
+    - name: Install sc2datahub
+      run: |
+        pip install ".[testing]"
+    - name: Initialize Database
+      run: |
+        alembic -c development.ini revision --autogenerate -m "init"
+        alembic -c development.ini upgrade head
+    - name: Load default data
+      run: |
+        initialize_sc2datahub_db development.ini
+    - name: Run tests
+      run: pytest
