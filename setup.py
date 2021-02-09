@@ -50,7 +50,7 @@ tests_require = [
 
 setup(
     name='sc2datahub',
-    version='0.0',
+    version='0.9.0alpha1',
     description='SARS-CoV-2 Data Hub',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
