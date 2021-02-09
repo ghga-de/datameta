@@ -19,3 +19,5 @@ Data.fs*
 .DS_Store
 coverage
 test
+*.sqlite
+sc2datahub/alembic/versions/*.py
