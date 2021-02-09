@@ -1,0 +1,3 @@
+[run]
+source = sc2datahub
+omit = sc2datahub/test*
