@@ -53,7 +53,7 @@ def includeme(config):
     """
     Initialize the model for a Pyramid app.
 
-    Activate this setup using ``config.include('sc2datahub.models')``.
+    Activate this setup using ``config.include('datameta.models')``.
 
     """
     settings = config.get_settings()

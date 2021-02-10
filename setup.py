@@ -49,9 +49,9 @@ tests_require = [
 ]
 
 setup(
-    name='sc2datahub',
+    name='datameta',
     version='0.9.0alpha1',
-    description='SARS-CoV-2 Data Hub',
+    description='DataMeta - submission server for data and affiliated metadata',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
         'Programming Language :: Python',
@@ -72,10 +72,10 @@ setup(
     install_requires=requires,
     entry_points={
         'paste.app_factory': [
-            'main = sc2datahub:main',
+            'main = datameta:main',
         ],
         'console_scripts': [
-            'initialize_sc2datahub_db=sc2datahub.scripts.initialize_db:main',
+            'initialize_datameta_db=datameta.scripts.initialize_db:main',
         ],
     },
 )
