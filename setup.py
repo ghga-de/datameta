@@ -51,7 +51,7 @@ tests_require = [
 setup(
     name='datameta',
     version='0.9.0alpha1',
-    description='DataMeta - submission server for data and affiliated metadata',
+    description='DataMeta - submission server for data and associated metadata',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
         'Programming Language :: Python',
