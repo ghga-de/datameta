@@ -27,7 +27,7 @@ jobs:
       run: |
         echo "/tmp/condaenv/bin" >> $GITHUB_PATH
         export PATH="/tmp/condaenv/bin:$PATH"
-    - name: Install sc2datahub
+    - name: Install datameta
       run: |
         pip install ".[testing]"
     - name: Initialize Database
@@ -36,6 +36,6 @@ jobs:
         alembic -c development.ini upgrade head
     - name: Load default data
       run: |
-        initialize_sc2datahub_db development.ini
+        initialize_datameta_db development.ini
     - name: Run tests
       run: pytest

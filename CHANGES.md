@@ -1,3 +1,3 @@
-# SARS-CoV-2 Data Hub 0.9
+# DataMeta - submission server for data and affiliated metadata
 
 - Initial version.

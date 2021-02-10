@@ -55,7 +55,7 @@ class TestMyViewSuccessCondition(BaseTest):
         from .views.default import my_view
         info = my_view(dummy_request(self.session))
         self.assertEqual(info['one'].name, 'one')
-        self.assertEqual(info['project'], 'SARS-CoV-2 Data Hub')
+        self.assertEqual(info['project'], 'DataMeta - submission server for data and affiliated metadata')
 
 
 class TestMyViewFailureCondition(BaseTest):

@@ -20,4 +20,4 @@ Data.fs*
 coverage
 test
 *.sqlite
-sc2datahub/alembic/versions/*.py
+datameta/alembic/versions/*.py
