@@ -1,4 +1,4 @@
-# DataMeta - submission server for data and affiliated metadata
+# DataMeta - submission server for data and associated metadata
 
 ## Getting Started
 
