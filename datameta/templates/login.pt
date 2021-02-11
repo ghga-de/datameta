@@ -77,6 +77,9 @@
                 <input name="input_password" type="password" id="inputPassword" class="form-control" placeholder="Password">
                 <button class="w-100 btn btn-lg btn-warning" type="submit" name="form.submitted">Sign in</button>
             </form>
+            <p class="mt-2">
+                <a href="#">Forgot password?</a>
+            </p>
         </main>
     </body>
 </html>

@@ -15,6 +15,10 @@
 
     env/bin/pip install --upgrade pip setuptools
 
+- Install NPM dependencies
+
+    npm install --prefix datameta/static/
+
 - Install the project in editable mode with its testing requirements.
 
     env/bin/pip install -e ".[testing]"

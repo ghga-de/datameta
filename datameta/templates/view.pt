@@ -1,0 +1,7 @@
+<div metal:use-macro="load: layout.pt">
+    <div metal:fill-slot="content" class="row">
+        <div>
+            View Data
+        </div>
+    </div>
+</div>
