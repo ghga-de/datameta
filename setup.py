@@ -32,6 +32,7 @@ requires = [
     'plaster_pastedeploy',
     'pyramid',
     'pyramid_chameleon',
+    'pyramid_beaker==0.8',
     'pyramid_debugtoolbar',
     'waitress',
     'alembic',
