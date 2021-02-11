@@ -2,7 +2,6 @@
 
 ;( function ( document, window, index )
   {
-    console.log("INVOKE")
     // feature detection for drag&drop upload
     var isAdvancedUpload = function()
     {
@@ -13,7 +12,6 @@
 
     // applying the effect for every form
     var forms = document.querySelectorAll( '.box' );
-    console.log(forms)
     Array.prototype.forEach.call( forms, function( form )
       {
         var input		 = form.querySelector( 'input[type="file"]' ),
@@ -75,7 +73,6 @@
           form.addEventListener( 'drop', function( e )
             {
               droppedFiles = e.dataTransfer.files; // the files that were dropped
-              console.log(droppedFiles)
               showFiles( droppedFiles );
 
               triggerFormSubmit();
@@ -94,17 +91,14 @@
 
             if( isAdvancedUpload ) // ajax file upload for modern browsers
             {
-              console.log("advanced")
               e.preventDefault();
 
               // gathering the form data
               var ajaxData = new FormData( form );
-              console.log(ajaxData)
               if( droppedFiles )
               {
                 Array.prototype.forEach.call( droppedFiles, function( file )
                   {
-                    console.log("appending ", file);
                     ajaxData.append( input.getAttribute( 'name' ), file );
                   });
               }
@@ -135,7 +129,6 @@
             }
             else // fallback Ajax solution upload for older browsers
             {
-              console.log("fallback")
               var iframeName	= 'uploadiframe' + new Date().getTime(),
                 iframe		= document.createElement( 'iframe' );
 
