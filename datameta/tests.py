@@ -1,6 +1,7 @@
 import unittest
 
 from pyramid import testing
+from pyramid.httpexceptions import HTTPFound
 
 import transaction
 
@@ -42,25 +43,8 @@ class BaseTest(unittest.TestCase):
 
 class TestMyViewSuccessCondition(BaseTest):
 
-    def setUp(self):
-        super(TestMyViewSuccessCondition, self).setUp()
-        self.init_database()
-
-        from .models import MyModel
-
-        model = MyModel(name='one', value=55)
-        self.session.add(model)
-
     def test_passing_view(self):
-        from .views.default import my_view
-        info = my_view(dummy_request(self.session))
-        self.assertEqual(info['one'].name, 'one')
-        self.assertEqual(info['project'], 'DataMeta - submission server for data and associated metadata')
-
-
-class TestMyViewFailureCondition(BaseTest):
-
-    def test_failing_view(self):
-        from .views.default import my_view
-        info = my_view(dummy_request(self.session))
-        self.assertEqual(info.status_int, 500)
+        from .views.default import root_view
+        response = root_view(dummy_request(self.session))
+        self.assertEqual(response.status_int, 302)
+        self.assertEqual(response.headers['Location'], '/login')

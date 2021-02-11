@@ -1,62 +1,72 @@
-<!DOCTYPE html metal:define-macro="layout">
-<html lang="{{request.locale_name}}">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="pyramid web application">
-    <meta name="author" content="Pylons Project">
-    <link rel="shortcut icon" href="${request.static_url('datameta:static/pyramid-16x16.png')}">
+<!doctype html>
+<html lang="en" class="h-100 no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Sticky Footer Navbar Template · Bootstrap v5.0</title>
 
-    <title>Cookiecutter Starter project for the Pyramid Web Framework</title>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@500&display=swap" rel="stylesheet"> 
 
-    <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <!-- Bootstrap core CSS -->
+        <link href="/static/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom styles for this scaffold -->
-    <link href="${request.static_url('datameta:static/theme.css')}" rel="stylesheet">
+        <style>
+            .bd-placeholder-img {
+                font-size: 1.125rem;
+                text-anchor: middle;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+            }
 
-    <!-- HTML5 shiv and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js" integrity="sha384-0s5Pv64cNZJieYFkXYOTId2HMA2Lfb6q2nAcx2n0RTLUnCAoTTsS0nKEO27XyKcY" crossorigin="anonymous"></script>
-      <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js" integrity="sha384-ZoaMbDF+4LeFxg6WdScQ9nnR1QC2MIRxA1O9KWEXQwns1G8UNyIEZIQidzb0T1fo" crossorigin="anonymous"></script>
-    <![endif]-->
-  </head>
+            @media (min-width: 768px) {
+                .bd-placeholder-img-lg {
+                    font-size: 3.5rem;
+                }
+            }
+            .container {
+              max-width: 960px;
+            }
+            .link-bare, .link-bare:link, .link-bare:hover {
+                color: inherit;
+                text-decoration: inherit;
+            }
+        </style>
+        <metal:macro metal:define-slot="head"/>
+        <script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
+    </head>
+    <body class="d-flex flex-column h-100">
 
-  <body>
+        <header class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-body border-bottom border-warning">
+            <p class="h5 my-0 me-md-auto fw-normal" style="font-family: 'Fira Sans', sans-serif;">
+                <a href="/home" class="link-bare">
+                    <span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta
+                </a>
+            </p>
+            <nav class="my-2 my-md-0 me-md-3">
+                <a class="p-2 text-dark" href="/submit">Submit New</a>
+                <a class="p-2 text-dark" href="/view">View Data</a>
+                <a class="p-2 text-dark" href="/account">Account</a>
+            </nav>
+            <a class="btn btn-outline-danger" href="/login">Logout</a>
+        </header>
 
-    <div class="starter-template">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-2">
-            <img class="logo img-responsive" src="${request.static_url('datameta:static/pyramid.png')}" alt="pyramid web framework">
-          </div>
-          <div class="col-md-10">
-            <div metal:define-slot="content">No content</div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="links">
-            <ul>
-              <li><i class="glyphicon glyphicon-cog icon-muted"></i><a href="https://github.com/Pylons/pyramid">Github Project</a></li>
-              <li><i class="glyphicon glyphicon-globe icon-muted"></i><a href="https://webchat.freenode.net/?channels=pyramid">IRC Channel</a></li>
-              <li><i class="glyphicon glyphicon-home icon-muted"></i><a href="https://pylonsproject.org">Pylons Project</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="row">
-          <div class="copyright">
-            Copyright &copy; Pylons Project
-          </div>
-        </div>
-      </div>
-    </div>
+        <main class="flex-shrink-0">
+            <div class="container">
+                <div metal:define-slot="content">No content</div>
+            </div>
+        </main>
+
+        <footer class="footer mt-auto py-3 bg-light">
+            <div class="container">
+                <span class="text-muted">&copy; 2021 DataMeta</span>
+            </div>
+        </footer>
 
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-  </body>
+        <metal:macro metal:define-slot="body"/>
+    </body>
 </html>
+
+
