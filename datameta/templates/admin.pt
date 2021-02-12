@@ -1,0 +1,5 @@
+<div metal:use-macro="load: layout.pt">
+    <div metal:fill-slot="content" class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+        Admin
+    </div>
+</div>

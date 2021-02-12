@@ -8,3 +8,4 @@ def includeme(config):
     config.add_route('account', '/account')
     config.add_route('view', '/view')
     config.add_route('pending_unannotated', '/pending/unannotated.json')
+    config.add_route('admin', '/admin')
