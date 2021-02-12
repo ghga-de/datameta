@@ -9,7 +9,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@500&display=swap" rel="stylesheet"> 
 
         <!-- Bootstrap core CSS -->
-        <link href="/static/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="${request.static_url('datameta:static/node_modules/bootstrap/dist/css/bootstrap.min.css')}" rel="stylesheet">
 
         <style>
             .bd-placeholder-img {
