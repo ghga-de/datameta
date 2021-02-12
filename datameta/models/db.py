@@ -20,7 +20,7 @@
 
 from sqlalchemy import (
     Column,
-    Index,
+    Boolean,
     Integer,
     Float,
     Text,
@@ -48,9 +48,10 @@ class User(Base):
     fullname         = Column(Text)
     pwhash           = Column(Text)
     group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
+    enabled          = Column(Boolean(create_constraint=False), nullable=False)
     # Relationships
     group            = relationship('Group', back_populates='user')
-    metadatasets            = relationship('MetaDataSet', back_populates='user')
+    metadatasets     = relationship('MetaDataSet', back_populates='user')
 
 class File(Base):
     __tablename__    = 'files'
