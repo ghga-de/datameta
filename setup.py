@@ -32,6 +32,7 @@ requires = [
     'bcrypt',
     'plaster_pastedeploy',
     'pandas>=1.0.0',
+    'xlrd>=1.0.0',
     'pyramid',
     'pyramid_chameleon',
     'pyramid_beaker==0.8',
