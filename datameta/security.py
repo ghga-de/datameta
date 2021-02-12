@@ -20,14 +20,25 @@
 
 from pyramid.httpexceptions import HTTPFound
 
-def require_login(request):
-    """Check if a user is logged in and raise a redirect to the login page if not
-    """
-    if 'user_uid' not in request.session:
-        request.session.invalidate()
-        raise HTTPFound("/login")
-
 def user_logged_in(request):
     """Check if a user is logged in
     """
     return 'user_uid' in request.session
+
+def require_login(request):
+    """Check if a user is logged in and raise a redirect to the login page if not
+    """
+    if not user_logged_in(request):
+        request.session.invalidate()
+        raise HTTPFound("/login")
+
+def admin_logged_in(request):
+    """Check if a user is logged in
+    """
+    return 'user_gid' in request.session and request.session['user_gid']==0
+
+def require_admin(request):
+    """Check if an admin is logged in and raise a redirect to root if not
+    """
+    if not admin_logged_in(request):
+        raise HTTPFound("/")
