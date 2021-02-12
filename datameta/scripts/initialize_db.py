@@ -30,6 +30,7 @@ def main(argv=sys.argv):
                     )
             root = User(
                     id=0,
+                    enabled=True,
                     email="admin@admin.admin",
                     pwhash=hash_password("admin"),
                     fullname="Administrator",
