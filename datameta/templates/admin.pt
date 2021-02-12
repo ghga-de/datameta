@@ -1,5 +1,75 @@
 <div metal:use-macro="load: layout.pt">
-    <div metal:fill-slot="content" class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-        Admin
+    <div metal:fill-slot="content" class="row">
+        <div class="col-12 ">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            Application Settings
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne">
+                        <div class="accordion-body">
+                            Change the application settings here
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Labs
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
+                        <div class="accordion-body">
+                            <table id="table_unannotated" class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th scope="col"></th>
+                                        <th scope="col">Lab Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="groups_tbody">
+                                </tbody>
+                                <tbody id="tbody_unannotated">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Users
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree">
+                        <div class="accordion-body">
+                            <table id="table_unannotated" class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th scope="col"></th>
+                                        <th scope="col">Full name</th>
+                                        <th scope="col">Lab</th>
+                                        <th scope="col">Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users_tbody">
+                                </tbody>
+                                <tbody id="tbody_unannotated">
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <metal:block fill-slot="body">
+    <script src="static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="static/js/admin.js"></script>
+    </metal:block>
+
 </div>

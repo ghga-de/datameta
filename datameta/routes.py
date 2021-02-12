@@ -9,3 +9,4 @@ def includeme(config):
     config.add_route('view', '/view')
     config.add_route('pending_unannotated', '/pending/unannotated.json')
     config.add_route('admin', '/admin')
+    config.add_route('admin_json', '/admin.json')

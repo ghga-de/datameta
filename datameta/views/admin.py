@@ -25,8 +25,32 @@ import datameta
 
 import bcrypt
 
-from datameta.models import User
+from datameta.models import User, Group
+
+from .. import security
 
 @view_config(route_name='admin', renderer='../templates/admin.pt')
 def v_admin(request):
+    security.require_admin(request)
     return {}
+
+@view_config(route_name='admin_json', renderer='json')
+def v_admin_json(request):
+    if not security.admin_logged_in(request):
+        return {}
+
+    users = [ {
+        'id' : user.id,
+        'group_id' : user.group.id,
+        'group_name' : user.group.name,
+        'fullname' : user.fullname,
+        'email' : user.email
+        } for user in request.dbsession.query(User).all() ]
+
+    groups = [ { k : v for k,v in group.__dict__.items() if k in ['id','name'] } for group in request.dbsession.query(Group).all() ]
+
+    return {
+            'users' : users,
+            'groups' : groups
+            }
+
