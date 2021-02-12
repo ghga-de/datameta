@@ -1,9 +1,6 @@
 .uplcontainer
 {
-    width: 100%;
-    max-width: 680px; /* 800 */
     text-align: center;
-    margin: 0 auto;
 }
 
 .uplcontainer h1
@@ -11,7 +8,6 @@
     font-size: 42px;
     font-weight: 300;
     color: #0f3c4b;
-    margin-bottom: 40px;
 }
 .uplcontainer h1 a:hover,
 .uplcontainer h1 a:focus

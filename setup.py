@@ -29,10 +29,12 @@ with open(os.path.join(here, 'CHANGES.md')) as f:
     CHANGES = f.read()
 
 requires = [
+    'bcrypt',
     'plaster_pastedeploy',
     'pyramid',
     'pyramid_chameleon',
     'pyramid_beaker==0.8',
+    'pylibmc==1.6.1',
     'pyramid_debugtoolbar',
     'waitress',
     'alembic',

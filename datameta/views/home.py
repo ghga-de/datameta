@@ -24,7 +24,9 @@ from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 
 from .. import models
+from .. import security
 
 @view_config(route_name='home', renderer='../templates/home.pt')
 def my_view(request):
+    security.require_login(request)
     return {}

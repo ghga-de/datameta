@@ -99,6 +99,7 @@
               {
                 Array.prototype.forEach.call( droppedFiles, function( file )
                   {
+                    console.log("file ", file.name)
                     ajaxData.append( input.getAttribute( 'name' ), file );
                   });
               }

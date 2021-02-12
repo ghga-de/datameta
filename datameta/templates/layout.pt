@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Sticky Footer Navbar Template · Bootstrap v5.0</title>
+        <title>DataMeta</title>
 
         <link rel="preconnect" href="https://fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@500&display=swap" rel="stylesheet"> 
@@ -32,6 +32,9 @@
                 color: inherit;
                 text-decoration: inherit;
             }
+            .bg-lightgreen{
+                background-color: #b7ecd4
+            }
         </style>
         <metal:macro metal:define-slot="head"/>
         <script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
@@ -42,9 +45,13 @@
             <p class="h5 my-0 me-md-auto fw-normal" style="font-family: 'Fira Sans', sans-serif;">
                 <a href="/home" class="link-bare">
                     <span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta
-                </a>
+                </a> 
+            </p>
+            <p class="my-0 me-4 fst-italic">
+            ${request.session['user_fullname']} (${request.session['user_groupname']})
             </p>
             <nav class="my-2 my-md-0 me-md-3">
+                <a tal:condition="request.session['user_gid']==0" class="p-2 text-danger" href="/admin">Admin</a>
                 <a class="p-2 text-dark" href="/submit">Submit New</a>
                 <a class="p-2 text-dark" href="/view">View Data</a>
                 <a class="p-2 text-dark" href="/account">Account</a>

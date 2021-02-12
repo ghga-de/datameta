@@ -7,3 +7,4 @@ def includeme(config):
     config.add_route('submit_endpoint', '/submit/endpoint')
     config.add_route('account', '/account')
     config.add_route('view', '/view')
+    config.add_route('pending_unannotated', '/pending/unannotated.json')
