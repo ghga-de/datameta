@@ -1,22 +1,107 @@
 
 <metal:block use-macro="load: layout.pt">
 
-<div metal:fill-slot="content" class="row">
-        <div class="uplcontainer">
-            <h1><a href="/article-url"></a></h1>
-            <form method="post" action="/submit/endpoint" enctype="multipart/form-data" novalidate class="box">
-                <div class="box__input">
-                    <svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z" /></svg>
-                    <input type="file" name="files[]" id="file" class="box__file" data-multiple-caption="{count} files selected" multiple />
-                    <label for="file"><strong>Choose files</strong><span class="box__dragndrop"> or drag them here</span>.</label>
-                    <button type="submit" class="box__button">Upload</button>
-                </div>
-                <div class="box__uploading">Uploading&hellip;</div>
-                <div class="box__success">Done! <a href="https://css-tricks.com/examples/DragAndDropFileUploading//?" class="box__restart" role="button">Upload more?</a></div>
-                <div class="box__error">Error! <span></span>. <a href="https://css-tricks.com/examples/DragAndDropFileUploading//?" class="box__restart" role="button">Try again!</a></div>
-            </form>
-        </div>
+<metal:block fill-slot="content">
+<div class="row">
+    <div class="uplcontainer col-6 p-0">
+        <h1><a href="/article-url"></a></h1>
+        <form method="post" action="/submit/samplesheet" enctype="multipart/form-data" novalidate class="box">
+            <div class="box__input">
+                <svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z" /></svg>
+                <input type="file" name="files[]" id="file_sheet" class="box__file" data-multiple-caption="{count} files selected" multiple />
+                <label for="file"><strong>Choose </strong><span class="box__dragndrop"> or drag sample sheets here</span>.</label>
+                <button type="submit" class="box__button">Upload</button>
+            </div>
+            <div class="box__uploading">Uploading&hellip;</div>
+            <div class="box__success">Done!</div>
+            <div class="box__error">Error!</div>
+        </form>
+    </div>
+    <div class="uplcontainer col-6 p-0">
+        <h1><a href="/article-url"></a></h1>
+        <form method="post" action="/submit/data" enctype="multipart/form-data" novalidate class="box">
+            <div class="box__input">
+                <svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z" /></svg>
+                <input type="file" name="files[]" id="file_data" class="box__file" data-multiple-caption="{count} files selected" multiple />
+                <label for="file"><strong>Choose</strong><span class="box__dragndrop"> or drag data files here</span>.</label>
+                <button type="submit" class="box__button">Upload</button>
+            </div>
+            <div class="box__uploading">Uploading&hellip;</div>
+            <div class="box__success">Done!</div>
+            <div class="box__error">Error!</div>
+        </form>
+    </div>
 </div>
+<div class="row mt-2">
+    <div class="card col-12">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-10">
+                    <h5 class="card-title">Pending annotated submissions</h5>
+                    <p class="card-text">The following metadata and files have
+                    been uploaded. Records shown in green are ready to
+                    commit!</p>
+                </div>
+                <div class="col-2">
+                    <a class="btn btn-outline-success w-100" href="#">Commit</a>
+                </div>
+            </div>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">#ID</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">ZIP Code</th>
+                        <th scope="col">FileR1</th>
+                        <th scope="col">FileR2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">EO2IU</th>
+                        <td>2021-01-03</td>
+                        <td>720</td>
+                        <td class="fst-italic">waiting for file</td>
+                        <td>EXMP_EO2IU_R2.fastq.gz</td>
+                    </tr>
+                    <tr class="bg-lightgreen">
+                        <th scope="row">HAI9R</th>
+                        <td>2021-01-03</td>
+                        <td>701</td>
+                        <td>EXMP_HAI9R_R1.fastq.gz</td>
+                        <td>EXMP_HAI9R_R2.fastq.gz</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+<div id="row_unannotated" class="row mt-2" style="display:none">
+    <div class="card col-12">
+        <div class="card-body">
+            <h5 class="card-title">Pending un-annotated submissions</h5>
+            <p class="card-text">The following files have been uploaded but not yet annotated:</p>
+            <table id="table_unannotated" class="table table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Filename</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">MD5 Checksum</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody_unannotated">
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+<div class="row mt-2">
+    <a class="btn btn-outline-danger w-100" href="#">Delete all pending data</a>
+</div>
+</metal:block>
+
 
 <metal:block fill-slot="head">
 <link href="/static/css/fileupload.css" rel="stylesheet">
@@ -24,6 +109,31 @@
 
 <metal:block fill-slot="body">
 <script src="/static/js/fileupload.js"></script>
+<script>
+window.addEventListener("load", function() {
+        var row_unannotated = document.getElementById("row_unannotated");
+        console.log(row_unannotated)
+
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(){
+                if (xhr.readyState === 4){
+                        var json = JSON.parse(xhr.responseText);
+                        var table = document.getElementById("tbody_unannotated");
+
+                        json.table_data.forEach(function(rowdata) {
+                                row_unannotated.style.display = "block";
+                                var row = table.insertRow(-1);
+                                row.insertCell(0).innerHTML=rowdata[0];
+                                row.insertCell(1).innerHTML=rowdata[1];
+                                row.insertCell(2).innerHTML=rowdata[2];
+                            });
+                    }
+            };
+
+        xhr.open('GET', '/pending/unannotated.json');
+        xhr.send();
+});
+</script>
 </metal:block>
 </metal:block>
 

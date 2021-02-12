@@ -18,15 +18,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
 
-from sqlalchemy.exc import DBAPIError
+def require_login(request):
+    """Check if a user is logged in and raise a redirect to the login page if not
+    """
+    if 'user_uid' not in request.session:
+        request.session.invalidate()
+        raise HTTPFound("/login")
 
-from .. import models
-from .. import security
-
-@view_config(route_name='account', renderer='../templates/account.pt')
-def my_view(request):
-    security.require_login(request)
-    return {}
+def user_logged_in(request):
+    """Check if a user is logged in
+    """
+    return 'user_uid' in request.session

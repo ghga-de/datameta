@@ -24,6 +24,7 @@ from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 
 from .. import models
+from .. import security
 
 import uuid
 import os
@@ -34,23 +35,21 @@ import webob
 
 @view_config(route_name='submit', renderer='../templates/submit.pt')
 def v_submit(request):
-    if request.POST:
-        input_file = request.POST['files[]'].file
-        out_path = os.path.join("/tmp", str(uuid.uuid4()))
-
-        input_file.seek(0)
-        with open(out_path, 'wb') as output_file:
-            shutil.copyfileobj(input_file, output_file)
-        print(out_path)
-    else:
-        print(f"GET: {request.GET}")
-    return {}
+    security.require_login(request)
+    request.session['counter'] = request.session['counter'] + 1 if 'counter' in request.session else 0
+    return {
+            'counter' : request.session['counter']
+            }
 
 @view_config(route_name='submit_endpoint', renderer="json")
 def v_submit_endpoint(request):
+    # Require login
+    if not security.user_logged_in(request):
+        return {}
+
     print("ENDPOINT")
     if request.POST:
-        print(request.POST)
+        print('POST data:', request.POST)
         for file_obj in request.POST.getall('files[]'):
             if  isinstance(file_obj, webob.compat.cgi_FieldStorage):
                 input_file = file_obj.file
@@ -65,6 +64,14 @@ def v_submit_endpoint(request):
         return {
                 'success' : True
                 }
-    else:
-        return {}
     return {}
+
+@view_config(route_name='pending_unannotated', renderer="json")
+def v_pending_unannotated(request):
+    return {
+            'table_data' : [
+                ['EXMP_EASRU_R2.fastq.gz', '1.2 GB', '591785b794601e212b260e25925636fd'],
+                ['EXMP_A8A1R_R1.fastq.gz', '831 MB', 'b1946ac92492d2347c6235b4d2611184'],
+
+                ]
+            }
