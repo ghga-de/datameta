@@ -47,7 +47,7 @@
                 </div>
             </div>
             <table class="table table-sm">
-                <thead>
+                <thead id="thead_annotated">
                     <tr>
                         <th scope="col">#ID</th>
                         <th scope="col">Date</th>
@@ -56,21 +56,7 @@
                         <th scope="col">FileR2</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <th scope="row">EO2IU</th>
-                        <td>2021-01-03</td>
-                        <td>720</td>
-                        <td class="fst-italic">waiting for file</td>
-                        <td>EXMP_EO2IU_R2.fastq.gz</td>
-                    </tr>
-                    <tr class="bg-lightgreen">
-                        <th scope="row">HAI9R</th>
-                        <td>2021-01-03</td>
-                        <td>701</td>
-                        <td>EXMP_HAI9R_R1.fastq.gz</td>
-                        <td>EXMP_HAI9R_R2.fastq.gz</td>
-                    </tr>
+                <tbody id="tbody_annotated">
                 </tbody>
             </table>
         </div>
@@ -108,11 +94,11 @@
 </metal:block>
 
 <metal:block fill-slot="body">
-<script src="/static/js/fileupload.js"></script>
 <script>
-window.addEventListener("load", function() {
+"use strict";
+
+function refresh_unannotated() {
         var row_unannotated = document.getElementById("row_unannotated");
-        console.log(row_unannotated)
 
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function(){
@@ -132,8 +118,42 @@ window.addEventListener("load", function() {
 
         xhr.open('GET', '/pending/unannotated.json');
         xhr.send();
+    }
+
+function refresh_annotated() {
+        var row_annotated = document.getElementById("row_annotated");
+        var tr_head = document.getElementById("thead_annotated");
+
+        var colnames = Array.from(tr_head.rows[0].cells).map(function(x) {return x.innerHTML;})
+
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(){
+                if (xhr.readyState === 4){
+                        var json = JSON.parse(xhr.responseText);
+                        var table = document.getElementById("tbody_annotated");
+                        table.innerHTML=""
+
+                        json.table_data.forEach(function(rowdata, i){
+                                var row = table.insertRow(i);
+                                colnames.forEach(function(colname, colidx)
+                                        {
+                                                row.insertCell(colidx).innerHTML=rowdata[colname];
+                                            });
+                            })
+
+                    }
+            };
+
+        xhr.open('GET', '/pending/annotated.json');
+        xhr.send();
+    }
+
+window.addEventListener("load", function() {
+        refresh_unannotated();
+        refresh_annotated();
 });
 </script>
+<script src="/static/js/fileupload.js"></script>
 </metal:block>
 </metal:block>
 

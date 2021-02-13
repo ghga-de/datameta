@@ -73,6 +73,7 @@ class MetaDatum(Base):
     name             = Column(Text, nullable=False)
     regexp           = Column(Text, nullable=True)
     datetimefmt      = Column(Text, nullable=True)
+    mandatory        = Column(Boolean(create_constraint=False), nullable=False)
     # Relationships
     metadatumrecords  = relationship('MetaDatumRecord', back_populates='metadatum')
 
