@@ -33,6 +33,7 @@ import shutil
 import logging
 
 import webob
+import datetime
 
 import logging
 log = logging.getLogger(__name__)
@@ -49,14 +50,16 @@ def v_submit(request):
 
 @view_config(route_name='submit_samplesheet', renderer="json")
 def v_submit_samplesheet(request):
-    # Require login
-    if not security.user_logged_in(request):
-        return {}
+    # Re-validate user
+    user = security.revalidate_user(request)
 
-    errors = {}
+    success = []
+    errors = {
+            'missing_keys' : [],
+            'duplicate_rows' : []
+            }
 
     if request.POST:
-        print('POST data:', request.POST)
         for file_obj in request.POST.getall('files[]'):
             if  isinstance(file_obj, webob.compat.cgi_FieldStorage):
                 input_file = file_obj.file
@@ -64,30 +67,29 @@ def v_submit_samplesheet(request):
 
                 input_file.seek(0)
                 try:
-                    import_samplesheet(request, input_file, 0, 0)
+                    n_added = import_samplesheet(request.dbsession, input_file, user)
+                    success.append({
+                        'filename' : file_obj.filename,
+                        'n_added' : n_added
+                        })
                 except SampleSheetColumnsIncompleteError as e:
                     log.debug(f"Sample sheet '{file_obj.filename}' failed because of missing columns {e.columns}")
-                    errors[file_obj.filename] = e.columns
-
-#                # DEBUG WRITE
-#                with open(out_path, 'wb') as output_file:
-#                    shutil.copyfileobj(input_file, output_file)
-#                log.debug("SAMPLESHEET "+ out_path)
+                    errors['missing_keys'].append({
+                        'filename' : file_obj.filename,
+                        'keys' : e.columns
+                        })
         return {
-                'success' : True,
+                'success' : success,
                 'errors' : errors
                 }
     return {}
 
 @view_config(route_name='submit_data', renderer="json")
 def v_submit_data(request):
-    # Require login
-    if not security.user_logged_in(request):
-        return {}
+    # Re-validate user
+    user = security.revalidate_user(request)
 
-    print("ENDPOINT")
     if request.POST:
-        print('POST data:', request.POST)
         for file_obj in request.POST.getall('files[]'):
             if  isinstance(file_obj, webob.compat.cgi_FieldStorage):
                 input_file = file_obj.file
@@ -96,7 +98,6 @@ def v_submit_data(request):
                 input_file.seek(0)
                 with open(out_path, 'wb') as output_file:
                     shutil.copyfileobj(input_file, output_file)
-                print(out_path)
             else:
                 log.warning("Ignoring files[] data in POST request - not of type FieldStorage")
         return {
@@ -114,8 +115,15 @@ def v_pending_annotated(request):
                 ]
             }
 
+def formatted_mrec_value(mrec):
+    if mrec.metadatum.datetimefmt is not None:
+        return datetime.datetime.fromisoformat(mrec.value).strftime(mrec.metadatum.datetimefmt)
+    else:
+        return mrec.value
+
 @view_config(route_name='pending_annotated', renderer="json")
 def v_pending_unannotated(request):
+    # Re-validate user
     user = security.revalidate_user(request)
 
     m_sets = request.dbsession.query(MetaDataSet).filter(and_(
@@ -125,6 +133,6 @@ def v_pending_unannotated(request):
         ).all()
     return {
             'table_data' : [
-                { m_rec.metadatum.name : m_rec.value for m_rec in m_set.metadatumrecords }
+                { m_rec.metadatum.name : formatted_mrec_value(m_rec) for m_rec in m_set.metadatumrecords }
                 for m_set in m_sets]
             }

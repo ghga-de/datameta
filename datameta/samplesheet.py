@@ -19,7 +19,10 @@
 # SOFTWARE.
 
 import pandas as pd
+import pandas.api.types as pdtypes
+#is_string_dtype, is_numeric_dtype, is_datetime64_dtype
 
+from sqlalchemy import and_
 from datameta.models import MetaDatum, MetaDatumRecord, MetaDataSet
 
 class SampleSheetColumnsIncompleteError(RuntimeError):
@@ -28,25 +31,101 @@ class SampleSheetColumnsIncompleteError(RuntimeError):
     def columns(self):
         return self.args[0]
 
+def get_metadata_keys(dbsession):
+    """Queries the metadata keys (column names) that are currently configured
+    """
+    return [datum for datum in dbsession.query(MetaDatum).order_by(MetaDatum.order).all() ]
 
-def import_samplesheet(request, file_like_obj, user_id, group_id):
+def query_pending_annotated(dbsession, user):
+    """Queries all metadata sets that are pending for the currently logged in user
+    """
+    return dbsession.query(MetaDataSet).filter(and_(
+        MetaDataSet.user==user,
+        MetaDataSet.group==user.group,
+        MetaDataSet.submission==None)
+        ).all()
+
+def dataframe_from_mdsets(mdsets):
+    """Creates a data frame from a list of MetaDataSets
+    """
+    return pd.DataFrame(
+            [
+                {
+                    mdrec.metadatum.name : str(mdrec.value) for mdrec in mdset.metadatumrecords
+                    }
+                for mdset in mdsets
+                ]
+            )
+
+# HANDLING OF DATES, TIMES AND DATEIMTES
+#
+# All dates, times and datetimes will be stored as ISO string representations
+# of datetimes in the database. dates and times will be combined with the
+# minimum value counterparts to form a valid datetime, i.e. midnight for time
+# and 0001-01-01 for date.
+#
+# The `datetimefmt` string provided in the application config is used to parse
+# dates / times / datetimes from text-based sample sheet submissions (TSV, CSV)
+# or when Excel files are submitted but the corresponding column is of type
+# "text" rather than datetime.
+
+def string_conversion_dates(series, datetimefmt):
+    """Converts a series of dates to ISO format strings. The dates can either
+    be provided as datetime objects or will otherwise be casted to `str` and
+    parsed using the provided datetime format string.
+    """
+    if pdtypes.is_datetime64_dtype(series):
+        return series.map(lambda x : x.isoformat())
+    return series.map(lambda x : datetime.strptime(x, datetimefmt).isoformat())
+
+
+def string_conversion(data, metadata):
+    """Converts all columns of the provided sample sheet to strings.
+    """
+    for mdat in metadata:
+        if mdat.datetimefmt is not None:
+            data[mdat.name] = string_conversion_dates(data[mdat.name], mdat.datetimefmt)
+        else:
+            data[mdat.name] = data[mdat.name].astype(str)
+
+def import_samplesheet(dbsession, file_like_obj, user):
+    """Import a sample sheet into the database. Extracts the metadata from the
+    sample sheet, handles date and time conversions if necessary and adds the
+    metadata to the database. The metadata will be pending, i.e. not associated
+    with a submission.
+    """
     # Try to read the sample sheet
     data = pd.read_excel(file_like_obj)
 
-    # Query column names that we expect to see in the sample sheet
-    metadata         = [ datum for datum in request.dbsession.query(MetaDatum).all() ]
+    # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
+    metadata         = get_metadata_keys(dbsession)
     metadata_names   = [ datum.name for datum in metadata ]
 
     missing_columns  = [ metadata_name for metadata_name in metadata_names if metadata_name not in data.columns ]
     if missing_columns:
         raise SampleSheetColumnsIncompleteError(missing_columns)
 
+    # Limit the sample sheet to the columns of interest and drop duplicates
+    data = data[metadata_names].drop_duplicates()
+
+    # Convert all data to strings
+    string_conversion(data, metadata)
+
+    # Obtain the currently pending annotations
+    cur_pending = dataframe_from_mdsets(query_pending_annotated(dbsession, user))
+
+    # Concatenate data frames and drop annotations that were already submitted before (cross submission duplicates)
+    data['__cur_pending__']         = 0
+    cur_pending['__cur_pending__']  = 1
+    new = pd.concat([data, cur_pending]).groupby(metadata_names).sum().reset_index()
+    new = new[new.__cur_pending__==0]
+
     # Import the provided data
     sets = [
             # Create one MetaDataSet per row of the sample sheet
             MetaDataSet(
-                user_id = user_id,
-                group_id = group_id,
+                user_id = user.id,
+                group_id = user.group_id,
                 metadatumrecords = [
                     # Create one MetaDatumRecord for each value in the row
                     MetaDatumRecord(
@@ -56,6 +135,10 @@ def import_samplesheet(request, file_like_obj, user_id, group_id):
                     for metadatum in metadata
                     ]
                 )
-            for _, row in data.iterrows()
+            for _, row in new.iterrows()
             ]
-    request.dbsession.add_all(sets)
+
+    dbsession.add_all(sets)
+
+    # Return the number of records that were added
+    return len(sets)

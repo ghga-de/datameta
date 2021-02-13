@@ -5,7 +5,7 @@ from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
 from ..views.login import hash_password
-from ..models import User, Group, MetaDatum
+from ..models import User, Group, MetaDatum, DateTimeMode
 
 def parse_args(argv):
     parser = argparse.ArgumentParser()
@@ -31,11 +31,11 @@ def create_initial_user(dbsession):
 
 def create_example_metadata(dbsession):
     metadata = [
-            MetaDatum(name = "#ID", mandatory=True),
-            MetaDatum(name = "Date", mandatory=True),
-            MetaDatum(name = "ZIP Code", mandatory=True),
-            MetaDatum(name = "FileR1", mandatory=True),
-            MetaDatum(name = "FileR2", mandatory=True)
+            MetaDatum(name = "#ID", mandatory=True, order=100),
+            MetaDatum(name = "Date", mandatory=True, order=200, datetimefmt="%Y-%m-%d", datetimemode=DateTimeMode.DATE),
+            MetaDatum(name = "ZIP Code", mandatory=True, order=300),
+            MetaDatum(name = "FileR1", mandatory=True, order=400),
+            MetaDatum(name = "FileR2", mandatory=True, order=500)
             ]
     dbsession.add_all(metadata)
 

@@ -113,9 +113,15 @@
                 if( ajax.status >= 200 && ajax.status < 400 )
                 {
                   var data = JSON.parse( ajax.responseText );
-                  form.classList.add( data.success == true ? 'is-success' : 'is-error' );
-                  if( !data.success ) errorMsg.textContent = data.error;
+/*                  form.classList.add( data.success == true ? 'is-success' : 'is-error' ); */
+                  console.log(data);
+                  data.errors.missing_keys.forEach(function(missing){
+                    new_alert("<strong>Sample sheet '" + missing.filename + "':</strong> Ignored, missing columns: " + missing.keys.join(", "), "danger")
+                  });
                   refresh_annotated();
+                  data.success.forEach(function(success){
+                    new_alert("<strong>Sample sheet '" + success.filename + "':</strong> " + success.n_added + " new records added.", "success")
+                  });
                 }
                 else alert( 'Error. Please, contact the webmaster!' );
               };
