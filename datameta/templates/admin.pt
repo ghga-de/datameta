@@ -68,7 +68,6 @@
     </div>
 
     <metal:block fill-slot="body">
-    <script src="static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="static/js/admin.js"></script>
     </metal:block>
 

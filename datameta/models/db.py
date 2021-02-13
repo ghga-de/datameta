@@ -20,6 +20,7 @@
 
 from sqlalchemy import (
     Column,
+    Enum,
     Boolean,
     Integer,
     Float,
@@ -32,6 +33,23 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from .meta import Base
+
+import datetime
+
+import enum
+
+class DateTimeMode(enum.Enum):
+    DATE      = 0
+    DATETIME  = 1
+    TIME      = 2
+
+    def type(self):
+        if self.value == 0:
+            return datetime.date
+        if self.value == 1:
+            return datetime.datetime
+        if self.value == 2:
+            return datetime.time
 
 class Group(Base):
     __tablename__    = 'groups'
@@ -73,7 +91,9 @@ class MetaDatum(Base):
     name             = Column(Text, nullable=False)
     regexp           = Column(Text, nullable=True)
     datetimefmt      = Column(Text, nullable=True)
+    datetimemode     = Column(Enum(DateTimeMode), nullable=True)
     mandatory        = Column(Boolean(create_constraint=False), nullable=False)
+    order            = Column(Integer, nullable=False)
     # Relationships
     metadatumrecords  = relationship('MetaDatumRecord', back_populates='metadatum')
 

@@ -45,7 +45,7 @@
             <p class="h5 my-0 me-md-auto fw-normal" style="font-family: 'Fira Sans', sans-serif;">
                 <a href="/home" class="link-bare">
                     <span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta
-                </a> 
+                </a>
             </p>
             <p class="my-0 me-4 fst-italic">
             ${request.session['user_fullname']} (${request.session['user_groupname']})
@@ -71,6 +71,7 @@
             </div>
         </footer>
 
+        <script src="${request.static_url('datameta:static/node_modules/bootstrap/dist/js/bootstrap.min.js')}"></script>
 
         <metal:macro metal:define-slot="body"/>
     </body>
