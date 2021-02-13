@@ -99,7 +99,6 @@
               {
                 Array.prototype.forEach.call( droppedFiles, function( file )
                   {
-                    console.log("file ", file.name)
                     ajaxData.append( input.getAttribute( 'name' ), file );
                   });
               }
@@ -116,6 +115,7 @@
                   var data = JSON.parse( ajax.responseText );
                   form.classList.add( data.success == true ? 'is-success' : 'is-error' );
                   if( !data.success ) errorMsg.textContent = data.error;
+                  refresh_annotated();
                 }
                 else alert( 'Error. Please, contact the webmaster!' );
               };
@@ -149,6 +149,7 @@
                   form.removeAttribute( 'target' );
                   if( !data.success ) errorMsg.textContent = data.error;
                   iframe.parentNode.removeChild( iframe );
+                  refresh_annotated();
                 });
             }
           });

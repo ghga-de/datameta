@@ -18,7 +18,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
+
+from .models import User
+
+def revalidate_user(request):
+    user = request.dbsession.query(User).filter(User.id==request.session['user_uid']).one_or_none()
+    # Check if the user still exists
+    if user is None:
+        request.session.invalidate()
+        raise HTTPUnauthorized()
+    # Check if the group membership is still valid
+    if user.group_id != request.session['user_gid']:
+        # Ask the user to log back in
+        raise HTTPFound("/login")
+    return user
 
 def user_logged_in(request):
     """Check if a user is logged in
