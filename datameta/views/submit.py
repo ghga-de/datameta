@@ -42,6 +42,9 @@ log = logging.getLogger(__name__)
 from ..samplesheet import import_samplesheet, SampleSheetColumnsIncompleteError, SampleSheetReadError
 from .. import storage
 
+class FileDeleteError(RuntimeError):
+    pass
+
 def submit_samplesheet(request, user):
     """Handle a samplesheet submission request"""
     success = []
@@ -84,8 +87,6 @@ def submit_data(request, user):
             http_filename = file_obj.filename
             http_file.seek(0)
 
-            log.debug(f"User {user.id} is submitting file '{http_filename}'")
-
             # Calculate the MD5 hash
             md5 = hashlib.md5(http_file.read()).hexdigest()
             http_file.seek(0)
@@ -108,12 +109,14 @@ def submit_data(request, user):
                     .select_from(File)\
                     .outerjoin(MetaDatumRecord)\
                     .outerjoin(MetaDataSet)\
-                    .filter(
+                    .filter(and_(
                             File.name == http_filename,         # Match filename
                             File.user_id == user.id,            # Match user
                             File.group_id == user.group_id,     # Match group
-                            MetaDataSet.submission_id == None,  # submission either null because join failed (unannotated) or because it's not submitted (annotated)
-                            ).all()
+                            )).all()
+
+            # Make sure it's a pending file and not a comitted file
+            f_matches = [ f_match for f_match in f_matches if f_match.metadatumrecord is None ]
 
             # We shall only have one version of one file using the same filename pending for a
             # single uid/gid combination at the same time.
@@ -123,41 +126,51 @@ def submit_data(request, user):
 
             old_name_storage = None
             if f_matches:
-                # We have a file under this name pending already
-                f = f_matches[0]
-                f.checksum = md5
-                f.filesize = file_size
-                old_name_storage = f.name_storage
-            else:
-                # We're creating a new file
-                f = File(name = http_filename,
-                        checksum = md5,
-                        filesize = file_size,
-                        user_id = user.id,
-                        group_id = user.group_id
-                        )
-                request.dbsession.add(f)
-                request.dbsession.flush()
+                # We have a file under this name pending already. Delete it from the database and
+                # remember the name for storage removal later after the transaction was committed.
+                old_name_storage = delete_file_by_id(request.dbsession, f_matches[0].id)
 
+            # We're creating a new file
+            f = File(name = http_filename,
+                    checksum = md5,
+                    filesize = file_size,
+                    user_id = user.id,
+                    group_id = user.group_id
+                    )
+
+            request.dbsession.add(f)
+
+            # Flush the session to get a file_id
+            request.dbsession.flush()
+
+            # WARNING the storage name has to contain the database ID of the
+            # file, as multiple components of this application rely on that.
             name_storage = f"{str(f.id).rjust(10,'0')}_{user.id}_{user.group_id}_{file_size}_{md5}"
-            out_path = os.path.join(outpath, name_storage);
-            try:
-                # Try to write the file to the desired location on the storage backend
-                if not storage.demo_mode(request):
-                    with open(out_path, 'wb') as output_file:
-                        shutil.copyfileobj(http_file, output_file)
-                else:
-                    log.warning("DEMO MODE! NOT ACTUALLY STORING ANY FILES!")
-                # Update the database record to hold the local storage name
-                f.name_storage = name_storage
 
-                log.info(f"UPLOADED PENDING FILE [uid={user.id},email={user.email},file_id={f.id}] FROM [{request.client_addr}]")
-                request.dbsession.add(f)
-            except Exception as e:
-                raise
-                # If an error occors, roll back the transaction and report the error
-                savepoint.rollback()
-                log.error(f"WRITE FAILED: {e}")
+            log.info(f"UPLOADING PENDING FILE [uid={user.id},email={user.email},file_id={f.id},name='{f.name}',name_storage='{name_storage}'] FROM [{request.client_addr}]")
+
+            out_path = os.path.join(outpath, name_storage);
+
+            # Write the new file to the storage backend
+            if not storage.demo_mode(request):
+                with open(out_path, 'wb') as output_file:
+                    shutil.copyfileobj(http_file, output_file)
+            else:
+                log.warning("DEMO MODE! NOT ACTUALLY STORING ANY FILES!")
+
+            # Update the database record to hold the local storage name
+            f.name_storage = name_storage
+
+            request.dbsession.add(f)
+
+            # COMMIT THE TRANSACTION [!]
+            request.tm.commit()
+            request.tm.begin()
+
+            # Delete the old file from storage if this was an overwrite
+            if old_name_storage:
+                storage.rm(request, old_name_storage)
+                log.info(f"REMOVED '{old_name_storage}' FROM STORAGE, REPLACED BY NEW UPLOAD")
         else:
             log.warning("Ignoring files[] data in POST request - not of type FieldStorage")
     return {
@@ -239,40 +252,56 @@ def delete_mdatset(request, user):
         log.warning("Invalid metadataset deletion request received, no ID provided.")
     return { 'success' : False }
 
+def delete_file_by_id(dbsession, file_id, skip_rm=False):
+    """Deletes a file from the database and storage backend based on a supplied file_id
+
+    WARNING
+    This function does not actually delete files from the storage backend.
+    Instead, it reports back the name of the file in the storage backend.
+    Storage backend removal should only be executed after the database
+    transaction is committed!"""
+    file = dbsession\
+            .query(File)\
+            .filter(File.id==int(file_id))\
+            .one_or_none()
+    if file is not None:
+        # Check if this file is not yet committed
+        if file.metadatumrecord is not None:
+            raise FileDeleteError("File is already committed")
+
+        # Remember the file path in storage
+        storage_path = file.name_storage
+        file_id      = file.id
+
+        # Delete the file in the database
+        dbsession.delete(file);
+
+        return storage_path
+    raise FileDeleteError("File does not exist")
+
+
 def delete_file(request, user):
     """Handles a metadataset deletion request. This function will only delete
-    metadatasets which have not been submitted (committed) yet!!"""
+    metadatasets which have not been submitted (committed) yet!
+
+    WARNING
+    This function commits the current transaction. This function may only be
+    used at the very end of a request."""
 
     if 'file_id' in request.POST:
-        file = request.dbsession\
-                .query(File)\
-                .filter(File.id==int(request.POST['file_id']))\
-                .one_or_none()
-        if file is not None:
-            # Check if this file is not yet committed
-            if file.metadatumrecord is not None:
-                return { 'success' : False}
-
-            # Remember the file path in storage
-            storage_path = file.name_storage
-            file_id      = file.id
-
-            # Delete the file in the database
-            request.dbsession.delete(file);
-            request.dbsession.flush();
-
-            log.info(f"DELETE PENDING FILE [uid={user.id},email={user.email},file_id={file_id}] FROM [{request.client_addr}]")
-
-            # Delete the file in storage
-            if not storage.demo_mode(request):
+            try:
+                file_id = request.POST['file_id']
+                storage_path = delete_file_by_id(request.dbsession, file_id)
+                log.info(f"DELETE PENDING FILE [uid={user.id},email={user.email},file_id={file_id}] FROM [{request.client_addr}]")
+                request.tm.commit()
+                request.tm.begin()
                 storage.rm(request, storage_path)
-            else:
-                log.warning("DEMO MODE! NOT ACTUALLY DELETING ANY FILES!")
-
-
-            return { 'success' : True }
+                return { 'success' : True }
+            except FileDeleteError as e:
+                log.warning(f"DELETE PENDING FILE [uid={user.id},email={user.email},file_id={file_id}] FROM [{request.client_addr}] FAILED: {e}")
+                return { 'success' : False }
     else:
-        log.warning("Invalid file deletion request received, no ID provided.")
+        log.warning(f"DELETE PENDING FILE [uid={user.id},email={user.email}] FROM [{request.client_addr}] FAILED: NO ID PROVIDED")
     return { 'success' : False }
 
 ####################################################################################################
