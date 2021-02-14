@@ -101,6 +101,7 @@ class MetaDatum(Base):
     id               = Column(Integer, primary_key=True)
     name             = Column(Text, nullable=False)
     regexp           = Column(Text, nullable=True)
+    lintmessage      = Column(Text, nullable=True)
     datetimefmt      = Column(Text, nullable=True)
     datetimemode     = Column(Enum(DateTimeMode), nullable=True)
     mandatory        = Column(Boolean(create_constraint=False), nullable=False)
