@@ -40,7 +40,11 @@
         </style>
         <metal:macro metal:define-slot="head"/>
         <script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
-        <script>window.DataMeta = {};</script>
+        <script>
+            window.DataMeta = {};
+            DataMeta.toolTips = [];
+            DataMeta.popoverList = [];
+        </script>
     </head>
     <body class="d-flex flex-column h-100">
 
@@ -74,10 +78,8 @@
             </div>
         </footer>
 
-        <script src="${request.static_url('datameta:static/node_modules/bootstrap/dist/js/bootstrap.min.js')}"></script>
+        <script src="${request.static_url('datameta:static/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js')}"></script>
 
         <metal:macro metal:define-slot="body"/>
     </body>
 </html>
-
-
