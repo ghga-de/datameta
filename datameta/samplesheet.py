@@ -32,6 +32,9 @@ class SampleSheetColumnsIncompleteError(RuntimeError):
     def columns(self):
         return self.args[0]
 
+class SampleSheetReadError(RuntimeError):
+    pass
+
 def get_metadata_keys(dbsession):
     """Queries the metadata keys (column names) that are currently configured
     """
@@ -102,7 +105,10 @@ def import_samplesheet(dbsession, file_like_obj, user):
     with a submission.
     """
     # Try to read the sample sheet
-    data = pd.read_excel(file_like_obj)
+    try:
+        data = pd.read_excel(file_like_obj)
+    except:
+        raise SampleSheetReadError()
 
     # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
     metadata         = get_metadata_keys(dbsession)

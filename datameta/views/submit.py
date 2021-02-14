@@ -39,7 +39,7 @@ import datetime
 import logging
 log = logging.getLogger(__name__)
 
-from ..samplesheet import import_samplesheet, SampleSheetColumnsIncompleteError
+from ..samplesheet import import_samplesheet, SampleSheetColumnsIncompleteError, SampleSheetReadError
 from .. import storage
 
 def submit_samplesheet(request, user):
@@ -47,13 +47,12 @@ def submit_samplesheet(request, user):
     success = []
     errors = {
             'missing_keys' : [],
-            'duplicate_rows' : []
+            'other' : [],
             }
 
     for file_obj in request.POST.getall('files[]'):
         if  isinstance(file_obj, webob.compat.cgi_FieldStorage):
             input_file = file_obj.file
-            out_path = os.path.join("/tmp", str(uuid.uuid4()))
 
             input_file.seek(0)
             try:
@@ -68,6 +67,9 @@ def submit_samplesheet(request, user):
                     'filename' : file_obj.filename,
                     'keys' : e.columns
                     })
+            except SampleSheetReadError as e:
+                log.debug(f"Sample sheet '{file_obj.filename}' could not be read.")
+                errors['other'].append(f"Could not read the provided sample sheet '{file_obj.filename}'.")
     return {
             'success' : success,
             'errors' : errors
@@ -75,7 +77,6 @@ def submit_samplesheet(request, user):
 
 def submit_data(request, user):
     """Handle a data submission request"""
-    log.debug("SUBMIT DATA")
     for file_obj in request.POST.getall('files[]'):
         if  isinstance(file_obj, webob.compat.cgi_FieldStorage):
             # Obtain the file object and filename
@@ -94,8 +95,8 @@ def submit_data(request, user):
             file_size = http_file.tell()
             http_file.seek(0)
 
-            # TODO replace this with action data storage
-            outpath = "/tmp/datameta"
+            # Determine where to store the file
+            outpath = request.registry.settings['datameta.storage_path']
             if not os.path.exists(outpath):
                 os.mkdir(outpath)
 
@@ -142,15 +143,21 @@ def submit_data(request, user):
             out_path = os.path.join(outpath, name_storage);
             try:
                 # Try to write the file to the desired location on the storage backend
-                with open(out_path, 'wb') as output_file:
-                    shutil.copyfileobj(http_file, output_file)
+                if not storage.demo_mode(request):
+                    with open(out_path, 'wb') as output_file:
+                        shutil.copyfileobj(http_file, output_file)
+                else:
+                    log.warning("DEMO MODE! NOT ACTUALLY STORING ANY FILES!")
                 # Update the database record to hold the local storage name
                 f.name_storage = name_storage
+
+                log.info(f"UPLOADED PENDING FILE [uid={user.id},email={user.email},file_id={f.id}] FROM [{request.client_addr}]")
                 request.dbsession.add(f)
-            except:
+            except Exception as e:
+                raise
                 # If an error occors, roll back the transaction and report the error
                 savepoint.rollback()
-                log.error("WRITE FAILED")
+                log.error(f"WRITE FAILED: {e}")
         else:
             log.warning("Ignoring files[] data in POST request - not of type FieldStorage")
     return {
@@ -254,10 +261,14 @@ def delete_file(request, user):
             request.dbsession.delete(file);
             request.dbsession.flush();
 
-            # Delete the file in storage
-            storage.rm(request, storage_path)
-
             log.info(f"DELETE PENDING FILE [uid={user.id},email={user.email},file_id={file_id}] FROM [{request.client_addr}]")
+
+            # Delete the file in storage
+            if not storage.demo_mode(request):
+                storage.rm(request, storage_path)
+            else:
+                log.warning("DEMO MODE! NOT ACTUALLY DELETING ANY FILES!")
+
 
             return { 'success' : True }
     else:
