@@ -36,10 +36,10 @@ jobs:
         pip install ".[testing]"
     - name: Initialize Database
       run: |
-        alembic -c development.ini revision --autogenerate -m "init"
-        alembic -c development.ini upgrade head
+        alembic -c ci.ini revision --autogenerate -m "init"
+        alembic -c ci.ini upgrade head
     - name: Load default data
       run: |
-        initialize_datameta_db development.ini
+        initialize_datameta_db ci.ini
     - name: Run tests
       run: pytest
