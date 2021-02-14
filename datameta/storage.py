@@ -22,6 +22,10 @@ import os
 import logging
 log = logging.getLogger(__name__)
 
+def demo_mode(request):
+    """Determine whether the application has been configured to be in demo mode"""
+    return request.registry.settings.get('datameta.demo_mode') in [True, 'true', 'True']
+
 def rm(request, storage_path):
     """Remove a file from storage by local storage file name"""
     os.remove(os.path.join(request.registry.settings['datameta.storage_path'], storage_path))

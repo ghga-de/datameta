@@ -70,7 +70,7 @@
 
         <footer class="footer mt-auto py-3 bg-light">
             <div class="container">
-                <span class="text-muted">&copy; 2021 DataMeta</span>
+                <span class="text-muted">&copy; 2021 DataMeta</span><span tal:condition="request.registry.settings.get('datameta.demo_mode')"> (DEMO MODE)</span>
             </div>
         </footer>
 
