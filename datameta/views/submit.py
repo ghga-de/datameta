@@ -40,7 +40,7 @@ import logging
 log = logging.getLogger(__name__)
 
 from ..samplesheet import import_samplesheet, SampleSheetColumnsIncompleteError
-
+from .. import storage
 
 def submit_samplesheet(request, user):
     """Handle a samplesheet submission request"""
@@ -171,6 +171,7 @@ def get_pending_unannotated(dbsession, user):
     return {
             'table_data' : [
                 {
+                    'file_id' : file.id,
                     'filename' : file.name,
                     'filesize' : sizeof_fmt(file.filesize),
                     'checksum' : file.checksum
@@ -231,6 +232,38 @@ def delete_mdatset(request, user):
         log.warning("Invalid metadataset deletion request received, no ID provided.")
     return { 'success' : False }
 
+def delete_file(request, user):
+    """Handles a metadataset deletion request. This function will only delete
+    metadatasets which have not been submitted (committed) yet!!"""
+
+    if 'file_id' in request.POST:
+        file = request.dbsession\
+                .query(File)\
+                .filter(File.id==int(request.POST['file_id']))\
+                .one_or_none()
+        if file is not None:
+            # Check if this file is not yet committed
+            if file.metadatumrecord is not None:
+                return { 'success' : False}
+
+            # Remember the file path in storage
+            storage_path = file.name_storage
+            file_id      = file.id
+
+            # Delete the file in the database
+            request.dbsession.delete(file);
+            request.dbsession.flush();
+
+            # Delete the file in storage
+            storage.rm(request, storage_path)
+
+            log.info(f"DELETE PENDING FILE [uid={user.id},email={user.email},file_id={file_id}] FROM [{request.client_addr}]")
+
+            return { 'success' : True }
+    else:
+        log.warning("Invalid file deletion request received, no ID provided.")
+    return { 'success' : False }
+
 ####################################################################################################
 # VIEWS
 ####################################################################################################
@@ -257,6 +290,8 @@ def v_submit_action(request):
                 return submit_samplesheet(request, user)
             elif action == "delete_mdatset":
                 return delete_mdatset(request, user)
+            elif action == "delete_file":
+                return delete_file(request, user)
     log.warning("Invalid request received for /submit/action.")
 
 @view_config(route_name='v_submit_view_json', renderer="json")
