@@ -40,7 +40,7 @@ import logging
 log = logging.getLogger(__name__)
 
 from ..samplesheet import import_samplesheet, SampleSheetColumnsIncompleteError, SampleSheetReadError
-from .. import storage
+from .. import storage, linting
 
 class FileDeleteError(RuntimeError):
     pass
@@ -350,7 +350,11 @@ def v_submit_view_json(request):
     # Remove those from the unannotated data
     unannotated['table_data'] = [ elem for elem in unannotated['table_data'] if elem['filename'] not in annotated_filenames ]
 
+    # Run linting on the pending annotations
+    _, linting_report = linting.lint_pending_msets(request, user)
+
     return {
             'annotated' : annotated,
-            'unannotated' : unannotated
+            'unannotated' : unannotated,
+            'linting' : linting_report
             }

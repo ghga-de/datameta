@@ -212,13 +212,20 @@ DataMeta.delete_file = function(id) {
     xhr.send(data);
 }
 
-DataMeta.refresh_annotated = function(json) {
+DataMeta.reloadPopovers = function() {
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    DataMeta.popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl)
+    })
+}
+
+DataMeta.refresh_annotated = function(json_annotated, json_linting) {
     var row_annotated = document.getElementById("row_annotated");
     var trh = document.getElementById("thr_annotated");
 
     /* Update the client about the configured column names */
-    DataMeta.mdat_names = json.mdat_names;
-    DataMeta.mdat_names_files = json.mdat_names_files;
+    DataMeta.mdat_names = json_annotated.mdat_names;
+    DataMeta.mdat_names_files = json_annotated.mdat_names_files;
 
     /* Rebuild the table header (column names) of the annotated samples table */
     trh.innerHTML = "";
@@ -242,7 +249,7 @@ DataMeta.refresh_annotated = function(json) {
     /* Fill the annotated samples table */
     var table = document.getElementById("tbody_annotated");
     table.innerHTML="";
-    json.table_data.forEach(function(mdatset, i){
+    json_annotated.table_data.forEach(function(mdatset, i){
             var mset_id = mdatset['mset_id']
             var rowdata = mdatset['mset_values']
             DataMeta.show_annotated(true);
@@ -250,13 +257,38 @@ DataMeta.refresh_annotated = function(json) {
 
             // Initial cell with status icon
             var cell = row.insertCell(0);
-            cell.innerHTML='<i class="bi bi-check-circle-fill text-success"></i>';
+            if (json_linting[mset_id].length==0) {
+                cell.innerHTML='<i class="bi bi-check-circle-fill text-success"></i>';
+            } else {
+                var linting_report = ""
+                json_linting[mset_id].forEach(function(linting) {
+                    if (linting.type=="nofile")
+                        linting_report += "<strong>" + linting.field + "</strong><br>Missing file.<br><br>";
+                    else if (linting.type=="custom")
+                        linting_report += "<strong>" + linting.field + "</strong><br>" + linting.error + "<br><br>";
+                });
+                var exp = /"/g;
+                linting_report = linting_report.replace(exp, '&quot;')
+                    cell.innerHTML='<a href="#" data-bs-html="true" data-bs-toggle="popover" data-bs-trigger="focus" title="Linting report" data-bs-content="' + linting_report + '"><i class="bi bi-exclamation-diamond-fill text-warning"></i></a>';
+            }
             DataMeta.mdat_names.forEach(function(colname, colidx)
             {
                 var cell = row.insertCell(colidx+1);
                 cell.innerHTML=rowdata[colname];
                 if (DataMeta.mdat_names_files.indexOf(colname)!=-1) {
                     DataMeta.pbar_targets[rowdata[colname]] = cell;
+                    var missing = false;
+                    json_linting[mset_id].forEach(function(linting){
+                        // Do we have a missing file?
+                        if (linting.type=='nofile' && linting.field==colname){
+                            cell.innerHTML = '<i class="bi bi-hdd-rack-fill text-danger"></i> ' + cell.innerHTML;
+                            cell.classList.add("fst-italic");
+                            missing = true;
+                        }
+                    });
+                    if (!missing) {
+                        cell.innerHTML = '<i class="bi bi-hdd-rack-fill text-success"></i> ' + cell.innerHTML;
+                    }
                 }
             });
             var cell = row.insertCell(DataMeta.mdat_names.length+1);
@@ -265,6 +297,7 @@ DataMeta.refresh_annotated = function(json) {
                 DataMeta.delete_mdatset(mset_id);
                 });
         });
+    DataMeta.reloadPopovers();
 }
 
 DataMeta.refresh_unannotated = function(json) {
@@ -308,7 +341,7 @@ DataMeta.submitRefresh = function() {
             var json = JSON.parse(xhr.responseText);
             /* The two refresh functions will point to progress bar target elements in here */
             DataMeta.pbar_targets = {};
-            DataMeta.refresh_annotated(json.annotated);
+            DataMeta.refresh_annotated(json.annotated, json.linting);
             DataMeta.refresh_unannotated(json.unannotated);
         }
     };
