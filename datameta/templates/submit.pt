@@ -286,14 +286,14 @@ DataMeta.refresh_unannotated = function(json) {
         var cell = row.insertCell(2);
         cell.innerHTML = rowdata.checksum;
         cell.classList = "font-monospace";
+        // Store this cell as progress bar target
+        DataMeta.pbar_targets[rowdata.filename] = cell;
         // Delete button
         var cell = row.insertCell(3);
         cell.innerHTML='<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>';
         cell.querySelector(".btn").addEventListener("click", function(event) {
             DataMeta.delete_file(rowdata.file_id);
             });
-        /* Store this cell as progress bar target */
-        DataMeta.pbar_targets[rowdata.filename] = cell;
     });
 }
 
