@@ -58,6 +58,7 @@ class Group(Base):
     # Relationships
     user             = relationship('User', back_populates='group')
     metadatasets     = relationship('MetaDataSet', back_populates='group')
+    files            = relationship('File', back_populates='group')
 
 class User(Base):
     __tablename__    = 'users'
@@ -70,13 +71,23 @@ class User(Base):
     # Relationships
     group            = relationship('Group', back_populates='user')
     metadatasets     = relationship('MetaDataSet', back_populates='user')
+    files            = relationship('File', back_populates='user')
 
 class File(Base):
     __tablename__    = 'files'
     id               = Column(Integer, primary_key=True)
     name             = Column(Text, nullable=False)
+    name_storage     = Column(Text, nullable=True)
+    checksum         = Column(Text, nullable=False)
+    filesize         = Column(Integer, nullable=False)
+    checksum_crypt   = Column(Text, nullable=True)
+    filesize_crypt   = Column(Text, nullable=True)
+    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
+    group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
     # Relationships
-    metadatumrecord   = relationship('MetaDatumRecord', back_populates='file')
+    metadatumrecord  = relationship('MetaDatumRecord', back_populates='file', uselist=False)
+    group            = relationship('Group', back_populates='files')
+    user             = relationship('User', back_populates='files')
 
 class Submission(Base):
     __tablename__    = 'submissions'
@@ -94,6 +105,7 @@ class MetaDatum(Base):
     datetimemode     = Column(Enum(DateTimeMode), nullable=True)
     mandatory        = Column(Boolean(create_constraint=False), nullable=False)
     order            = Column(Integer, nullable=False)
+    isfile           = Column(Boolean(create_constraint=False), nullable=False)
     # Relationships
     metadatumrecords  = relationship('MetaDatumRecord', back_populates='metadatum')
 

@@ -24,6 +24,7 @@ import pandas.api.types as pdtypes
 
 from sqlalchemy import and_
 from datameta.models import MetaDatum, MetaDatumRecord, MetaDataSet
+import datetime
 
 class SampleSheetColumnsIncompleteError(RuntimeError):
 
@@ -69,6 +70,12 @@ def dataframe_from_mdsets(mdsets):
 # or when Excel files are submitted but the corresponding column is of type
 # "text" rather than datetime.
 
+def strptime_iso_or_empty(s, datetimefmt):
+    try:
+        return datetime.datetime.strptime(s, datetimefmt).isoformat()
+    except ValueError:
+        return ""
+
 def string_conversion_dates(series, datetimefmt):
     """Converts a series of dates to ISO format strings. The dates can either
     be provided as datetime objects or will otherwise be casted to `str` and
@@ -76,7 +83,7 @@ def string_conversion_dates(series, datetimefmt):
     """
     if pdtypes.is_datetime64_dtype(series):
         return series.map(lambda x : x.isoformat())
-    return series.map(lambda x : datetime.strptime(x, datetimefmt).isoformat())
+    return series.map(lambda x : strptime_iso_or_empty(x, datetimefmt))
 
 
 def string_conversion(data, metadata):

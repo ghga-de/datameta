@@ -30,6 +30,7 @@ with open(os.path.join(here, 'CHANGES.md')) as f:
 
 requires = [
     'bcrypt',
+    'psycopg2',
     'plaster_pastedeploy',
     'pandas>=1.0.0',
     'openpyxl',

@@ -5,11 +5,11 @@
 <div class="row">
     <div class="uplcontainer col-6 p-0">
         <h1><a href="/article-url"></a></h1>
-        <form method="post" action="/submit/samplesheet" enctype="multipart/form-data" novalidate class="box">
+        <form method="post" action="/submit/samplesheet" enctype="multipart/form-data" novalidate class="box" id="form_samplesheets">
             <div class="box__input">
                 <svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z" /></svg>
                 <input type="file" name="files[]" id="file_sheet" class="box__file" data-multiple-caption="{count} files selected" multiple />
-                <label for="file"><strong>Choose </strong><span class="box__dragndrop"> or drag sample sheets here</span>.</label>
+                <label for="file"><span class="box__dragndrop">Drag sample sheets here</span>.</label>
                 <button type="submit" class="box__button">Upload</button>
             </div>
             <div class="box__uploading">Uploading&hellip;</div>
@@ -19,11 +19,11 @@
     </div>
     <div class="uplcontainer col-6 p-0">
         <h1><a href="/article-url"></a></h1>
-        <form method="post" action="/submit/data" enctype="multipart/form-data" novalidate class="box">
+        <form method="post" action="/submit/data" enctype="multipart/form-data" novalidate class="box" id="form_data">
             <div class="box__input">
                 <svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z" /></svg>
                 <input type="file" name="files[]" id="file_data" class="box__file" data-multiple-caption="{count} files selected" multiple />
-                <label for="file"><strong>Choose</strong><span class="box__dragndrop"> or drag data files here</span>.</label>
+                <label for="file"><span class="box__dragndrop">Drag data files here</span>.</label>
                 <button type="submit" class="box__button">Upload</button>
             </div>
             <div class="box__uploading">Uploading&hellip;</div>
@@ -34,7 +34,7 @@
 </div>
 <div id="div_alerts" class="row mt-2">
 </div>
-<div class="row">
+<div id="row_annotated" class="row" style="display:none">
     <div class="card col-12">
         <div class="card-body">
             <div class="row mb-3">
@@ -49,13 +49,8 @@
                 </div>
             </div>
             <table class="table table-sm">
-                <thead id="thead_annotated">
-                    <tr>
-                        <th scope="col">#ID</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">ZIP Code</th>
-                        <th scope="col">FileR1</th>
-                        <th scope="col">FileR2</th>
+                <thead>
+                    <tr id="thr_annotated">
                     </tr>
                 </thead>
                 <tbody id="tbody_annotated">
@@ -85,7 +80,7 @@
 
     </div>
 </div>
-<div class="row mt-2">
+<div id="row_delete_pending" class="row mt-2" style="display:none">
     <a class="btn btn-outline-danger w-100" href="#">Delete all pending data</a>
 </div>
 </metal:block>
@@ -99,81 +94,156 @@
 <script>
 "use strict";
 
-/*
-<div class="alert alert-warning alert-dismissible fade show" role="alert">
-    <strong>Holy guacamole!</strong> You should check in on some of those fields below.
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-*/
-
-function new_alert(message, color) {
+DataMeta.new_alert = function(message, color) {
         var alerts = document.getElementById("div_alerts");
         var div    = document.createElement("div");
-        div.classList = "mb-2 alert alert-" + color + " alert-dismissible fade show"
+        div.classList = "mb-2 alert alert-" + color + " alert-dismissible fade show";
         div.setAttribute("role", "alert");
         div.innerHTML = message;
         var button = document.createElement("button");
-        button.classList = "btn-close"
+        button.classList = "btn-close";
         button.setAttribute("type", "button"); button.setAttribute("data-bs-dismiss", "alert");
         button.setAttribute("aria-label", "Close");
         div.appendChild(button);
         alerts.appendChild(div);
 }
 
-function refresh_unannotated() {
-        var row_unannotated = document.getElementById("row_unannotated");
+DataMeta.show_unannotated = function(value) {
+    var row_unannotated = document.getElementById("row_unannotated");
+    var row_delete_pending = document.getElementById("row_delete_pending");
+    row_unannotated.style.display = value ? "block" : "none";
+    row_delete_pending.style.display = "block";
+}
 
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function(){
-                if (xhr.readyState === 4){
-                        var json = JSON.parse(xhr.responseText);
-                        var table = document.getElementById("tbody_unannotated");
+DataMeta.show_annotated = function(value) {
+    var row_annotated = document.getElementById("row_annotated");
+    var row_delete_pending = document.getElementById("row_delete_pending");
+    row_annotated.style.display = value ? "block" : none;
+    row_delete_pending.style.display = "block";
+}
 
-                        json.table_data.forEach(function(rowdata) {
-                                row_unannotated.style.display = "block";
-                                var row = table.insertRow(-1);
-                                row.insertCell(0).innerHTML=rowdata[0];
-                                row.insertCell(1).innerHTML=rowdata[1];
-                                row.insertCell(2).innerHTML=rowdata[2];
-                            });
-                    }
-            };
+DataMeta.set_progress_bar = function(filename, val) {
+    /* Is this file already somewhere on the screen? */
+    var target;
+    if (filename in DataMeta.pbar_targets) {
+        target = DataMeta.pbar_targets[filename];
+    } else {
+        /* If not, we add it to the unannotated list preliminarily */
+        var tbody = document.getElementById("tbody_unannotated");
+        var row = tbody.insertRow(0);
+        row.insertCell(0).innerHTML=filename;
+        row.insertCell(1);
+        var cell = row.insertCell(2);
+        target = cell;
+        DataMeta.pbar_targets[filename]=target;
 
-        xhr.open('GET', '/pending/unannotated.json');
-        xhr.send();
+        DataMeta.show_unannotated(true);
     }
 
-function refresh_annotated() {
-        var row_annotated = document.getElementById("row_annotated");
-        var tr_head = document.getElementById("thead_annotated");
-
-        var colnames = Array.from(tr_head.rows[0].cells).map(function(x) {return x.innerHTML;})
-
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function(){
-                if (xhr.readyState === 4){
-                        var json = JSON.parse(xhr.responseText);
-                        var table = document.getElementById("tbody_annotated");
-                        table.innerHTML=""
-
-                        json.table_data.forEach(function(rowdata, i){
-                                var row = table.insertRow(i);
-                                colnames.forEach(function(colname, colidx)
-                                        {
-                                                row.insertCell(colidx).innerHTML=rowdata[colname];
-                                            });
-                            })
-
-                    }
-            };
-
-        xhr.open('GET', '/pending/annotated.json');
-        xhr.send();
+    /* Does the target already run a progress bar? */
+    var bar = target.querySelector(".progress-bar");
+    if (bar != null) {
+        bar.style.width = val + "%";
+        bar.setAttribute("aria-valuenow", val.toString());
+        return;
     }
+
+    /* Create a progress bar */
+    var div = document.createElement("div");
+    div.classList = "progress mt-1";
+    bar = document.createElement("div");
+    bar.classList="progress-bar progress-bar-striped progress-bar-animated";
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-valuenow", val.toString());
+    bar.setAttribute("aria-valuemin", "0");
+    bar.setAttribute("aria-valuemax", "100");
+    bar.setAttribute("style", "width: " + val + "%");
+    div.appendChild(bar);
+    target.innerHTML ="";
+    target.appendChild(div);
+}
+
+
+DataMeta.refresh_annotated = function(json) {
+    var row_annotated = document.getElementById("row_annotated");
+    var trh = document.getElementById("thr_annotated");
+
+    /* Update the client about the configured column names */
+    DataMeta.mdat_names = json.mdat_names;
+    DataMeta.mdat_names_files = json.mdat_names_files;
+
+    /* Rebuild the table header (column names) of the annotated samples table */
+    trh.innerHTML = "";
+    DataMeta.mdat_names.forEach(function(colname, colidx) {
+            var child = document.createElement("th");
+            child.setAttribute("scope", "col");
+            child.innerHTML = colname;
+            trh.appendChild(child);
+        });
+
+    /* Fill the annotated samples table */
+    var table = document.getElementById("tbody_annotated");
+    table.innerHTML="";
+    json.table_data.forEach(function(rowdata, i){
+            DataMeta.show_annotated(true);
+            var row = table.insertRow(i);
+            DataMeta.mdat_names.forEach(function(colname, colidx)
+            {
+                var cell = row.insertCell(colidx);
+                cell.innerHTML=rowdata[colname];
+                if (DataMeta.mdat_names_files.indexOf(colname)!=-1) {
+                    DataMeta.pbar_targets[rowdata[colname]] = cell;
+                }
+            });
+        });
+}
+
+DataMeta.refresh_unannotated = function(json) {
+    var row_unannotated = document.getElementById("row_unannotated");
+
+    var tbody = document.getElementById("tbody_unannotated");
+    tbody.innerHTML="";
+
+    if (json.table_data.length==0) {
+        DataMeta.show_unannotated(false);
+    } else {
+        DataMeta.show_unannotated(true);
+    }
+
+    json.table_data.forEach(function(rowdata) {
+        var row = tbody.insertRow(-1);
+        row.insertCell(0).innerHTML=rowdata.filename;
+        row.insertCell(1).innerHTML=rowdata.filesize;
+        var cell = row.insertCell(2);
+        cell.innerHTML = rowdata.checksum;
+        cell.classList = "font-monospace";
+        /* Store this cell as progress bar target */
+        DataMeta.pbar_targets[rowdata.filename] = cell;
+    });
+}
+
+
+/*
+Refreshes the data displayed by the `submit` view
+*/
+DataMeta.submitRefresh = function() {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if (xhr.readyState === 4){
+            var json = JSON.parse(xhr.responseText);
+            /* The two refresh functions will point to progress bar target elements in here */
+            DataMeta.pbar_targets = {};
+            DataMeta.refresh_annotated(json.annotated);
+            DataMeta.refresh_unannotated(json.unannotated);
+        }
+    };
+
+    xhr.open('GET', '/submit/view.json');
+    xhr.send();
+}
 
 window.addEventListener("load", function() {
-        refresh_unannotated();
-        refresh_annotated();
+    DataMeta.submitRefresh();
 });
 </script>
 <script src="/static/js/fileupload.js"></script>
