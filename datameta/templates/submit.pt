@@ -5,7 +5,8 @@
 <div class="row">
     <div class="uplcontainer col-6 p-0">
         <h1><a href="/article-url"></a></h1>
-        <form method="post" action="/submit/samplesheet" enctype="multipart/form-data" novalidate class="box" id="form_samplesheets">
+        <form method="post" action="/submit/action" enctype="multipart/form-data" novalidate class="box" id="form_samplesheets">
+            <input type="hidden" name="action" value="submit_samplesheet"/>
             <div class="box__input">
                 <svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z" /></svg>
                 <input type="file" name="files[]" id="file_sheet" class="box__file" data-multiple-caption="{count} files selected" multiple />
@@ -19,7 +20,8 @@
     </div>
     <div class="uplcontainer col-6 p-0">
         <h1><a href="/article-url"></a></h1>
-        <form method="post" action="/submit/data" enctype="multipart/form-data" novalidate class="box" id="form_data">
+        <form method="post" action="/submit/action" enctype="multipart/form-data" novalidate class="box" id="form_data">
+            <input type="hidden" name="action" value="submit_data"/>
             <div class="box__input">
                 <svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z" /></svg>
                 <input type="file" name="files[]" id="file_data" class="box__file" data-multiple-caption="{count} files selected" multiple />
@@ -163,6 +165,26 @@ DataMeta.set_progress_bar = function(filename, val) {
     target.appendChild(div);
 }
 
+DataMeta.delete_mdatset = function(id) {
+    var xhr = new XMLHttpRequest();
+
+    var data = new FormData();
+    data.set("action", "delete_mdatset");
+    data.set("mdatset_id", id);
+
+    xhr.onreadystatechange = function(){
+        if (xhr.readyState === 4){
+            var json = JSON.parse(xhr.responseText);
+            DataMeta.submitRefresh();
+            if (!json.success) {
+                console.log("ERROR");
+            }
+        }
+    };
+
+    xhr.open('POST', '/submit/action');
+    xhr.send(data);
+}
 
 DataMeta.refresh_annotated = function(json) {
     var row_annotated = document.getElementById("row_annotated");
@@ -174,27 +196,48 @@ DataMeta.refresh_annotated = function(json) {
 
     /* Rebuild the table header (column names) of the annotated samples table */
     trh.innerHTML = "";
-    DataMeta.mdat_names.forEach(function(colname, colidx) {
+    /* Add the first column for status */
+    var child = document.createElement("th");
+    child.setAttribute("scope", "col");
+    child.innerHTML = "";
+    trh.appendChild(child);
+    /* Add columns based on the sample sheet configuration */
+    DataMeta.mdat_names.forEach(function(colname) {
             var child = document.createElement("th");
             child.setAttribute("scope", "col");
             child.innerHTML = colname;
             trh.appendChild(child);
         });
-
+    /* Add the last column for trash */
+    var child = document.createElement("th");
+    child.setAttribute("scope", "col");
+    child.innerHTML = "";
+    trh.appendChild(child);
     /* Fill the annotated samples table */
     var table = document.getElementById("tbody_annotated");
     table.innerHTML="";
-    json.table_data.forEach(function(rowdata, i){
+    json.table_data.forEach(function(mdatset, i){
+            var mset_id = mdatset['mset_id']
+            var rowdata = mdatset['mset_values']
             DataMeta.show_annotated(true);
             var row = table.insertRow(i);
+
+            // Initial cell with status icon
+            var cell = row.insertCell(0);
+            cell.innerHTML='<i class="bi bi-check-circle-fill text-success"></i>';
             DataMeta.mdat_names.forEach(function(colname, colidx)
             {
-                var cell = row.insertCell(colidx);
+                var cell = row.insertCell(colidx+1);
                 cell.innerHTML=rowdata[colname];
                 if (DataMeta.mdat_names_files.indexOf(colname)!=-1) {
                     DataMeta.pbar_targets[rowdata[colname]] = cell;
                 }
             });
+            var cell = row.insertCell(DataMeta.mdat_names.length+1);
+            cell.innerHTML='<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>';
+            cell.querySelector(".btn").addEventListener("click", function(event) {
+                DataMeta.delete_mdatset(mset_id);
+                });
         });
 }
 

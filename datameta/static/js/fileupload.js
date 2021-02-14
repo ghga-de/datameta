@@ -120,7 +120,6 @@ function process_result_data(json) {
 
                             // Separate the file list from the form data
                             var fileList = formData.getAll(input.getAttribute( 'name' ));
-                            formData.delete(input.getAttribute( 'name' ));
 
                             // Prepare an event carrying the file list and form data
                             var nextupload = new CustomEvent("nextupload", { detail : { formData : formData, files : fileList, form : form} });
@@ -175,9 +174,9 @@ function process_result_data(json) {
             });
 
         document.addEventListener("nextupload", function(event) {
-            var ajaxData = new FormData();
             var file = event.detail.files.pop();
             var form = event.detail.form;
+            var ajaxData = new FormData(form);
 
             if (!file) {
                 return;
