@@ -27,6 +27,9 @@ import bcrypt
 
 from datameta.models import User
 
+import logging
+log = logging.getLogger(__name__)
+
 def hash_password(pw):
     pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
     return pwhash.decode('utf8')
@@ -64,6 +67,7 @@ def my_view(request):
                 request.session['user_email'] = user.email
                 request.session['user_fullname'] = user.fullname
                 request.session['user_groupname'] = user.group.name
+                log.info(f"LOGIN [uid={user.id},email={user.email}] FROM [{request.client_addr}]")
                 return HTTPFound(location="/home")
         except KeyError:
             return HTTPFound(location="/login")
