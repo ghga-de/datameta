@@ -8,7 +8,6 @@ def includeme(config):
     config.add_route('submit_samplesheet', '/submit/samplesheet')
     config.add_route('account', '/account')
     config.add_route('view', '/view')
-    config.add_route('pending_unannotated', '/pending/unannotated.json')
-    config.add_route('pending_annotated', '/pending/annotated.json')
+    config.add_route('v_submit_view_json', '/submit/view.json')
     config.add_route('admin', '/admin')
     config.add_route('admin_json', '/admin.json')

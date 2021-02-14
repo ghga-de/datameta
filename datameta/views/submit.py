@@ -22,15 +22,16 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
 
 from sqlalchemy.exc import DBAPIError
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 
-from ..models import MetaDataSet
+from ..models import MetaDataSet, File, MetaDatum, MetaDatumRecord
 from .. import security
 
 import uuid
 import os
 import shutil
 import logging
+import hashlib
 
 import webob
 import datetime
@@ -92,12 +93,78 @@ def v_submit_data(request):
     if request.POST:
         for file_obj in request.POST.getall('files[]'):
             if  isinstance(file_obj, webob.compat.cgi_FieldStorage):
-                input_file = file_obj.file
-                out_path = os.path.join("/tmp", str(uuid.uuid4()))
+                # Obtain the file object and filename
+                http_file = file_obj.file
+                http_filename = file_obj.filename
+                http_file.seek(0)
 
-                input_file.seek(0)
-                with open(out_path, 'wb') as output_file:
-                    shutil.copyfileobj(input_file, output_file)
+                log.debug(f"User {user.id} is submitting file '{http_filename}'")
+
+                # Calculate the MD5 hash
+                md5 = hashlib.md5(http_file.read()).hexdigest()
+                http_file.seek(0)
+
+                # Calculate the file size
+                http_file.seek(0, 2)
+                file_size = http_file.tell()
+                http_file.seek(0)
+
+                outpath = "/tmp/datameta"
+                if not os.path.exists(outpath):
+                    os.mkdir(outpath)
+
+
+                savepoint = request.tm.savepoint()
+                # Do we already have a pending file with the same name? Then we're overwriting.
+                f_matches = request.dbsession\
+                        .query(File)\
+                        .select_from(File)\
+                        .outerjoin(MetaDatumRecord)\
+                        .outerjoin(MetaDataSet)\
+                        .filter(
+                                File.name == http_filename,         # Match filename
+                                File.user_id == user.id,            # Match user
+                                File.group_id == user.group_id,     # Match group
+                                MetaDataSet.submission_id == None,  # submission either null because join failed (unannotated) or because it's not submitted (annotated)
+                                ).all()
+
+                # We shall only have one version of one file using the same filename pending for a
+                # single uid/gid combination at the same time.
+                if len(f_matches) > 1:
+                    log.error(f"File '{http_filename}' is pending multiple times for the same user {user.id} and group {user.group_id}")
+                    raise HTTPInternalServerError()
+
+                old_name_storage = None
+                if f_matches:
+                    # We have a file under this name pending already
+                    f = f_matches[0]
+                    f.checksum = md5
+                    f.filesize = file_size
+                    old_name_storage = f.name_storage
+                else:
+                    # We're creating a new file
+                    f = File(name = http_filename,
+                            checksum = md5,
+                            filesize = file_size,
+                            user_id = user.id,
+                            group_id = user.group_id
+                            )
+                    request.dbsession.add(f)
+                    request.dbsession.flush()
+
+                name_storage = f"{str(f.id).rjust(10,'0')}_{user.id}_{user.group_id}_{file_size}_{md5}"
+                out_path = os.path.join(outpath, name_storage);
+                try:
+                    # Try to write the file to the desired location on the storage backend
+                    with open(out_path, 'wb') as output_file:
+                        shutil.copyfileobj(http_file, output_file)
+                    # Update the database record to hold the local storage name
+                    f.name_storage = name_storage
+                    request.dbsession.add(f)
+                except:
+                    # If an error occors, roll back the transaction and report the error
+                    savepoint.rollback()
+                    log.error("WRITE FAILED")
             else:
                 log.warning("Ignoring files[] data in POST request - not of type FieldStorage")
         return {
@@ -105,34 +172,73 @@ def v_submit_data(request):
                 }
     return {}
 
-@view_config(route_name='pending_unannotated', renderer="json")
-def v_pending_annotated(request):
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.2f %s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.2f %s%s" % (num, 'Yi', suffix)
+
+
+def get_pending_unannotated(dbsession, user):
+    # Find files that have not yet been associated with metadata
+    files = dbsession.query(File).filter(and_(File.user_id==user.id, File.group_id==user.group_id, File.metadatumrecord==None)).order_by(File.id.desc())
     return {
             'table_data' : [
-                ['EXMP_EASRU_R2.fastq.gz', '1.2 GB', '591785b794601e212b260e25925636fd'],
-                ['EXMP_A8A1R_R1.fastq.gz', '831 MB', 'b1946ac92492d2347c6235b4d2611184'],
-
+                {
+                    'filename' : file.name,
+                    'filesize' : sizeof_fmt(file.filesize),
+                    'checksum' : file.checksum
+                    } for file in files
                 ]
             }
 
 def formatted_mrec_value(mrec):
     if mrec.metadatum.datetimefmt is not None:
-        return datetime.datetime.fromisoformat(mrec.value).strftime(mrec.metadatum.datetimefmt)
+        try:
+            return datetime.datetime.fromisoformat(mrec.value).strftime(mrec.metadatum.datetimefmt)
+        except ValueError:
+            return "invalid"
     else:
         return mrec.value
 
-@view_config(route_name='pending_annotated', renderer="json")
-def v_pending_unannotated(request):
-    # Re-validate user
-    user = security.revalidate_user(request)
 
-    m_sets = request.dbsession.query(MetaDataSet).filter(and_(
+def get_pending_annotated(dbsession, user):
+    # Query metadata fields
+    mdats = dbsession.query(MetaDatum).order_by(MetaDatum.order).all()
+    mdat_names = [ mdat.name for mdat in mdats ]
+    mdat_names_files = [ mdat.name for mdat in mdats if mdat.isfile ]
+
+    # Query metadatasets that have been no associated submission
+    m_sets = dbsession.query(MetaDataSet).filter(and_(
         MetaDataSet.user==user,
         MetaDataSet.group==user.group,
         MetaDataSet.submission==None)
         ).all()
     return {
+            'mdat_names' : mdat_names,
+            'mdat_names_files' : mdat_names_files,
             'table_data' : [
                 { m_rec.metadatum.name : formatted_mrec_value(m_rec) for m_rec in m_set.metadatumrecords }
                 for m_set in m_sets]
+            }
+
+@view_config(route_name='v_submit_view_json', renderer="json")
+def v_submit_view_json(request):
+    # Re-validate user
+    user = security.revalidate_user(request)
+
+    # Obtain annotations and unannotated file information
+    annotated    = get_pending_annotated(request.dbsession, user)
+    unannotated  = get_pending_unannotated(request.dbsession, user)
+
+    # Obtain annotated file names
+    annotated_filenames = [ row[key] for row in annotated['table_data'] for key in annotated['mdat_names_files'] ]
+
+    # Remove those from the unannotated data
+    unannotated['table_data'] = [ elem for elem in unannotated['table_data'] if elem['filename'] not in annotated_filenames ]
+
+    return {
+            'annotated' : annotated,
+            'unannotated' : unannotated
             }
