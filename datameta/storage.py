@@ -28,4 +28,7 @@ def demo_mode(request):
 
 def rm(request, storage_path):
     """Remove a file from storage by local storage file name"""
-    os.remove(os.path.join(request.registry.settings['datameta.storage_path'], storage_path))
+    if not demo_mode(request):
+        os.remove(os.path.join(request.registry.settings['datameta.storage_path'], storage_path))
+    else:
+        log.debug("DID NOT DELETE. DEMO MODE.")
