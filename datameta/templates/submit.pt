@@ -123,7 +123,7 @@ DataMeta.show_unannotated = function(value) {
 DataMeta.show_annotated = function(value) {
     var row_annotated = document.getElementById("row_annotated");
     var row_delete_pending = document.getElementById("row_delete_pending");
-    row_annotated.style.display = value ? "block" : none;
+    row_annotated.style.display = value ? "block" : "none";
     row_delete_pending.style.display = "block";
 }
 
@@ -250,6 +250,13 @@ DataMeta.refresh_annotated = function(json_annotated, json_linting) {
     var table = document.getElementById("tbody_annotated");
     table.innerHTML="";
     var linted_mset_ids = []
+
+    if (json_annotated.table_data.length==0) {
+        DataMeta.show_annotated(false);
+    } else {
+        DataMeta.show_annotated(true);
+    }
+
     json_annotated.table_data.forEach(function(mdatset, i){
             var mset_id = mdatset['mset_id']
             var rowdata = mdatset['mset_values']
