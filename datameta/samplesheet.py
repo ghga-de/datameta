@@ -107,8 +107,8 @@ def import_samplesheet(dbsession, file_like_obj, user):
     # Try to read the sample sheet
     try:
         data = pd.read_excel(file_like_obj)
-    except:
-        raise SampleSheetReadError()
+    except Exception as e:
+        raise SampleSheetReadError(f"{e}")
 
     # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
     metadata         = get_metadata_keys(dbsession)
