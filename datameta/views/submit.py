@@ -71,7 +71,7 @@ def submit_samplesheet(request, user):
                     'keys' : e.columns
                     })
             except SampleSheetReadError as e:
-                log.debug(f"Sample sheet '{file_obj.filename}' could not be read.")
+                log.warning(f"Sample sheet '{file_obj.filename}' could not be read: {e}")
                 errors['other'].append(f"Could not read the provided sample sheet '{file_obj.filename}'.")
     return {
             'success' : success,

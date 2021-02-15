@@ -1,0 +1,41 @@
+version: '3.2'
+services:
+  datameta-app:
+    image: "lkuchenb/datameta:dev"
+    environment:
+      SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
+      SESSION_URL: datameta-memcached:11211
+      SESSION_KEY: datameta
+      SESSION_SECRET: wa1Aineighai3ahsiet6
+      DATAMETA_STORAGE_PATH: /tmp
+      DATAMETA_DEMO_MODE: "true"
+    ports:
+      - target: 6543
+        published: 9950
+        protocol: tcp
+        mode: host
+    deploy:
+      endpoint_mode : dnsrr
+  datameta-memcached:
+    image: "memcached:1.6.3"
+    command: ['memcached', '-v', '-m', '3072', '-I', '50m']
+    deploy:
+      endpoint_mode : dnsrr
+  datameta-postgresql:
+    image: "postgres:13-alpine"
+    volumes:
+      - type: volume
+        source: datameta-db
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true
+    environment:
+      POSTGRES_USER: datameta
+      POSTGRES_PASSWORD: datameta
+    command: ['postgres', '-c', 'work_mem=512MB']
+    deploy:
+      endpoint_mode : dnsrr
+
+volumes:
+  datameta-db:
+    external: true
