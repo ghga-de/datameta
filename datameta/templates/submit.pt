@@ -278,7 +278,7 @@ DataMeta.refresh_annotated = function(json_annotated, json_linting) {
                 });
                 var exp = /"/g;
                 linting_report = linting_report.replace(exp, '&quot;')
-                    cell.innerHTML='<a href="#" data-bs-html="true" data-bs-toggle="popover" data-bs-trigger="focus" title="Linting report" data-bs-content="' + linting_report + '"><i class="bi bi-exclamation-diamond-fill text-warning"></i></a>';
+                    cell.innerHTML='<a tabindex="0" role="button" data-bs-html="true" data-bs-toggle="popover" data-bs-trigger="focus" title="Linting report" data-bs-content="' + linting_report + '"><i class="bi bi-exclamation-diamond-fill text-warning"></i></a>';
             }
             DataMeta.mdat_names.forEach(function(colname, colidx)
             {
