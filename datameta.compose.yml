@@ -6,11 +6,21 @@ services:
       SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
       SESSION_URL: datameta-memcached:11211
       SESSION_KEY: datameta
-      SESSION_SECRET: wa1Aineighai3ahsiet6
-      DATAMETA_STORAGE_PATH: /tmp
+      SESSION_SECRET: changeme
+      DATAMETA_STORAGE_PATH: /var/datameta/storage
       DATAMETA_DEMO_MODE: "true"
+      WAITRESS_LISTEN: "*:8080"
+      WAITRESS_URL_SCHEME:
+      WAITRESS_TRUSTED_PROXY_HEADERS:
+      WAITRESS_TRUSTED_PROXY:
+    volumes:
+      - type: volume
+        source: datameta-filestorage
+        target: /var/datameta/storage
+        volume:
+          nocopy: true
     ports:
-      - target: 6543
+      - target: 8080
         published: 9950
         protocol: tcp
         mode: host
@@ -38,4 +48,6 @@ services:
 
 volumes:
   datameta-db:
+    external: true
+  datameta-filestorage:
     external: true
