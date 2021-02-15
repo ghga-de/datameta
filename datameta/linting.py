@@ -23,8 +23,9 @@ from sqlalchemy import and_
 
 from collections import Counter
 
-def lint_pending_msets(request, user):
-    """Performs linting on the pending metadatasets for a given user"""
+def lint_pending_msets(request, user, mset_ids = None):
+    """Performs linting on the pending metadatasets for a given user. Optionally filter those
+    metadatasets for only those specified in the ID list."""
     db = request.dbsession
 
     # Query metadata fields
@@ -33,7 +34,19 @@ def lint_pending_msets(request, user):
     mdat_names_files = [ mdat.name for mdat in mdats if mdat.isfile ]
 
     # Obtain all pending metadatasets
-    mdatasets = db.query(MetaDataSet).filter(and_(MetaDataSet.submission_id==None, MetaDataSet.user_id==user.id, MetaDataSet.group_id==user.group_id))
+    if mset_ids is None:
+        mdatasets = db.query(MetaDataSet).filter(and_(
+            MetaDataSet.submission_id==None,
+            MetaDataSet.user_id==user.id,
+            MetaDataSet.group_id==user.group_id))
+    # Or obtain all pending metadatasets that match the specified mset ids
+    else:
+        mdatasets = db.query(MetaDataSet).filter(and_(
+            MetaDataSet.submission_id==None,
+            MetaDataSet.user_id==user.id,
+            MetaDataSet.group_id==user.group_id,
+            MetaDataSet.id.in_(mset_ids)))
+
 
     # Create result structure
     linting_report = { mdataset.id : [] for mdataset in mdatasets }
@@ -55,15 +68,19 @@ def lint_pending_msets(request, user):
 
     # Check for files that have not yet been uploaded
     uploaded_files = db.query(File).filter(and_(File.user_id==user.id, File.group_id==user.group_id, File.metadatumrecord == None))
-    uploaded_file_names = [ file.name for file in uploaded_files ]
+    uploaded_files = { file.name : file for file in uploaded_files }
+    file_pairs = []
     for mdatrec in mdatrecs:
-        if mdatrec.metadatum.isfile and mdatrec.value not in uploaded_file_names:
+        if mdatrec.metadatum.isfile and mdatrec.value not in uploaded_files.keys():
             linting_report[mdatrec.metadataset.id].append({
                 'field' : mdatrec.metadatum.name,
                 'type' : 'nofile',
                 })
+        elif mdatrec.metadatum.isfile:
+            file_pairs.append((mdatrec, uploaded_files[mdatrec.value]))
 
-    # Return those metadatasets that passed linting and the linting report for the remaining ones
+
+    # Return those metadatasets that passed linting, the record-file associations and the linting
+    # report for the failed records
     good_sets = [ mdataset for mdataset in mdatasets if not linting_report[mdataset.id] ]
-
-    return good_sets, linting_report
+    return good_sets, file_pairs, linting_report

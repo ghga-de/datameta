@@ -47,7 +47,7 @@
                     commit!</p>
                 </div>
                 <div class="col-2">
-                    <a class="btn btn-outline-success w-100" href="#">Commit</a>
+                    <a id="commit_btn" class="btn btn-outline-success w-100" href="#">Commit</a>
                 </div>
             </div>
             <table class="table table-sm">
@@ -180,7 +180,7 @@ DataMeta.delete_mdatset = function(id) {
             var json = JSON.parse(xhr.responseText);
             DataMeta.submitRefresh();
             if (!json.success) {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the record failed. Please try again or contact support.")
+                DataMeta.new_alert("<strong>ERROR</strong> Deleting the record failed. Please try again or contact support.", "danger")
             }
         }
     };
@@ -249,6 +249,7 @@ DataMeta.refresh_annotated = function(json_annotated, json_linting) {
     /* Fill the annotated samples table */
     var table = document.getElementById("tbody_annotated");
     table.innerHTML="";
+    var linted_mset_ids = []
     json_annotated.table_data.forEach(function(mdatset, i){
             var mset_id = mdatset['mset_id']
             var rowdata = mdatset['mset_values']
@@ -259,6 +260,7 @@ DataMeta.refresh_annotated = function(json_annotated, json_linting) {
             var cell = row.insertCell(0);
             if (json_linting[mset_id].length==0) {
                 cell.innerHTML='<i class="bi bi-check-circle-fill text-success"></i>';
+                linted_mset_ids.push(mset_id);
             } else {
                 var linting_report = ""
                 json_linting[mset_id].forEach(function(linting) {
@@ -297,6 +299,7 @@ DataMeta.refresh_annotated = function(json_annotated, json_linting) {
                 DataMeta.delete_mdatset(mset_id);
                 });
         });
+    document.getElementById("commit_btn").setAttribute("data-datameta-mset", JSON.stringify(linted_mset_ids));
     DataMeta.reloadPopovers();
 }
 
@@ -331,6 +334,32 @@ DataMeta.refresh_unannotated = function(json) {
 }
 
 
+DataMeta.commit = function(mset_ids) {
+    var xhr = new XMLHttpRequest();
+
+    var data = new FormData();
+    data.set("action", "commit");
+    mset_ids.forEach(function(mset_id) {
+        data.append("mset_ids[]", mset_id);
+    });
+
+    xhr.onreadystatechange = function(){
+        var error = false;
+        if (xhr.readyState === 4){
+            if (xhr.status === 200) {
+                var json = JSON.parse(xhr.responseText);
+                console.log("Response ", json);
+                DataMeta.submitRefresh();
+                error = !json.success;
+            } else error = 1;
+            if (error) DataMeta.new_alert("<strong>ERROR</strong> " + json.error, "danger");
+        }
+    };
+
+    xhr.open('POST', '/submit/action');
+    xhr.send(data);
+}
+
 /*
 Refreshes the data displayed by the `submit` view
 */
@@ -352,6 +381,10 @@ DataMeta.submitRefresh = function() {
 
 window.addEventListener("load", function() {
     DataMeta.submitRefresh();
+
+    document.getElementById("commit_btn").addEventListener("click", function(event) {
+            DataMeta.commit(JSON.parse(event.target.getAttribute("data-datameta-mset")));
+        });
 });
 </script>
 <script src="/static/js/fileupload.js"></script>
