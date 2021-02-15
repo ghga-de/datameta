@@ -24,7 +24,7 @@ from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy import and_, or_
 
-from ..models import MetaDataSet, File, MetaDatum, MetaDatumRecord
+from ..models import MetaDataSet, File, MetaDatum, MetaDatumRecord, Submission
 from .. import security
 
 import uuid
@@ -304,6 +304,33 @@ def delete_file(request, user):
         log.warning(f"DELETE PENDING FILE [uid={user.id},email={user.email}] FROM [{request.client_addr}] FAILED: NO ID PROVIDED")
     return { 'success' : False }
 
+def commit(request, user):
+    """Handles a commit request for a specific set of metadataset ids.
+    """
+    log.debug(request.POST)
+
+    mset_ids = [ int(mset_id) for mset_id  in request.POST.getall('mset_ids[]') ]
+
+    # Run linting
+    passed, filemap, report = linting.lint_pending_msets(request, user, mset_ids)
+
+    if len(passed) != len(mset_ids):
+        return { 'success' : False, 'error' : "The requested commit could not be performed." }
+
+    # Associate the files with the according metadata records
+    for mdatrec, file in filemap:
+        mdatrec.file = file
+        request.dbsession.add(mdatrec)
+
+    # Create a submission
+    sub = Submission(
+            date = datetime.datetime.now(),
+            metadatasets = passed
+            )
+    request.dbsession.add(sub)
+
+    return { 'success' : True }
+
 ####################################################################################################
 # VIEWS
 ####################################################################################################
@@ -332,6 +359,8 @@ def v_submit_action(request):
                 return delete_mdatset(request, user)
             elif action == "delete_file":
                 return delete_file(request, user)
+            elif action == "commit":
+                return commit(request, user)
     log.warning("Invalid request received for /submit/action.")
 
 @view_config(route_name='v_submit_view_json', renderer="json")
@@ -351,7 +380,7 @@ def v_submit_view_json(request):
     unannotated['table_data'] = [ elem for elem in unannotated['table_data'] if elem['filename'] not in annotated_filenames ]
 
     # Run linting on the pending annotations
-    _, linting_report = linting.lint_pending_msets(request, user)
+    _, _, linting_report = linting.lint_pending_msets(request, user)
 
     return {
             'annotated' : annotated,
