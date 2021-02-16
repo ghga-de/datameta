@@ -5,6 +5,9 @@
 1. [Introduction](#introduction)
 1. [Relational Data Mode](#relational-data-model)
 1. [Conceptual Notes](#conceptual-notes)
+1. [Application Cases](#application-cases)
+   1. [Data File Submission](#data-file-submission)
+   1. [Sample Sheet Submission](#sample-sheet-submission)
 
 ## Introduction
 
@@ -87,3 +90,17 @@ The relational database model comprises the following entities:
 1. *Who has access to what data*
 
    What is shown on the `/submit` view is private to a UID/GID combination. Other members of the same group cannot access the pending submission, neither can the user himself in case they change their group. After submission, in the `/view` view, the user can see all submitted data from his group (not yet implemented).
+
+## Application Cases
+
+### Data File Submission
+
+![erdiag](./img/submit_files.svg)
+
+### Sample Sheet Submission
+
+### Commit Submission
+
+### Delete Pending Metadata Record
+
+### Delete Pending Data File
