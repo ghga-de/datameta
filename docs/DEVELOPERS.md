@@ -78,12 +78,12 @@ The relational database model comprises the following entities:
 
 1. *Files and MetaDatumRecords are detached until submission*
 
-Until submission (aka commit), the data model does not link files and metadatumrecords. The integration of the file names and file uploads into the sample sheet (*Pending annotated submissions*) is purely visual on the client side through name-based matching. This is also utilized internally, i.e. to differentiate pending files from files that have been submitted, as files do not have a direct relation to a submission themselves. Only when a data record is submitted, files get linked to metadatumrecords and those get linked to a submission (via metadataset).
+   Until submission (aka commit), the data model does not link files and metadatumrecords. The integration of the file names and file uploads into the sample sheet (*Pending annotated submissions*) is purely visual on the client side through name-based matching. This is also utilized internally, i.e. to differentiate pending files from files that have been submitted, as files do not have a direct relation to a submission themselves. Only when a data record is submitted, files get linked to metadatumrecords and those get linked to a submission (via metadataset).
 
 1. *Both files and metadatasets have owners*
 
-The previous point, i.e. pending files and metadatasets not being connected, requires that ownership is documented both on the file and on the metadataset level.
+   The previous point, i.e. pending files and metadatasets not being connected, requires that ownership is documented both on the file and on the metadataset level.
 
 1. *Who has access to what data*
 
-What is shown on the `/submit` view is private to a UID/GID combination. Other members of the same group cannot access the pending submission, neither can the user himself in case they change their group. After submission, in the `/view` view, the user can see all submitted data from his group (not yet implemented).
+   What is shown on the `/submit` view is private to a UID/GID combination. Other members of the same group cannot access the pending submission, neither can the user himself in case they change their group. After submission, in the `/view` view, the user can see all submitted data from his group (not yet implemented).
