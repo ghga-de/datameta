@@ -106,7 +106,7 @@ def import_samplesheet(dbsession, file_like_obj, user):
     """
     # Try to read the sample sheet
     try:
-        data = pd.read_excel(file_like_obj)
+        data = pd.read_excel(file_like_obj, dtype="object")
     except Exception as e:
         raise SampleSheetReadError(f"{e}")
 
