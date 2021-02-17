@@ -31,35 +31,8 @@ function process_result_data(json) {
         var forms = document.querySelectorAll( '.box' );
         Array.prototype.forEach.call( forms, function( form )
             {
-                var input		 = form.querySelector( 'input[type="file"]' ),
-                    label		 = form.querySelector( 'label' ),
-                    errorMsg	 = form.querySelector( '.box__error span' ),
-                    restart		 = form.querySelectorAll( '.box__restart' ),
-                    droppedFiles = false,
-                    showFiles	 = function( files ) {
-                        label.textContent = files.length > 1 ? ( input.getAttribute( 'data-multiple-caption' ) || '' ).replace( '{count}', files.length ) : files[ 0 ].name;
-                    },
-                    triggerFormSubmit = function() {
-                        var event = document.createEvent( 'HTMLEvents' );
-                        event.initEvent( 'submit', true, false );
-                        form.dispatchEvent( event );
-                    };
+                var droppedFiles = false;
 
-                // letting the server side to know we are going to make an Ajax request
-                var ajaxFlag = document.createElement( 'input' );
-                ajaxFlag.setAttribute( 'type', 'hidden' );
-                ajaxFlag.setAttribute( 'name', 'ajax' );
-                ajaxFlag.setAttribute( 'value', 1 );
-                form.appendChild( ajaxFlag );
-
-                // automatically submit the form on file select
-                input.addEventListener( 'change', function( e )
-                    {
-                        /* showFiles( e.target.files ); */
-                        triggerFormSubmit();
-                    });
-
-                // drag&drop files if the feature is available
                 if( isAdvancedUpload )
                 {
                     form.classList.add( 'has-advanced-upload' ); // letting the CSS part to know drag&drop is supported by the browser
@@ -70,7 +43,6 @@ function process_result_data(json) {
                                 {
                                     // preventing the unwanted behaviours
                                     e.preventDefault();
-                                    e.stopPropagation();
                                 });
                         });
                     [ 'dragover', 'dragenter' ].forEach( function( event )
@@ -90,116 +62,68 @@ function process_result_data(json) {
                     form.addEventListener( 'drop', function( e )
                         {
                             droppedFiles = e.dataTransfer.files; // the files that were dropped
-                            /* showFiles( droppedFiles ); */
-
-                            triggerFormSubmit();
+                            if (form.id=="form_samplesheets" && droppedFiles.length > 1) {
+                                DataMeta.new_alert("Please submit only one sample sheet at a time.", "danger")
+                                return;
+                            }
+                            var event = new CustomEvent("dropsubmission");
+                            form.dispatchEvent( event );
                         });
+                } else {
+                    alert('Your browser is not compatible with the file upload.');
                 }
 
 
                 // if the form was submitted
-                form.addEventListener( 'submit', function( e )
+                form.addEventListener( "dropsubmission", function( e )
                     {
                         // preventing the duplicate submissions if the current one is in progress
                         if( form.classList.contains( 'is-uploading' ) ) return false;
 
                         form.classList.add( 'is-uploading' );
-                        form.classList.remove( 'is-error' );
 
                         if( isAdvancedUpload ) // ajax file upload for modern browsers
                         {
                             e.preventDefault();
                             e.stopPropagation();
-                            // gathering the form data
-                            var formData = new FormData( form );
-                            if( droppedFiles )
-                            {
-                                formData.delete(input.getAttribute( 'name' ));
-                                Array.prototype.forEach.call( droppedFiles, function( file )
-                                    {
-                                        formData.append( input.getAttribute( 'name' ), file );
-                                    });
-                            }
 
-                            // Separate the file list from the form data
-                            var fileList = formData.getAll(input.getAttribute( 'name' ));
+                            // Create an array from the dropped FileList
+                            var fileList = Array.from(droppedFiles);
 
-                            // Prepare an event carrying the file list and form data
-                            var nextupload = new CustomEvent("nextupload", { detail : { formData : formData, files : fileList, form : form} });
-
+                            // Dispatch event launching the first upload
+                            var nextupload = new CustomEvent("nextupload", { detail : { files : fileList, form : form} });
                             document.dispatchEvent(nextupload);
-
-                        }
-                        else // fallback Ajax solution upload for older browsers
-                        {
-                            var iframeName	= 'uploadiframe' + new Date().getTime(),
-                                iframe		= document.createElement( 'iframe' );
-
-                            $iframe		= $( '<iframe name="' + iframeName + '" style="display: none;"></iframe>' );
-
-                            iframe.setAttribute( 'name', iframeName );
-                            iframe.style.display = 'none';
-
-                            document.body.appendChild( iframe );
-                            form.setAttribute( 'target', iframeName );
-
-                            iframe.addEventListener( 'load', function()
-                                {
-                                    var data = JSON.parse( iframe.contentDocument.body.innerHTML );
-                                    form.classList.remove( 'is-uploading' )
-                                    form.classList.add( data.success == true ? 'is-success' : 'is-error' )
-                                    form.removeAttribute( 'target' );
-                                    if (form.id=="form_samplesheets") {
-                                        process_result_samplesheet(data);
-                                    } else if (form.id=="form_data") {
-                                        process_result_data(data);
-                                    }
-                                });
                         }
                     });
-
-
-                // restart the form if has a state of error/success
-                Array.prototype.forEach.call( restart, function( entry )
-                    {
-                        entry.addEventListener( 'click', function( e )
-                            {
-                                e.preventDefault();
-                                form.classList.remove( 'is-error', 'is-success' );
-                                input.click();
-                            });
-                    });
-
-                // Firefox focus bug fix for file input
-                input.addEventListener( 'focus', function(){ input.classList.add( 'has-focus' ); });
-                input.addEventListener( 'blur', function(){ input.classList.remove( 'has-focus' ); });
-
             });
 
         document.addEventListener("nextupload", function(event) {
             var file = event.detail.files.pop();
             var form = event.detail.form;
-            var ajaxData = new FormData(form);
+            var ajaxData = new FormData();
 
             if (!file) {
                 return;
             }
+            ajaxData.set("ajax", 1);
             ajaxData.set("files[]", file);
+            if (form.id=="form_data")
+                ajaxData.set("action", "submit_data");
+            else if (form.id=="form_samplesheets")
+                ajaxData.set("action", "submit_samplesheet");
 
             var progress_bar;
 
 
             // ajax request
             var ajax = new XMLHttpRequest();
-            ajax.open( form.getAttribute( 'method' ), form.getAttribute( 'action' ), true );
+            ajax.open('POST', '/submit/action');
 
             ajax.onload = function()
             {
-                form.classList.remove( 'is-uploading' );
                 if( ajax.status >= 200 && ajax.status < 400 )
                 {
                     var data = JSON.parse( ajax.responseText );
-                    /* form.classList.add( data.success == true ? 'is-success' : 'is-error' ); */
                     if (form.id=="form_samplesheets") {
                         process_result_samplesheet(data);
                     } else if (form.id=="form_data") {
@@ -212,6 +136,9 @@ function process_result_data(json) {
                 // Dispatch for the next upload
                 if (event.detail.files.length > 0) {
                     document.dispatchEvent(event);
+                } else {
+                    form.classList.remove( 'is-uploading' );
+                    DataMeta.submitRefresh();
                 }
             };
 
@@ -223,11 +150,7 @@ function process_result_data(json) {
             {
                 form.classList.remove( 'is-uploading' );
                 DataMeta.new_alert("<strong>The data submission failed.</strong> Please try again.", "danger")
-
-                // Dispatch for the next upload
-                if (event.detail.files.length > 0) {
-                    // document.dispatchEvent(event);
-                }
+                DataMeta.submitRefresh();
             };
 
             ajax.send( ajaxData );
