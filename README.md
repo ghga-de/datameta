@@ -1,46 +1,34 @@
 # DataMeta - submission server for data and associated metadata
 
-## Getting Started
+Data submission made easy! DataMeta allows you to easily define sample sheet columns, value
+constraints for the sample sheet and columns which are associated with raw data file names.
 
-- Change directory into your newly created project if not already there. Your
-  current directory should be the same as this README.txt file and setup.py.
+DataMeta is quick and easy to deploy on your local infrastructure and scales for high numbers of
+users!
 
-    cd datameta
+![demo](./img/datameta.demo.gif?raw=true)
 
-- Create a Python virtual environment, if not already created.
+## Quick Installation
 
-    python3 -m venv env
+1. Download the Docker compose file
+   ```
+   https://raw.githubusercontent.com/ghga-de/datameta/main/datameta.compose.yml
+   ```
 
-- Upgrade packaging tools, if necessary.
+1. Create the Docker volumes for persistent file and database storage
+   ```
+   docker volume create datameta-db
+   docker volume create datameta-filestorage
+   ```
 
-    env/bin/pip install --upgrade pip setuptools
+1. Start up your DataMeta Instance
+   ```
+   docker stack deploy --compose-file datameta.compose.yml datameta
+   ```
 
-- Install NPM dependencies
+1. Connect to your DataMeta instance at http://localhost:9950 and log in with the default
+   credentials `admin@admin.admin` - `admin`!
 
-    npm install --prefix datameta/static/
+## Full Installation Instructions
 
-- Install the project in editable mode with its testing requirements.
-
-    env/bin/pip install -e ".[testing]"
-
-- Initialize and upgrade the database using Alembic.
-
-    - Generate your first revision.
-
-        env/bin/alembic -c development.ini revision --autogenerate -m "init"
-
-    - Upgrade to that revision.
-
-        env/bin/alembic -c development.ini upgrade head
-
-- Load default data into the database using a script.
-
-    env/bin/initialize_datameta_db development.ini
-
-- Run your project's tests.
-
-    env/bin/pytest
-
-- Run your project.
-
-    env/bin/pserve development.ini
+Detailed installation instructions can be found [here](./INSTALL.md).
