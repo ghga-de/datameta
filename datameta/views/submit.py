@@ -279,8 +279,39 @@ def delete_file_by_id(dbsession, file_id, skip_rm=False):
         return storage_path
     raise FileDeleteError("File does not exist")
 
+def req_delete_pending(request, user):
+    """Handles a request for deletion of all pending files and metadata for a given UID/GID combination"""
+    # Delete all pending files
+    db = request.dbsession
+    storage_delete = []
+    for file in db.query(File.id).filter(and_(File.metadatumrecord == None, File.user_id==user.id, File.group_id==user.group_id)):
+        # Mark the file for deletion in storage
+        storage_delete.append(delete_file_by_id(db, file.id))
+        log.info(f"DELETE PENDING FILE [uid={user.id},email={user.email},file_id={file.id}] FROM [{request.client_addr}]")
 
-def delete_file(request, user):
+    # Delete all pending metadata
+    filt = and_(
+        MetaDataSet.submission_id==None,
+        MetaDataSet.user_id==user.id,
+        MetaDataSet.group_id==user.group_id
+        )
+
+    for rec in db.query(MetaDatumRecord).join(MetaDataSet).filter(filt).distinct():
+        db.delete(rec)
+    db.query(MetaDataSet).filter(filt).delete(synchronize_session=False)
+
+    # Commit transaction
+    request.tm.commit()
+    request.tm.begin()
+
+    # Delete files from storage
+    for path in storage_delete:
+        storage.rm(request, path)
+
+    return {'success' : True}
+
+
+def req_delete_file(request, user):
     """Handles a metadataset deletion request. This function will only delete
     metadatasets which have not been submitted (committed) yet!
 
@@ -304,7 +335,7 @@ def delete_file(request, user):
         log.warning(f"DELETE PENDING FILE [uid={user.id},email={user.email}] FROM [{request.client_addr}] FAILED: NO ID PROVIDED")
     return { 'success' : False }
 
-def commit(request, user):
+def req_commit(request, user):
     """Handles a commit request for a specific set of metadataset ids.
     """
     log.debug(request.POST)
@@ -358,9 +389,11 @@ def v_submit_action(request):
             elif action == "delete_mdatset":
                 return delete_mdatset(request, user)
             elif action == "delete_file":
-                return delete_file(request, user)
+                return req_delete_file(request, user)
             elif action == "commit":
-                return commit(request, user)
+                return req_commit(request, user)
+            elif action == "delete_pending":
+                return req_delete_pending(request, user)
     log.warning("Invalid request received for /submit/action.")
 
 @view_config(route_name='v_submit_view_json', renderer="json")

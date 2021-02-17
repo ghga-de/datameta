@@ -86,7 +86,7 @@
     </div>
 </div>
 <div id="row_delete_pending" class="row mt-2" style="display:none">
-    <a class="btn btn-outline-danger w-100" href="#">Delete all pending data</a>
+    <a id="del_pending_btn" class="btn btn-outline-danger w-100" href="#">Delete all pending data</a>
 </div>
 </metal:block>
 
@@ -303,6 +303,7 @@ DataMeta.refresh_annotated = function(json_annotated, json_linting) {
             var cell = row.insertCell(DataMeta.mdat_names.length+1);
             cell.innerHTML='<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>';
             cell.querySelector(".btn").addEventListener("click", function(event) {
+	        event.target.disabled = true;
                 DataMeta.delete_mdatset(mset_id);
                 });
         });
@@ -335,6 +336,7 @@ DataMeta.refresh_unannotated = function(json) {
         var cell = row.insertCell(3);
         cell.innerHTML='<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>';
         cell.querySelector(".btn").addEventListener("click", function(event) {
+	    event.target.disabled = true;
             DataMeta.delete_file(rowdata.file_id);
             });
     });
@@ -360,6 +362,7 @@ DataMeta.commit = function(mset_ids) {
                 error = !json.success;
             } else error = 1;
             if (error) DataMeta.new_alert("<strong>ERROR</strong> " + json.error, "danger");
+	    document.getElementById("commit_btn").disabled = false;
         }
     };
 
@@ -386,11 +389,39 @@ DataMeta.submitRefresh = function() {
     xhr.send();
 }
 
+DataMeta.delete_pending = function() {
+    var xhr = new XMLHttpRequest();
+
+    var data = new FormData();
+    data.set("action", "delete_pending");
+
+    xhr.onreadystatechange = function(){
+        var error = false;
+        if (xhr.readyState === 4){
+            if (xhr.status === 200) {
+                var json = JSON.parse(xhr.responseText);
+                error = !json.success;
+            } else error = 1;
+            if (error) DataMeta.new_alert("Deletion failed. Please try again.", "danger");
+            DataMeta.submitRefresh();
+            document.getElementById("del_pending_btn").disabled = false;
+        }
+    };
+
+    xhr.open('POST', '/submit/action');
+    xhr.send(data);
+}
+
 window.addEventListener("load", function() {
     DataMeta.submitRefresh();
 
     document.getElementById("commit_btn").addEventListener("click", function(event) {
+            event.target.disabled = true;
             DataMeta.commit(JSON.parse(event.target.getAttribute("data-datameta-mset")));
+        });
+    document.getElementById("del_pending_btn").addEventListener("click", function(event) {
+            event.target.disabled = true;
+            DataMeta.delete_pending();
         });
 });
 </script>
