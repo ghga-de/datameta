@@ -36,11 +36,6 @@
     outline-color: #c8dadf;
     background-color: #fff;
 }
-.box__dragndrop,
-.box__icon
-{
-    display: none;
-}
 .box.has-advanced-upload .box__dragndrop
 {
     display: inline;
@@ -51,7 +46,7 @@
     height: 80px;
     fill: #92b0b3;
     display: block;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .box.is-uploading .box__input,
