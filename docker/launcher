@@ -1,0 +1,18 @@
+#!/bin/sh
+set -x
+
+# Replace environment variables with their respective values
+envsubst < /docker_production.ini > /tmp/config.ini
+
+# Check if the database has been initialized and if not initialize it
+if ! psql -c '\dt' "$SQLALCHEMY_URL" | fgrep alembic &>/dev/null; then
+	cd /tmp/datameta.src/
+	alembic -c /tmp/config.ini upgrade head
+	alembic -c /tmp/config.ini revision --autogenerate -m "init"
+	initialize_datameta_db /tmp/config.ini
+fi
+
+cd /
+
+# Launch the application
+pserve /tmp/config.ini
