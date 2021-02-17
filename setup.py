@@ -32,7 +32,7 @@ requires = [
     'bcrypt',
     'psycopg2',
     'plaster_pastedeploy',
-    'pandas>=1.2.0',
+    'pandas>=1.2.2',
     'openpyxl',
     'xlrd>= 1.0.0',
     'pyramid',

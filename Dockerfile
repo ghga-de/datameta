@@ -22,7 +22,7 @@ FROM continuumio/miniconda3:4.9.2-alpine
 
 ENV PATH /opt/conda/bin/conda:$PATH
 
-RUN conda install -c conda-forge gettext pylibmc psycopg2 pandas'>=1.2.0' && conda clean --all
+RUN conda install -c conda-forge gettext pylibmc psycopg2 pandas'=1.2.2' && conda clean --all
 
 COPY setup.py /tmp/datameta.src/
 COPY datameta /tmp/datameta.src/datameta
