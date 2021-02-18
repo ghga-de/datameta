@@ -64,8 +64,8 @@ def my_view(request):
                 log.info(f"LOGIN [uid={user.id},email={user.email}] FROM [{request.client_addr}]")
                 return HTTPFound(location="/home")
         except KeyError:
-            return HTTPFound(location="/login")
-        return {
-                'fail' : True
-                }
-    return {}
+            pass
+        return HTTPFound(location="/login")
+    return {
+            'pagetitle' : 'DataMeta - Login'
+            }
