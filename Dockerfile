@@ -45,7 +45,7 @@ RUN chown -R datameta /tmp/datameta.src
 RUN pip install --no-cache-dir /tmp/datameta.src
 
 # Copy the configuration file into the container
-COPY "docker_production.ini" "/docker_production.ini"
+COPY conf/docker_production.ini /docker_production.ini
 
 # Drop privileges
 USER datameta
