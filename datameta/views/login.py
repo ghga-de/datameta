@@ -38,12 +38,6 @@ def check_password(pw, hashed_pw):
     expected_hash = hashed_pw.encode('utf8')
     return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
 
-
-USERS = {'editor': hash_password('editor'),
-         'viewer': hash_password('viewer')}
-GROUPS = {'editor': ['group:editors']}
-
-
 def getuser(email, request):
     return request.dbsession.query(User).filter(User.email==email).one_or_none()
 
