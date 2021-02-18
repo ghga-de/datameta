@@ -76,7 +76,7 @@ def dataframe_from_mdsets(mdsets):
 def strptime_iso_or_empty(s, datetimefmt):
     try:
         return datetime.datetime.strptime(s, datetimefmt).isoformat()
-    except ValueError:
+    except (ValueError, TypeError):
         return ""
 
 def string_conversion_dates(series, datetimefmt):
