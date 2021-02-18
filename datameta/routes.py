@@ -3,6 +3,7 @@ def includeme(config):
     config.add_route('root', '/')
     config.add_route('login', '/login')
     config.add_route('register', '/register')
+    config.add_route('register_submit', '/register/submit')
     config.add_route('home', '/home')
     config.add_route('submit', '/submit')
     config.add_route('submit_action', '/submit/action')

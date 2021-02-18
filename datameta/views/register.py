@@ -21,13 +21,72 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-from ..models import Group
+from ..models import User, Group, RegRequest
 
 import logging
 log = logging.getLogger(__name__)
 
+import re
+
+@view_config(route_name='register_submit', renderer='json')
+def v_register_submit(request):
+    try:
+        errors = {}
+        name = request.POST['name']
+        email = request.POST['email']
+        org_select = int(request.POST['org_select'])
+        org_create = request.POST.get('org_create') is not None
+        org_new_name = request.POST.get('org_new_name')
+
+        # Basic validity check for email
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            errors['email'] = True
+        else:
+            # Check if the user already exists
+            if request.dbsession.query(User).filter(User.email==email).one_or_none() is not None:
+                errors['user_exists'] = True
+            elif request.dbsession.query(RegRequest).filter(RegRequest.email==email).one_or_none() is not None:
+                errors['req_exists'] = True
+
+        # Check whether the selected organization is valid
+        if org_create:
+            if not org_new_name:
+                errors["org_new_name"] = True
+        else:
+            group = request.dbsession.query(Group).filter(Group.id==org_select).one_or_none()
+            if group is None:
+                errors['org_select'] = True
+
+        # Check whether a name was specified
+        if not name:
+            errors['name'] = True
+
+        # If errors occurred, return them
+        if errors:
+            return { 'success' : False, 'errors' : errors }
+
+        # Store a new registration request in the database
+        reg_req = RegRequest(
+                fullname = name,
+                email = email,
+                group_id = None if org_create else group.id,
+                new_group_name = None if not org_create else org_new_name
+                )
+        request.dbsession.add(reg_req)
+
+        if org_create:
+            log.info(f"REGISTRATION REQUEST [email='{email}', name='{name}', new_org='{org_new_name}']")
+        else:
+            log.info(f"REGISTRATION REQUEST [email='{email}', name='{name}', group='{group.name}']")
+
+        return { 'success' : True }
+    except (ValueError, KeyError):
+        pass
+
+    return { 'success' : False }
+
 @view_config(route_name='register', renderer='../templates/register.pt')
-def my_view(request):
+def v_register(request):
     groups = request.dbsession.query(Group).all()
     return {
             'pagetitle' : 'DataMeta - Registration',

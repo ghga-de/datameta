@@ -55,30 +55,45 @@
 		}
 </style>
 <main metal:fill-slot="content" class="form-signin">
+	<div id="alert" class="alert alert-danger" role="alert" style="display:none">
+		A simple danger alert—check it out!
+	</div>
+	<div id="success" class="alert alert-success" role="alert" style="display:none">
+		Thank you for your registration! You will be contacted shortly.
+	</div>
 	<form action="#" id="regform">
 		<div class="input-group mb-3">
 			<span class="input-group-text" id="desc_input_name">
 				<i class="bi bi-person-circle"></i>
 			</span>
-			<input type="text" class="form-control" placeholder="Full name" aria-label="Full name" aria-describedby="desc_input_name">
+			<input id="name" name="name" type="text" class="form-control" placeholder="Full name" aria-label="Full name" aria-describedby="desc_input_name">
+			<div class="invalid-feedback">
+				Please provide a name!
+			</div>
 		</div>
 		<div class="input-group mb-3">
 			<span class="input-group-text" id="desc_input_email">
 				<i class="bi bi-at"></i>
 			</span>
-			<input type="text" class="form-control" placeholder="Email" type="email" aria-label="Email" aria-describedby="desc_input_email">
+			<input id="email" name="email" type="text" class="form-control" placeholder="Email" type="email" aria-label="Email" aria-describedby="desc_input_email">
+			<div class="invalid-feedback">
+				Please provide a valid email address!
+			</div>
 		</div>
-		<div id="org_select">
+		<div id="org_select_div">
 			<div class="input-group mb-3">
 				<span class="input-group-text">
 					<i class="bi bi-building"></i>
 				</span>
-				<select class="form-control form-select" aria-label="Organization">
-					<option selected>Please select your organization...</option>
+				<select id="org_select" name="org_select" class="form-control form-select" aria-label="Organization">
+					<option value="-1" selected>Please select your organization...</option>
 					<tal:block tal:repeat="group groups">
 						<option tal:content="group.name" tal:attributes="value group.id"></option>
 					</tal:block>
 				</select>
+				<div class="invalid-feedback">
+					Please provide a valid organization!
+				</div>
 			</div>
 		</div>
 		<div id="org_new" style="display:none">
@@ -86,12 +101,12 @@
 				<span class="input-group-text" id="desc_input_neworg">
 					<i class="bi bi-building"></i>
 				</span>
-				<input type="text" class="form-control" placeholder="Organization" aria-label="Organization" aria-describedby="desc_input_neworg">
+				<input id="org_new_name" name="org_new_name" type="text" class="form-control" placeholder="Organization" aria-label="Organization" aria-describedby="desc_input_neworg">
 			</div>
 		</div>
 		<div class="mb-3" style="text-align:left">
 			<div class="form-check form-switch">
-				<input class="form-check-input" type="checkbox" id="toggle_new_org">
+				<input name="org_create" class="form-check-input" type="checkbox" id="toggle_new_org" value="1">
 				<label class="form-check-label" for="toggle_new_org">Create a new organization</label>
 			</div>
 
