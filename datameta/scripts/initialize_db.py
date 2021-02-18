@@ -16,9 +16,9 @@ def parse_args(argv):
     return parser.parse_args(argv[1:])
 
 def create_initial_user(dbsession):
-    admins = Group(
+    init_group = Group(
             id=0,
-            name="Administrators"
+            name="My Organization"
             )
     root = User(
             id=0,
@@ -26,7 +26,10 @@ def create_initial_user(dbsession):
             email="admin@admin.admin",
             pwhash=hash_password("admin"),
             fullname="Administrator",
-            group=admins)
+            group=init_group,
+            group_admin=True,
+            site_admin=True
+            )
     dbsession.add(root)
 
 def create_example_metadata(dbsession):

@@ -59,6 +59,7 @@ class Group(Base):
     user             = relationship('User', back_populates='group')
     metadatasets     = relationship('MetaDataSet', back_populates='group')
     files            = relationship('File', back_populates='group')
+    regrequests      = relationship('RegRequest', back_populates='group')
 
 class User(Base):
     __tablename__    = 'users'
@@ -68,10 +69,22 @@ class User(Base):
     pwhash           = Column(Text)
     group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
     enabled          = Column(Boolean(create_constraint=False), nullable=False)
+    site_admin       = Column(Boolean(create_constraint=False), nullable=False)
+    group_admin      = Column(Boolean(create_constraint=False), nullable=False)
     # Relationships
     group            = relationship('Group', back_populates='user')
     metadatasets     = relationship('MetaDataSet', back_populates='user')
     files            = relationship('File', back_populates='user')
+
+class RegRequest(Base):
+    __tablename__    = 'regrequests'
+    id               = Column(Integer, primary_key=True)
+    fullname         = Column(Text, nullable=False)
+    email            = Column(Text, nullable=False)
+    group_id         = Column(Integer, ForeignKey('groups.id'), nullable=True)
+    new_group_name   = Column(Text)
+    # Relationships
+    group            = relationship('Group', back_populates='regrequests')
 
 class File(Base):
     __tablename__    = 'files'

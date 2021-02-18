@@ -8,6 +8,7 @@ import zope.sqlalchemy
 from .db import (
         Group,
         User,
+        RegRequest,
         File,
         Submission,
         MetaDatum,
