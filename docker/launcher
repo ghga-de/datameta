@@ -1,5 +1,6 @@
 #!/bin/sh
 set -x
+set -e
 
 # Replace environment variables with their respective values
 envsubst < /docker_production.ini > /tmp/config.ini
