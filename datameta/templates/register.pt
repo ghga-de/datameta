@@ -1,0 +1,106 @@
+<metal:block use-macro="load: layout-minimal.pt">
+<style metal:fill-slot="head">
+.bd-placeholder-img {
+	font-size: 1.125rem;
+	text-anchor: middle;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+		@media (min-width: 768px) {
+			.bd-placeholder-img-lg {
+				font-size: 3.5rem;
+			}
+		}
+		html,
+		body {
+			height: 100%;
+		}
+
+		body {
+			display: flex;
+			align-items: center;
+			padding-top: 40px;
+			padding-bottom: 40px;
+			background-color: #f5f5f5;
+		}
+		.form-signin {
+			width: 100%;
+			max-width: 450px;
+			padding: 15px;
+			margin: auto;
+		}
+		.form-signin .checkbox {
+			font-weight: 400;
+		}
+		.form-signin .form-control {
+			position: relative;
+			box-sizing: border-box;
+			height: auto;
+			padding: 10px;
+			font-size: 16px;
+		}
+		.form-signin .form-control:focus {
+			z-index: 2;
+		}
+		.form-signin input[type="email"] {
+			margin-bottom: -1px;
+			border-bottom-right-radius: 0;
+			border-bottom-left-radius: 0;
+		}
+		.form-signin input[type="password"] {
+			margin-bottom: 10px;
+			border-top-left-radius: 0;
+			border-top-right-radius: 0;
+		}
+</style>
+<main metal:fill-slot="content" class="form-signin">
+	<form action="#" id="regform">
+		<div class="input-group mb-3">
+			<span class="input-group-text" id="desc_input_name">
+				<i class="bi bi-person-circle"></i>
+			</span>
+			<input type="text" class="form-control" placeholder="Full name" aria-label="Full name" aria-describedby="desc_input_name">
+		</div>
+		<div class="input-group mb-3">
+			<span class="input-group-text" id="desc_input_email">
+				<i class="bi bi-at"></i>
+			</span>
+			<input type="text" class="form-control" placeholder="Email" type="email" aria-label="Email" aria-describedby="desc_input_email">
+		</div>
+		<div id="org_select">
+			<div class="input-group mb-3">
+				<span class="input-group-text">
+					<i class="bi bi-building"></i>
+				</span>
+				<select class="form-control form-select" aria-label="Organization">
+					<option selected>Please select your organization...</option>
+					<tal:block tal:repeat="group groups">
+						<option tal:content="group.name" tal:attributes="value group.id"></option>
+					</tal:block>
+				</select>
+			</div>
+		</div>
+		<div id="org_new" style="display:none">
+			<div class="input-group mb-3" id="org_new">
+				<span class="input-group-text" id="desc_input_neworg">
+					<i class="bi bi-building"></i>
+				</span>
+				<input type="text" class="form-control" placeholder="Organization" aria-label="Organization" aria-describedby="desc_input_neworg">
+			</div>
+		</div>
+		<div class="mb-3" style="text-align:left">
+			<div class="form-check form-switch">
+				<input class="form-check-input" type="checkbox" id="toggle_new_org">
+				<label class="form-check-label" for="toggle_new_org">Create a new organization</label>
+			</div>
+
+		</div>
+		<div class="input-group mb-3">
+			<button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Register</button>
+		</div>
+	</form>
+
+	<script src="${request.static_url('datameta:static/js/register.js')}"></script>
+</main>
+</metal:block>
