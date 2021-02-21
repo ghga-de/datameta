@@ -61,6 +61,7 @@
 	<div id="success" class="alert alert-success" role="alert" style="display:none">
 		Thank you for your registration! You will be contacted shortly.
 	</div>
+        <h1 class="h3 mb-3 fw-normal" style="font-family: 'Fira Sans', sans-serif;"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</h1>
 	<form action="#" id="regform">
 		<div class="input-group mb-3">
 			<span class="input-group-text" id="desc_input_name">

@@ -4,8 +4,7 @@
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
 # The above copyright notice and this permission notice shall be included in all
@@ -24,6 +23,7 @@ from pyramid.view import view_config
 
 from ..models import User, PasswordToken
 from .login import hash_password
+from .forgot import send_forgot_token
 
 import datetime
 import logging
@@ -64,8 +64,19 @@ def v_setpass_api(request):
 
 @view_config(route_name='setpass', renderer='../templates/setpass.pt')
 def v_setpass(request):
-    # TODO check token, if invalid redirect login, if expired send new one.
+    # Validate token
+    dbtoken = request.dbsession.query(PasswordToken).filter(PasswordToken.value==request.matchdict['token']).one_or_none()
+    unknown_token = dbtoken is None
+    expired_token = dbtoken is not None and dbtoken.expires < datetime.datetime.now()
+
+    # Token expired? Send new one.
+    if expired_token:
+        send_forgot_token(request, dbtoken.user)
+
     return {
             'pagetitle' : 'DataMeta - Set Password',
+            'unknown_token' : unknown_token,
+            'expired_token' : expired_token,
+            'token_ok' : not unknown_token and not expired_token,
             'token' : request.matchdict['token']
             }

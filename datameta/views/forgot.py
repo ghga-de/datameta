@@ -23,36 +23,61 @@ from pyramid.view import view_config
 
 from ..models import User, PasswordToken
 from .login import hash_password
-from .. import passtokens
+from .. import passtokens, email
+from ..settings import get_setting
 
 import logging
 log = logging.getLogger(__name__)
 
 import re
 
+def send_forgot_token(request, user):
+    """Generates a new set-pass token for the specified user and sends out an
+    email to the user with the password recovery URL. The email templatet
+    assumes a 'forgotten password' scenario."""
+    db = request.dbsession
+
+    # Obtain a new token
+    token = passtokens.new_token(db, user.id)
+
+    # Generate the token url
+    token_url = request.route_url('setpass', token = token)
+
+    # Send the token to the user
+    email.send(
+            recipients = (user.fullname, user.email),
+            subject = get_setting(db, "subject_forgot_token").str_value,
+            template = get_setting(db, "template_forgot_token").str_value,
+            values={
+                'fullname' : user.fullname,
+                'token_url' : token_url
+                }
+            )
+    return token
+
 @view_config(route_name='forgot_api', renderer='json')
 def v_forgot_api(request):
+    db = request.dbsession
     # Extract email from body
     try:
-        email = request.json_body['email']
+        req_email = request.json_body['email']
     except KeyError:
         return { 'success' : False, 'error' : 'INVALID_REQUEST' }
 
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
         return { 'success' : False, 'error' : 'MALFORMED_EMAIL' }
 
     # Try to find user
-    user = request.dbsession.query(User).filter(User.email==email).one_or_none()
+    user = db.query(User).filter(User.email==req_email).one_or_none()
+
     if user is None:
         # Not returning an error on this one intentionally
         return { 'success' : True }
 
-    # Obtain a new token
-    token = passtokens.new_token(request, user.id)
+    # Generate a new forgot token and send it to the user
+    token = send_forgot_token(request, user)
 
-    # Send the token to the user
-    # TODO
-    log.debug(f"USER REQUESTED RECOVERY LINK: http://localhost:6543/setpass/{token}")
+    log.debug(f"USER REQUESTED RECOVERY TOKEN: {token}")
 
     return { 'success' : True }
 
