@@ -10,6 +10,7 @@ from .db import (
         User,
         RegRequest,
         File,
+        PasswordToken,
         Submission,
         MetaDatum,
         MetaDatumRecord,

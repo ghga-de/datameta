@@ -75,6 +75,16 @@ class User(Base):
     group            = relationship('Group', back_populates='user')
     metadatasets     = relationship('MetaDataSet', back_populates='user')
     files            = relationship('File', back_populates='user')
+    passwordtokens   = relationship('PasswordToken', back_populates='user')
+
+class PasswordToken(Base):
+    __tablename__    = 'passwordtokens'
+    id               = Column(Integer, primary_key=True)
+    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
+    value            = Column(Text, nullable=False, unique=True)
+    expires          = Column(DateTime, nullable=False)
+    # Relationships
+    user             = relationship('User', back_populates='passwordtokens')
 
 class RegRequest(Base):
     __tablename__    = 'regrequests'

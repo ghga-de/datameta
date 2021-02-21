@@ -1,0 +1,95 @@
+<metal:block use-macro="load: layout-minimal.pt">
+<style metal:fill-slot="head">
+.bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+            @media (min-width: 768px) {
+                .bd-placeholder-img-lg {
+                    font-size: 3.5rem;
+                }
+            }
+            html,
+            body {
+                height: 100%;
+            }
+
+            body {
+                display: flex;
+                align-items: center;
+                padding-top: 40px;
+                padding-bottom: 40px;
+                background-color: #f5f5f5;
+            }
+            .form-signin {
+                width: 100%;
+                max-width: 450px;
+                padding: 15px;
+                margin: auto;
+            }
+            .form-signin .checkbox {
+                font-weight: 400;
+            }
+            .form-signin .form-control {
+                position: relative;
+                box-sizing: border-box;
+                height: auto;
+                padding: 10px;
+                font-size: 16px;
+            }
+            .form-signin .form-control:focus {
+                z-index: 2;
+            }
+            .form-signin input[type="email"] {
+                margin-bottom: -1px;
+                border-bottom-right-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+            .form-signin input[type="password"] {
+                margin-bottom: 10px;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
+</style>
+<main metal:fill-slot="content" class="form-signin">
+    <div id="alert" class="alert alert-danger collapse" role="alert">
+    </div>
+    <div id="success" class="collapse">
+        <div class="alert alert-success" role="alert" >
+            The new password has been set successfully!
+        </div>
+        <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
+    </div>
+    <div id="passentry" class="collapse show">
+        <div class="mb-3" style="text-align:left">
+            <h4>Please choose a new password</h4>
+        </div>
+        <form action="#" id="newpassform" data-datameta-setpass="${token}">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="desc_input_password">
+                    <i class="bi bi-key"></i>
+                </span>
+                <input id="new_password" name="new_password" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Enter new password..." aria-label="New Password" aria-describedby="desc_input_password">
+                <div class="invalid-feedback" id="pw_invalid">
+                </div>
+            </div>
+            <div class="input-group mb-3" id="org_new">
+                <span class="input-group-text" id="desc_input_password_repeat">
+                    <i class="bi bi-key"></i>
+                </span>
+                <input id="new_password_repeat" name="new_password_repeat" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Repeat new password..." aria-label="Repeat new password" aria-describedby="desc_input_password_repeat">
+                <div class="invalid-feedback">
+                    The two passwords do not match.
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Save</button>
+            </div>
+        </form>
+    </div>
+    <script type="module" src="${request.static_url('datameta:static/js/setpass.js')}"></script>
+</main>
+</metal:block>

@@ -1,5 +1,4 @@
-# Copyright (c) 2021 Universität Tübingen, Germany
-# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,21 +18,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def includeme(config):
-    config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('root', '/')
-    config.add_route('login', '/login')
-    config.add_route('register', '/register')
-    config.add_route('register_submit', '/register/submit')
-    config.add_route('setpass', '/setpass/{token}')
-    config.add_route('setpass_api', '/api/setpass')
-    config.add_route('forgot', '/forgot')
-    config.add_route('forgot_api', '/api/forgot')
-    config.add_route('home', '/home')
-    config.add_route('submit', '/submit')
-    config.add_route('submit_action', '/submit/action')
-    config.add_route('account', '/account')
-    config.add_route('view', '/view')
-    config.add_route('v_submit_view_json', '/submit/view.json')
-    config.add_route('admin', '/admin')
-    config.add_route('admin_json', '/admin.json')
+import secrets
+from datetime import datetime, timedelta
+
+from .models import PasswordToken
+
+def new_token(request, user_id):
+    """Clears all password recovery tokens for the specified user ID, generates a new one and returns it"""
+    db = request.dbsession
+    # Delete existing tokens
+    db.query(PasswordToken).filter(PasswordToken.user_id==user_id).delete()
+
+    # Create new token value
+    value = secrets.token_urlsafe(40)
+
+    # Insert token
+    pass_token = PasswordToken(
+            user_id=user_id,
+            value=value,
+            expires=datetime.now() + timedelta(minutes=10)
+            )
+    db.add(pass_token)
+
+    return value
