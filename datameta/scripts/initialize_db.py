@@ -5,7 +5,7 @@ from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
 from ..views.login import hash_password
-from ..models import User, Group, MetaDatum, DateTimeMode
+from ..models import User, Group, MetaDatum, DateTimeMode, ApplicationSettings
 
 def parse_args(argv):
     parser = argparse.ArgumentParser()
@@ -16,21 +16,23 @@ def parse_args(argv):
     return parser.parse_args(argv[1:])
 
 def create_initial_user(dbsession):
-    init_group = Group(
-            id=0,
-            name="My Organization"
-            )
-    root = User(
-            id=0,
-            enabled=True,
-            email="admin@admin.admin",
-            pwhash=hash_password("admin"),
-            fullname="Administrator",
-            group=init_group,
-            group_admin=True,
-            site_admin=True
-            )
-    dbsession.add(root)
+    # Perform initialization only if the group table is empty
+    if (dbsession.query(Group.id).count() == 0):
+        init_group = Group(
+                id=0,
+                name="My Organization"
+                )
+        root = User(
+                id=0,
+                enabled=True,
+                email="admin@admin.admin",
+                pwhash=hash_password("admin"),
+                fullname="Administrator",
+                group=init_group,
+                group_admin=True,
+                site_admin=True
+                )
+        dbsession.add(root)
 
 def create_example_metadata(dbsession):
     metadata = [
@@ -41,6 +43,29 @@ def create_example_metadata(dbsession):
             MetaDatum(name = "FileR2", mandatory=True, order=500, isfile=True)
             ]
     dbsession.add_all(metadata)
+
+def create_email_templates(db):
+    keys = [ row[0] for row in db.query(ApplicationSettings.key) ]
+
+    # EMAIL TEMPLATE: FORGOT -> TOKEN
+    if "subject_forgot_token" not in keys:
+        db.add(ApplicationSettings(
+            key = "subject_forgot_token",
+            str_value= "Your password recovery request"))
+
+    if "template_forgot_token" not in keys:
+        db.add(ApplicationSettings(
+            key = "template_forgot_token",
+            str_value=
+"""Dear {fullname},
+
+a new password was requested for your account. If you did not issue this request, you can safely ignore this email. Otherwise, you can use the following link below to create a new password:
+
+{token_url}
+
+Best regards,
+The Support Team"""))
+
 
 def main(argv=sys.argv):
     args = parse_args(argv)
@@ -56,6 +81,9 @@ def main(argv=sys.argv):
 
             # Create example sample sheet columns
             create_example_metadata(dbsession)
+
+            # Create email templates
+            create_email_templates(dbsession)
 
     except OperationalError:
         print('''

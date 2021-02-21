@@ -63,6 +63,7 @@
             If this email address is registered with us, it will receive a recovery link shortly. Please check your inbox.
         </div>
     </div>
+    <h1 class="h3 mb-3 fw-normal" style="font-family: 'Fira Sans', sans-serif;"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</h1>
     <form action="#" id="forgotform">
         <div class="input-group mb-3">
             <span class="input-group-text" id="desc_input_email">

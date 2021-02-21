@@ -18,3 +18,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+from .models import ApplicationSettings
+
+def get_setting(db, key):
+    return db.query(ApplicationSettings).filter(ApplicationSettings.key==key).one_or_none()

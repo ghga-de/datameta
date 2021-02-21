@@ -23,9 +23,8 @@ from datetime import datetime, timedelta
 
 from .models import PasswordToken
 
-def new_token(request, user_id):
+def new_token(db, user_id):
     """Clears all password recovery tokens for the specified user ID, generates a new one and returns it"""
-    db = request.dbsession
     # Delete existing tokens
     db.query(PasswordToken).filter(PasswordToken.user_id==user_id).delete()
 

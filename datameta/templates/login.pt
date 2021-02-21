@@ -55,23 +55,23 @@
             }
 </style>
 <main metal:fill-slot="content" class="form-signin">
-	<form action="/login" method="POST">
-		<h1 class="h3 mb-3 fw-normal" style="font-family: 'Fira Sans', sans-serif;"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</h1>
-		<label for="inputEmail" class="visually-hidden">Email address</label>
-		<input name="input_email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
-		<label for="inputPassword" class="visually-hidden">Password</label>
-		<input name="input_password" type="password" id="inputPassword" class="form-control" placeholder="Password">
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Sign in</button>
-                        </div>
-                        <div class="col-lg-6">
-                            <a href="/register" class="w-100 btn  btn-warning">Register</a>
-                        </div>
-                    </div>
-	</form>
-	<p class="mt-2">
-	<a href="#">Forgot password?</a>
-	</p>
+    <h1 class="h3 mb-3 fw-normal" style="font-family: 'Fira Sans', sans-serif;"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</h1>
+    <form action="/login" method="POST">
+        <label for="inputEmail" class="visually-hidden">Email address</label>
+        <input name="input_email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+        <label for="inputPassword" class="visually-hidden">Password</label>
+        <input name="input_password" type="password" id="inputPassword" class="form-control" placeholder="Password">
+        <div class="row">
+            <div class="col-lg-6">
+                <a href="/register" class="w-100 btn  btn-warning">Register</a>
+            </div>
+            <div class="col-lg-6">
+                <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Sign in</button>
+            </div>
+        </div>
+    </form>
+    <p class="mt-2">
+    <a href="/forgot">Forgot password?</a>
+    </p>
 </main>
 </metal:block>

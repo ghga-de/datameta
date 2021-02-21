@@ -55,41 +55,57 @@
             }
 </style>
 <main metal:fill-slot="content" class="form-signin">
-    <div id="alert" class="alert alert-danger collapse" role="alert">
-    </div>
-    <div id="success" class="collapse">
-        <div class="alert alert-success" role="alert" >
-            The new password has been set successfully!
+    <div tal:condition="unknown_token" id="unknowntoken">
+        <div class="alert alert-danger" role="alert">
+            This password recovery token is unknown. Make sure you are using
+            the correct URL and that the URL has not been previously used or
+            superseeded by a new token request.
         </div>
         <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
     </div>
-    <div id="passentry" class="collapse show">
-        <div class="mb-3" style="text-align:left">
-            <h4>Please choose a new password</h4>
+    <div tal:condition="expired_token" id="expiredtoken">
+        <div class="alert alert-warning" role="alert">
+            This password recovery URL has expired. A new recovery link has
+            been sent, please check your inbox.
         </div>
-        <form action="#" id="newpassform" data-datameta-setpass="${token}">
-            <div class="input-group mb-3">
-                <span class="input-group-text" id="desc_input_password">
-                    <i class="bi bi-key"></i>
-                </span>
-                <input id="new_password" name="new_password" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Enter new password..." aria-label="New Password" aria-describedby="desc_input_password">
-                <div class="invalid-feedback" id="pw_invalid">
-                </div>
-            </div>
-            <div class="input-group mb-3" id="org_new">
-                <span class="input-group-text" id="desc_input_password_repeat">
-                    <i class="bi bi-key"></i>
-                </span>
-                <input id="new_password_repeat" name="new_password_repeat" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Repeat new password..." aria-label="Repeat new password" aria-describedby="desc_input_password_repeat">
-                <div class="invalid-feedback">
-                    The two passwords do not match.
-                </div>
-            </div>
-            <div class="input-group mb-3">
-                <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Save</button>
-            </div>
-        </form>
     </div>
-    <script type="module" src="${request.static_url('datameta:static/js/setpass.js')}"></script>
+    <div tal:condition="token_ok">
+        <div id="alert" class="alert alert-danger collapse" role="alert">
+        </div>
+        <div id="success" class="collapse">
+            <div class="alert alert-success" role="alert" >
+                The new password has been set successfully!
+            </div>
+                <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
+        </div>
+        <div id="passentry" class="collapse show">
+            <div class="mb-3" style="text-align:left">
+                <h4>Please choose a new password</h4>
+            </div>
+            <form action="#" id="newpassform" data-datameta-setpass="${token}">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="desc_input_password">
+                        <i class="bi bi-key"></i>
+                    </span>
+                    <input id="new_password" name="new_password" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Enter new password..." aria-label="New Password" aria-describedby="desc_input_password">
+                    <div class="invalid-feedback" id="pw_invalid">
+                    </div>
+                </div>
+                <div class="input-group mb-3" id="org_new">
+                    <span class="input-group-text" id="desc_input_password_repeat">
+                        <i class="bi bi-key"></i>
+                    </span>
+                    <input id="new_password_repeat" name="new_password_repeat" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Repeat new password..." aria-label="Repeat new password" aria-describedby="desc_input_password_repeat">
+                    <div class="invalid-feedback">
+                        The two passwords do not match.
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Save</button>
+                </div>
+            </form>
+        </div>
+        <script type="module" src="${request.static_url('datameta:static/js/setpass.js')}"></script>
+    </div>
 </main>
 </metal:block>
