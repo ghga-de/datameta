@@ -24,7 +24,7 @@ from email.mime.base import MIMEBase
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import parseaddr, formataddr
+from email.utils import parseaddr, formataddr, formatdate
 import smtplib
 import ssl
 
@@ -56,6 +56,7 @@ class SMTPClient:
         message = MIMEMultipart()
 
         # Header
+        message["Date"] = formatdate(localtime=True)
         message["From"] = formataddr(sender)
         message["To"] = ', '.join([formataddr(recipient) for recipient in recipients])
         message["Subject"] = subject
