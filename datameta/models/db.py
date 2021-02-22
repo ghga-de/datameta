@@ -28,7 +28,8 @@ from sqlalchemy import (
     ForeignKey,
     Date,
     Time,
-    DateTime
+    DateTime,
+    String
 )
 from sqlalchemy.orm import relationship
 
@@ -76,6 +77,16 @@ class User(Base):
     metadatasets     = relationship('MetaDataSet', back_populates='user')
     files            = relationship('File', back_populates='user')
     passwordtokens   = relationship('PasswordToken', back_populates='user')
+    apikeys          = relationship('ApiKey', back_populates='user')
+
+class ApiKey(Base):
+    __tablename__    = 'apikeys'
+    id               = Column(Integer, primary_key=True)
+    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
+    value            = Column(String(64), nullable=False)
+    comment          = Column(String(200))
+    # Relationships
+    user             = relationship('User', back_populates='apikeys')
 
 class PasswordToken(Base):
     __tablename__    = 'passwordtokens'

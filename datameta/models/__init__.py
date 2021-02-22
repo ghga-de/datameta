@@ -16,7 +16,8 @@ from .db import (
         MetaDatumRecord,
         MetaDataSet,
         ApplicationSettings,
-        DateTimeMode
+        DateTimeMode,
+        ApiKey
         ) # flake8: noqa
 
 # run configure_mappers after defining all of the models to ensure
