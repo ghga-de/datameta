@@ -38,23 +38,17 @@ def check_password(pw, hashed_pw):
     expected_hash = hashed_pw.encode('utf8')
     return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
 
-def getuser(email, request):
-    return request.dbsession.query(User).filter(User.email==email).one_or_none()
-
-def getgroup(userid, request):
-    if userid in USERS:
-        return GROUPS.get(userid, [])
-
 @view_config(route_name='login', renderer='../templates/login.pt')
 def my_view(request):
     request.session.invalidate()
+    db = request.dbsession
     if request.POST:
         try:
             # Obtain submitted data
             in_email = request.POST['input_email']
             in_pwd   = request.POST['input_password']
 
-            user = getuser(in_email, request)
+            user = db.query(User).filter(User.email==in_email).one_or_none()
             if user and check_password(in_pwd, user.pwhash):
                 request.session['user_uid'] = user.id
                 request.session['user_gid'] = user.group.id

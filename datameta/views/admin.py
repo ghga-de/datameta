@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound, HTTPUnauthorized, HTTPNoContent
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound, HTTPUnauthorized, HTTPNoContent, HTTPForbidden
 from pyramid.view import view_config
 
 import bcrypt
@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 @view_config(route_name='admin', renderer='../templates/admin.pt')
 def v_admin(request):
-    security.require_admin(request)
+    security.revalidate_admin(request)
     return {}
 
 @view_config(route_name='admin_put_request', renderer='json', request_method='PUT')
@@ -42,7 +42,7 @@ def v_admin_put_request(request):
     which the user is authorative."""
 
     # Make sure an admin is logged in
-    req_user = security.require_admin(request)
+    req_user = security.revalidate_admin(request)
 
     db = request.dbsession
 
@@ -142,9 +142,8 @@ def v_admin_put_request(request):
 @view_config(route_name='admin_get', renderer='json', request_method='GET')
 def v_admin_get(request):
     """Serves GET requests made against /admin to render the admin view"""
-
     # Make sure an admin is logged in
-    req_user = security.require_admin(request)
+    req_user = security.revalidate_admin(request)
 
     db = request.dbsession
 

@@ -23,41 +23,28 @@ from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from .models import User
 
 def revalidate_user(request):
+    """Revalidate the currently logged in user and return the corresponding user object. On failure,
+    raise a 403"""
+    if 'user_uid' not in request.session:
+        raise HTTPUnauthorized(detail="FooBar")
     user = request.dbsession.query(User).filter(User.id==request.session['user_uid']).one_or_none()
-    # Check if the user still exists
-    if user is None:
+    # Check if the user still exists and their group hasn't changed
+    if user is None or user.group_id != request.session['user_gid']:
         request.session.invalidate()
         raise HTTPUnauthorized()
-    # Check if the group membership is still valid
-    if user.group_id != request.session['user_gid']:
-        # Ask the user to log back in
-        raise HTTPFound("/login")
     return user
 
-def user_logged_in(request):
-    """Check if a user is logged in
-    """
-    return 'user_uid' in request.session
-
-def require_login(request):
-    """Check if a user is logged in and raise a redirect to the login page if not
-    """
-    if not user_logged_in(request):
-        request.session.invalidate()
+def revalidate_user_or_login(request):
+    """Revalidate and return the currently logged in user, on failure redirect to the login page"""
+    try:
+        return revalidate_user(request)
+    except HTTPUnauthorized:
         raise HTTPFound("/login")
 
-def admin_logged_in(request):
-    """Check if a user is logged in
-    """
+def revalidate_admin(request):
+    """Revalidate the currently logged in user and return the corresponding user object. On failure
+    or if the user is not a site or group admin, raise a 403"""
     user = revalidate_user(request)
     if user.site_admin or user.group_admin:
         return user
-    return None
-
-def require_admin(request):
-    """Check if an admin is logged in and raise a redirect to root if not
-    """
-    user = admin_logged_in(request)
-    if not user:
-        raise HTTPUnauthorized()
-    return user
+    raise HTTPUnauthorized()

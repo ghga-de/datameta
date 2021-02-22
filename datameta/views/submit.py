@@ -369,7 +369,7 @@ def req_commit(request, user):
 @view_config(route_name='submit', renderer='../templates/submit.pt')
 def v_submit(request):
     """Delivers the submission page"""
-    security.require_login(request)
+    security.revalidate_user_or_login(request)
     request.session['counter'] = request.session['counter'] + 1 if 'counter' in request.session else 0
     return {}
 
