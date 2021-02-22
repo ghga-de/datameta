@@ -20,11 +20,37 @@
 
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 
-from .models import User
+from .models import User, ApiKey
+
+import logging
+log = logging.getLogger(__name__)
+
+def get_bearer_token(request):
+    """Extracts a Bearer authentication token from the request and returns it if present, None
+    otherwise."""
+    auth = request.headers.get("Authentication")
+    if auth is not None:
+        try:
+            method, content = auth.split(" ")
+            if method=="Bearer":
+                return content
+        except:
+            pass
+    return None
 
 def revalidate_user(request):
     """Revalidate the currently logged in user and return the corresponding user object. On failure,
     raise a 403"""
+    db = request.dbsession
+    # Check for token based auth
+    token = get_bearer_token(request)
+    if token is not None:
+        user = db.query(User).select_from(User).join(ApiKey).filter(ApiKey.value==token).one_or_none()
+        if user is not None:
+            log.info("APIKEY AUTH FROM '{user.email}'")
+            return user
+
+    # Check for session based auth
     if 'user_uid' not in request.session:
         raise HTTPUnauthorized(detail="FooBar")
     user = request.dbsession.query(User).filter(User.id==request.session['user_uid']).one_or_none()
