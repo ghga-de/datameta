@@ -1,5 +1,7 @@
 import argparse
 import sys
+import random
+import uuid
 
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
@@ -17,6 +19,9 @@ def parse_args(argv):
 
 def create_initial_user(dbsession):
     # Perform initialization only if the group table is empty
+    rnd = list(str(uuid.uuid4()).replace("-", ""))
+    random.shuffle(rnd)
+    newpass = "admin_" + "".join(rnd[:5])
     if (dbsession.query(Group.id).count() == 0):
         init_group = Group(
                 id=0,
@@ -26,13 +31,21 @@ def create_initial_user(dbsession):
                 id=0,
                 enabled=True,
                 email="admin@admin.admin",
-                pwhash=hash_password("admin"),
+                pwhash=hash_password(newpass),
                 fullname="Administrator",
                 group=init_group,
                 group_admin=True,
                 site_admin=True
                 )
         dbsession.add(root)
+        print(f"""\
++
++
++
+INITIAL USER CREATED! EMAIL 'admin@admin.admin' PASS '{newpass}'
++
++
++""", file = sys.stderr)
 
 def create_example_metadata(dbsession):
     metadata = [
