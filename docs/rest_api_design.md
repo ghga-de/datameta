@@ -1,6 +1,6 @@
 # REST API Design
 
-If not stated otherwise, all resources managed by the API named according to the corresponding database model.
+If not stated otherwise, all resources managed by the API are named according to the corresponding database model.
 
 The first draft of the API focusses on managing resources which users typically iteract with during the data submission process. This primarily includes the following resources:  
 - metadatasets
