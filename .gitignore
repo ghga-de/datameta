@@ -4,6 +4,7 @@
 *.pyc
 *$py.class
 *~
+
 .coverage
 coverage.xml
 build/
@@ -25,3 +26,7 @@ datameta/alembic/versions/*.py
 datameta/static/node_modules/
 datameta/static/package-lock.json
 development_notb.ini
+
+node_modules
+.idea
+package-lock.json

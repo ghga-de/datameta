@@ -2,6 +2,7 @@
 <metal:block use-macro="load: layout.pt">
 
 <metal:block fill-slot="content">
+
 <div class="row">
     <div class="uplcontainer col-6 p-0">
         <div class="box" id="form_samplesheets">

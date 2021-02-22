@@ -41,6 +41,21 @@
         <metal:macro metal:define-slot="head"/>
         <script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
         <script>
+        function toggle_widescreen() {
+            container = document.getElementById("container_main");
+            button = document.getElementById("toggle_widescreen");
+            if (container.classList.contains("container")) {
+                container.classList.add("container-fluid");
+                container.classList.remove("container");
+                button.innerHTML = "Normal View"
+            } else {
+                container.classList.add("container");
+                container.classList.remove("container-fluid");
+                button.innerHTML = "Wide Screen View"
+            }
+        }
+        </script>
+        <script>
             window.DataMeta = {};
             DataMeta.toolTips = [];
             DataMeta.popoverList = [];
@@ -54,6 +69,7 @@
                     <span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta
                 </a>
             </p>
+
             <p class="my-0 me-4 fst-italic">
             ${request.session['user_fullname']} (${request.session['user_groupname']})
             </p>
@@ -67,15 +83,19 @@
         </header>
 
         <main class="flex-shrink-0">
-            <div class="container">
+            <div id="container_main" class="container p-4">
                 <div metal:define-slot="content">No content</div>
             </div>
         </main>
 
         <footer class="footer mt-auto py-3 bg-light">
-            <div class="container">
+            <div class="container position-relative">
                 <span class="text-muted">&copy; 2021 DataMeta</span><span tal:condition="request.registry.settings.get('datameta.demo_mode')"> (DEMO MODE)</span>
+                <button id="toggle_widescreen" type="button" onclick="toggle_widescreen()" class="btn btn-outline-dark position-absolute top-50 end-0 translate-middle">
+                    Wide Screen View
+                </button>
             </div>
+
         </footer>
 
         <script src="${request.static_url('datameta:static/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js')}"></script>
