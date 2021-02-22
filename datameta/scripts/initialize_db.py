@@ -79,6 +79,42 @@ a new password was requested for your account. If you did not issue this request
 Best regards,
 The Support Team"""))
 
+    # EMAIL TEMPLATE: WELCOME -> TOKEN
+    if "subject_welcome_token" not in keys:
+        db.add(ApplicationSettings(
+            key = "subject_welcome_token",
+            str_value= "Your registration was confirmed!"))
+    if "template_welcome_token" not in keys:
+        db.add(ApplicationSettings(
+            key = "template_welcome_token",
+            str_value=
+"""Dear {fullname},
+
+your registration has been confirmed! Please use the following link to set a password for your account:
+
+{token_url}
+
+If you experience any difficulties logging in, please do not hesitate to contact the support team.
+
+Best regards,
+The Support Team"""))
+
+    # EMAIL TEMPLATE: REJECT REGISTRATION
+    if "subject_reject" not in keys:
+        db.add(ApplicationSettings(
+            key = "subject_reject",
+            str_value= "Your registration request was rejected"))
+    if "template_reject" not in keys:
+        db.add(ApplicationSettings(
+            key = "template_reject",
+            str_value=
+"""Dear {fullname},
+
+we regret to inform you that your registration request has been rejected.
+
+Best regards,
+The Support Team"""))
+
 
 def main(argv=sys.argv):
     args = parse_args(argv)

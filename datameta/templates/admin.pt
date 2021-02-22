@@ -1,65 +1,106 @@
 <div metal:use-macro="load: layout.pt">
     <div metal:fill-slot="content" class="row">
         <div class="col-12 ">
-            <div class="accordion" id="accordionExample">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                            Application Settings
-                        </button>
-                    </h2>
-                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne">
-                        <div class="accordion-body">
-                            Change the application settings here
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="true" href="#" data-bs-toggle="tab" data-bs-target="#nav-site">Site</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-users">Users</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-groups">Groups</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#nav-requests">Account Requests</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tab-content">
+                    <div class="card-body tab-pane fade " id="nav-site" role="tabpanel" aria-labelledby="nav-home-tab">
+                        <h5 class="card-title">Site Settings</h5>
+                        <div class="alert alert-warning" role="alert">
+                            This feature is not yet implemented.
                         </div>
                     </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            Labs
-                        </button>
-                    </h2>
-                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
-                        <div class="accordion-body">
-                            <table id="table_unannotated" class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th scope="col"></th>
-                                        <th scope="col">Lab Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="groups_tbody">
-                                </tbody>
-                                <tbody id="tbody_unannotated">
-                                </tbody>
-                            </table>
+                    <div class="card-body tab-pane fade" id="nav-users" role="tabpanel" aria-labelledby="nav-home-tab">
+                        <h5 class="card-title">User Management</h5>
+                        <div class="alert alert-warning" role="alert">
+                            This feature is not yet implemented.
                         </div>
                     </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingThree">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                            Users
-                        </button>
-                    </h2>
-                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree">
-                        <div class="accordion-body">
-                            <table id="table_unannotated" class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th scope="col"></th>
-                                        <th scope="col">Full name</th>
-                                        <th scope="col">Lab</th>
-                                        <th scope="col">Email</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="users_tbody">
-                                </tbody>
-                                <tbody id="tbody_unannotated">
-                                </tbody>
-                            </table>
-
+                    <div class="card-body tab-pane fade" id="nav-groups" role="tabpanel" aria-labelledby="nav-home-tab">
+                        <h5 class="card-title">Group Management</h5>
+                        <div class="alert alert-warning" role="alert">
+                            This feature is not yet implemented.
+                        </div>
+                    </div>
+                    <div class="card-body tab-pane fade show active" id="nav-requests" role="tabpanel" aria-labelledby="nav-home-tab">
+                        <h5 id="req_title" class="card-title"></h5>
+                        <div class="accordion" id="requests">
+                            <template id="template_request">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingOne">
+                                        <button id="acc_toggle" class="req_head accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#changeme" aria-expanded="false" aria-controls="changeme">
+                                        </button>
+                                    </h2>
+                                    <div id="acc_collapse" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#requests">
+                                        <div class="accordion-body">
+                                            <form>
+                                                <input type="hidden" name="id" class="input_id"/>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        @
+                                                    </span>
+                                                    <input type="text" aria-label="First name" class="input_email form-control" disabled>
+                                                </div>
+                                                <div class="mt-3 input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="bi bi-person-circle"></i>
+                                                    </span>
+                                                    <input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control">
+                                                </div>
+                                                <div class="mt-3 input-group">
+                                                    <div class="input-group-text">
+                                                        <input class="radio_new_org form-check-input mt-0" type="radio" name="new_org" value="0" aria-label="Radio button for new organization">
+                                                    </div>
+                                                    <div class="input-group-text">
+                                                        <i class="bi bi-building"></i>
+                                                    </div>
+                                                    <input name="group_newname" type="text" placeholder="New Organization..." name="new_org" class="input_new_org form-control" aria-label="New Organization">
+                                                </div>
+                                                <div class="mt-3 input-group">
+                                                    <div class="input-group-text">
+                                                        <input class="radio_existing_org form-check-input mt-0" type="radio" name="new_org" value="1" aria-label="Radio button for existing organization">
+                                                    </div>
+                                                    <div class="input-group-text">
+                                                        <i class="bi bi-building"></i>
+                                                    </div>
+                                                    <select name="group_id" class="select_org form-control form-select" aria-label="Organization">
+                                                        <option value="-1" selected>Please select an organization...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-check form-switch mt-3">
+                                                    <input name="group_admin" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+                                                    <label class="form-check-label" for="flexSwitchCheckDefault">Organization Administrator</label>
+                                                </div>
+                                            </form>
+                                            <div class="container p-0 mt-3">
+                                                <div class="row align-items-start">
+                                                    <div class="col">
+                                                        <button type="button" class="req_accept w-100 btn btn-success">Save and Accept</button>
+                                                    </div>
+                                                    <div class="col">
+                                                        <button type="button" class="req_reject w-100 btn btn-danger">Reject</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
