@@ -35,5 +35,7 @@ def includeme(config):
     config.add_route('account', '/account')
     config.add_route('view', '/view')
     config.add_route('v_submit_view_json', '/submit/view.json')
+    # ADMIN
     config.add_route('admin', '/admin')
-    config.add_route('admin_json', '/admin.json')
+    config.add_route('admin_get', '/api/admin')
+    config.add_route('admin_put_request', '/api/admin/request')

@@ -49,10 +49,15 @@ def require_login(request):
 def admin_logged_in(request):
     """Check if a user is logged in
     """
-    return 'user_gid' in request.session and request.session['user_gid']==0
+    user = revalidate_user(request)
+    if user.site_admin or user.group_admin:
+        return user
+    return None
 
 def require_admin(request):
     """Check if an admin is logged in and raise a redirect to root if not
     """
-    if not admin_logged_in(request):
-        raise HTTPFound("/")
+    user = admin_logged_in(request)
+    if not user:
+        raise HTTPUnauthorized()
+    return user
