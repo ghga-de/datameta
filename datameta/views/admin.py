@@ -21,8 +21,6 @@
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound, HTTPUnauthorized, HTTPNoContent
 from pyramid.view import view_config
 
-
-
 import bcrypt
 
 from ..models import User, Group, RegRequest
@@ -55,7 +53,7 @@ def v_admin_put_request(request):
         response               = request.json_body['response']
         newuser_make_admin     = bool(request.json_body.get("group_admin"))
         newuser_fullname       = request.json_body['fullname'] # Admin can edit upon confirm
-        newuser_group_id       = int(request.json_body['group_id']) # Admin can edit upon confirm
+        newuser_group_id       = int(request.json_body['group_id']) if request.json_body['group_id'] is not None else None # Admin can edit upon confirm
         newuser_group_newname  = request.json_body['group_newname'] # Admin can edit upon confirm
         if response.lower() == 'accept':
             accept = True
@@ -63,7 +61,8 @@ def v_admin_put_request(request):
             accept = False
         else:
             raise SyntaxError()
-    except:
+    except Exception as e:
+        log.error(f"MALFORMED API REQUEST AT /api/admin/request: {e}")
         raise HTTPBadRequest()
 
     # Check if the request exists
