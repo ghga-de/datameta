@@ -26,7 +26,8 @@ set -e
 # Replace environment variables with their respective values
 TMP_DIR=$(mktemp -d)
 echo "Executing in temp dir: ${TMP_DIR}"
-cp /workspace/conf/development.ini > "${TMP_DIR}/config.ini"
+cd "${TMP_DIR}"
+cp /workspace/conf/development.ini "${TMP_DIR}/config.ini"
 
 # Try to connect to the database, fail startup otherwise
 psql -c '\dt' "$SQLALCHEMY_URL"
