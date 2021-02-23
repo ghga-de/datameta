@@ -70,6 +70,8 @@ def revalidate_user(request):
     if user is None or user.group_id != request.session['user_gid']:
         request.session.invalidate()
         raise HTTPUnauthorized()
+    request.session['site_admin'] = user.site_admin
+    request.session['group_admin'] = user.group_admin
     return user
 
 def revalidate_user_or_login(request):
