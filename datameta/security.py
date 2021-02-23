@@ -52,7 +52,8 @@ def revalidate_user(request):
 
     # Check for session based auth
     if 'user_uid' not in request.session:
-        raise HTTPUnauthorized(detail="FooBar")
+        request.session.invalidate()
+        raise HTTPUnauthorized()
     user = request.dbsession.query(User).filter(User.id==request.session['user_uid']).one_or_none()
     # Check if the user still exists and their group hasn't changed
     if user is None or user.group_id != request.session['user_gid']:
