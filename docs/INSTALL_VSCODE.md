@@ -33,4 +33,8 @@ The frontend should be available at http://localhost:8080/ in your browser.
 ## Configuration and further information:
 Any configuration regarding the dev container environment can be found at `/.devcontainer`.
 
-For general information on the vscode feature please look [here](https://code.visualstudio.com/docs/remote/create-dev-container).
+The environment includes a few useful vscode extensions out of the box. 
+If you find a extension that might be of use to everybody, feel free to add it to the `/.devcontainer/devcontainer.json`.
+
+For general information on this vscode feature please look [here](https://code.visualstudio.com/docs/remote/create-dev-container).
+ 
