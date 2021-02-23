@@ -26,12 +26,6 @@ from sqlalchemy import and_
 from datameta.models import MetaDatum, MetaDatumRecord, MetaDataSet
 import datetime
 
-class SampleSheetColumnsIncompleteError(RuntimeError):
-
-    @property
-    def columns(self):
-        return self.args[0]
-
 class SampleSheetReadError(RuntimeError):
     pass
 
@@ -108,7 +102,8 @@ def import_samplesheet(dbsession, file_like_obj, user):
     try:
         data = pd.read_excel(file_like_obj, dtype="object")
     except Exception as e:
-        raise SampleSheetReadError(f"{e}")
+        log.info(f"submitted sample sheet '{file_like_obj.filename}' triggered exception {e}")
+        raise SampleSheetReadError("Unable to parse the sample sheet.")
 
     # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
     metadata         = get_metadata_keys(dbsession)
@@ -116,7 +111,7 @@ def import_samplesheet(dbsession, file_like_obj, user):
 
     missing_columns  = [ metadata_name for metadata_name in metadata_names if metadata_name not in data.columns ]
     if missing_columns:
-        raise SampleSheetColumnsIncompleteError(missing_columns)
+        raise SampleSheetReadError(f"Missing columns: {', '.join(missing_columns)}.")
 
     # Limit the sample sheet to the columns of interest and drop duplicates
     data = data[metadata_names].drop_duplicates()
