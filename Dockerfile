@@ -22,8 +22,8 @@ FROM continuumio/miniconda3:4.9.2-alpine
 
 ENV PATH /opt/conda/bin/conda:$PATH
 
-# Install psql client for pre-launch check
-RUN apk add postgresql-client
+# Install psql client for pre-launch check and npm for frontend deps
+RUN apk add postgresql-client npm
 
 # Install requirements that would otherwise build from source or take long to install via conda
 RUN conda install -c conda-forge gettext pylibmc psycopg2 pandas'=1.2.2' && conda clean --all
@@ -36,6 +36,9 @@ COPY CHANGES.md /tmp/datameta.src/CHANGES.md
 COPY LICENSE.txt /tmp/datameta.src/LICENSE.txt
 COPY MANIFEST.in /tmp/datameta.src/MANIFEST.in
 COPY docker/launcher /usr/local/bin
+
+# Install frontend deps
+RUN npm install --prefix /tmp/datameta.src/datameta/static/
 
 # Create a user to run datameta
 RUN adduser --disabled-password --home /var/datameta datameta
