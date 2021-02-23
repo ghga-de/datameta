@@ -52,7 +52,6 @@ services:
     deploy:
       endpoint_mode : dnsrr
 
-      
     environment:
       SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
       SESSION_URL: datameta-memcached:11211
@@ -65,3 +64,9 @@ services:
       WAITRESS_URL_SCHEME:
       WAITRESS_TRUSTED_PROXY_HEADERS:
       WAITRESS_TRUSTED_PROXY:
+        
+volumes:
+  datameta-db:
+    external: false
+  datameta-filestorage:
+    external: false
