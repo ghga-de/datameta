@@ -34,14 +34,7 @@ services:
     #   - seccomp:unconfined
 
     # Overrides default command so things don't shut down after the process ends.
-    command: /bin/sh -c "while sleep 1000; do :; done"
-    # command: /bin/sh -c "pip install -e /workspace && sh /workspace/.devcontainer/launcher"
-
-
-
-
-    # command: /bin/sh -c "pip install -e /workspace && chmod +x /workspace/.devcontainer/launcher && mv /workspace/.devcontainer/launcher /bin/ && while true; do sleep 1000; done"
-    # command: /bin/sh -c "pip install -e /workspace && chmod +x /workspace/.devcontainer/launcher"
+    command: /bin/sh -c "chmod -R +x /workspace/docker/; while sleep 1000; do :; done"
 
     ports:
       - target: 8080
