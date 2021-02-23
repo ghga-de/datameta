@@ -48,14 +48,15 @@ INITIAL USER CREATED! EMAIL 'admin@admin.admin' PASS '{newpass}'
 +""", file = sys.stderr)
 
 def create_example_metadata(dbsession):
-    metadata = [
-            MetaDatum(name = "#ID", mandatory=True, order=100, isfile=False),
-            MetaDatum(name = "Date", mandatory=True, order=200, datetimefmt="%Y-%m-%d", datetimemode=DateTimeMode.DATE, isfile=False),
-            MetaDatum(name = "ZIP Code", mandatory=True, order=300, isfile=False),
-            MetaDatum(name = "FileR1", mandatory=True, order=400, isfile=True),
-            MetaDatum(name = "FileR2", mandatory=True, order=500, isfile=True)
-            ]
-    dbsession.add_all(metadata)
+    if dbsession.query(MetaDatum).first() is None:
+        metadata = [
+                MetaDatum(name = "#ID", mandatory=True, order=100, isfile=False),
+                MetaDatum(name = "Date", mandatory=True, order=200, datetimefmt="%Y-%m-%d", datetimemode=DateTimeMode.DATE, isfile=False),
+                MetaDatum(name = "ZIP Code", mandatory=True, order=300, isfile=False),
+                MetaDatum(name = "FileR1", mandatory=True, order=400, isfile=True),
+                MetaDatum(name = "FileR2", mandatory=True, order=500, isfile=True)
+                ]
+        dbsession.add_all(metadata)
 
 def create_email_templates(db):
     keys = [ row[0] for row in db.query(ApplicationSettings.key) ]
