@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 # for use in the vscode devcontainer environment
 
 echo -e ">>> Installing npm dependencies:\n\n"
 npm install --prefix /workspace/datameta/static/
 
-echo -e "\n\n>>> Installing python dependencies:\n>>>this might take some time...\n\n"
+echo -e "\n\n>>> Installing python dependencies\n\n>>> this might take some time:\n\n"
 pip install -v -e "/workspace/.[testing]"
