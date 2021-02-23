@@ -43,16 +43,19 @@ def send_forgot_token(request, user):
     # Generate the token url
     token_url = request.route_url('setpass', token = token)
 
+    log.debug(f"USER REQUESTED RECOVERY TOKEN: {token_url}")
+
+
     # Send the token to the user
-    email.send(
-            recipients = (user.fullname, user.email),
-            subject = get_setting(db, "subject_forgot_token").str_value,
-            template = get_setting(db, "template_forgot_token").str_value,
-            values={
-                'fullname' : user.fullname,
-                'token_url' : token_url
-                }
-            )
+    #email.send(
+    #    recipients = (user.fullname, user.email),
+    #    subject = get_setting(db, "subject_forgot_token").str_value,
+    #    template = get_setting(db, "template_forgot_token").str_value,
+    #    values={
+    #        'fullname' : user.fullname,
+    #        'token_url' : token_url
+    #        }
+    #    )
     return token
 
 @view_config(route_name='forgot_api', renderer='json')
