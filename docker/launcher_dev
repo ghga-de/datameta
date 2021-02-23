@@ -27,7 +27,11 @@ set -e
 TMP_DIR=$(mktemp -d)
 echo "Executing in temp dir: ${TMP_DIR}"
 cd "${TMP_DIR}"
-cp /workspace/conf/development.ini "${TMP_DIR}/config.ini"
+cp -rT /workspace "${TMP_DIR}"
+
+# Replace environment variables with their respective values
+envsubst < "/workspace/conf/docker_development.ini" > "${TMP_DIR}/config.ini"
+
 
 # Try to connect to the database, fail startup otherwise
 psql -c '\dt' "$SQLALCHEMY_URL"
@@ -36,6 +40,7 @@ psql -c '\dt' "$SQLALCHEMY_URL"
 if ! psql -c '\dt' "$SQLALCHEMY_URL" | fgrep alembic &>/dev/null; then
 	alembic -c "${TMP_DIR}/config.ini" upgrade head
 	alembic -c "${TMP_DIR}/config.ini" revision --autogenerate -m "init"
+	alembic -c "${TMP_DIR}/config.ini" upgrade head
 	initialize_datameta_db "${TMP_DIR}/config.ini"
 fi
 
