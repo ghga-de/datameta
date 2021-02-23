@@ -25,7 +25,17 @@
 	},
 
 	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": []
+	"extensions": [
+		"ms-python.python",
+		"ms-python.vscode-pylance",
+		"42crunch.vscode-openapi",
+		"eamodio.gitlens",
+		"formulahendry.terminal",
+		"tyriar.terminal-tabs",
+		"alexcvzz.vscode-sqlite",
+		"njpwerner.autodocstring",
+		"arjun.swagger-viewer"
+	]
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
