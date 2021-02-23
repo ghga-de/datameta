@@ -58,12 +58,12 @@
             ${request.session['user_fullname']} (${request.session['user_groupname']})
             </p>
             <nav class="my-2 my-md-0 me-md-3">
-                <a tal:condition="request.session['user_gid']==0" class="p-2 text-danger" href="/admin">Admin</a>
                 <a class="p-2 text-dark" href="/submit">Submit New</a>
                 <a class="p-2 text-dark" href="/view">View Data</a>
                 <a class="p-2 text-dark" href="/account">Account</a>
             </nav>
-            <a class="btn btn-outline-danger" href="/login">Logout</a>
+            <a tal:condition="request.session['site_admin'] or request.session['group_admin']" class="ms-2 btn btn-outline-danger" href="/admin">Admin</a>
+            <a class="ms-2 btn btn-outline-danger" href="/login">Logout</a>
         </header>
 
         <main class="flex-shrink-0">
