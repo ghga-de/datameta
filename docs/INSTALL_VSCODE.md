@@ -9,6 +9,10 @@ Clone this repository:
 And open the created directory in vscode, for instance like that:  
 `code ./datameta`
 
+Install the remote develoment extension:
+- click on the extensions symbol in the side bar
+- search for `Remote Development` and install it
+
 To reopen vscode inside the dev container:
 - select `View > Command Palette` in the dropdown menu 
 - then select (or type): `Remote-Containers: Reopen in Container`
