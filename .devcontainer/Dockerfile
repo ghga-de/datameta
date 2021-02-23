@@ -10,4 +10,7 @@ RUN apt-get update -qq -y
 RUN apt-get install -y \
     build-essential \
     postgresql-client \
-    libmemcached-dev
+    libmemcached-dev \
+    gettext \
+    nodejs \
+    npm
