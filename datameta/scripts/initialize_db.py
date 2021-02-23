@@ -6,7 +6,7 @@ import uuid
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
-from ..views.login import hash_password
+from ..security import hash_password
 from ..models import User, Group, MetaDatum, DateTimeMode, ApplicationSettings
 
 def parse_args(argv):

@@ -23,20 +23,11 @@ from pyramid.view import view_config
 
 import datameta
 
-import bcrypt
-
 from datameta.models import User
+from .. import security
 
 import logging
 log = logging.getLogger(__name__)
-
-def hash_password(pw):
-    pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
-    return pwhash.decode('utf8')
-
-def check_password(pw, hashed_pw):
-    expected_hash = hashed_pw.encode('utf8')
-    return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
 
 @view_config(route_name='login', renderer='../templates/login.pt')
 def my_view(request):
@@ -49,7 +40,7 @@ def my_view(request):
             in_pwd   = request.POST['input_password']
 
             user = db.query(User).filter(User.email==in_email).one_or_none()
-            if user and check_password(in_pwd, user.pwhash):
+            if user and security.check_password(in_pwd, user.pwhash):
                 request.session['user_uid'] = user.id
                 request.session['user_gid'] = user.group.id
                 request.session['user_email'] = user.email
