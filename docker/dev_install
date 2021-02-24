@@ -1,8 +1,27 @@
 #!/bin/bash
 # for use in the vscode devcontainer environment
+cd /workspace
 
 echo -e ">>> Installing npm dependencies:\n\n"
 npm install --prefix /workspace/datameta/static/
 
 echo -e "\n\n>>> Installing python dependencies\n\n>>> this might take some time:\n\n"
 pip install -v -e "/workspace/.[testing]"
+
+echo -e "\n\n>>> Replace environment variables with their respective values:\n\n"
+mkdir -p /tmp/datameta
+envsubst < "/workspace/conf/docker_development.ini" > /tmp/datameta/config.ini
+
+echo -e "\n\n>>> Initialize database if required:\n\n"
+set -x
+set -e
+# Try to connect to the database, fail startup otherwise
+psql -c '\dt' "$SQLALCHEMY_URL"
+
+# Check if the database has been initialized and if not initialize it
+if ! psql -c '\dt' "$SQLALCHEMY_URL" | fgrep alembic &>/dev/null; then
+	alembic -c /tmp/datameta/config.ini upgrade head
+	alembic -c /tmp/datameta/config.ini revision --autogenerate -m "init"
+	alembic -c /tmp/datameta/config.ini upgrade head
+	initialize_datameta_db /tmp/datameta/config.ini
+fi
