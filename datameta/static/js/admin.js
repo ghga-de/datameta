@@ -39,7 +39,6 @@ DataMeta.admin.answer_request = function(accept, form) {
         group_id: fdata.get("group_id") == -1 ? null :fdata.get("group_id"),
         fullname: fdata.get("fullname")
     });
-    console.log(json_body);
     fetch('/api/admin/request',
         {
             method: 'put',
@@ -73,14 +72,12 @@ DataMeta.admin.reload_requests = function(requests, groups) {
     accordion.querySelectorAll(".accordion-item").forEach(e => e.remove());
 
     // Re-generate them
-    console.log("requests = ", requests)
     if (requests.length==0) {
         document.getElementById("req_title").innerHTML = "No pending Account Requests";
     } else {
         document.getElementById("req_title").innerHTML = "Pending Account Requests";
     }
     requests.forEach(function(request) {
-        console.log(request);
         var template = document.getElementById("template_request");
         var clone = template.content.firstElementChild.cloneNode(true);
         var button = clone.querySelector("#acc_toggle");
@@ -154,6 +151,26 @@ DataMeta.admin.reload_requests = function(requests, groups) {
     });
 }
 
+
+DataMeta.admin.subnav = function() {
+    // Handle registration request preselection
+    var showreq = DataMeta.uilocal.showreq;
+    DataMeta.uilocal.showreq = null;
+    if (showreq != null) {
+        var admintabs = document.getElementById('admintabs');
+        // de-select all tabs
+        admintabs.querySelectorAll(".nav-link").forEach(elem => elem.classList.remove("active"))
+        admintabs.querySelectorAll(".tab-pane").forEach(elem => elem.classList.remove("show", "active"))
+        // account request tab
+        admintabs.querySelector("a[data-bs-target='#nav-requests']").classList.add("active");
+        admintabs.querySelector("#nav-requests").classList.add("active", "show");
+        // open the accordeon
+        document.getElementById("acc_toggle_"+showreq).classList.remove("collapsed");
+        document.getElementById("acc_collapse_"+showreq).classList.add("show");
+        document.getElementById("acc_collapse_"+showreq).scrollIntoView({behavior: "smooth", block: "end"});
+    }
+}
+
 /**
  * Reloads the admin view by making an API request and calling the individual
  * update functions for the individual tabs
@@ -166,6 +183,7 @@ DataMeta.admin.reload = function() {
             .then(response => response.json())
             .then(function (json) {
                 DataMeta.admin.reload_requests(json.reg_requests, json.groups);
+                DataMeta.admin.subnav();
             })
             .catch((error) => {
                 console.log(error);
