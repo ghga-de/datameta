@@ -82,6 +82,7 @@
         </script>
         <script>
             window.DataMeta = {};
+            DataMeta.uilocal = {};
             DataMeta.toolTips = [];
             DataMeta.popoverList = [];
         </script>
