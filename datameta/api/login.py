@@ -19,9 +19,19 @@
 # SOFTWARE.
 
 from pyramid.view import view_config
-from sqlalchemy import and_, or_
 
-@view_config(route_name="metadatasets", renderer='json', request_method="GET", openapi=True)
-def get(request):
-    """Get metadatasets"""
-    return {}
+@view_config(
+    route_name="api_login", 
+    renderer='json', 
+    request_method="POST", 
+    openapi=True
+)
+def post(request):
+    """Request new ApiKey"""
+
+    return {
+        "userId": "test",
+        "email": "test@test.de",
+        "token": "test",
+        "expiresAt": "test"
+    }
