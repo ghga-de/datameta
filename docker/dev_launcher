@@ -22,29 +22,7 @@
 # SOFTWARE.
 
 # for use in the vscode devcontainer environment
-
 set -x
-set -e
 
-# Replace environment variables with their respective values
-TMP_DIR=$(mktemp -d)
-echo "Executing in temp dir: ${TMP_DIR}"
-cd "${TMP_DIR}"
-cp -rT /workspace "${TMP_DIR}"
+pserve --reload /tmp/datameta/config.ini
 
-# Replace environment variables with their respective values
-envsubst < "/workspace/conf/docker_development.ini" > "${TMP_DIR}/config.ini"
-
-# Try to connect to the database, fail startup otherwise
-psql -c '\dt' "$SQLALCHEMY_URL"
-
-# Check if the database has been initialized and if not initialize it
-if ! psql -c '\dt' "$SQLALCHEMY_URL" | fgrep alembic &>/dev/null; then
-	alembic -c "${TMP_DIR}/config.ini" upgrade head
-	alembic -c "${TMP_DIR}/config.ini" revision --autogenerate -m "init"
-	alembic -c "${TMP_DIR}/config.ini" upgrade head
-	initialize_datameta_db "${TMP_DIR}/config.ini"
-fi
-
-# Launch the application
-pserve --reload "${TMP_DIR}/config.ini"
