@@ -22,7 +22,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from ..models import User, PasswordToken
-from .login import hash_password
+from .. import security
 from .forgot import send_forgot_token
 
 import datetime
@@ -55,7 +55,7 @@ def v_setpass_api(request):
         return { "success" : False, "error" : "CUSTOM" , "error_msg" : "Please specify a password of at least 10 characters" }
 
     # Set password
-    dbtoken.user.pwhash = hash_password(newpass)
+    dbtoken.user.pwhash = security.hash_password(newpass)
 
     # Delete the token
     request.dbsession.delete(dbtoken)

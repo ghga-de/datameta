@@ -2,14 +2,11 @@
 
 function process_result_samplesheet(data) {
     DataMeta.submitRefresh();
-    data.errors.missing_keys.forEach(function(missing){
-        DataMeta.new_alert("<strong>Sample sheet '" + missing.filename + "':</strong> Ignored, missing columns: " + missing.keys.join(", "), "danger")
-    });
-    data.errors.other.forEach(function(text){
-        DataMeta.new_alert(text, "danger")
-    });
     data.success.forEach(function(success){
-        DataMeta.new_alert("<strong>Sample sheet '" + success.filename + "':</strong> " + success.n_added + " new records added.", "success")
+        DataMeta.new_alert("<strong>Sample sheet '" + success.filename + "':</strong> " + success.n_added + " new records added.", "success");
+    });
+    data.errors.forEach(function(error){
+        DataMeta.new_alert("<strong>Sample sheet '" + error.filename + "':</strong> " + error.reason, "danger");
     });
 }
 

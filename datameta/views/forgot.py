@@ -22,7 +22,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from ..models import User, PasswordToken
-from .login import hash_password
+from ..security import hash_password
 from .. import passtokens, email
 from ..settings import get_setting
 

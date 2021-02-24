@@ -20,39 +20,71 @@
 
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 
-from .models import User
+from .models import User, ApiKey
+
+import bcrypt
+import logging
+log = logging.getLogger(__name__)
+
+def hash_password(pw):
+    """Hash a password and return the salted hash"""
+    pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
+    return pwhash.decode('utf8')
+
+def check_password(pw, hashed_pw):
+    """Check a password against a salted hash"""
+    expected_hash = hashed_pw.encode('utf8')
+    return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
+
+def get_bearer_token(request):
+    """Extracts a Bearer authentication token from the request and returns it if present, None
+    otherwise."""
+    auth = request.headers.get("Authentication")
+    if auth is not None:
+        try:
+            method, content = auth.split(" ")
+            if method=="Bearer":
+                return content
+        except:
+            pass
+    return None
 
 def revalidate_user(request):
-    user = request.dbsession.query(User).filter(User.id==request.session['user_uid']).one_or_none()
-    # Check if the user still exists
-    if user is None:
+    """Revalidate the currently logged in user and return the corresponding user object. On failure,
+    raise a 403"""
+    db = request.dbsession
+    # Check for token based auth
+    token = get_bearer_token(request)
+    if token is not None:
+        user = db.query(User).select_from(User).join(ApiKey).filter(ApiKey.value==token).one_or_none()
+        if user is not None:
+            log.info("APIKEY AUTH FROM '{user.email}'")
+            return user
+
+    # Check for session based auth
+    if 'user_uid' not in request.session:
         request.session.invalidate()
         raise HTTPUnauthorized()
-    # Check if the group membership is still valid
-    if user.group_id != request.session['user_gid']:
-        # Ask the user to log back in
-        raise HTTPFound("/login")
+    user = request.dbsession.query(User).filter(User.id==request.session['user_uid']).one_or_none()
+    # Check if the user still exists and their group hasn't changed
+    if user is None or user.group_id != request.session['user_gid']:
+        request.session.invalidate()
+        raise HTTPUnauthorized()
+    request.session['site_admin'] = user.site_admin
+    request.session['group_admin'] = user.group_admin
     return user
 
-def user_logged_in(request):
-    """Check if a user is logged in
-    """
-    return 'user_uid' in request.session
-
-def require_login(request):
-    """Check if a user is logged in and raise a redirect to the login page if not
-    """
-    if not user_logged_in(request):
-        request.session.invalidate()
+def revalidate_user_or_login(request):
+    """Revalidate and return the currently logged in user, on failure redirect to the login page"""
+    try:
+        return revalidate_user(request)
+    except HTTPUnauthorized:
         raise HTTPFound("/login")
 
-def admin_logged_in(request):
-    """Check if a user is logged in
-    """
-    return 'user_gid' in request.session and request.session['user_gid']==0
-
-def require_admin(request):
-    """Check if an admin is logged in and raise a redirect to root if not
-    """
-    if not admin_logged_in(request):
-        raise HTTPFound("/")
+def revalidate_admin(request):
+    """Revalidate the currently logged in user and return the corresponding user object. On failure
+    or if the user is not a site or group admin, raise a 403"""
+    user = revalidate_user(request)
+    if user.site_admin or user.group_admin:
+        return user
+    raise HTTPUnauthorized()

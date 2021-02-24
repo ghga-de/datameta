@@ -1,10 +1,12 @@
 import argparse
 import sys
+import random
+import uuid
 
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
-from ..views.login import hash_password
+from ..security import hash_password
 from ..models import User, Group, MetaDatum, DateTimeMode, ApplicationSettings
 
 def parse_args(argv):
@@ -17,6 +19,9 @@ def parse_args(argv):
 
 def create_initial_user(dbsession):
     # Perform initialization only if the group table is empty
+    rnd = list(str(uuid.uuid4()).replace("-", ""))
+    random.shuffle(rnd)
+    newpass = "admin_" + "".join(rnd[:5])
     if (dbsession.query(Group.id).count() == 0):
         init_group = Group(
                 id=0,
@@ -26,23 +31,32 @@ def create_initial_user(dbsession):
                 id=0,
                 enabled=True,
                 email="admin@admin.admin",
-                pwhash=hash_password("admin"),
+                pwhash=hash_password(newpass),
                 fullname="Administrator",
                 group=init_group,
                 group_admin=True,
                 site_admin=True
                 )
         dbsession.add(root)
+        print(f"""\
++
++
++
+INITIAL USER CREATED! EMAIL 'admin@admin.admin' PASS '{newpass}'
++
++
++""", file = sys.stderr)
 
 def create_example_metadata(dbsession):
-    metadata = [
-            MetaDatum(name = "#ID", mandatory=True, order=100, isfile=False),
-            MetaDatum(name = "Date", mandatory=True, order=200, datetimefmt="%Y-%m-%d", datetimemode=DateTimeMode.DATE, isfile=False),
-            MetaDatum(name = "ZIP Code", mandatory=True, order=300, isfile=False),
-            MetaDatum(name = "FileR1", mandatory=True, order=400, isfile=True),
-            MetaDatum(name = "FileR2", mandatory=True, order=500, isfile=True)
-            ]
-    dbsession.add_all(metadata)
+    if dbsession.query(MetaDatum).first() is None:
+        metadata = [
+                MetaDatum(name = "#ID", mandatory=True, order=100, isfile=False),
+                MetaDatum(name = "Date", mandatory=True, order=200, datetimefmt="%Y-%m-%d", datetimemode=DateTimeMode.DATE, isfile=False),
+                MetaDatum(name = "ZIP Code", mandatory=True, order=300, isfile=False),
+                MetaDatum(name = "FileR1", mandatory=True, order=400, isfile=True),
+                MetaDatum(name = "FileR2", mandatory=True, order=500, isfile=True)
+                ]
+        dbsession.add_all(metadata)
 
 def create_email_templates(db):
     keys = [ row[0] for row in db.query(ApplicationSettings.key) ]
@@ -62,6 +76,42 @@ def create_email_templates(db):
 a new password was requested for your account. If you did not issue this request, you can safely ignore this email. Otherwise, you can use the following link below to create a new password:
 
 {token_url}
+
+Best regards,
+The Support Team"""))
+
+    # EMAIL TEMPLATE: WELCOME -> TOKEN
+    if "subject_welcome_token" not in keys:
+        db.add(ApplicationSettings(
+            key = "subject_welcome_token",
+            str_value= "Your registration was confirmed!"))
+    if "template_welcome_token" not in keys:
+        db.add(ApplicationSettings(
+            key = "template_welcome_token",
+            str_value=
+"""Dear {fullname},
+
+your registration has been confirmed! Please use the following link to set a password for your account:
+
+{token_url}
+
+If you experience any difficulties logging in, please do not hesitate to contact the support team.
+
+Best regards,
+The Support Team"""))
+
+    # EMAIL TEMPLATE: REJECT REGISTRATION
+    if "subject_reject" not in keys:
+        db.add(ApplicationSettings(
+            key = "subject_reject",
+            str_value= "Your registration request was rejected"))
+    if "template_reject" not in keys:
+        db.add(ApplicationSettings(
+            key = "template_reject",
+            str_value=
+"""Dear {fullname},
+
+we regret to inform you that your registration request has been rejected.
 
 Best regards,
 The Support Team"""))
