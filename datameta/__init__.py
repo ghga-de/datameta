@@ -18,5 +18,6 @@ def main(global_config, **settings):
         config.include('.models')
         config.include('pyramid_chameleon')
         config.include('.routes')
+        config.include('.api')
         config.scan()
     return config.make_wsgi_app()
