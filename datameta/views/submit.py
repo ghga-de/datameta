@@ -39,7 +39,7 @@ import datetime
 import logging
 log = logging.getLogger(__name__)
 
-from ..samplesheet import import_samplesheet, SampleSheetColumnsIncompleteError, SampleSheetReadError
+from ..samplesheet import import_samplesheet, SampleSheetReadError
 from .. import storage, linting
 
 class FileDeleteError(RuntimeError):
@@ -48,10 +48,7 @@ class FileDeleteError(RuntimeError):
 def submit_samplesheet(request, user):
     """Handle a samplesheet submission request"""
     success = []
-    errors = {
-            'missing_keys' : [],
-            'other' : [],
-            }
+    errors = []
 
     for file_obj in request.POST.getall('files[]'):
         if  isinstance(file_obj, webob.compat.cgi_FieldStorage):
@@ -64,15 +61,12 @@ def submit_samplesheet(request, user):
                     'filename' : file_obj.filename,
                     'n_added' : n_added
                     })
-            except SampleSheetColumnsIncompleteError as e:
-                log.debug(f"Sample sheet '{file_obj.filename}' failed because of missing columns {e.columns}")
-                errors['missing_keys'].append({
-                    'filename' : file_obj.filename,
-                    'keys' : e.columns
-                    })
             except SampleSheetReadError as e:
                 log.warning(f"Sample sheet '{file_obj.filename}' could not be read: {e}")
-                errors['other'].append(f"Could not read the provided sample sheet '{file_obj.filename}'.")
+                errors.append({
+                    'filename' : file_obj.filename,
+                    'reason' : str(e)
+                    })
     return {
             'success' : success,
             'errors' : errors
@@ -369,7 +363,7 @@ def req_commit(request, user):
 @view_config(route_name='submit', renderer='../templates/submit.pt')
 def v_submit(request):
     """Delivers the submission page"""
-    security.require_login(request)
+    security.revalidate_user_or_login(request)
     request.session['counter'] = request.session['counter'] + 1 if 'counter' in request.session else 0
     return {}
 
