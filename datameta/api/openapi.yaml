@@ -3,15 +3,9 @@
 
 openapi: 3.0.0
 info:
-  description: Conduit API
+  description: DataMeta
   version: 1.0.0
-  title: Conduit API
-  contact:
-    name: RealWorld
-    url: https://realworld.io
-  license:
-    name: MIT License
-    url: https://opensource.org/licenses/MIT
+  title: DataMeta
 
 
 servers:
