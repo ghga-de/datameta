@@ -12,7 +12,7 @@ users!
 
 1. Download the Docker compose file
    ```
-   https://raw.githubusercontent.com/ghga-de/datameta/main/datameta.compose.yml
+   curl -LO https://raw.githubusercontent.com/ghga-de/datameta/main/datameta.compose.yml
    ```
 
 1. Create the Docker volumes for persistent file and database storage
