@@ -12,7 +12,7 @@ def main(global_config, **settings):
 
         config.include("pyramid_openapi3")
         config.pyramid_openapi3_spec(
-            os.path.join(os.path.dirname(__file__), "openapi.yaml")
+            os.path.join(os.path.dirname(__file__), "api", "openapi.yaml")
         )
         config.pyramid_openapi3_add_explorer()
         config.include('.models')
