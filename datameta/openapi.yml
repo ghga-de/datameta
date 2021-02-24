@@ -31,18 +31,18 @@ paths:
       responses:
         "200":
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/metadatasets" #!
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: "#/components/schemas/metadatasets" #!
         "401":
           description: Unauthorized, admin rights required
         "422":
           description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GenericErrorModel" #!
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: "#/components/schemas/GenericErrorModel" #!
 
 
 components: {}
