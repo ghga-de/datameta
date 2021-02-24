@@ -14,18 +14,18 @@ servers:
 
 paths:
 
-  /login:
+  /keys:
     post:
-      summary: Existing user login
-      description: Login for existing user
+      summary: Create new API Key/Token
+      description: Create new API Key/Token
       tags:
         - Authentication
-      operationId: Login
+      operationId: CreateApiKey
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginUser"
+              $ref: "#/components/schemas/UserCredentials"
         description: Credentials to use
         required: true
       responses:
@@ -43,38 +43,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GenericErrorModel"
-  
-  /metadatasets:
-    get:
-      summary: Get all metadatasets of all groups
-      description: |
-        A metadataset corresponds to one row in a metadata spreadsheet.
-        It contains all metadatarecords for this entry.
-      tags:
-        - Metadata
-        - Admin
-      operationId: GetAllMetadatasets
-      responses:
-        "200":
-          description: OK
-          # content:
-          #   application/json:
-          #     schema:
-          #       $ref: "#/components/schemas/metadatasets" #!
-        "401":
-          description: Unauthorized, admin rights required
-        "422":
-          description: Unexpected error
-          # content:
-          #   application/json:
-          #     schema:
-          #       $ref: "#/components/schemas/GenericErrorModel" #!
-
 
 components:
 
   schemas:
-    LoginUser:
+    UserCredentials:
       type: object
       properties:
         email:
@@ -90,15 +63,13 @@ components:
       properties:
         userId:
           type: string
-        email:
-          type: string
         token:
           type: string
         expiresAt:
           type: string
+          nullable: true
       required:
         - userId
-        - email
         - token
         - expiresAt
 
