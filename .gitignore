@@ -26,5 +26,3 @@ datameta/static/node_modules/
 datameta/static/package-lock.json
 development_notb.ini
 
-*.idea
-*venv*
