@@ -28,5 +28,5 @@ from .. import security
 
 @view_config(route_name='view', renderer='../templates/view.pt')
 def my_view(request):
-    security.revalidate_user(request)
+    security.revalidate_user_or_login(request)
     return {}
