@@ -14,7 +14,7 @@ def main(global_config, **settings):
         config.pyramid_openapi3_spec(
             os.path.join(os.path.dirname(__file__), "api", "openapi.yaml")
         )
-        config.pyramid_openapi3_add_explorer()
+        config.pyramid_openapi3_add_explorer("/api")
         config.include('.models')
         config.include('pyramid_chameleon')
         config.include('.routes')
