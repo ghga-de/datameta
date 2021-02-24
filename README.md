@@ -31,4 +31,4 @@ users!
 
 ## Full Installation Instructions
 
-Detailed installation instructions can be found [here](./INSTALL.md).
+Detailed installation instructions can be found [here](./docs).
