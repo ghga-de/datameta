@@ -4,7 +4,6 @@
 *.pyc
 *$py.class
 *~
-
 .coverage
 coverage.xml
 build/
@@ -27,6 +26,3 @@ datameta/static/node_modules/
 datameta/static/package-lock.json
 development_notb.ini
 
-node_modules
-.idea
-package-lock.json
