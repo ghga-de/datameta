@@ -27,7 +27,8 @@ users!
    ```
 
 1. Connect to your DataMeta instance at http://localhost:9950 and log in with the default
-   credentials `admin@admin.admin` - `admin`!
+   account `admin@admin.admin`. The initial password can be obtained using
+   `docker logs {your_app_container_id}`.
 
 ## Full Installation Instructions
 
