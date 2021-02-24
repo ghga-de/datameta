@@ -34,7 +34,6 @@ cp -rT /workspace "${TMP_DIR}"
 # Replace environment variables with their respective values
 envsubst < "/workspace/conf/docker_development.ini" > "${TMP_DIR}/config.ini"
 
-
 # Try to connect to the database, fail startup otherwise
 psql -c '\dt' "$SQLALCHEMY_URL"
 
@@ -47,4 +46,4 @@ if ! psql -c '\dt' "$SQLALCHEMY_URL" | fgrep alembic &>/dev/null; then
 fi
 
 # Launch the application
-pserve "${TMP_DIR}/config.ini"
+pserve --reload "${TMP_DIR}/config.ini"
