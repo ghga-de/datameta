@@ -2,6 +2,7 @@
 <metal:block use-macro="load: layout.pt">
 
 <metal:block fill-slot="content">
+
 <div class="row">
     <div class="uplcontainer col-6 p-0">
         <div class="box" id="form_samplesheets">
@@ -82,6 +83,7 @@
 <div id="row_delete_pending" class="row mt-2" style="display:none">
     <a id="del_pending_btn" class="btn btn-outline-danger w-100" href="#">Delete all pending data</a>
 </div>
+
 </metal:block>
 
 
