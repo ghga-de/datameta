@@ -1,0 +1,32 @@
+version: '3.2'
+services:
+  # Update this to the name of the service you want to work with in your docker-compose.yml file
+  datameta-app:
+
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    
+    volumes:
+      # Update this to wherever you want VS Code to mount the folder of your project
+      - .:/workspace:cached
+      - type: volume
+        source: datameta-filestorage
+        target: /var/datameta/storage
+        volume:
+          nocopy: true
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: /bin/sh -c "while sleep 1000; do :; done"
+      
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+
+volumes:
+  datameta-db:
+    external: false
+  datameta-filestorage:
+    external: false
