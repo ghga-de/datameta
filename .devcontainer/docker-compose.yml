@@ -2,14 +2,6 @@ version: '3.2'
 services:
   # Update this to the name of the service you want to work with in your docker-compose.yml file
   datameta-app:
-    # If you want add a non-root user to your Dockerfile, you can use the "remoteUser"
-    # property in devcontainer.json to cause VS Code its sub-processes (terminals, tasks, 
-    # debugging) to execute as the user. Uncomment the next line if you want the entire 
-    # container to run as this user instead. Note that, on Linux, you may need to 
-    # ensure the UID and GID of the container user you create matches your local user. 
-    # See https://aka.ms/vscode-remote/containers/non-root for details.
-    #
-    # user: vscode
 
     build:
       context: .
@@ -24,15 +16,6 @@ services:
         volume:
           nocopy: true
 
-      # Uncomment the next line to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker-compose for details.
-      # - /var/run/docker.sock:/var/run/docker.sock 
-
-    # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
-    # cap_add:
-    #   - SYS_PTRACE
-    # security_opt:
-    #   - seccomp:unconfined
-
     # Overrides default command so things don't shut down after the process ends.
     command: /bin/sh -c "chmod -R +x /workspace/docker/; while sleep 1000; do :; done"
 
@@ -42,22 +25,6 @@ services:
         protocol: tcp
         mode: host
 
-    deploy:
-      endpoint_mode : dnsrr
-
-    environment:
-      SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
-      SESSION_URL: datameta-memcached:11211
-      SESSION_KEY: datameta
-      SESSION_SECRET: changeme
-      DATAMETA_STORAGE_PATH: /var/datameta/storage
-      DATAMETA_DEMO_MODE: "true"
-      WAITRESS_MAX_REQUEST_BODY_SIZE: 10737418240 # 10 GB
-      WAITRESS_LISTEN: "*:8080"
-      WAITRESS_URL_SCHEME:
-      WAITRESS_TRUSTED_PROXY_HEADERS:
-      WAITRESS_TRUSTED_PROXY:
-        
 volumes:
   datameta-db:
     external: false
