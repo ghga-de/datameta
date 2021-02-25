@@ -1,4 +1,5 @@
-# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright (c) 2021 Universität Tübingen, Germany
+# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,72 +19,103 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.httpexceptions import HTTPFound
+from sqlalchemy import or_, and_
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from pyramid.view import view_config
 
 from ..models import User, Group, RegRequest
+from .. import email
+from ..settings import get_setting
 
 import logging
 log = logging.getLogger(__name__)
 
 import re
 
+def get_authorative_admins(db, reg_request):
+    """Identifies administrative users that are authorative for a given
+    registration request and returns the corresponding database user objects"""
+    if reg_request.group_id is None:
+        return db.query(User).filter(User.site_admin==True).all()
+    else:
+        return db.query(User).filter(or_(
+            User.site_admin==True,
+            and_(User.group_admin==True, User.group_id==reg_request.group_id)
+            )).all()
+
 @view_config(route_name='register_submit', renderer='json')
 def v_register_submit(request):
+    db = request.dbsession
+    errors = {}
     try:
-        errors = {}
         name = request.POST['name']
-        email = request.POST['email']
+        req_email = request.POST['email']
         org_select = int(request.POST['org_select'])
         org_create = request.POST.get('org_create') is not None
         org_new_name = request.POST.get('org_new_name')
+    except (KeyError, ValueError) as e:
+        log.info(f"Malformed request at /register/submit: {e}")
+        raise HTTPBadRequest()
 
-        # Basic validity check for email
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            errors['email'] = True
-        else:
-            # Check if the user already exists
-            if request.dbsession.query(User).filter(User.email==email).one_or_none() is not None:
-                errors['user_exists'] = True
-            elif request.dbsession.query(RegRequest).filter(RegRequest.email==email).one_or_none() is not None:
-                errors['req_exists'] = True
+    # Basic validity check for email
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
+        errors['email'] = True
+    else:
+        # Check if the user already exists
+        if db.query(User).filter(User.email==req_email).one_or_none() is not None:
+            errors['user_exists'] = True
+        elif db.query(RegRequest).filter(RegRequest.email==req_email).one_or_none() is not None:
+            errors['req_exists'] = True
 
-        # Check whether the selected organization is valid
-        if org_create:
-            if not org_new_name:
-                errors["org_new_name"] = True
-        else:
-            group = request.dbsession.query(Group).filter(Group.id==org_select).one_or_none()
-            if group is None:
-                errors['org_select'] = True
+    # Check whether the selected organization is valid
+    group = None
+    if org_create:
+        if not org_new_name:
+            errors["org_new_name"] = True
+    else:
+        group = db.query(Group).filter(Group.id==org_select).one_or_none()
+        if group is None:
+            errors['org_select'] = True
 
-        # Check whether a name was specified
-        if not name:
-            errors['name'] = True
+    # Check whether a name was specified
+    if not name:
+        errors['name'] = True
 
-        # If errors occurred, return them
-        if errors:
-            return { 'success' : False, 'errors' : errors }
+    # If errors occurred, return them
+    if errors:
+        return { 'success' : False, 'errors' : errors }
 
-        # Store a new registration request in the database
-        reg_req = RegRequest(
-                fullname = name,
-                email = email,
-                group_id = None if org_create else group.id,
-                new_group_name = None if not org_create else org_new_name
-                )
-        request.dbsession.add(reg_req)
+    # Store a new registration request in the database
+    reg_req = RegRequest(
+            fullname = name,
+            email = req_email,
+            group_id = None if org_create else group.id,
+            new_group_name = None if not org_create else org_new_name
+            )
+    db.add(reg_req)
+    db.flush()
 
-        if org_create:
-            log.info(f"REGISTRATION REQUEST [email='{email}', name='{name}', new_org='{org_new_name}']")
-        else:
-            log.info(f"REGISTRATION REQUEST [email='{email}', name='{name}', group='{group.name}']")
+    # Send out a notification to authorative admins
+    admins = get_authorative_admins(db, reg_req)
+    email.send(
+            recipients = email.__smtp_from,
+            subject = get_setting(db, "subject_reg_notify").str_value,
+            template = get_setting(db, "template_reg_notify").str_value,
+            values = {
+                'req_fullname' : reg_req.fullname,
+                'req_email' : reg_req.email,
+                'req_group' : reg_req.new_group_name if org_create else group.name,
+                'req_url' : request.route_url('admin') + f"?showreq={reg_req.id}"
+                },
+            bcc = [ admin.email for admin in admins ]
+            )
 
-        return { 'success' : True }
-    except (ValueError, KeyError):
-        pass
+    if org_create:
+        log.info(f"REGISTRATION REQUEST [email='{req_email}', name='{name}', new_org='{org_new_name}']")
+    else:
+        log.info(f"REGISTRATION REQUEST [email='{req_email}', name='{name}', group='{group.name}']")
 
-    return { 'success' : False }
+    return { 'success' : True }
 
 @view_config(route_name='register', renderer='../templates/register.pt')
 def v_register(request):

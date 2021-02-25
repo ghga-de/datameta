@@ -24,12 +24,14 @@
 window.addEventListener("load", function() {
 
     document.getElementById("regform").addEventListener("submit", function(event) {
+        var data = new FormData(event.target);
+        var fieldset = document.getElementById("regfieldset");
+        fieldset.disabled = true;
+
         // Prevent form submission
         event.preventDefault();
 
         var xhr = new XMLHttpRequest();
-
-        var data = new FormData(event.target);
 
         xhr.onreadystatechange = function(){
             elem_alert = document.getElementById("alert")
@@ -64,6 +66,7 @@ window.addEventListener("load", function() {
                     elem_alert.innerHTML = 'An unknown error occurred. Please try again later.';
                     elem_alert.style.display="block";
                 }
+            fieldset.disabled = false;
             }
         };
 

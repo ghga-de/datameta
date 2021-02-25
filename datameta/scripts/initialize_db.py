@@ -117,6 +117,31 @@ Best regards,
 The Support Team"""))
 
 
+    # EMAIL TEMPLATE: NEW REGISTRATION REQUEST ADMIN NOTIFY
+    if "subject_reg_notify" not in keys:
+        db.add(ApplicationSettings(
+            key = "subject_reg_notify",
+            str_value= "New registration request"))
+    if "template_reg_notify" not in keys:
+        db.add(ApplicationSettings(
+            key = "template_reg_notify",
+            str_value=
+"""Dear administrator,
+
+a new registration request has been issued:
+
+Name: {req_fullname}
+Email: {req_email}
+Organization: {req_group}
+
+Follow the following link to respond to the registration request:
+
+{req_url}
+
+Best regards,
+The Support Team"""))
+
+
 def main(argv=sys.argv):
     args = parse_args(argv)
     setup_logging(args.config_uri)
