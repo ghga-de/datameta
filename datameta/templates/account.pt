@@ -1,7 +1,53 @@
 <div metal:use-macro="load: layout.pt">
+
+    <script metal:fill-slot="head">
+        function showPassChange() {
+            document.getElementById("apiKeyTab").style.display="none";
+            document.getElementById("passwdTab").style.display="block";
+        }
+
+        function showApiKeys() {
+            document.getElementById("apiKeyTab").style.display="block";
+            document.getElementById("passwdTab").style.display="none";
+        }
+    </script>
     <div metal:fill-slot="content">
-        <div>
-            Account
+        <div class="position-relative">
+            <div class="mb-5 ms-3 position-relative"> 
+                <h2 class="mb-4">Account</h2>
+                <button type="button" class="btn btn-outline-danger btn-lg me-3 mb-3" id="changePasswordButton" onClick="showPassChange()">Change Password</button>
+                <button type="button" class="btn btn-outline-danger btn-lg mb-3" id="apiKeyButton" onClick="showApiKeys()">Manage API keys</button>
+            </div>
+            
+            
+            <div class="ms-4 position-absolute start-0" id="passwdTab">
+                <h4>Change Password</h4>
+                <div class="mb-4">
+                   <label for="oldPassInput" class="form-label">Enter your old password for confirmation:</label>
+                   <input type="password" class="form-control" id="oldPassInput" placeholder="">
+                </div>
+
+                <div class="mb-4">
+                    <label for="newPassInput" class="form-label">Type in your new password:</label>
+                    <input type="password" class="form-control" id="newPassInput" placeholder="">
+                </div>
+
+                <div class="mb-4">
+                    <label for="newPassRepeatInput" class="form-label">Repeat your new password</label>
+                    <input type="password" class="form-control" id="newPassRepeatInput" placeholder="">
+                </div>
+
+                <div class="mb-4">
+                    <input class="btn btn-lg btn-outline-danger" type="submit" value="Submit" id="submitPassChange">
+                </div>
+                
+            </div>
+
+
+            <div class="ms-4 position-absolute start-0" id="apiKeyTab" style="display:none;">
+                <h4>API keys</h4>
+                
+            </div>
         </div>
     </div>
 </div>
