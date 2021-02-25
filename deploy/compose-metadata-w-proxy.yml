@@ -82,7 +82,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
       NGINX_PROXY_CONTAINER: "reverse-proxy"
-      DEFAULT_EMAIL: "ryanmark.hutchins@gmail.com"
+      DEFAULT_EMAIL: 
     restart: "always"
     depends_on:
       - "reverse-proxy"
