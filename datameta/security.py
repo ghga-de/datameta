@@ -31,10 +31,18 @@ def hash_password(pw):
     pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
     return pwhash.decode('utf8')
 
-def check_password(pw, hashed_pw):
+def check_password_by_hash(pw, hashed_pw):
     """Check a password against a salted hash"""
     expected_hash = hashed_pw.encode('utf8')
     return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
+
+def get_user_by_credentials(request, email:str, password:str):
+    """Check a compination of email and password, returns a user object if valid"""
+    db = request.dbsession
+    user = db.query(User).filter(User.email==email).one_or_none()
+    if user and check_password_by_hash(password, user.pwhash):
+        return user
+    return None
 
 def get_bearer_token(request):
     """Extracts a Bearer authentication token from the request and returns it if present, None

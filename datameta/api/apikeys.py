@@ -77,12 +77,9 @@ def post(request):
     email = request.openapi_validated.body["email"]
     password = request.openapi_validated.body["password"]
 
-    db = request.dbsession
-    
-    user = db.query(User).filter(User.email==email).one_or_none()
-
-    if not (user and security.check_password(password, user.pwhash)):
+    auth_user = security.get_user_by_credentials(request, email, password)
+    if not auth_user:
         raise HTTPUnauthorized()
 
-    return generate_api_key(request, user)
+    return generate_api_key(request, auth_user)
     
