@@ -1,0 +1,106 @@
+version: '3.2'
+services:
+  datameta-app:
+    image: "lkuchenb/datameta:dev"
+    environment:
+      SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
+      SESSION_URL: datameta-memcached:11211
+      SESSION_KEY: datameta
+      SESSION_SECRET: changeme
+      DATAMETA_STORAGE_PATH: /var/datameta/storage
+      DATAMETA_DEMO_MODE: "true"
+      LETSENCRYPT_HOST:
+      VIRTUAL_HOST:
+      WAITRESS_MAX_REQUEST_BODY_SIZE: 10737418240 # 10 GB
+      WAITRESS_LISTEN: "*:8080"
+      WAITRESS_URL_SCHEME:
+      WAITRESS_TRUSTED_PROXY_HEADERS: "x-forwarded-for x-forwarded-host x-forwarded-proto x-forwarded-port"
+      WAITRESS_TRUSTED_PROXY: "reverse-proxy"
+    volumes:
+      - type: volume
+        source: datameta-filestorage
+        target: /var/datameta/storage
+        volume:
+          nocopy: true
+    networks:
+      - "net"
+      - "cogdat"
+    ports:
+      - target: 8080
+        published: 9950
+        protocol: tcp
+        mode: host
+    deploy:
+      endpoint_mode : dnsrr
+
+  datameta-memcached:
+    image: "memcached:1.6.3"
+    command: ['memcached', '-v', '-m', '3072', '-I', '50m']
+    deploy:
+      endpoint_mode : dnsrr
+    networks:
+      - "cogdat"
+  datameta-postgresql:
+    image: "postgres:13-alpine"
+    volumes:
+      - type: volume
+        source: datameta-db
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true
+    environment:
+      POSTGRES_USER: datameta
+      POSTGRES_PASSWORD: datameta
+    command: ['postgres', '-c', 'work_mem=512MB']
+    deploy:
+      endpoint_mode : dnsrr
+    networks:
+      - "cogdat"
+
+  reverse-proxy:
+    image: "jwilder/nginx-proxy:latest"
+    volumes:
+      - "html:/usr/share/nginx/html"
+      - "dhparam:/etc/nginx/dhparam"
+      - "vhost:/etc/nginx/vhost.d"
+      - "certs:/etc/nginx/certs"
+      - "/var/run/docker.sock:/tmp/docker.sock:ro"
+    restart: "always"
+    networks:
+      - "net"
+    ports:
+      - "80:80"
+      - "443:443"
+
+  letsencrypt:
+    image: "jrcs/letsencrypt-nginx-proxy-companion:latest"
+    volumes:
+      - "html:/usr/share/nginx/html"
+      - "dhparam:/etc/nginx/dhparam"
+      - "vhost:/etc/nginx/vhost.d"
+      - "certs:/etc/nginx/certs"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    environment:
+      NGINX_PROXY_CONTAINER: "reverse-proxy"
+      DEFAULT_EMAIL: 
+    restart: "always"
+    depends_on:
+      - "reverse-proxy"
+    networks:
+      - "net"
+
+volumes:
+  datameta-db:
+    external: true
+  datameta-filestorage:
+    external: true
+  certs:
+  html:
+  vhost:
+  dhparam:
+
+networks:
+  net:
+    external: false
+  cogdat:
+    external: false
