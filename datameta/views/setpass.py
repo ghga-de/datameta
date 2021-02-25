@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNoContent, HTTPBadRequest, HTTPUnauthorized
 from pyramid.view import view_config
 
 from ..models import User, PasswordToken
@@ -30,6 +30,31 @@ import logging
 log = logging.getLogger(__name__)
 
 import re
+
+@view_config(route_name='updatepass_api', renderer='json')
+def v_updatepass_api(request):
+    user = security.revalidate_user(request)
+
+    # Try to extract old and new password from request
+    try:
+        old_password = request.json_body["password"]
+        new_password = request.json_body["new_password"]
+    except Error:
+        raise HTTPBadRequest(json_body={'reason' : 'missing field'})
+
+    # Validate old password
+    if not security.check_password(old_password, user.pwhash):
+        raise HTTPUnauthorized()
+
+    # Validate password
+    if len(new_password) < 10:
+        raise HTTPBadRequest(json_body={'reason' : 'password too short'})
+
+    # Set the new password
+    user.pwhash = security.hash_password(new_password)
+
+    return HTTPNoContent()
+
 
 @view_config(route_name='setpass_api', renderer='json')
 def v_setpass_api(request):

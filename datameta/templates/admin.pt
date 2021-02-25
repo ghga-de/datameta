@@ -110,7 +110,7 @@
     </div>
 
     <metal:block fill-slot="body">
-    <script src="static/js/admin.js"></script>
+    <script src="${request.static_url('datameta:static/js/admin.js')}"></script>
     </metal:block>
 
 </div>
