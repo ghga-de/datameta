@@ -49,8 +49,6 @@ paths:
             schema:
               $ref: "#/components/schemas/UserCredentials"
         description: Credentials to use
-        required: false # not required when using cookie-based
-                        # based sessions as the front end does
       responses:
         "200":
           description: OK
@@ -77,9 +75,9 @@ components:
           type: string
         password:
           type: string
-      required:
-        - email
-        - password
+        # email and password are 
+        # not required when using cookie-based
+        # sessions from the front end
 
     UserSession:
       type: object
