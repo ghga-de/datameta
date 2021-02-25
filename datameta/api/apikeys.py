@@ -1,4 +1,6 @@
-# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright (c) 2021 Universität Tübingen, Germany
+# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>,
+#          Kersten Breuer <k.breuer@dkfz.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +83,7 @@ def post(request):
             set(request.openapi_validated.body.keys())
         ):
             raise HTTPUnauthorized()
-        
+
         email = request.openapi_validated.body["email"]
         password = request.openapi_validated.body["password"]
 
