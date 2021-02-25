@@ -13,22 +13,12 @@
     </script>
     <div metal:fill-slot="content">
         <div class="position-relative">
-<<<<<<< HEAD
-<<<<<<< HEAD
             <div class="mb-4 ms-3 position-relative"> 
-=======
-            <div class="mb-5 ms-3 position-relative"> 
->>>>>>> First visual account view
-=======
-            <div class="mb-4 ms-3 position-relative"> 
->>>>>>> Change Password change view
                 <h2 class="mb-4">Account</h2>
                 <button type="button" class="btn btn-outline-danger btn-lg me-3 mb-3" id="changePasswordButton" onClick="showPassChange()">Change Password</button>
                 <button type="button" class="btn btn-outline-danger btn-lg mb-3" id="apiKeyButton" onClick="showApiKeys()">Manage API keys</button>
             </div>
             
-<<<<<<< HEAD
-<<<<<<< HEAD
             <div class="ms-4 position-absolute start-0" id="passwdTab">
                 <h4 class="mb-4">Change Password</h4>
                 <div class="mb-4 input-group">
@@ -58,43 +48,6 @@
                     </div>
                 </div>
                 
-=======
-            
-=======
->>>>>>> Change Password change view
-            <div class="ms-4 position-absolute start-0" id="passwdTab">
-                <h4 class="mb-4">Change Password</h4>
-                <div class="mb-4 input-group">
-                    <span class="input-group-text" id="desc_input_old_password">
-                        <i class="bi bi-key"></i>
-                    </span>                   
-                    <input type="password" class="form-control" id="oldPassInput" placeholder="Old Password">
-                </div>
-
-                <div class="mb-4 input-group">
-                    <span class="input-group-text" id="desc_input_password">
-                        <i class="bi bi-key"></i>
-                    </span>
-                    <input type="password" class="form-control" id="newPassInput" placeholder="New Password">
-                    <div class="invalid-feedback">
-                    </div>
-                </div>
-                
-
-                <div class="mb-4 input-group">
-                    <span class="input-group-text" id="desc_input_password_repeat">
-                        <i class="bi bi-key"></i>
-                    </span>
-                    <input type="password" class="form-control" id="newPassRepeatInput" placeholder="Repeat new Password">
-                    <div class="invalid-feedback">
-                        The two passwords do not match.
-                    </div>
-                </div>
-<<<<<<< HEAD
->>>>>>> First visual account view
-=======
-                
->>>>>>> Change Password change view
 
                 <div class="mb-4">
                     <input class="btn btn-lg btn-outline-danger" type="submit" value="Submit" id="submitPassChange">
