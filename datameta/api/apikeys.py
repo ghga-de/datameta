@@ -74,12 +74,20 @@ def generate_api_key(request:Request, user:User):
 )
 def post(request):
     """Request new ApiKey"""
-    email = request.openapi_validated.body["email"]
-    password = request.openapi_validated.body["password"]
+    try:
+        auth_user = security.revalidate_user(request)
+    except HTTPUnauthorized:
+        if not {"email", "password"}.issubset(
+            set(request.openapi_validated.body.keys())
+        ):
+            raise HTTPUnauthorized()
+        
+        email = request.openapi_validated.body["email"]
+        password = request.openapi_validated.body["password"]
 
-    auth_user = security.get_user_by_credentials(request, email, password)
-    if not auth_user:
-        raise HTTPUnauthorized()
+        auth_user = security.get_user_by_credentials(request, email, password)
+        if not auth_user:
+            raise HTTPUnauthorized()
 
     return generate_api_key(request, auth_user)
     
