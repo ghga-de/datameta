@@ -13,12 +13,17 @@
     </script>
     <div metal:fill-slot="content">
         <div class="position-relative">
+<<<<<<< HEAD
             <div class="mb-4 ms-3 position-relative"> 
+=======
+            <div class="mb-5 ms-3 position-relative"> 
+>>>>>>> e52510d0b6da0ce9df2e6491b011c924249473ed
                 <h2 class="mb-4">Account</h2>
                 <button type="button" class="btn btn-outline-danger btn-lg me-3 mb-3" id="changePasswordButton" onClick="showPassChange()">Change Password</button>
                 <button type="button" class="btn btn-outline-danger btn-lg mb-3" id="apiKeyButton" onClick="showApiKeys()">Manage API keys</button>
             </div>
             
+<<<<<<< HEAD
             <div class="ms-4 position-absolute start-0" id="passwdTab">
                 <h4 class="mb-4">Change Password</h4>
                 <div class="mb-4 input-group">
@@ -48,6 +53,25 @@
                     </div>
                 </div>
                 
+=======
+            
+            <div class="ms-4 position-absolute start-0" id="passwdTab">
+                <h4>Change Password</h4>
+                <div class="mb-4">
+                   <label for="oldPassInput" class="form-label">Enter your old password for confirmation:</label>
+                   <input type="password" class="form-control" id="oldPassInput" placeholder="">
+                </div>
+
+                <div class="mb-4">
+                    <label for="newPassInput" class="form-label">Type in your new password:</label>
+                    <input type="password" class="form-control" id="newPassInput" placeholder="">
+                </div>
+
+                <div class="mb-4">
+                    <label for="newPassRepeatInput" class="form-label">Repeat your new password</label>
+                    <input type="password" class="form-control" id="newPassRepeatInput" placeholder="">
+                </div>
+>>>>>>> e52510d0b6da0ce9df2e6491b011c924249473ed
 
                 <div class="mb-4">
                     <input class="btn btn-lg btn-outline-danger" type="submit" value="Submit" id="submitPassChange">
