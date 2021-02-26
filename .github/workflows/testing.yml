@@ -36,7 +36,6 @@ jobs:
         pip install ".[testing]"
     - name: Initialize Database
       run: |
-        alembic -c ./conf/ci.ini revision --autogenerate -m "init"
         alembic -c ./conf/ci.ini upgrade head
     - name: Load default data
       run: |

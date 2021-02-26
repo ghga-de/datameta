@@ -33,7 +33,6 @@ psql -c '\dt' "$SQLALCHEMY_URL"
 if ! psql -c '\dt' "$SQLALCHEMY_URL" | fgrep alembic &>/dev/null; then
 	cd /tmp/datameta.src/
 	alembic -c /tmp/config.ini upgrade head
-	alembic -c /tmp/config.ini revision --autogenerate -m "init"
 	initialize_datameta_db /tmp/config.ini
 fi
 
