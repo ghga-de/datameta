@@ -17,18 +17,23 @@ def parse_args(argv):
     )
     return parser.parse_args(argv[1:])
 
-def create_initial_user(dbsession):
+def create_initial_user(request):
+    from .. import siteid
+
+    db = request.dbsession
     # Perform initialization only if the group table is empty
     rnd = list(str(uuid.uuid4()).replace("-", ""))
     random.shuffle(rnd)
     newpass = "admin_" + "".join(rnd[:5])
-    if (dbsession.query(Group.id).count() == 0):
+    if (db.query(Group.id).count() == 0):
         init_group = Group(
                 id=0,
-                name="My Organization"
+                name="My Organization",
+                site_id=siteid.generate(request, Group)
                 )
         root = User(
                 id=0,
+                site_id=siteid.generate(request, User),
                 enabled=True,
                 email="admin@admin.admin",
                 pwhash=hash_password(newpass),
@@ -37,7 +42,7 @@ def create_initial_user(dbsession):
                 group_admin=True,
                 site_admin=True
                 )
-        dbsession.add(root)
+        db.add(root)
         print(f"""\
 +
 +
@@ -152,7 +157,7 @@ def main(argv=sys.argv):
             dbsession = env['request'].dbsession
 
             # Create the initial admin user
-            create_initial_user(dbsession)
+            create_initial_user(env['request'])
 
             # Create example sample sheet columns
             create_example_metadata(dbsession)

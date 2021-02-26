@@ -1,4 +1,5 @@
-# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright (c) 2021 Universität Tübingen, Germany
+# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +41,7 @@ import logging
 log = logging.getLogger(__name__)
 
 from ..samplesheet import import_samplesheet, SampleSheetReadError
-from .. import storage, linting
+from .. import storage, linting, siteid
 
 class FileDeleteError(RuntimeError):
     pass
@@ -56,7 +57,7 @@ def submit_samplesheet(request, user):
 
             input_file.seek(0)
             try:
-                n_added = import_samplesheet(request.dbsession, input_file, user)
+                n_added = import_samplesheet(request, input_file, user)
                 success.append({
                     'filename' : file_obj.filename,
                     'n_added' : n_added
@@ -126,6 +127,7 @@ def submit_data(request, user):
 
             # We're creating a new file
             f = File(name = http_filename,
+                    site_id = siteid.generate(request, File),
                     checksum = md5,
                     filesize = file_size,
                     user_id = user.id,
@@ -350,7 +352,8 @@ def req_commit(request, user):
     # Create a submission
     sub = Submission(
             date = datetime.datetime.now(),
-            metadatasets = passed
+            metadatasets = passed,
+            site_id = siteid.generate(request, Submission)
             )
     request.dbsession.add(sub)
 

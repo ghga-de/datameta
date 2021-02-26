@@ -26,6 +26,8 @@ from sqlalchemy import and_
 from datameta.models import MetaDatum, MetaDatumRecord, MetaDataSet
 import datetime
 
+from . import siteid
+
 class SampleSheetReadError(RuntimeError):
     pass
 
@@ -92,12 +94,13 @@ def string_conversion(data, metadata):
         else:
             data[mdat.name] = data[mdat.name].astype(str)
 
-def import_samplesheet(dbsession, file_like_obj, user):
+def import_samplesheet(request, file_like_obj, user):
     """Import a sample sheet into the database. Extracts the metadata from the
     sample sheet, handles date and time conversions if necessary and adds the
     metadata to the database. The metadata will be pending, i.e. not associated
     with a submission.
     """
+    dbsession = request.dbsession
     # Try to read the sample sheet
     try:
         data = pd.read_excel(file_like_obj, dtype="object")
@@ -134,6 +137,7 @@ def import_samplesheet(dbsession, file_like_obj, user):
             MetaDataSet(
                 user_id = user.id,
                 group_id = user.group_id,
+                site_id = siteid.generate(request, MetaDataSet),
                 metadatumrecords = [
                     # Create one MetaDatumRecord for each value in the row
                     MetaDatumRecord(

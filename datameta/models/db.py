@@ -1,4 +1,5 @@
-# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright (c) 2021 Universität Tübingen, Germany
+# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +32,13 @@ from sqlalchemy import (
     DateTime,
     String
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .meta import Base
 
 import datetime
-
+import uuid
 import enum
 
 class DateTimeMode(enum.Enum):
@@ -55,6 +57,8 @@ class DateTimeMode(enum.Enum):
 class Group(Base):
     __tablename__    = 'groups'
     id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    site_id          = Column(String(50), unique=True, nullable=False, index=True)
     name             = Column(Text, nullable=False)
     # Relationships
     user             = relationship('User', back_populates='group')
@@ -65,6 +69,8 @@ class Group(Base):
 class User(Base):
     __tablename__    = 'users'
     id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    site_id          = Column(String(50), unique=True, nullable=False, index=True)
     email            = Column(Text, unique=True)
     fullname         = Column(Text)
     pwhash           = Column(String(60))
@@ -82,9 +88,10 @@ class User(Base):
 class ApiKey(Base):
     __tablename__    = 'apikeys'
     id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     value            = Column(String(64), nullable=False)
-    comment          = Column(String(200))
+    label            = Column(String(200))
     expires          = Column(DateTime, nullable=True)
     # Relationships
     user             = relationship('User', back_populates='apikeys')
@@ -92,6 +99,7 @@ class ApiKey(Base):
 class PasswordToken(Base):
     __tablename__    = 'passwordtokens'
     id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     value            = Column(Text, nullable=False, unique=True)
     expires          = Column(DateTime, nullable=False)
@@ -101,6 +109,7 @@ class PasswordToken(Base):
 class RegRequest(Base):
     __tablename__    = 'regrequests'
     id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     fullname         = Column(Text, nullable=False)
     email            = Column(Text, nullable=False)
     group_id         = Column(Integer, ForeignKey('groups.id'), nullable=True)
@@ -111,6 +120,8 @@ class RegRequest(Base):
 class File(Base):
     __tablename__    = 'files'
     id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    site_id          = Column(String(50), unique=True, nullable=False, index=True)
     name             = Column(Text, nullable=False)
     name_storage     = Column(Text, nullable=True)
     checksum         = Column(Text, nullable=False)
@@ -127,6 +138,8 @@ class File(Base):
 class Submission(Base):
     __tablename__    = 'submissions'
     id               = Column(Integer, primary_key=True)
+    site_id          = Column(String(50), unique=True, nullable=False, index=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     date             = Column(DateTime)
     # Relationships
     metadatasets     = relationship('MetaDataSet', back_populates='submission')
@@ -134,6 +147,7 @@ class Submission(Base):
 class MetaDatum(Base):
     __tablename__    = 'metadata'
     id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     name             = Column(Text, nullable=False)
     regexp           = Column(Text, nullable=True)
     lintmessage      = Column(Text, nullable=True)
@@ -148,6 +162,7 @@ class MetaDatum(Base):
 class MetaDatumRecord(Base):
     __tablename__    = 'metadatumrecords'
     id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     metadatum_id     = Column(Integer, ForeignKey('metadata.id'), nullable=False)
     metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
     file_id          = Column(Integer, ForeignKey('files.id'), nullable=True)
@@ -161,6 +176,8 @@ class MetaDataSet(Base):
     """A MetaDataSet represents all metadata associated with *one* record"""
     __tablename__  = 'metadatasets'
     id             = Column(Integer, primary_key=True)
+    site_id        = Column(String(50), unique=True, nullable=False, index=True)
+    uuid           = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id        = Column(Integer, ForeignKey('users.id'), nullable=False)
     group_id       = Column(Integer, ForeignKey('groups.id'), nullable=False)
     submission_id  = Column(Integer, ForeignKey('submissions.id'), nullable=True)
@@ -173,6 +190,7 @@ class MetaDataSet(Base):
 class ApplicationSettings(Base):
     __tablename__ = 'appsettings'
     id           = Column(Integer, primary_key=True)
+    uuid         = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     key          = Column(Text, unique=True, nullable=False)
     int_value    = Column(Integer, nullable=True)
     str_value    = Column(Text, nullable=True)
