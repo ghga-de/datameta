@@ -27,3 +27,4 @@ development_notb.ini
 *.idea
 *venv*
 .vscode/
+_build*
