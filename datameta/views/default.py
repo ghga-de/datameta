@@ -19,11 +19,12 @@
 # SOFTWARE.
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPException, HTTPFound
 
 from sqlalchemy.exc import DBAPIError
 
 from ..models import ApplicationSettings
+from .. import security
 
 from pyramid.events import subscriber
 from pyramid.events import BeforeRender
@@ -40,7 +41,7 @@ def add_global(event):
     else:
         event['logo_html'] = appsetting.str_value
 
-
 @view_config(route_name='root')
 def root_view(request):
-    return HTTPFound(location="/login")
+    security.revalidate_user_or_login(request)
+    return HTTPFound(location="/home")

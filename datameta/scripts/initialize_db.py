@@ -45,11 +45,33 @@ def create_initial_user(request, email, fullname, password, groupname):
 def create_example_metadata(dbsession):
     if dbsession.query(MetaDatum).first() is None:
         metadata = [
-                MetaDatum(name = "#ID", mandatory=True, order=100, isfile=False),
-                MetaDatum(name = "Date", mandatory=True, order=200, datetimefmt="%Y-%m-%d", datetimemode=DateTimeMode.DATE, isfile=False),
-                MetaDatum(name = "ZIP Code", mandatory=True, order=300, isfile=False),
-                MetaDatum(name = "FileR1", mandatory=True, order=400, isfile=True),
-                MetaDatum(name = "FileR2", mandatory=True, order=500, isfile=True)
+                MetaDatum(name = "#ID",
+                    mandatory=True,
+                    order=100,
+                    isfile=False,
+                    regexp=r"^[A-Z][A-Z][0-9][0-9]$",
+                    lintmessage="The ID must be specified as two uppercase characters followed by two digits."),
+                MetaDatum(name = "Date",
+                    mandatory=True,
+                    order=200,
+                    datetimefmt="%Y-%m-%d",
+                    datetimemode=DateTimeMode.DATE,
+                    isfile=False),
+                MetaDatum(name = "ZIP Code",
+                    mandatory=True,
+                    order=300,
+                    isfile=False,
+                    regexp=r"^[0-9][0-9][0-9]$",
+                    lintmessage="Please specify the first three digits of the ZIP code",
+                    ),
+                MetaDatum(name = "FileR1",
+                    mandatory=True,
+                    order=400,
+                    isfile=True),
+                MetaDatum(name = "FileR2",
+                    mandatory=True,
+                    order=500,
+                    isfile=True)
                 ]
         dbsession.add_all(metadata)
 

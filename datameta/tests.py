@@ -2,7 +2,7 @@ import unittest
 
 from pyramid import testing
 from pyramid.httpexceptions import HTTPFound
-
+import pytest
 import transaction
 
 
@@ -45,6 +45,8 @@ class TestMyViewSuccessCondition(BaseTest):
 
     def test_passing_view(self):
         from .views.default import root_view
-        response = root_view(dummy_request(self.session))
+        with pytest.raises(HTTPFound) as ex:
+            response = root_view(dummy_request(self.session))
+        response = ex.value
         self.assertEqual(response.status_int, 302)
         self.assertEqual(response.headers['Location'], '/login')
