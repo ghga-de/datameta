@@ -200,9 +200,8 @@ def formatted_mrec_value(mrec):
         try:
             return datetime.datetime.fromisoformat(mrec.value).strftime(mrec.metadatum.datetimefmt)
         except ValueError:
-            return "invalid"
-    else:
-        return mrec.value
+            pass
+    return mrec.value
 
 
 def get_pending_annotated(dbsession, user):
@@ -334,8 +333,6 @@ def req_delete_file(request, user):
 def req_commit(request, user):
     """Handles a commit request for a specific set of metadataset ids.
     """
-    log.debug(request.POST)
-
     mset_ids = [ int(mset_id) for mset_id  in request.POST.getall('mset_ids[]') ]
 
     # Run linting

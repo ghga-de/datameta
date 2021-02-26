@@ -31,7 +31,7 @@ from . import siteid
 class SampleSheetReadError(RuntimeError):
     pass
 
-def get_metadata_keys(dbsession):
+def get_metadata_definitions(dbsession):
     """Queries the metadata keys (column names) that are currently configured
     """
     return [datum for datum in dbsession.query(MetaDatum).order_by(MetaDatum.order).all() ]
@@ -75,13 +75,24 @@ def strptime_iso_or_empty(s, datetimefmt):
     except (ValueError, TypeError):
         return ""
 
+def datetime_iso_or_empty(x):
+    try:
+        return "" if pd.isna(x) else x.isoformat()
+    except Exception as e:
+        log.error(f"Unexpected exception: {e}")
+        return ""
+
+def to_str(x):
+    """Converts to str unless pd.isna() is true, then converts to an empty string"""
+    return "" if pd.isna(x) else str(x)
+
 def string_conversion_dates(series, datetimefmt):
     """Converts a series of dates to ISO format strings. The dates can either
     be provided as datetime objects or will otherwise be casted to `str` and
     parsed using the provided datetime format string.
     """
     if pdtypes.is_datetime64_dtype(series):
-        return series.map(lambda x : x.isoformat())
+        return series.map(datetime_iso_or_empty)
     return series.map(lambda x : strptime_iso_or_empty(x, datetimefmt))
 
 
@@ -90,9 +101,9 @@ def string_conversion(data, metadata):
     """
     for mdat in metadata:
         if mdat.datetimefmt is not None:
-            data[mdat.name] = string_conversion_dates(data[mdat.name], mdat.datetimefmt)
+            data[mdat.name] = string_conversion_dates(data[mdat.name], mdat.datetimefmt).fillna("")
         else:
-            data[mdat.name] = data[mdat.name].astype(str)
+            data[mdat.name] = data[mdat.name].map(to_str)
 
 def import_samplesheet(request, file_like_obj, user):
     """Import a sample sheet into the database. Extracts the metadata from the
@@ -103,33 +114,39 @@ def import_samplesheet(request, file_like_obj, user):
     dbsession = request.dbsession
     # Try to read the sample sheet
     try:
-        data = pd.read_excel(file_like_obj, dtype="object")
+        submitted_metadata = pd.read_excel(file_like_obj, dtype="object")
     except Exception as e:
         log.info(f"submitted sample sheet '{file_like_obj.filename}' triggered exception {e}")
         raise SampleSheetReadError("Unable to parse the sample sheet.")
 
     # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
-    metadata         = get_metadata_keys(dbsession)
+    metadata         = get_metadata_definitions(dbsession)
     metadata_names   = [ datum.name for datum in metadata ]
 
-    missing_columns  = [ metadata_name for metadata_name in metadata_names if metadata_name not in data.columns ]
+    missing_columns  = [ metadata_name for metadata_name in metadata_names if metadata_name not in submitted_metadata.columns ]
     if missing_columns:
         raise SampleSheetReadError(f"Missing columns: {', '.join(missing_columns)}.")
 
     # Limit the sample sheet to the columns of interest and drop duplicates
-    data = data[metadata_names].drop_duplicates()
+    submitted_metadata = submitted_metadata[metadata_names].drop_duplicates()
 
     # Convert all data to strings
-    string_conversion(data, metadata)
+    string_conversion(submitted_metadata, metadata)
 
     # Obtain the currently pending annotations
     cur_pending = dataframe_from_mdsets(query_pending_annotated(dbsession, user))
 
     # Concatenate data frames and drop annotations that were already submitted before (cross submission duplicates)
-    data['__cur_pending__']         = 0
-    cur_pending['__cur_pending__']  = 1
-    new = pd.concat([data, cur_pending]).groupby(metadata_names).sum().reset_index()
-    new = new[new.__cur_pending__==0]
+    submitted_metadata['__cur_pending__']         = 0
+    submitted_metadata.reset_index(inplace=True) # Adds an 'index' column with the submission order
+
+    cur_pending['__cur_pending__'] = 1
+    cur_pending['index']  = -1
+    new = pd.concat([submitted_metadata, cur_pending]).groupby(metadata_names).agg({
+        '__cur_pending__' : 'sum',
+        'index' : 'max'
+        }).reset_index()
+    new = new[new.__cur_pending__==0].sort_values(by='index')
 
     # Import the provided data
     sets = [
