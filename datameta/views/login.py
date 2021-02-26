@@ -39,14 +39,14 @@ def my_view(request):
             in_email = request.POST['input_email']
             in_pwd   = request.POST['input_password']
 
-            user = db.query(User).filter(User.email==in_email).one_or_none()
-            if user and security.check_password(in_pwd, user.pwhash):
-                request.session['user_uid'] = user.id
-                request.session['user_gid'] = user.group.id
-                request.session['user_email'] = user.email
-                request.session['user_fullname'] = user.fullname
-                request.session['user_groupname'] = user.group.name
-                log.info(f"LOGIN [uid={user.id},email={user.email}] FROM [{request.client_addr}]")
+            auth_user = security.get_user_by_credentials(request, in_email, in_pwd)
+            if auth_user:
+                request.session['user_uid'] = auth_user.id
+                request.session['user_gid'] = auth_user.group.id
+                request.session['user_email'] = auth_user.email
+                request.session['user_fullname'] = auth_user.fullname
+                request.session['user_groupname'] = auth_user.group.name
+                log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
                 return HTTPFound(location="/home")
         except KeyError:
             pass

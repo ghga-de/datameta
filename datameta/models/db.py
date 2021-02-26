@@ -85,6 +85,7 @@ class ApiKey(Base):
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     value            = Column(String(64), nullable=False)
     comment          = Column(String(200))
+    expires          = Column(DateTime, nullable=True)
     # Relationships
     user             = relationship('User', back_populates='apikeys')
 
