@@ -21,7 +21,5 @@ psql -c '\dt' "$SQLALCHEMY_URL"
 # Check if the database has been initialized and if not initialize it
 if ! psql -c '\dt' "$SQLALCHEMY_URL" | fgrep alembic &>/dev/null; then
 	alembic -c /tmp/datameta/config.ini upgrade head
-	alembic -c /tmp/datameta/config.ini revision --autogenerate -m "init"
-	alembic -c /tmp/datameta/config.ini upgrade head
 	initialize_datameta_db /tmp/datameta/config.ini
 fi
