@@ -25,7 +25,7 @@ import bcrypt
 
 from ..models import User, Group, RegRequest
 from ..settings import get_setting
-from .. import email, passtokens, security
+from .. import email, passtokens, security, siteid
 
 import logging
 log = logging.getLogger(__name__)
@@ -90,10 +90,11 @@ def v_admin_put_request(request):
     # Implemented the requested response to the user registration request
     if accept:
         # Create user and group
-        group = db_group if newuser_group_id is not None else Group(name=newuser_group_newname)
+        group = db_group if newuser_group_id is not None else Group(name=newuser_group_newname, site_id=siteid.generate(request, Group))
 
         new_user = User(
                 fullname = newuser_fullname,
+                site_id = siteid.generate(request, User),
                 email = reg_req.email,
                 group = group,
                 enabled = True,
