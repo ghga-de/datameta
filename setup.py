@@ -47,7 +47,9 @@ requires = [
     'SQLAlchemy',
     'transaction',
     'zope.sqlalchemy',
-    'pyramid_openapi3'
+    'pyramid_openapi3',
+    'sphinx',
+    'sphinxcontrib-openapi'
 ]
 
 tests_require = [
