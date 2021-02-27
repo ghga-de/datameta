@@ -1,0 +1,2 @@
+.. literalinclude:: .api/openapi.yaml
+   :language: yaml
