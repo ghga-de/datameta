@@ -105,4 +105,3 @@ def post(request):
             raise HTTPUnauthorized()
 
     return generate_api_key(request, auth_user, label)
-    

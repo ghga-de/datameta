@@ -28,6 +28,11 @@ import bcrypt
 import logging
 log = logging.getLogger(__name__)
 
+def verify_password(s):
+    if len(s)<10:
+        return "The password has to have a length of at least 10 characters."
+    return None
+
 def hash_password(pw):
     """Hash a password/token and return the salted hash"""
     pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
@@ -49,7 +54,7 @@ def get_user_by_credentials(request, email:str, password:str):
 def get_bearer_token(request):
     """Extracts a Bearer authentication token from the request and returns it if present, None
     otherwise."""
-    auth = request.headers.get("Authentication")
+    auth = request.headers.get("Authorization")
     if auth is not None:
         try:
             method, content = auth.split(" ")
@@ -61,7 +66,7 @@ def get_bearer_token(request):
 
 def revalidate_user(request):
     """Revalidate the currently logged in user and return the corresponding user object. On failure,
-    raise a 403"""
+    raise a 401"""
     db = request.dbsession
     # Check for token based auth
     token = get_bearer_token(request)
