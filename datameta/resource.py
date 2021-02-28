@@ -1,6 +1,5 @@
 # Copyright (c) 2021 Universität Tübingen, Germany
-# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>,
-#          Kersten Breuer <k.breuer@dkfz.de>
+# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +19,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.config import Configurator
+from uuid import UUID
 
-def includeme(config: Configurator) -> None:
-    """Pyramid knob."""
-    config.add_route("apikeys", "/api/keys")
-    config.add_route("SetUserPassword", "/api/users/{id}/password")
+def resource_by_id(dbsession, model, idstring):
+    """Tries to find a resource using the provided id. The search is initially
+    performed against the resources UUID property. If that yields no match, the
+    search is repeated against the resources site_id property if available.
+
+    Args:
+        dbessions: A database session
+        model: The model class describing the resource
+        idstring: The UUID or site_id to be found
+
+    Returns:
+        The database entity or None if no match could be found"""
+
+    entity = None
+    try:
+        entity = dbsession.query(model).filter(model.uuid==UUID(idstring)).one_or_none();
+    except ValueError: # The specified string is not a valid UUID and the UUID constructor raises
+        pass
+
+    try:
+        entity = entity if entity is not None else dbsession.query(model).filter(model.site_id==request_id).one_or_none();
+    except AttributeError: # This entity doesn't have a site_id
+        pass
+
+    return entity
