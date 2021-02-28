@@ -12,6 +12,8 @@
         <link href="${request.static_url('datameta:static/node_modules/bootstrap/dist/css/bootstrap.min.css')}" rel="stylesheet">
         <!-- Bootstrap icon CSS -->
         <link href="${request.static_url('datameta:static/node_modules/bootstrap-icons/font/bootstrap-icons.css')}" rel="stylesheet">
+        <!-- DataMeta CSS -->
+        <link href="${request.static_url('datameta:static/css/datameta.css')}" rel="stylesheet">
 
         <script>
             window.DataMeta = {};

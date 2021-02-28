@@ -12,6 +12,8 @@
         <link href="${request.static_url('datameta:static/node_modules/bootstrap/dist/css/bootstrap.min.css')}" rel="stylesheet">
         <!-- Bootstrap icon CSS -->
         <link href="${request.static_url('datameta:static/node_modules/bootstrap-icons/font/bootstrap-icons.css')}" rel="stylesheet">
+        <!-- DataMeta CSS -->
+        <link href="${request.static_url('datameta:static/css/datameta.css')}" rel="stylesheet">
 
         <style>
             .bd-placeholder-img {
@@ -29,10 +31,6 @@
             }
             .container {
               max-width: 960px;
-            }
-            .link-bare, .link-bare:link, .link-bare:hover {
-                color: inherit;
-                text-decoration: inherit;
             }
             .bg-lightgreen{
                 background-color: #b7ecd4
@@ -90,11 +88,7 @@
     <body class="d-flex flex-column h-100" onload=init_widescreen()>
 
         <header class="sticky-top d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-body border-bottom border-warning">
-            <p class="h5 my-0 me-md-auto fw-normal" style="font-family: 'Fira Sans', sans-serif;">
-                <a href="/home" class="link-bare">
-                    <span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta
-                </a>
-            </p>
+            <div tal:replace="structure logo_html"></div>
 
             <p class="my-0 me-4 fst-italic">
             ${request.session['user_fullname']} (${request.session['user_groupname']})

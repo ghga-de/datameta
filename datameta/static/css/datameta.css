@@ -1,0 +1,5 @@
+.link-bare, .link-bare:link, .link-bare:hover {
+    color: inherit;
+    text-decoration: inherit;
+}
+

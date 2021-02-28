@@ -147,6 +147,12 @@ Best regards,
 The Support Team"""))
 
 
+def create_default_site_settings(db):
+    db.add(ApplicationSettings(
+        key='logo_html',
+        str_value = '<p class="h4 my-0 me-md-auto fw-normal" style="font-family: \'Fira Sans\', sans-serif;"><a href="/" class="link-bare"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</a></p>'
+        ))
+
 def main(argv=sys.argv):
     args = parse_args(argv)
     setup_logging(args.config_uri)
@@ -164,6 +170,9 @@ def main(argv=sys.argv):
 
             # Create email templates
             create_email_templates(dbsession)
+
+            # Create default site settings
+            create_default_site_settings(dbsession)
 
     except OperationalError:
         print('''
