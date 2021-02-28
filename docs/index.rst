@@ -2,27 +2,27 @@
 Overview
 ========
 
-Data submission made easy! DataMeta allows you to easily define sample sheet columns, value
-constraints for the sample sheet and columns which are associated with raw data file names.
+Data submission made easy! DataMeta allows you to easily define sample
+sheet columns, value constraints for the sample sheet and columns which
+are associated with raw data file names.
 
-DataMeta is quick and easy to deploy on your local infrastructure and scales for high numbers of
-users!
+DataMeta is quick and easy to deploy on your local infrastructure and
+scales for high numbers of users!
 
-![demo](./img/datameta.demo.gif?raw=true)
+.. image:: ../img/datameta.demo.gif
+   :alt: demo
+
+
+Contents:
+
+.. toctree::
+   :hidden:
+
+   self
 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
-   developers
 
-.. openapi:: specs_openapi.yml
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   DEVELOPERS
+   OPENAPI
