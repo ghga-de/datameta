@@ -173,7 +173,6 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
 
-      
   /metadatasets/{id}:
     get:
       summary: Get Details for A MetaDataSet
@@ -526,7 +525,6 @@ components:
         - records
       additionalProperties: false
         
-
     FileAnnouncement:
       type: object
       properties:

@@ -21,19 +21,15 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
-from datameta.models.db import MetaDataSet
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
 from .. import models
 
-
-
 # For Developers: if needed change the dataclasses to
 # regular classes and supply custom __init__ functions
 # (for instance if create of that class object should
 # also trigger creation of the respective db model)
-
 
 @dataclass
 class MetaDataSets:
@@ -53,14 +49,13 @@ class MetaDataSets:
                 "metaDataSetId": self.metadataset_id,
             }
 
-
 @view_config(
     route_name="metadatasets", 
     renderer='json', 
     request_method="POST", 
     openapi=True
 )
-def post(request:Request) -> MetaDataSet:
+def post(request:Request) -> MetaDataSets:
     """Create new metadataset"""
     pass
     return {}
@@ -72,7 +67,7 @@ def post(request:Request) -> MetaDataSet:
     request_method="GET", 
     openapi=True
 )
-def get_metadataset(request:Request) -> MetaDataSet:
+def get_metadataset(request:Request) -> MetaDataSets:
     """Create new metadataset"""
     pass
     return {}
