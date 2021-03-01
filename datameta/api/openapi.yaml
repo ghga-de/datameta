@@ -66,7 +66,7 @@ paths:
 
   /users:
     post:
-      summary: Register a new user
+      summary: Register a New User
       description: >-
         Register a new user.
         The password will be set later, after
@@ -141,6 +141,34 @@ paths:
         "500":
           $ref: '#/components/responses/ValidationError'
 
+  
+  /metadatasets:
+    post:
+      summary: Create a New MetaDataSet
+      description: >-
+        Create a new MetaDataSet
+      tags:
+        - Metadata
+      operationId: CreateMetaDataSet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetaDataSet"
+        description: >-
+          Provide all properties for of one MetaDataSet.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetaDataSetResponse"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
+
 security:
   - bearerAuth: []
   - cookieAuth: []
@@ -171,6 +199,7 @@ components:
         # sessions from the front end
       required:
         - label
+      additionalProperties: false
 
     UserSession:
       type: object
@@ -188,6 +217,7 @@ components:
         - userId
         - token
         - expiresAt
+      additionalProperties: false
 
     PasswordChange:
       type: object
@@ -218,7 +248,41 @@ components:
         - email
         # either provide
         # groupId or newGroupName
-
+      additionalProperties: false
+    
+    MetaDataSet:
+      type: object
+      properties:
+        records:
+          type: object
+          additionalProperties: true
+          # a free-form object,
+          # any property is allowed
+      required:
+        - records
+      additionalProperties: false
+          
+    MetaDataSetResponse:
+      type: object
+      properties:
+        records:
+          type: object
+          additionalProperties: true
+          # a free-form object,
+          # any property is allowed
+        metaDataSetId:
+          type: string
+        submissionId:
+          type: string
+          nullable: true
+        groupId:
+          type: string
+        userId:
+          type: string
+      required:
+        - records
+      additionalProperties: false
+        
     Error:
       type: object
       properties:
@@ -230,6 +294,7 @@ components:
           type: string
       required:
         - message
+      additionalProperties: false
 
     ValidationErrorModel:
       type: array

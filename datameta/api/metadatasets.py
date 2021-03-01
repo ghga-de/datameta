@@ -20,11 +20,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.config import Configurator
+from dataclasses import dataclass
+from sqlalchemy.sql.elements import Null
+from pyramid.view import view_config
+from pyramid.request import Request
+from typing import Optional, Dict
+from .. import models
 
-def includeme(config: Configurator) -> None:
-    """Pyramid knob."""
-    config.add_route("apikeys", "/api/keys")
-    config.add_route("SetUserPassword", "/api/users/{id}/password")
-    config.add_route("users", "/api/users")
-    config.add_route("metadatasets", "/api/metadatasets")
+
+@dataclass
+class MetaDataSets:
+    """MetaDataSets container for OpenApi communication"""
+    records: dict
+    group_id: Optional[str] = None
+    user_id: Optional[str] = None
+    submission_id: Optional[str] = None
+    metadataset_id: Optional[str] = None
+
+    def __json__(self, request: Request) -> Dict[str, str]:
+        return {
+                "records": self.records,
+                "groupId": self.group_id,
+                "userId": self.user_id,
+                "submissionId": self.submission_id,
+                "metaDataSetId": self.metadataset_id,
+            }
+
+@view_config(
+    route_name="metadatasets", 
+    renderer='json', 
+    request_method="POST", 
+    openapi=True
+)
+def post(request):
+    """Create new metadataset"""
+    pass
+    return {}
+    

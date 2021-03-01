@@ -30,11 +30,11 @@ from .. import models
 
 @dataclass
 class ReqRequest:
-    """User Session as return object when requesting new ApiKey"""
+    """ReqRequest container for OpenApi communication"""
     fullname: str
     email: str
-    group_id: Optional[str]
-    new_group_name: Optional[str]
+    group_id: Optional[str] = None
+    new_group_name: Optional[str] = None
 
     def __json__(self, request: Request) -> Dict[str, str]:
         return {
