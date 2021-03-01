@@ -407,6 +407,72 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
 
+  /files:
+    post:
+      summary: Create a New File
+      description: >-
+        Create a new file object.
+        Attention: this endpoint does not
+        take a file for upload directly.
+        Instead, it will respond with a
+        presigned URL where you can
+        PUT your file content.
+      tags:
+        - Files
+      operationId: CreateFile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileAnnouncement"
+        description: >-
+          Provide essential properties of the file that
+          shall be uploaded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileUploadResponse"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
+      
+  /files/{id}:
+    get:
+      summary: Get Details for A File
+      description: >-
+        Get details for a file.
+      tags:
+        - Files
+      operationId: GetFile
+      parameters:
+        - name: id
+          in: path
+          description: ID of the File
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileResponse"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
+
 security:
   - bearerAuth: []
   - cookieAuth: []
@@ -523,7 +589,7 @@ components:
       required:
         - records
       additionalProperties: false
-        
+      
     FileAnnouncement:
       type: object
       properties:
@@ -576,6 +642,8 @@ components:
           type: string
         fileSize:
           type: integer
+        urlToUpload:
+          type: string
           nullable: true
         userId:
           type: string
@@ -585,7 +653,8 @@ components:
         - name
         - fileId
         - contentUploaded
-        - checkSum
+        - urlToUpload
+        - checksum
         - userId
         - groupId
       additionalProperties: false
