@@ -31,6 +31,7 @@ from random import choice
 from .. import security
 from pyramid.httpexceptions import HTTPUnauthorized
 from datetime import datetime
+from pyramid_openapi3 import
 
 
 @dataclass
@@ -49,13 +50,22 @@ class UserSession:
                 "expiresAt": self.expires_at
             }
 
-def generate_api_key(request:Request, user:User):
-    token = "".join(choice(ascii_letters+digits) for _ in range(64) )
+def generate_api_key(request:Request, user:User, label:string):
+    # For Token Composition:
+    # Tokens consist of a core, which is stored as hash in the database,
+    # plus a prefix that contains the user and the label of that ApiKey.
+    # The user always provides the entire token, which is then split up
+    # into prefic and core component. The prefix is used to identify the
+    # ApiKey object in the database and the core component is matched
+    # against the hash for validating it.
+    token_core = "".join(choice(ascii_letters+digits) for _ in range(64) )
+    token_prefix = f"{user.id}-{label}-"
+
 
     db = request.dbsession
     apikey = ApiKey(
         user_id = user.id,
-        value = token,
+        value = security.hash_password(token_core),
         comment = "",
         expires = None
     )
