@@ -21,13 +21,16 @@
 # SOFTWARE.
 
 from pyramid.response import Response
+from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPBadRequest
+import json
 
 class ValidationError(Exception):
     pass
 
 @view_config(context=ValidationError)
 def failed_validation(exc, request):
-    """Respond with a 400 Bad Request Error with costom json body
+    """Respond with a 400 Bad Request Error with custom json body
     """
     msg = exc.args[0] if exc.args else ""
     
@@ -39,6 +42,6 @@ def failed_validation(exc, request):
     ]
     
     response = HTTPBadRequest()
-    response.body = json.dumps(errors)
     response.content_type = 'application/json'
+    response.text = json.dumps(errors)
     return response
