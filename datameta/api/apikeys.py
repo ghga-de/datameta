@@ -31,7 +31,6 @@ from random import choice
 from .. import security
 from pyramid.httpexceptions import HTTPUnauthorized
 from datetime import datetime
-from ..errors import ValidationError
 
 
 @dataclass
