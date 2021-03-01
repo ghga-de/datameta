@@ -40,6 +40,7 @@ class UserSession:
     user_id: str
     email: str
     token: str
+    label: str
     expires_at: Optional[str]
 
     def __json__(self, request: Request) -> Dict[str, str]:
@@ -47,6 +48,7 @@ class UserSession:
                 "userId": self.user_id,
                 "email": self.email,
                 "token": self.token,
+                "label": self.label,
                 "expiresAt": self.expires_at
             }
 
@@ -66,15 +68,16 @@ def generate_api_key(request:Request, user:User, label:str):
     apikey = ApiKey(
         user_id = user.id,
         value = security.hash_password(token_core),
-        comment = "",
+        label = label,
         expires = None
     )
     db.add(apikey)
 
     return UserSession(
-        user_id=str(apikey.user_id),
+        user_id=user.site_id,
         email=user.email,
         token=apikey.value,
+        label=apikey.label,
         expires_at=str(apikey.expires) if apikey.expires else None
     )
 
@@ -96,10 +99,11 @@ def post(request):
 
         email = request.openapi_validated.body["email"]
         password = request.openapi_validated.body["password"]
+        label = request.openapi_validated.body["label"]
 
         auth_user = security.get_user_by_credentials(request, email, password)
         if not auth_user:
             raise HTTPUnauthorized()
 
-    return generate_api_key(request, auth_user)
+    return generate_api_key(request, auth_user, label)
     
