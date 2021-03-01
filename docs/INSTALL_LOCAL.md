@@ -1,4 +1,4 @@
-## Getting Started
+# Local Installation
 
 - Change directory into your newly created project if not already there. Your
   current directory should be the same as this README.txt file and setup.py.
