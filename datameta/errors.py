@@ -19,29 +19,25 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-from pyramid.response import Response
-from pyramid.view import view_config
+from typing import List
 from pyramid.httpexceptions import HTTPBadRequest
-import json
 
-class ValidationError(Exception):
-    pass
 
-@view_config(context=ValidationError)
-def failed_validation(exc, request):
-    """Respond with a 400 Bad Request Error with custom json body
+def get_validation_error(messages:List[str]) -> HTTPBadRequest:
+    """Generate a Validation Error (400) with custom messages
+
+    Args:
+        messages (List[str]): a list of error messages
+
+    Returns:
+        HTTPBadRequest
     """
-    msg = exc.args[0] if exc.args else ""
-    
-    errors = [
+    response_body = [
         {
             "exception": "ValidationError",
             "message": msg
         }
+        for msg in messages
     ]
-    
-    response = HTTPBadRequest()
-    response.content_type = 'application/json'
-    response.text = json.dumps(errors)
-    return response
+
+    return HTTPBadRequest(json=response_body)
