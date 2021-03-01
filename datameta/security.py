@@ -29,12 +29,12 @@ import logging
 log = logging.getLogger(__name__)
 
 def hash_password(pw):
-    """Hash a password and return the salted hash"""
+    """Hash a password/token and return the salted hash"""
     pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
     return pwhash.decode('utf8')
 
 def check_password_by_hash(pw, hashed_pw):
-    """Check a password against a salted hash"""
+    """Check a password/hash against a salted hash"""
     expected_hash = hashed_pw.encode('utf8')
     return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
 

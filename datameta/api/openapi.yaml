@@ -47,8 +47,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserCredentials"
-        description: Credentials to use
+              $ref: "#/components/schemas/CreateTokenRequest"
+        description: >-
+          Credentials to use (optional when using cookie sessions)
+          and a label for the ApiKey to be created.
       responses:
         "200":
           description: OK
@@ -68,16 +70,20 @@ paths:
 components:
 
   schemas:
-    UserCredentials:
+    CreateTokenRequest:
       type: object
       properties:
         email:
           type: string
         password:
           type: string
+        label:
+          type: string
         # email and password are 
         # not required when using cookie-based
         # sessions from the front end
+      required:
+        - label
 
     UserSession:
       type: object
@@ -85,6 +91,8 @@ components:
         userId:
           type: string
         token:
+          type: string
+        label:
           type: string
         expiresAt:
           type: string

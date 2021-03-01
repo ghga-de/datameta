@@ -39,6 +39,7 @@ class UserSession:
     user_id: str
     email: str
     token: str
+    label: str
     expires_at: Optional[str]
 
     def __json__(self, request: Request) -> Dict[str, str]:
@@ -46,25 +47,36 @@ class UserSession:
                 "userId": self.user_id,
                 "email": self.email,
                 "token": self.token,
+                "label": self.label,
                 "expiresAt": self.expires_at
             }
 
-def generate_api_key(request:Request, user:User):
-    token = "".join(choice(ascii_letters+digits) for _ in range(64) )
+def generate_api_key(request:Request, user:User, label:str):
+    # For Token Composition:
+    # Tokens consist of a core, which is stored as hash in the database,
+    # plus a prefix that contains the user and the label of that ApiKey.
+    # The user always provides the entire token, which is then split up
+    # into prefic and core component. The prefix is used to identify the
+    # ApiKey object in the database and the core component is matched
+    # against the hash for validating it.
+    token_core = "".join(choice(ascii_letters+digits) for _ in range(64) )
+    token_prefix = f"{user.id}-{label}-"
+
 
     db = request.dbsession
     apikey = ApiKey(
         user_id = user.id,
-        value = token,
-        comment = "",
+        value = security.hash_password(token_core),
+        label = label,
         expires = None
     )
     db.add(apikey)
 
     return UserSession(
-        user_id=str(apikey.user_id),
+        user_id=user.site_id,
         email=user.email,
         token=apikey.value,
+        label=apikey.label,
         expires_at=str(apikey.expires) if apikey.expires else None
     )
 
@@ -86,10 +98,11 @@ def post(request):
 
         email = request.openapi_validated.body["email"]
         password = request.openapi_validated.body["password"]
+        label = request.openapi_validated.body["label"]
 
         auth_user = security.get_user_by_credentials(request, email, password)
         if not auth_user:
             raise HTTPUnauthorized()
 
-    return generate_api_key(request, auth_user)
+    return generate_api_key(request, auth_user, label)
     
