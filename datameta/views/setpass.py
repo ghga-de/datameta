@@ -43,7 +43,7 @@ def v_updatepass_api(request):
         raise HTTPBadRequest(json_body={'reason' : 'missing field'})
 
     # Validate old password
-    if not security.check_password(old_password, user.pwhash):
+    if not security.check_password_by_hash(old_password, user.pwhash):
         raise HTTPUnauthorized()
 
     # Validate password
