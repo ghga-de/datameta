@@ -206,7 +206,6 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
           
-
   /files:
     post:
       summary: Create a New File

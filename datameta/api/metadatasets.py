@@ -49,6 +49,7 @@ class MetaDataSets:
                 "metaDataSetId": self.metadataset_id,
             }
 
+
 @view_config(
     route_name="metadatasets", 
     renderer='json', 
@@ -68,6 +69,18 @@ def post(request:Request) -> MetaDataSets:
     openapi=True
 )
 def get_metadataset(request:Request) -> MetaDataSets:
+    """Create new metadataset"""
+    pass
+    return {}
+        
+
+@view_config(
+    route_name="metadatasets_id", 
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get_metadataset(request):
     """Create new metadataset"""
     pass
     return {}
