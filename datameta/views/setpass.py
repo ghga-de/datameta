@@ -37,7 +37,7 @@ def v_updatepass_api(request):
 
     # Try to extract old and new password from request
     try:
-        old_password = request.json_body["password"]
+        old_password = request.json_body["old_password"]
         new_password = request.json_body["new_password"]
     except Error:
         raise HTTPBadRequest(json_body={'reason' : 'missing field'})
@@ -53,7 +53,7 @@ def v_updatepass_api(request):
     # Set the new password
     user.pwhash = security.hash_password(new_password)
 
-    return HTTPNoContent()
+    return { 'success' : True }
 
 
 @view_config(route_name='setpass_api', renderer='json')
