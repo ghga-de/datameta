@@ -28,3 +28,4 @@ def includeme(config: Configurator) -> None:
     config.add_route("SetUserPassword", "/api/users/{id}/password")
     config.add_route("users", "/api/users")
     config.add_route("metadatasets", "/api/metadatasets")
+    config.add_route("metadatasets_id", "/api/metadatasets/{id}")
