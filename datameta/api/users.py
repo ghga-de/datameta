@@ -20,10 +20,38 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.config import Configurator
+from dataclasses import dataclass
+from sqlalchemy.sql.elements import Null
+from pyramid.view import view_config
+from pyramid.request import Request
+from typing import Optional, Dict
+from .. import models
 
-def includeme(config: Configurator) -> None:
-    """Pyramid knob."""
-    config.add_route("apikeys", "/api/keys")
-    config.add_route("SetUserPassword", "/api/users/{id}/password")
-    config.add_route("users", "/api/users")
+
+@dataclass
+class ReqRequest:
+    """User Session as return object when requesting new ApiKey"""
+    fullname: str
+    email: str
+    group_id: Optional[str]
+    new_group_name: Optional[str]
+
+    def __json__(self, request: Request) -> Dict[str, str]:
+        return {
+                "fullname": self.fullname,
+                "email": self.email,
+                "groupId": self.group_id,
+                "newGroupName": self.new_group_name,
+            }
+
+@view_config(
+    route_name="users", 
+    renderer='json', 
+    request_method="POST", 
+    openapi=True
+)
+def post(request):
+    """Register a new user"""
+    pass
+    return {}
+    

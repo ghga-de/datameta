@@ -25,7 +25,7 @@ from sqlalchemy.sql.elements import Null
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
-from ..models import ApiKey, User
+from .. import models
 from string import ascii_letters, digits
 from random import choice
 from .. import security
@@ -51,7 +51,7 @@ class UserSession:
                 "expiresAt": self.expires_at
             }
 
-def generate_api_key(request:Request, user:User, label:str):
+def generate_api_key(request:Request, user:models.User, label:str):
     # For Token Composition:
     # Tokens consist of a core, which is stored as hash in the database,
     # plus a prefix that contains the user and the label of that ApiKey.
@@ -64,7 +64,7 @@ def generate_api_key(request:Request, user:User, label:str):
 
 
     db = request.dbsession
-    apikey = ApiKey(
+    apikey = models.ApiKey(
         user_id = user.id,
         value = security.hash_password(token_core),
         label = label,
