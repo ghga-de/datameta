@@ -25,4 +25,7 @@ Contents:
    :maxdepth: 2
 
    DEVELOPERS
+   INSTALL_LOCAL
+   INSTALL_VSCODE
+   rest_api_design
    OPENAPI
