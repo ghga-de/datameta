@@ -29,5 +29,4 @@ development_notb.ini
 .vscode/
 _build*
 docs/make.bat
-
 docs/Makefile
