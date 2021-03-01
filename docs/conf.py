@@ -36,7 +36,7 @@ author = 'Leon Kuchenbecker, Kersten Breuer, Moritz Hahn, Ryan Hutchins, Koray K
 # ones.
 extensions = [
     'sphinxcontrib.openapi',
-    'myst-parser'
+    'recommonmark'
     ]
 
 # Add any paths that contain templates here, relative to this directory.
