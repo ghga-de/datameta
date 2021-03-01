@@ -32,12 +32,6 @@ from .. import models
 # also trigger creation of the respective db model)
 
 
-# For Developers: if needed change the dataclasses to
-# regular classes and supply custom __init__ functions
-# (for instance if create of that class object should
-# also trigger creation of the respective db model)
-
-
 @dataclass
 class MetaDataSets:
     """MetaDataSets container for OpenApi communication"""
