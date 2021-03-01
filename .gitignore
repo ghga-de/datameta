@@ -28,3 +28,6 @@ development_notb.ini
 *venv*
 .vscode/
 _build*
+docs/make.bat
+
+docs/Makefile

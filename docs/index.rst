@@ -24,8 +24,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   DEVELOPERS
-   INSTALL_LOCAL
-   INSTALL_VSCODE
+   application_features
+   install_local
+   install_vscode
    rest_api_design
-   OPENAPI
+   open_api_specs

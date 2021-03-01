@@ -1,6 +1,6 @@
-## Developer Documentation
+# Application Features
 
-### Introduction
+## Introduction
 
 The DataMeta application stack comprises three main applications:
 
@@ -64,7 +64,7 @@ The relational database model comprises the following entities:
   A table holding application settings configured by the administrator running the DataMeta instance. This is currently not used.
 
 
-### Conceptual Notes
+## Conceptual Notes
 
 1. *All captured metadata is treated as text internally*
 
@@ -82,16 +82,16 @@ The relational database model comprises the following entities:
 
    What is shown on the `/submit` view is private to a UID/GID combination. Other members of the same group cannot access the pending submission, neither can the user himself in case they change their group. After submission, in the `/view` view, the user can see all submitted data from his group (not yet implemented).
 
-### Application Cases
+## Application Cases
 
-#### Data File Submission
+### Data File Submission
 
 ![erdiag](./img/submit_files.svg)
 
-#### Sample Sheet Submission
+### Sample Sheet Submission
 
-#### Commit Submission
+### Commit Submission
 
-#### Delete Pending Metadata Record
+### Delete Pending Metadata Record
 
-#### Delete Pending Data File
+### Delete Pending Data File
