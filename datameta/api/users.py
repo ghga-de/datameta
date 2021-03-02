@@ -21,11 +21,16 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
-from sqlalchemy.sql.elements import Null
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
 from .. import models
+
+
+# For Developers: if needed change the dataclasses to
+# regular classes and supply custom __init__ functions
+# (for instance if create of that class object should
+# also trigger creation of the respective db model)
 
 
 @dataclass
@@ -50,7 +55,7 @@ class ReqRequest:
     request_method="POST", 
     openapi=True
 )
-def post(request):
+def post(request:Request) -> ReqRequest:
     """Register a new user"""
     pass
     return {}

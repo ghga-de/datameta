@@ -21,21 +21,28 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
-from sqlalchemy.sql.elements import Null
+from datameta.models.db import MetaDataSet
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
 from .. import models
 
 
+
+# For Developers: if needed change the dataclasses to
+# regular classes and supply custom __init__ functions
+# (for instance if create of that class object should
+# also trigger creation of the respective db model)
+
+
 @dataclass
 class MetaDataSets:
     """MetaDataSets container for OpenApi communication"""
     records: dict
-    group_id: Optional[str] = None
-    user_id: Optional[str] = None
+    group_id: str
+    user_id: str
+    metadataset_id: str
     submission_id: Optional[str] = None
-    metadataset_id: Optional[str] = None
 
     def __json__(self, request: Request) -> Dict[str, str]:
         return {
@@ -53,7 +60,7 @@ class MetaDataSets:
     request_method="POST", 
     openapi=True
 )
-def post(request):
+def post(request:Request) -> MetaDataSet:
     """Create new metadataset"""
     pass
     return {}
@@ -65,7 +72,7 @@ def post(request):
     request_method="GET", 
     openapi=True
 )
-def get_metadataset(request):
+def get_metadataset(request:Request) -> MetaDataSet:
     """Create new metadataset"""
     pass
     return {}

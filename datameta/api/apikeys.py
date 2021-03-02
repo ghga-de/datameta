@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
-from sqlalchemy.sql.elements import Null
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
@@ -30,7 +29,6 @@ from string import ascii_letters, digits
 from random import choice
 from .. import security
 from pyramid.httpexceptions import HTTPUnauthorized
-from datetime import datetime
 
 
 @dataclass
@@ -86,7 +84,7 @@ def generate_api_key(request:Request, user:models.User, label:str):
     request_method="POST", 
     openapi=True
 )
-def post(request):
+def post(request:Request) -> UserSession:
     """Request new ApiKey"""
     try:
         auth_user = security.revalidate_user(request)
