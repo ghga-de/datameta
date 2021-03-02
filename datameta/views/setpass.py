@@ -31,29 +31,30 @@ log = logging.getLogger(__name__)
 
 import re
 
-@view_config(route_name='updatepass_api', renderer='json')
-def v_updatepass_api(request):
-    user = security.revalidate_user(request)
+# Old API Endpoint
+# @view_config(route_name='updatepass_api', renderer='json')
+# def v_updatepass_api(request):
+#     user = security.revalidate_user(request)
 
-    # Try to extract old and new password from request
-    try:
-        old_password = request.json_body["old_password"]
-        new_password = request.json_body["new_password"]
-    except Error:
-        raise HTTPBadRequest(json_body={'reason' : 'missing field'})
+#     # Try to extract old and new password from request
+#     try:
+#         old_password = request.json_body["old_password"]
+#         new_password = request.json_body["new_password"]
+#     except Error:
+#         raise HTTPBadRequest(json_body={'reason' : 'missing field'})
 
-    # Validate old password
-    if not security.check_password_by_hash(old_password, user.pwhash):
-        raise HTTPUnauthorized()
+#     # Validate old password
+#     if not security.check_password_by_hash(old_password, user.pwhash):
+#         raise HTTPUnauthorized()
 
-    # Validate password
-    if len(new_password) < 10:
-        raise HTTPBadRequest(json_body={'reason' : 'password too short'})
+#     # Validate password
+#     if len(new_password) < 10:
+#         raise HTTPBadRequest(json_body={'reason' : 'password too short'})
 
-    # Set the new password
-    user.pwhash = security.hash_password(new_password)
+#     # Set the new password
+#     user.pwhash = security.hash_password(new_password)
 
-    return { 'success' : True }
+#     return { 'success' : True }
 
 
 @view_config(route_name='setpass_api', renderer='json')
