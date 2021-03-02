@@ -1,7 +1,7 @@
 /*
 # Copyright (c) 2021 Universität Tübingen, Germany
 # Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
-# Authors: Moritz Hahn <moritz.hahn@uni-tuebingen.de>
+#          Moritz Hahn <moritz.hahn@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
