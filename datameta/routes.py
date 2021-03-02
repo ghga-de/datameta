@@ -26,6 +26,7 @@ def includeme(config):
     config.add_route('register', '/register')
     config.add_route('register_submit', '/register/submit')
     config.add_route('setpass', '/setpass/{token}')
+    config.add_route('setpass_api', '/api/setpass')
     config.add_route('forgot', '/forgot')
     config.add_route('forgot_api', '/api/forgot')
     config.add_route('home', '/home')
