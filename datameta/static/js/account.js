@@ -72,17 +72,19 @@ window.addEventListener("load", function() {
             document.getElementById("new_password_repeat").classList.remove("is-invalid")
         }
 
+        console.log(data.get("uuid"));
+        
         // Talk to the API
-        fetch('/api/updatepass',
+        fetch('/api/users/' + data.get("uuid") + '/password',
             {
-                method: 'post',
+                method: 'put',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    old_password: data.get("old_password"),
-                    new_password: data.get("new_password")
+                    passwordChangeCredential: data.get("old_password"),
+                    newPassword: data.get("new_password")
                 })
             })
             .then(response => response.json())
