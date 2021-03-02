@@ -344,6 +344,37 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
 
+
+  /submissions:
+    post:
+      summary: Create a New Submission
+      description: >-
+        Creates a new Submission.
+        A submission consists of a list of
+        metadatasets and a list of files.
+      tags:
+        - Submission
+      operationId: CreateSubmission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionRequest"
+        description: >-
+          Provide a list of metadatasets and a list of files.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
+      
+
 security:
   - bearerAuth: []
   - cookieAuth: []
@@ -528,6 +559,40 @@ components:
         - groupId
       additionalProperties: false
 
+    SubmissionRequest:
+      type: object
+      properties:
+        metaDataSetIds:
+          type: array
+          items:
+            type: string
+        fileIds:
+          type: array
+          items: 
+            type: string
+      required:
+        - metaDataSetIds
+        - fileIds
+      additionalProperties: false
+
+    SubmissionResponse:
+      type: object
+      properties:
+        metaDataSetIds:
+          type: array
+          items:
+            type: string
+        fileIds:
+          type: array
+          items: 
+            type: string
+        submissionId:
+          type: string
+      required:
+        - metaDataSetIds
+        - fileIds
+        - submissionId
+      additionalProperties: false
 
     Error:
       type: object
