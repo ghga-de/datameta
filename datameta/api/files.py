@@ -41,7 +41,7 @@ class FileBase:
     user_id: str
     group_id: str
 
-    def _json(self) -> Dict[str, str]:
+    def _json(self) -> dict:
         return {
                 "name": self.name,
                 "fileId": self.file_id,
@@ -54,7 +54,7 @@ class FileUploadResponse(FileBase):
     """FileUploadResponse container for OpenApi communication"""
     url_to_upload: str
 
-    def __json__(self, request: Request) -> Dict[str, str]:
+    def __json__(self, request: Request) -> dict:
         
         return self._json().update(
             {
@@ -70,7 +70,7 @@ class FileResponse(FileUploadResponse):
     content_uploaded: bool
     filesize: Optional[int] = None
 
-    def __json__(self, request: Request) -> Dict[str, str]:
+    def __json__(self, request: Request) -> dict:
         
         return self._json().update(
             {

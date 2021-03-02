@@ -44,7 +44,7 @@ class MetaDataSets:
     metadataset_id: str
     submission_id: Optional[str] = None
 
-    def __json__(self, request: Request) -> Dict[str, str]:
+    def __json__(self, request: Request) -> dict:
         return {
                 "records": self.records,
                 "groupId": self.group_id,

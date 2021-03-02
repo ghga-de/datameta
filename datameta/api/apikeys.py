@@ -40,7 +40,7 @@ class UserSession:
     label: str
     expires_at: Optional[str]
 
-    def __json__(self, request: Request) -> Dict[str, str]:
+    def __json__(self, request: Request) -> dict:
         return {
                 "userId": self.user_id,
                 "email": self.email,

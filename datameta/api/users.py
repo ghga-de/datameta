@@ -41,7 +41,7 @@ class ReqRequest:
     group_id: Optional[str] = None
     new_group_name: Optional[str] = None
 
-    def __json__(self, request: Request) -> Dict[str, str]:
+    def __json__(self, request: Request) -> dict:
         return {
                 "fullname": self.fullname,
                 "email": self.email,
