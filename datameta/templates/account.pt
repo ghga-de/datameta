@@ -1,80 +1,65 @@
 <div metal:use-macro="load: layout.pt">
 
-    <style metal:fill-slot="head">
-        .form-passwords {
-            width: 100%;
-            max-width: 450px;
-            padding: 15px;
-            margin: auto;
+    <script metal:fill-slot="head">
+        function showPassChange() {
+            document.getElementById("apiKeyTab").style.display="none";
+            document.getElementById("passwdTab").style.display="block";
         }
-    </style>
+
+        function showApiKeys() {
+            document.getElementById("apiKeyTab").style.display="block";
+            document.getElementById("passwdTab").style.display="none";
+        }
+    </script>
     <div metal:fill-slot="content">
+        <div class="position-relative">
+            <div class="mb-4 ms-3 position-relative"> 
+                <h2 class="mb-4">Account</h2>
+                <button type="button" class="btn btn-outline-danger btn-lg me-3 mb-3" id="changePasswordButton" onClick="showPassChange()">Change Password</button>
+                <button type="button" class="btn btn-outline-danger btn-lg mb-3" id="apiKeyButton" onClick="showApiKeys()">Manage API keys</button>
+            </div>
             
-        <div class="card-header">
-            <ul class="nav nav-tabs card-header-tabs">
-                <li class="nav-item">
-                    <a id="change_password_tab" class="nav-link active" aria-current="true" href="#" data-bs-toggle="tab" data-bs-target="#nav-change-pw">Change Password</a>
-                </li>
-                <li class="nav-item">
-                    <a id="api_keys_tab" class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-api-keys">Manage API Keys</a>
-                </li>
-            </ul>
-        </div>
-        
-        <div class="tab-content">
-            <div class="card-body tab-pane fade show active" id="nav-change-pw" role="tabpanel" aria-labelledby="nav-home-tab">
-                <div class="position-absolute form-passwords">    
-                    <h5 class="card-title mb-4">Change Password</h5>
-
-                    <div id="alert" class="alert alert-danger collapse" role="alert">
-                    </div>
-
-                    <div id="success" class="alert alert-success collapse" role="alert">
-                        The new password has been set successfully!
-                    </div>
-
-                    <form action="#" id="change_password_form">
-                        <div class="mb-4 input-group">
-                            <span class="input-group-text" id="desc_input_old_password">
-                                <i class="bi bi-key"></i>
-                            </span>                   
-                            <input type="password" class="form-control" name="old_password" id="old_password" placeholder="Old Password">
-                            <div class="invalid-feedback">
-                            </div>
-                        </div>
-
-                        <div class="mb-4 input-group">
-                            <span class="input-group-text" id="desc_input_password">
-                                <i class="bi bi-key"></i>
-                            </span>
-                            <input type="password" class="form-control" name="new_password" id="new_password" placeholder="New Password">
-                            <div class="invalid-feedback">
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4 input-group">
-                            <span class="input-group-text" id="desc_input_password_repeat">
-                                <i class="bi bi-key"></i>
-                            </span>
-                            <input type="password" class="form-control" name="new_password_repeat" id="new_password_repeat" placeholder="Repeat new Password">
-                            <div class="invalid-feedback">
-                                The two passwords do not match.
-                            </div>
-                        </div>
-
-                        <div class="input-group mb-4">
-                            <button class="btn btn-outline-danger" type="submit" id="submit_password">Submit Changes</button>
-                        </div>
-                    </form>
+            <div class="ms-4 position-absolute start-0" id="passwdTab">
+                <h4 class="mb-4">Change Password</h4>
+                <div class="mb-4 input-group">
+                    <span class="input-group-text" id="desc_input_old_password">
+                        <i class="bi bi-key"></i>
+                    </span>                   
+                    <input type="password" class="form-control" id="oldPassInput" placeholder="Old Password">
                 </div>
+
+                <div class="mb-4 input-group">
+                    <span class="input-group-text" id="desc_input_password">
+                        <i class="bi bi-key"></i>
+                    </span>
+                    <input type="password" class="form-control" id="newPassInput" placeholder="New Password">
+                    <div class="invalid-feedback">
+                    </div>
+                </div>
+                
+
+                <div class="mb-4 input-group">
+                    <span class="input-group-text" id="desc_input_password_repeat">
+                        <i class="bi bi-key"></i>
+                    </span>
+                    <input type="password" class="form-control" id="newPassRepeatInput" placeholder="Repeat new Password">
+                    <div class="invalid-feedback">
+                        The two passwords do not match.
+                    </div>
+                </div>
+                
+
+                <div class="mb-4">
+                    <input class="btn btn-lg btn-outline-danger" type="submit" value="Submit" id="submitPassChange">
+                </div>
+                
             </div>
-            <div class="card-body tab-pane fade" id="nav-api-keys" role="tabpanel" aria-labelledby="nav-home-tab">
-                <h5 class="card-title mb-4">Manage API Keys</h5>
-                <div class="alert alert-warning" role="alert">
-                    This feature is not yet implemented.
-                </div>
+
+
+            <div class="ms-4 position-absolute start-0" id="apiKeyTab" style="display:none;">
+                <h4>API keys</h4>
+                
             </div>
         </div>
-        <script type="module" src="${request.static_url('datameta:static/js/account.js')}"></script>
     </div>
 </div>
