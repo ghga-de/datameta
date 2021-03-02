@@ -411,12 +411,12 @@ paths:
     post:
       summary: Create a New File
       description: >-
-        Create a new file object.
+        Creates a new empty file object.
         Attention: this endpoint does not
-        take a file for upload directly.
+        take the file content for upload.
         Instead, it will respond with a
-        presigned URL where you can
-        PUT your file content.
+        presigned URL which you can use to
+        upload (PUT) your file content.
       tags:
         - Files
       operationId: CreateFile
@@ -464,6 +464,76 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FileResponse"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
+    put:
+      summary: Update File Details
+      description: >-
+        Update details for a File. 
+        E.g. to indicate that the File content 
+        has been uploaded (set contentUploaded=true).
+        Please note: this only works for Files that
+        have not been submitted, yet.
+      tags:
+        - Files
+      operationId: UpdateFile
+      parameters:
+        - name: id
+          in: path
+          description: ID of the File
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileAnnouncement"
+        description: >-
+          Provide essential properties of the file that
+          shall be uploaded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileResponse"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      summary: Delete Not-Submitted File
+      description: >-
+        Delete File. Please note:
+        This is only allowed if the File
+        has not been part of a Submission, yet.
+      tags:
+        - Files
+      operationId: DeleteFile
+      parameters:
+        - name: id
+          in: path
+          description: ID of the File
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
         '401':
           description: Unauthorized
         '403':
@@ -654,7 +724,7 @@ components:
         - fileId
         - contentUploaded
         - urlToUpload
-        - checksum
+        - checkSum
         - userId
         - groupId
       additionalProperties: false
