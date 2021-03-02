@@ -57,7 +57,6 @@ class FileUploadResponse(FileBase):
     url_to_upload: str
 
     def __json__(self, request: Request) -> dict:
-        
         return self._json().update(
             {
                 "urlToUpload": self.url_to_upload,
