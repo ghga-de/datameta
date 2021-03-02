@@ -123,7 +123,7 @@ class File(Base):
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     site_id          = Column(String(50), unique=True, nullable=False, index=True)
     name             = Column(Text, nullable=False)
-    storage_uri      = Column(String(2048), unique=True, nullable=False)
+    storage_uri      = Column(String(2048), unique=True, nullable=True)
     content_uploaded = Column(Boolean(create_constraint=False), nullable=False)
     checksum         = Column(Text, nullable=False)
     filesize         = Column(Integer, nullable=True)
