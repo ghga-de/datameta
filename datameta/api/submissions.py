@@ -75,7 +75,6 @@ class SubmissionResponse(SubmissionBase):
     openapi=True
 )
 def post(request: Request) -> SubmissionResponse:
-    """Announce a file and get a URL for uploading it."""
+    """Create a Submission."""
     pass
     return {}
-    

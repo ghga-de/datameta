@@ -20,16 +20,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.config import Configurator
+from pyramid.view import view_config
+from pyramid.request import Request
+from typing import Optional, Dict, List
+from .. import models
 
-def includeme(config: Configurator) -> None:
-    """Pyramid knob."""
-    config.add_route("apikeys", "/api/keys")
-    config.add_route("SetUserPassword", "/api/users/{id}/password")
-    config.add_route("users", "/api/users")
-    config.add_route("metadatasets", "/api/metadatasets")
-    config.add_route("metadatasets_id", "/api/metadatasets/{id}")
-    config.add_route("files", "/api/files")
-    config.add_route("files_id", "/api/files/{id}")
-    config.add_route("submissions", "/api/submissions")
-    config.add_route("groups_id_submissions", "/api/groups/{id}/submissions")
+
+class GroupSubmissions:
+    """GroupSubmissions container for OpenApi communication"""
+    submissions: List[dict]
+
+    def __init__(self, request:Request, group_id:str):
+        db = request.dbsession
+        # To Developer:
+        # Please insert code that queries the db
+        # for all submissions for the given group_id
+        # and store that list in self.submissions
+
+
+    def __json__(self) -> List[dict]:
+        return self(submissions)
+
+
+@view_config(
+    route_name="groups_id_submissions", 
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get(request: Request) -> GroupSubmissions:
+    """Get all submissions of a given group."""
+    pass
+    return {}
+    
