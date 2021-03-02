@@ -8,7 +8,7 @@ The DataMeta application stack comprises three main applications:
 * A [memcached](https://memcached.org/) server
 * A [PostgreSQL](https://www.postgresql.org/) database server
 
-### Relational data model
+## Relational data model
 
 ![erdiag](./img/datameta.erm.svg)
 
