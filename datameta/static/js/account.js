@@ -96,6 +96,8 @@ window.addEventListener("load", function() {
                         show_alert("Wrong password.");
                     } else if(response.status == "400") {
                         show_alert("Your password has to have at least 10 Characters");   
+                    } else {
+                        show_alert("An unknown error occurred. Please try again later.");
                     }
                 }
             })
