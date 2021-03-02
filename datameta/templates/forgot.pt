@@ -7,52 +7,52 @@
     -moz-user-select: none;
     user-select: none;
 }
-                        @media (min-width: 768px) {
-                            .bd-placeholder-img-lg {
-                                font-size: 3.5rem;
+                            @media (min-width: 768px) {
+                                .bd-placeholder-img-lg {
+                                    font-size: 3.5rem;
+                                }
                             }
-                        }
-                        html,
-                        body {
-                            height: 100%;
-                        }
+                            html,
+                            body {
+                                height: 100%;
+                            }
 
-                        body {
-                            display: flex;
-                            align-items: center;
-                            padding-top: 40px;
-                            padding-bottom: 40px;
-                            background-color: #f5f5f5;
-                        }
-                        .form-signin {
-                            width: 100%;
-                            max-width: 450px;
-                            padding: 15px;
-                            margin: auto;
-                        }
-                        .form-signin .checkbox {
-                            font-weight: 400;
-                        }
-                        .form-signin .form-control {
-                            position: relative;
-                            box-sizing: border-box;
-                            height: auto;
-                            padding: 10px;
-                            font-size: 16px;
-                        }
-                        .form-signin .form-control:focus {
-                            z-index: 2;
-                        }
-                        .form-signin input[type="email"] {
-                            margin-bottom: -1px;
-                            border-bottom-right-radius: 0;
-                            border-bottom-left-radius: 0;
-                        }
-                        .form-signin input[type="password"] {
-                            margin-bottom: 10px;
-                            border-top-left-radius: 0;
-                            border-top-right-radius: 0;
-                        }
+                            body {
+                                display: flex;
+                                align-items: center;
+                                padding-top: 40px;
+                                padding-bottom: 40px;
+                                background-color: #f5f5f5;
+                            }
+                            .form-signin {
+                                width: 100%;
+                                max-width: 450px;
+                                padding: 15px;
+                                margin: auto;
+                            }
+                            .form-signin .checkbox {
+                                font-weight: 400;
+                            }
+                            .form-signin .form-control {
+                                position: relative;
+                                box-sizing: border-box;
+                                height: auto;
+                                padding: 10px;
+                                font-size: 16px;
+                            }
+                            .form-signin .form-control:focus {
+                                z-index: 2;
+                            }
+                            .form-signin input[type="email"] {
+                                margin-bottom: -1px;
+                                border-bottom-right-radius: 0;
+                                border-bottom-left-radius: 0;
+                            }
+                            .form-signin input[type="password"] {
+                                margin-bottom: 10px;
+                                border-top-left-radius: 0;
+                                border-top-right-radius: 0;
+                            }
 </style>
 <main metal:fill-slot="content" class="form-signin">
     <div id="alert" class="alert alert-danger collapse" role="alert">
@@ -65,18 +65,20 @@
     </div>
     <h1 class="h3 mb-3 fw-normal" style="font-family: 'Fira Sans', sans-serif;"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</h1>
     <form action="#" id="forgotform">
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="desc_input_email">
-                <i class="bi bi-at"></i>
-            </span>
-            <input id="email" name="email" type="text" class="form-control" placeholder="Email" type="email" aria-label="Email" aria-describedby="desc_input_email">
-            <div class="invalid-feedback">
-                Please provide a valid email address!
+        <fieldset id="forgotfieldset">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="desc_input_email">
+                    <i class="bi bi-at"></i>
+                </span>
+                <input id="email" name="email" type="text" class="form-control" placeholder="Email" type="email" aria-label="Email" aria-describedby="desc_input_email">
+                <div class="invalid-feedback">
+                    Please provide a valid email address!
+                </div>
             </div>
-        </div>
-        <div class="input-group mb-3">
-            <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Send recovery link</button>
-        </div>
+            <div class="input-group mb-3">
+                <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Send recovery link</button>
+            </div>
+        </fieldset>
     </form>
 
     <script src="${request.static_url('datameta:static/js/forgot.js')}"></script>
