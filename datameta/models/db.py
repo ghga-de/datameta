@@ -125,6 +125,7 @@ class File(Base):
     site_id          = Column(String(50), unique=True, nullable=False, index=True)
     name             = Column(Text, nullable=False)
     storage_uri      = Column(String(2048), unique=True, nullable=False)
+    content_uploaded = Column(Boolean(create_constraint=False), nullable=False)
     checksum         = Column(Text, nullable=False)
     filesize         = Column(BigInteger, nullable=True)
     checksum_crypt   = Column(Text, nullable=True)
