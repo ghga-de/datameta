@@ -89,15 +89,16 @@ window.addEventListener("load", function() {
             })
             .then(response => response.json())
             .then(function (json) {
-                if (json.success) {
+                console.log(json);
+                if (json.code == "204 No Content") {
                     view_success();
                     return;
                 } else if (json.code == "401 Unauthorized") {
                     show_alert("Wrong password");
-                } else if(json.reason == "missing field") {
-                    show_alert("Please fill in all the fields.");
-                } else if (json.reason == "password too short") {
-                    show_alert("Your password has to be at least 10 characters long.");
+                } else if (json.code == "403 Forbidden") {
+                    show_alert("You do not have the required permission to perform this action.");
+                } else if(json.code == "400 Bad Request") {
+                    //show_alert(json);   
                 }
             })
             .catch((error) => {
