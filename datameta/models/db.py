@@ -24,6 +24,7 @@ from sqlalchemy import (
     Enum,
     Boolean,
     Integer,
+    BigInteger,
     Float,
     Text,
     ForeignKey,
@@ -126,9 +127,7 @@ class File(Base):
     storage_uri      = Column(String(2048), unique=True, nullable=True)
     content_uploaded = Column(Boolean(create_constraint=False), nullable=False)
     checksum         = Column(Text, nullable=False)
-    filesize         = Column(Integer, nullable=True)
-    checksum_crypt   = Column(Text, nullable=True)
-    filesize_crypt   = Column(Text, nullable=True)
+    filesize         = Column(BigInteger, nullable=True)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
     # Relationships
