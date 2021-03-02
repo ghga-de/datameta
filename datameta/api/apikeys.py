@@ -21,16 +21,14 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
-from sqlalchemy.sql.elements import Null
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
-from ..models import ApiKey, User
+from .. import models
 from string import ascii_letters, digits
 from random import choice
 from .. import security
 from pyramid.httpexceptions import HTTPUnauthorized
-from datetime import datetime
 
 
 @dataclass
@@ -42,7 +40,7 @@ class UserSession:
     label: str
     expires_at: Optional[str]
 
-    def __json__(self, request: Request) -> Dict[str, str]:
+    def __json__(self, request: Request) -> dict:
         return {
                 "userId": self.user_id,
                 "email": self.email,
@@ -51,7 +49,7 @@ class UserSession:
                 "expiresAt": self.expires_at
             }
 
-def generate_api_key(request:Request, user:User, label:str):
+def generate_api_key(request:Request, user:models.User, label:str):
     # For Token Composition:
     # Tokens consist of a core, which is stored as hash in the database,
     # plus a prefix that contains the user and the label of that ApiKey.
@@ -64,7 +62,7 @@ def generate_api_key(request:Request, user:User, label:str):
 
 
     db = request.dbsession
-    apikey = ApiKey(
+    apikey = models.ApiKey(
         user_id = user.id,
         value = security.hash_password(token_core),
         label = label,
@@ -86,7 +84,7 @@ def generate_api_key(request:Request, user:User, label:str):
     request_method="POST", 
     openapi=True
 )
-def post(request):
+def post(request:Request) -> UserSession:
     """Request new ApiKey"""
     try:
         auth_user = security.revalidate_user(request)

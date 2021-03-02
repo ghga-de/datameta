@@ -119,11 +119,11 @@ def submit_data(request, user):
                 log.error(f"File '{http_filename}' is pending multiple times for the same user {user.id} and group {user.group_id}")
                 raise HTTPInternalServerError()
 
-            old_name_storage = None
+            old_storage_uri = None
             if f_matches:
                 # We have a file under this name pending already. Delete it from the database and
                 # remember the name for storage removal later after the transaction was committed.
-                old_name_storage = delete_file_by_id(request.dbsession, f_matches[0].id)
+                old_storage_uri = delete_file_by_id(request.dbsession, f_matches[0].id)
 
             # We're creating a new file
             f = File(name = http_filename,
@@ -131,7 +131,8 @@ def submit_data(request, user):
                     checksum = md5,
                     filesize = file_size,
                     user_id = user.id,
-                    group_id = user.group_id
+                    group_id = user.group_id,
+                    content_uploaded = True
                     )
 
             request.dbsession.add(f)
@@ -141,11 +142,11 @@ def submit_data(request, user):
 
             # WARNING the storage name has to contain the database ID of the
             # file, as multiple components of this application rely on that.
-            name_storage = f"{str(f.id).rjust(10,'0')}_{user.id}_{user.group_id}_{file_size}_{md5}"
+            storage_uri = f"{str(f.id).rjust(10,'0')}_{user.id}_{user.group_id}_{file_size}_{md5}"
 
-            log.info(f"UPLOADING PENDING FILE [uid={user.id},email={user.email},file_id={f.id},name='{f.name}',name_storage='{name_storage}'] FROM [{request.client_addr}]")
+            log.info(f"UPLOADING PENDING FILE [uid={user.id},email={user.email},file_id={f.id},name='{f.name}',storage_uri='{storage_uri}'] FROM [{request.client_addr}]")
 
-            out_path = os.path.join(outpath, name_storage);
+            out_path = os.path.join(outpath, storage_uri);
 
             # Write the new file to the storage backend
             if not storage.demo_mode(request):
@@ -155,7 +156,7 @@ def submit_data(request, user):
                 log.warning("DEMO MODE! NOT ACTUALLY STORING ANY FILES!")
 
             # Update the database record to hold the local storage name
-            f.name_storage = name_storage
+            f.storage_uri = storage_uri
 
             request.dbsession.add(f)
 
@@ -164,9 +165,9 @@ def submit_data(request, user):
             request.tm.begin()
 
             # Delete the old file from storage if this was an overwrite
-            if old_name_storage:
-                storage.rm(request, old_name_storage)
-                log.info(f"REMOVED '{old_name_storage}' FROM STORAGE, REPLACED BY NEW UPLOAD")
+            if old_storage_uri:
+                storage.rm(request, old_storage_uri)
+                log.info(f"REMOVED '{old_storage_uri}' FROM STORAGE, REPLACED BY NEW UPLOAD")
         else:
             log.warning("Ignoring files[] data in POST request - not of type FieldStorage")
     return {
@@ -265,7 +266,7 @@ def delete_file_by_id(dbsession, file_id, skip_rm=False):
             raise FileDeleteError("File is already committed")
 
         # Remember the file path in storage
-        storage_path = file.name_storage
+        storage_path = file.storage_uri
         file_id      = file.id
 
         # Delete the file in the database

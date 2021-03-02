@@ -26,3 +26,10 @@ def includeme(config: Configurator) -> None:
     """Pyramid knob."""
     config.add_route("apikeys", "/api/keys")
     config.add_route("SetUserPassword", "/api/users/{id}/password")
+    config.add_route("users", "/api/users")
+    config.add_route("metadatasets", "/api/metadatasets")
+    config.add_route("metadatasets_id", "/api/metadatasets/{id}")
+    config.add_route("files", "/api/files")
+    config.add_route("files_id", "/api/files/{id}")
+    config.add_route("submissions", "/api/submissions")
+    config.add_route("groups_id_submissions", "/api/groups/{id}/submissions")

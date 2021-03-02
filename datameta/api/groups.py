@@ -19,25 +19,37 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import List
-from pyramid.httpexceptions import HTTPBadRequest
+
+from pyramid.view import view_config
+from pyramid.request import Request
+from typing import Optional, Dict, List
+from .. import models
 
 
-def get_validation_error(messages:List[str]) -> HTTPBadRequest:
-    """Generate a Validation Error (400) with custom messages
+class GroupSubmissions:
+    """GroupSubmissions container for OpenApi communication"""
+    submissions: List[dict]
 
-    Args:
-        messages (List[str]): a list of error messages
+    def __init__(self, request:Request, group_id:str):
+        db = request.dbsession
+        # To Developer:
+        # Please insert code that queries the db
+        # for all submissions for the given group_id
+        # and store that list in self.submissions
 
-    Returns:
-        HTTPBadRequest
-    """
-    response_body = [
-        {
-            "exception": "ValidationError",
-            "message": msg
-        }
-        for msg in messages
-    ]
 
-    return HTTPBadRequest(json=response_body)
+    def __json__(self) -> List[dict]:
+        return self(submissions)
+
+
+@view_config(
+    route_name="groups_id_submissions", 
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get(request: Request) -> GroupSubmissions:
+    """Get all submissions of a given group."""
+    pass
+    return {}
+    

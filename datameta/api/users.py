@@ -19,25 +19,44 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import List
-from pyramid.httpexceptions import HTTPBadRequest
+
+from dataclasses import dataclass
+from pyramid.view import view_config
+from pyramid.request import Request
+from typing import Optional, Dict
+from .. import models
 
 
-def get_validation_error(messages:List[str]) -> HTTPBadRequest:
-    """Generate a Validation Error (400) with custom messages
+# For Developers: if needed change the dataclasses to
+# regular classes and supply custom __init__ functions
+# (for instance if create of that class object should
+# also trigger creation of the respective db model)
 
-    Args:
-        messages (List[str]): a list of error messages
 
-    Returns:
-        HTTPBadRequest
-    """
-    response_body = [
-        {
-            "exception": "ValidationError",
-            "message": msg
-        }
-        for msg in messages
-    ]
+@dataclass
+class ReqRequest:
+    """ReqRequest container for OpenApi communication"""
+    fullname: str
+    email: str
+    group_id: Optional[str] = None
+    new_group_name: Optional[str] = None
 
-    return HTTPBadRequest(json=response_body)
+    def __json__(self, request: Request) -> dict:
+        return {
+                "fullname": self.fullname,
+                "email": self.email,
+                "groupId": self.group_id,
+                "newGroupName": self.new_group_name,
+            }
+
+@view_config(
+    route_name="users", 
+    renderer='json', 
+    request_method="POST", 
+    openapi=True
+)
+def post(request:Request) -> ReqRequest:
+    """Register a new user"""
+    pass
+    return {}
+    
