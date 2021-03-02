@@ -70,10 +70,7 @@ window.addEventListener("load", function() {
         } else {
             document.getElementById("new_password").classList.remove("is-invalid")
             document.getElementById("new_password_repeat").classList.remove("is-invalid")
-        }
-
-        console.log(data.get("uuid"));
-        
+        }        
         // Talk to the API
         fetch('/api/users/' + data.get("uuid") + '/password',
             {
@@ -87,23 +84,24 @@ window.addEventListener("load", function() {
                     newPassword: data.get("new_password")
                 })
             })
-            .then(response => response.json())
-            .then(function (json) {
-                console.log(json);
-                if (json.code == "204 No Content") {
+            .then((response) => {
+                document.resp = response;
+                if (response.status == "204") {
                     view_success();
                     return;
-                } else if (json.code == "401 Unauthorized") {
-                    show_alert("Wrong password");
-                } else if (json.code == "403 Forbidden") {
-                    show_alert("You do not have the required permission to perform this action.");
-                } else if(json.code == "400 Bad Request") {
-                    //show_alert(json);   
+                } else {
+                    if (response.status == "401") {
+                        show_alert("You have to be logged in to perform this action.");
+                    } else if (response.status == "403") {
+                        show_alert("Wrong password.");
+                    } else if(response.status == "400") {
+                        show_alert("Your password has to have at least 10 Characters");   
+                    }
                 }
             })
             .catch((error) => {
-                show_alert("An unknown error occurred. Please try again later.");
                 console.log(error);
+                show_alert("An unknown error occurred. Please try again later.");
             });
     });
 });
