@@ -31,6 +31,13 @@ from .. import models
 # (for instance if create of that class object should
 # also trigger creation of the respective db model)
 
+
+# For Developers: if needed change the dataclasses to
+# regular classes and supply custom __init__ functions
+# (for instance if create of that class object should
+# also trigger creation of the respective db model)
+
+
 @dataclass
 class MetaDataSets:
     """MetaDataSets container for OpenApi communication"""
@@ -69,18 +76,6 @@ def post(request:Request) -> MetaDataSets:
     openapi=True
 )
 def get_metadataset(request:Request) -> MetaDataSets:
-    """Create new metadataset"""
-    pass
-    return {}
-        
-
-@view_config(
-    route_name="metadatasets_id", 
-    renderer='json', 
-    request_method="GET", 
-    openapi=True
-)
-def get_metadataset(request):
     """Create new metadataset"""
     pass
     return {}
