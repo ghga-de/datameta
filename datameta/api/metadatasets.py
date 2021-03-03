@@ -40,8 +40,8 @@ from .. import models
 
 
 @dataclass
-class MetaDataSets:
-    """MetaDataSets container for OpenApi communication"""
+class MetaDataSet:
+    """MetaDataSet container for OpenApi communication"""
     records: dict
     group_id: str
     user_id: str
@@ -64,7 +64,7 @@ class MetaDataSets:
     request_method="POST", 
     openapi=True
 )
-def post(request:Request) -> MetaDataSets:
+def post(request:Request) -> MetaDataSet:
     """Create new metadataset"""
     pass
     return {}
@@ -76,7 +76,7 @@ def post(request:Request) -> MetaDataSets:
     request_method="GET", 
     openapi=True
 )
-def get_metadataset(request:Request) -> MetaDataSets:
+def get_metadataset(request:Request) -> MetaDataSet:
     """Create new metadataset"""
     pass
     return {}
