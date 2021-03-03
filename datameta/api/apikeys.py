@@ -31,6 +31,7 @@ from .. import security
 from pyramid.httpexceptions import HTTPOk, HTTPUnauthorized, HTTPForbidden
 from ..resource import resource_by_id
 from ..errors import get_validation_error
+from datetime import datetime
 
 
 @dataclass
@@ -41,7 +42,7 @@ class UserSession:
     email: str
     token: str
     label: str
-    expires_at: Optional[str]
+    expires_at: Optional[datetime]
 
     def __json__(self, request: Request) -> dict:
         return {
@@ -50,7 +51,7 @@ class UserSession:
                 "email": self.email,
                 "token": self.token,
                 "label": self.label,
-                "expiresAt": str(self.expires_at) if self.expires_at else None
+                "expiresAt": self.expires_at.isoformat() if self.expires_at else None
             }
 
 
@@ -102,7 +103,7 @@ def generate_api_key(request:Request, user:models.User, label:str):
         email=user.email,
         token=apikey.value,
         label=apikey.label,
-        expires_at=str(apikey.expires) if apikey.expires else None
+        expires_at=apikey.expires.isoformat() if apikey.expires else None
     )
 
 @view_config(
