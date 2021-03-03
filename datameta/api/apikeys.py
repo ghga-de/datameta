@@ -64,7 +64,7 @@ class ApiKeyLabels:
             {
                 "apiKeyId": str(key.uuid),
                 "label": key.label,
-                "expiresAt": str(key.expires) if key.expires else None,
+                "expiresAt": key.expires.isoformat() if key.expires else None,
             }
             for key in user.apikeys
         ]
