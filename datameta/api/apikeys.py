@@ -123,11 +123,12 @@ def post(request:Request) -> UserSession:
 
         email = request.openapi_validated.body["email"]
         password = request.openapi_validated.body["password"]
-        label = request.openapi_validated.body["label"]
 
         auth_user = security.get_user_by_credentials(request, email, password)
         if not auth_user:
             raise HTTPUnauthorized()
+        
+    label = request.openapi_validated.body["label"]
 
     return generate_api_key(request, auth_user, label)
 
