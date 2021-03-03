@@ -40,6 +40,7 @@ class FileBase:
     file_id: str
     user_id: str
     group_id: str
+    expires: Optional[str]
 
     def _json(self) -> dict:
         return {
@@ -47,6 +48,7 @@ class FileBase:
                 "fileId": self.file_id,
                 "userId": self.user_id,
                 "groupId": self.group_id,
+                "expiresAt": self.expires,
             }
 
 @dataclass
@@ -55,7 +57,6 @@ class FileUploadResponse(FileBase):
     url_to_upload: str
 
     def __json__(self, request: Request) -> dict:
-        
         return self._json().update(
             {
                 "urlToUpload": self.url_to_upload,
@@ -111,7 +112,7 @@ def get_file(request: Request) -> FileResponse:
     request_method="PUT", 
     openapi=True
 )
-def delete_file(request: Request) -> HTTPOk:
+def update_file(request: Request) -> HTTPOk:
     """Update not-submitted file."""
     pass
     return {}

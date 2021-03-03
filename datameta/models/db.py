@@ -130,6 +130,7 @@ class File(Base):
     filesize         = Column(BigInteger, nullable=True)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
+    upload_expires   = Column(DateTime, nullable=True)
     # Relationships
     metadatumrecord  = relationship('MetaDatumRecord', back_populates='file', uselist=False)
     group            = relationship('Group', back_populates='files')

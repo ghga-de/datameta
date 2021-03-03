@@ -98,8 +98,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegRequest"
-        '403':
-          description: Forbidden
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -295,10 +293,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/FileAnnouncement"
+              $ref: "#/components/schemas/FileUpdateRequest"
         description: >-
-          Provide essential properties of the file that
-          shall be uploaded
+          Provide properties of the file that
+          shall be updated.
       responses:
         "200":
           description: OK
@@ -374,7 +372,6 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
       
-          
   /groups/{id}/submissions:
     get:
       summary: Get A List of All Submissions of A Group.
@@ -472,6 +469,7 @@ components:
       required:
         - newPassword
         - passwordChangeCredential
+      additionalProperties: false
 
     RegRequest:
       type: object
@@ -526,7 +524,6 @@ components:
         - records
       additionalProperties: false
         
-
     FileAnnouncement:
       type: object
       properties:
@@ -557,12 +554,15 @@ components:
           type: string
         groupId:
           type: string
+        expiresAt:
+          type: string
       required:
         - name
         - fileId
         - urlToUpload
         - userId
         - groupId
+        - expiresAt
       additionalProperties: false
 
     FileResponse:
@@ -580,19 +580,36 @@ components:
         fileSize:
           type: integer
           nullable: true
+        urlToUpload:
+          type: string
         userId:
           type: string
         groupId:
+          type: string
+        expiresAt:
           type: string
       required:
         - name
         - fileId
         - contentUploaded
+        - urlToUpload
         - checkSum
         - userId
         - groupId
+        - expiresAt
       additionalProperties: false
 
+    FileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        contentUploaded:
+          type: boolean
+        checkSum:
+          type: string
+      additionalProperties: false
+      
     SubmissionRequest:
       type: object
       properties:
