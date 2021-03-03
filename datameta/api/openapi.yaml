@@ -529,13 +529,13 @@ components:
       properties:
         name:
           type: string
-        checksum:
+        checkSum:
           type: string
         # group id is identified
         # in the backend
       required:
         - name
-        - checksum
+        - checkSum
       additionalProperties: false
     
     FileUploadResponse:
