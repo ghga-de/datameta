@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
-from datameta.models.db import MetaDataSet
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
@@ -36,8 +35,8 @@ from .. import models
 
 
 @dataclass
-class MetaDataSets:
-    """MetaDataSets container for OpenApi communication"""
+class MetaDataSet:
+    """MetaDataSet container for OpenApi communication"""
     records: dict
     group_id: str
     user_id: str
@@ -55,7 +54,7 @@ class MetaDataSets:
 
 
 @view_config(
-    route_name="metadatasets", 
+    route_name="MetaDataSet", 
     renderer='json', 
     request_method="POST", 
     openapi=True
