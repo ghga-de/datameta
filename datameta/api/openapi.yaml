@@ -98,8 +98,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegRequest"
-        '403':
-          description: Forbidden
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
