@@ -64,7 +64,7 @@ class ApiKeyLabels:
             {
                 "apiKeyId": str(key.uuid),
                 "label": key.label,
-                "expiresAt": str(key.expires) if key.expires else None,
+                "expiresAt": key.expires.isoformat() if key.expires else None,
             }
             for key in user.apikeys
         ]
@@ -143,8 +143,6 @@ def get_user_keys(request:Request) -> UserSession:
     """Request new ApiKey"""
     
     auth_user = security.revalidate_user(request)
-    if not auth_user:
-        raise HTTPUnauthorized()
     
     db = request.dbsession
     target_user = resource_by_id(db, models.User, request.matchdict['id'])
@@ -163,8 +161,6 @@ def get_user_keys(request:Request) -> UserSession:
 def delete_key(request:Request) -> UserSession:
     """Request new ApiKey"""
     auth_user = security.revalidate_user(request)
-    if not auth_user:
-        raise HTTPUnauthorized()
     
     db = request.dbsession
     target_key = resource_by_id(db, models.ApiKey, request.matchdict['id'])
