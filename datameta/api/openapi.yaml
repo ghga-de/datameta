@@ -732,14 +732,11 @@ components:
           type: string
         checksum:
           type: string
-        userId:
-          type: string
         # group id is identified
         # in the backend
       required:
         - name
         - checksum
-        - userId
       additionalProperties: false
     
     FileUploadResponse:
