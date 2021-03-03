@@ -468,6 +468,7 @@ components:
       required:
         - newPassword
         - passwordChangeCredential
+      additionalProperties: false
 
     RegRequest:
       type: object
