@@ -39,11 +39,10 @@ def resource_by_id(dbsession, model, idstring):
         entity = dbsession.query(model).filter(model.uuid==UUID(idstring)).one_or_none();
     except ValueError: # The specified string is not a valid UUID and the UUID constructor raises
         pass
-    
-    if hasattr(model, "site_id"):
-        try:
-            entity = entity if entity is not None else dbsession.query(model).filter(model.site_id==idstring).one_or_none();
-        except AttributeError: # This entity doesn't have a site_id
-            pass
+
+    try:
+        entity = entity if entity is not None else dbsession.query(model).filter(model.site_id==idstring).one_or_none();
+    except AttributeError: # This entity doesn't have a site_id
+        pass
 
     return entity
