@@ -142,8 +142,6 @@ def get_user_keys(request:Request) -> UserSession:
     """Request new ApiKey"""
     
     auth_user = security.revalidate_user(request)
-    if not auth_user:
-        raise HTTPUnauthorized()
     
     db = request.dbsession
     target_user = resource_by_id(db, models.User, request.matchdict['id'])
