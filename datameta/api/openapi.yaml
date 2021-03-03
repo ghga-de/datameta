@@ -293,10 +293,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/FileAnnouncement"
+              $ref: "#/components/schemas/FileUpdateRequest"
         description: >-
-          Provide essential properties of the file that
-          shall be uploaded
+          Provide properties of the file that
+          shall be updated.
       responses:
         "200":
           description: OK
@@ -372,7 +372,6 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
       
-          
   /groups/{id}/submissions:
     get:
       summary: Get A List of All Submissions of A Group.
@@ -591,6 +590,17 @@ components:
         - groupId
       additionalProperties: false
 
+    FileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        contentUploaded:
+          type: boolean
+        checkSum:
+          type: string
+      additionalProperties: false
+      
     SubmissionRequest:
       type: object
       properties:
