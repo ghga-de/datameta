@@ -23,12 +23,14 @@
 from dataclasses import dataclass
 from pyramid.view import view_config
 from pyramid.request import Request
-from typing import Optional, Dict
+from typing import Optional, List
 from .. import models
 from string import ascii_letters, digits
 from random import choice
 from .. import security
-from pyramid.httpexceptions import HTTPUnauthorized
+from pyramid.httpexceptions import HTTPOk, HTTPUnauthorized, HTTPForbidden
+from ..resource import resource_by_id
+from ..errors import get_validation_error
 
 
 @dataclass
@@ -48,6 +50,26 @@ class UserSession:
                 "label": self.label,
                 "expiresAt": self.expires_at
             }
+
+
+class ApiKeyLabels:
+    """ApiKeyLabels container for OpenApi communication"""
+
+    apikeys: List[dict]
+
+    def __init__(self, user:models.User):
+        self.apikeys = [
+            {
+                "label": key.label,
+                "expiresAt": str(key.expires),
+            }
+            for key in user.apikeys
+        ]
+    
+    def __json__(self, request: Request) -> dict:
+        return self.apikeys
+
+
 
 def generate_api_key(request:Request, user:models.User, label:str):
     # For Token Composition:
@@ -103,3 +125,52 @@ def post(request:Request) -> UserSession:
             raise HTTPUnauthorized()
 
     return generate_api_key(request, auth_user, label)
+
+
+@view_config(
+    route_name="user_id_keys", 
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get_user_keys(request:Request) -> UserSession:
+    """Request new ApiKey"""
+    
+    auth_user = security.revalidate_user(request)
+    if not auth_user:
+        raise HTTPUnauthorized()
+    
+    db = request.dbsession
+    target_user = resource_by_id(db, models.User, request.matchdict['id'])
+    if not target_user or auth_user.id!=target_user.id:
+        raise HTTPForbidden()
+    
+    return ApiKeyLabels(auth_user)
+
+    
+@view_config(
+    route_name="apikeys_id", 
+    renderer='json', 
+    request_method="DELETE", 
+    openapi=True
+)
+def delete_key(request:Request) -> UserSession:
+    """Request new ApiKey"""
+    auth_user = security.revalidate_user(request)
+    if not auth_user:
+        raise HTTPUnauthorized()
+    
+    db = request.dbsession
+    label = request.matchdict['label']
+    target_key = None
+    for key in auth_user.apikeys:
+        if key.label == label:
+            target_key=key
+            break       
+    
+    if not target_key:
+        raise get_validation_error([f"ApiKey with label {label} not found."])
+
+    db.delete(target_key)
+
+    return HTTPOk()

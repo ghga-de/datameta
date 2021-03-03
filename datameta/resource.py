@@ -41,7 +41,7 @@ def resource_by_id(dbsession, model, idstring):
         pass
 
     try:
-        entity = entity if entity is not None else dbsession.query(model).filter(model.site_id==request_id).one_or_none();
+        entity = entity if entity is not None else dbsession.query(model).filter(model.site_id==idstring).one_or_none();
     except AttributeError: # This entity doesn't have a site_id
         pass
 
