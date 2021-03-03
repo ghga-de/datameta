@@ -469,6 +469,7 @@ components:
       required:
         - newPassword
         - passwordChangeCredential
+      additionalProperties: false
 
     RegRequest:
       type: object
@@ -523,7 +524,6 @@ components:
         - records
       additionalProperties: false
         
-
     FileAnnouncement:
       type: object
       properties:
@@ -554,12 +554,15 @@ components:
           type: string
         groupId:
           type: string
+        expiresAt:
+          type: string
       required:
         - name
         - fileId
         - urlToUpload
         - userId
         - groupId
+        - expiresAt
       additionalProperties: false
 
     FileResponse:
@@ -577,17 +580,23 @@ components:
         fileSize:
           type: integer
           nullable: true
+        urlToUpload:
+          type: string
         userId:
           type: string
         groupId:
+          type: string
+        expiresAt:
           type: string
       required:
         - name
         - fileId
         - contentUploaded
+        - urlToUpload
         - checkSum
         - userId
         - groupId
+        - expiresAt
       additionalProperties: false
 
     FileUpdateRequest:
