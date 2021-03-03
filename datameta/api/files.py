@@ -40,6 +40,7 @@ class FileBase:
     file_id: str
     user_id: str
     group_id: str
+    expires: Optional[str]
 
     def _json(self) -> dict:
         return {
@@ -47,6 +48,7 @@ class FileBase:
                 "fileId": self.file_id,
                 "userId": self.user_id,
                 "groupId": self.group_id,
+                "expiresAt": self.expires,
             }
 
 @dataclass

@@ -752,12 +752,15 @@ components:
           type: string
         groupId:
           type: string
+        expiresAt:
+          type: string
       required:
         - name
         - fileId
         - urlToUpload
         - userId
         - groupId
+        - expiresAt
       additionalProperties: false
 
     FileResponse:
@@ -781,6 +784,8 @@ components:
           type: string
         groupId:
           type: string
+        expiresAt:
+          type: string
       required:
         - name
         - fileId
@@ -789,6 +794,7 @@ components:
         - checkSum
         - userId
         - groupId
+        - expiresAt
       additionalProperties: false
 
     SubmissionRequest:
