@@ -147,8 +147,6 @@ def get_user_keys(request:Request) -> UserSession:
     
     db = request.dbsession
     target_user = resource_by_id(db, models.User, request.matchdict['id'])
-    print(target_user)
-    print(auth_user)
     if not target_user or auth_user.id!=target_user.id:
         raise HTTPForbidden()
     
