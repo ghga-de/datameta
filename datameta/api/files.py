@@ -112,7 +112,7 @@ def get_file(request: Request) -> FileResponse:
     request_method="PUT", 
     openapi=True
 )
-def delete_file(request: Request) -> HTTPOk:
+def update_file(request: Request) -> HTTPOk:
     """Update not-submitted file."""
     pass
     return {}

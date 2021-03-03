@@ -98,8 +98,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegRequest"
-        '403':
-          description: Forbidden
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -293,10 +291,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/FileAnnouncement"
+              $ref: "#/components/schemas/FileUpdateRequest"
         description: >-
-          Provide essential properties of the file that
-          shall be uploaded
+          Provide properties of the file that
+          shall be updated.
       responses:
         "200":
           description: OK
@@ -529,13 +527,13 @@ components:
       properties:
         name:
           type: string
-        checkSum:
+        checksum:
           type: string
         # group id is identified
         # in the backend
       required:
         - name
-        - checkSum
+        - checksum
       additionalProperties: false
     
     FileUploadResponse:
@@ -593,6 +591,17 @@ components:
         - userId
         - groupId
         - expiresAt
+      additionalProperties: false
+
+    FileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        contentUploaded:
+          type: boolean
+        checkSum:
+          type: string
       additionalProperties: false
 
     SubmissionRequest:
