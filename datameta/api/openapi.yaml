@@ -67,7 +67,7 @@ paths:
         - cookieAuth: []
         - {}
 
-  /keys/{label}:
+  /keys/{id}:
     delete:
       summary: Delete ApiKey by label
       description: >-
@@ -77,9 +77,9 @@ paths:
         - Users
       operationId: DeleteApiKey
       parameters:
-        - name: label
+        - name: id
           in: path
-          description: Label of Apikey
+          description: ID (not label) of Apikey
           required: true
           schema:
             type: string
@@ -506,6 +506,8 @@ components:
     UserSession:
       type: object
       properties:
+        apiKeyId:
+          type: string
         userId:
           type: string
         email:
@@ -518,8 +520,10 @@ components:
           type: string
           nullable: true
       required:
+        - apiKeyId
         - userId
         - token
+        - label
         - expiresAt
       additionalProperties: false
 
@@ -528,12 +532,15 @@ components:
       items:
         type: object
         properties:
+          apiKeyId:
+            type: string
           label:
             type: string
           expiresAt:
             type: string
             nullable: True
         required:
+          - apiKeyId
           - label
           - expiresAt
       additionalProperties: false

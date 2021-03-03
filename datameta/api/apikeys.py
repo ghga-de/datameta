@@ -36,6 +36,7 @@ from ..errors import get_validation_error
 @dataclass
 class UserSession:
     """User Session as return object when requesting new ApiKey"""
+    apikey_id: str
     user_id: str
     email: str
     token: str
@@ -44,11 +45,12 @@ class UserSession:
 
     def __json__(self, request: Request) -> dict:
         return {
+                "apiKeyId": self.apikey_id,
                 "userId": self.user_id,
                 "email": self.email,
                 "token": self.token,
                 "label": self.label,
-                "expiresAt": self.expires_at
+                "expiresAt": str(self.expires_at) if self.expires_at else None
             }
 
 
@@ -60,8 +62,9 @@ class ApiKeyLabels:
     def __init__(self, user:models.User):
         self.apikeys = [
             {
+                "apiKeyId": str(key.uuid),
                 "label": key.label,
-                "expiresAt": str(key.expires),
+                "expiresAt": str(key.expires) if key.expires else None,
             }
             for key in user.apikeys
         ]
@@ -91,8 +94,10 @@ def generate_api_key(request:Request, user:models.User, label:str):
         expires = None
     )
     db.add(apikey)
+    db.flush()
 
     return UserSession(
+        apikey_id=str(apikey.uuid),
         user_id=user.site_id,
         email=user.email,
         token=apikey.value,
@@ -142,6 +147,8 @@ def get_user_keys(request:Request) -> UserSession:
     
     db = request.dbsession
     target_user = resource_by_id(db, models.User, request.matchdict['id'])
+    print(target_user)
+    print(auth_user)
     if not target_user or auth_user.id!=target_user.id:
         raise HTTPForbidden()
     
@@ -161,15 +168,9 @@ def delete_key(request:Request) -> UserSession:
         raise HTTPUnauthorized()
     
     db = request.dbsession
-    label = request.matchdict['label']
-    target_key = None
-    for key in auth_user.apikeys:
-        if key.label == label:
-            target_key=key
-            break       
-    
-    if not target_key:
-        raise get_validation_error([f"ApiKey with label {label} not found."])
+    target_key = resource_by_id(db, models.ApiKey, request.matchdict['id'])
+    if not target_key or auth_user.id!=target_key.user.id:
+        raise HTTPForbidden()
 
     db.delete(target_key)
 

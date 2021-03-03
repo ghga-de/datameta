@@ -25,7 +25,7 @@ from pyramid.config import Configurator
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
     config.add_route("apikeys", "/api/keys")
-    config.add_route("apikeys_id", "/api/keys/{label}")
+    config.add_route("apikeys_id", "/api/keys/{id}")
     config.add_route("user_id_keys", "/api/users/{id}/keys")
     config.add_route("SetUserPassword", "/api/users/{id}/password")
     config.add_route("users", "/api/users")
