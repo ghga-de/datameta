@@ -54,7 +54,7 @@ class MetaDataSet:
 
 
 @view_config(
-    route_name="MetaDataSet", 
+    route_name="metadataset", 
     renderer='json', 
     request_method="POST", 
     openapi=True
