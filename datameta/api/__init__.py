@@ -22,6 +22,17 @@
 
 from pyramid.config import Configurator
 
+from dataclasses import dataclass
+from dataclasses_json import dataclass_json, LetterCase
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class DataHolderBase:
+    """Base class for data classes intended to be used as API response bodies"""
+    def __json__(self, request):
+        return self.to_dict()
+
+
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
     config.add_route("apikeys", "/api/keys")
@@ -35,3 +46,5 @@ def includeme(config: Configurator) -> None:
     config.add_route("files_id", "/api/files/{id}")
     config.add_route("submissions", "/api/submissions")
     config.add_route("groups_id_submissions", "/api/groups/{id}/submissions")
+    # Endpoint outside of openapi
+    config.add_route("upload", "/api/upload/{id}")

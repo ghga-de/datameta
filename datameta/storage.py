@@ -19,6 +19,7 @@
 # SOFTWARE.
 
 import os
+import shutil
 import logging
 log = logging.getLogger(__name__)
 
@@ -32,3 +33,35 @@ def rm(request, storage_path):
         os.remove(os.path.join(request.registry.settings['datameta.storage_path'], storage_path))
     else:
         log.debug("DID NOT DELETE. DEMO MODE.")
+
+def annotate_storage(request, db_file):
+    """Returns an upload URL and corresponding request headers for uploading
+    the referred file object and annotates the storage URI in the file
+    object"""
+    # Raise an error if this file object is not in the pre-upload stage
+    if db_file.storage_uri is not None or db_file.content_uploaded:
+        raise RuntimeError(f"File {db_file.uuid} cannot be annotated [storage_uri={db_file.storage_uri}; content_uploaded={db_file.content_uploaded}")
+
+    # Currently, only local storage is supported
+    db_file.storage_uri = f"file://{db_file.uuid}__{db_file.checksum}"
+    return request.route_url('upload', id=db_file.uuid), {}
+
+def write_file(request, db_file, file):
+    # Find the output folder and try to create it if it does not exist
+    outdir = request.registry.settings['datameta.storage_path']
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+
+    # Sanity checks and output path generation
+    if db_file.storage_uri is None or not db_file.storage_uri.startswith("file://"):
+        raise RuntimeError(f"Unable to store to storage URI '{db_file.storage_uri}'")
+    out_path = os.path.join(outdir, db_file.storage_uri[7:]) # Strip the file:// prefix
+
+    # Write the file
+    if not demo_mode(request):
+        file.seek(0)
+        with open(out_path, 'wb') as outfile:
+            shutil.copyfileobj(file, outfile)
+        log.info(f"[STORAGE][NEWFILE][user={db_file.user.uuid}][file={db_file.uuid}]")
+    else:
+        log.info(f"[!!DEMOMODE!!][STORAGE][NEWFILE][user={db_file.user.uuid}][file={db_file.uuid}]")

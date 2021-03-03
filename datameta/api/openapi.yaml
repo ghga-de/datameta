@@ -636,6 +636,9 @@ components:
           type: string
         urlToUpload:
           type: string
+        requestHeaders:
+          type: object
+          additionalProperties: true
         userId:
           type: string
         groupId:
@@ -661,9 +664,9 @@ components:
         contentUploaded:
           type: boolean
           nullable: true
-        checkSum:
+        checksum:
           type: string
-        fileSize:
+        filesize:
           type: integer
           nullable: true
         urlToUpload:
@@ -679,7 +682,7 @@ components:
         - fileId
         - contentUploaded
         - urlToUpload
-        - checkSum
+        - checksum
         - userId
         - groupId
         - expiresAt

@@ -49,6 +49,7 @@ requires = [
     'zope.sqlalchemy',
     'pyramid_openapi3',
     'pytest >= 3.7.4',
+    'dataclasses-json==0.5.2',
 ]
 
 tests_require = [
