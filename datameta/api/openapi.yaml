@@ -772,7 +772,6 @@ components:
           type: string
         contentUploaded:
           type: boolean
-          nullable: true
         checkSum:
           type: string
         fileSize:
