@@ -324,9 +324,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/FileResponse"
+                $ref: "#/components/schemas/FileResponse"
         '401':
           description: Unauthorized
         '403':
@@ -342,7 +340,10 @@ paths:
         E.g. to indicate that the File content 
         has been uploaded (set contentUploaded=true).
         Please note: this only works for Files that
-        have not been submitted, yet.
+        have not been submitted, yet. Other file
+        attributes (checksum and name) can only be
+        updated until contentUploaded has been set to
+        'true'.
       tags:
         - Files
       operationId: UpdateFile
@@ -367,13 +368,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/FileResponse"
+                $ref: "#/components/schemas/FileResponse"
         '401':
           description: Unauthorized
         '403':
           description: Forbidden
+        '409':
+          description: Mismatch between uploaded data checksum and announced checksum
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -617,14 +618,9 @@ components:
           type: string
         checksum:
           type: string
-        userId:
-          type: string
-        # group id is identified
-        # in the backend
       required:
         - name
         - checksum
-        - userId
       additionalProperties: false
     
     FileUploadResponse:
@@ -669,8 +665,6 @@ components:
         filesize:
           type: integer
           nullable: true
-        urlToUpload:
-          type: string
         userId:
           type: string
         groupId:
@@ -681,7 +675,6 @@ components:
         - name
         - fileId
         - contentUploaded
-        - urlToUpload
         - checksum
         - userId
         - groupId
