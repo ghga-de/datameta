@@ -327,6 +327,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: File not found
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
