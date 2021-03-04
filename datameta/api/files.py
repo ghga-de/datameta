@@ -24,7 +24,7 @@ import logging
 from dataclasses import dataclass
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPOk, HTTPNotFound, HTTPForbidden, HTTPConflict, HTTPBadRequest
+from pyramid.httpexceptions import HTTPOk, HTTPNotFound, HTTPForbidden, HTTPConflict, HTTPBadRequest, HTTPNoContent
 from typing import Optional, Dict
 from datetime import datetime, timedelta
 from .. import models, siteid, security, storage, resource, errors
@@ -199,13 +199,66 @@ def update_file(request: Request) -> HTTPOk:
             expires_at        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 
+def delete_files_db(db, db_files:list) -> list:
+    """Deletes the specified db_files from the database and returns the
+    storage_uris for subsequent deletion from storage after the transaction was
+    committed.
+
+    Raises:
+        FileDeleteError - One of the specified files was already comitted and could thus not be deleted.
+    """
+    storage_uris = [ db_file.storage_uri for db_file in db_files ]
+    for db_file in db_files:
+        if db_file.metadatumrecord is not None:
+            raise FileDeleteError()
+        db.delete(db_file)
+
+    return storage_uris
+
+
 @view_config(
     route_name="files_id",
     renderer="json",
     request_method="DELETE",
     openapi=True
 )
-def delete_file(request: Request) -> HTTPOk:
-    """Delete not-submitted file."""
-    pass
-    return {}
+def delete_file(request: Request) -> HTTPNoContent:
+    """Delete not-submitted file.
+
+    Raises:
+        400 HTTPBadRequest   - The request is malformed
+        401 HTTPUnauthorized - Unauthenticated access
+        403 HTTPForbidden    - Requesting entity is not authorized to delete this file
+        404 HTTPNotFound     - The requested file ID cannot be found
+    """
+
+    # Check authentication and raise 401 if unavailable
+    auth_user = security.revalidate_user(request)
+
+    db = request.dbsession
+
+    # Obtain file from database
+    db_file = resource.resource_by_id(db, models.File, request.matchdict['id'])
+
+    # Check if file could be found
+    if db_file is None:
+        raise HTTPNotFound(json=None)
+
+    # Check if requesting user has access to the file
+    if db_file.user_id != auth_user.id or db_file.group_id != auth_user.group_id:
+        raise HTTPForbidden(json=None)
+
+    # Delete the database record
+    storage_uri = delete_files_db(db, [db_file])[0]
+
+    # Commit transaction
+    request.tm.commit()
+    request.tm.begin()
+
+    log.info(f"[STORAGE][DELETE][user={db_file.user.uuid}][file={db_file.uuid}]")
+
+    # Delete the file in storage if exists
+    if storage_uri is not None:
+        storage.rm(request, storage_uri)
+
+    return HTTPNoContent()
