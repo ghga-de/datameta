@@ -79,7 +79,7 @@ def post(request:Request) -> MetaDataSetResponse:
     """Create new metadataset"""
     auth_user = security.revalidate_user(request)
     record = request.openapi_validated.body["record"]
-    # prevalidate:
+    # prevalidate (raises 400 in case of validation failure):
     validate_metadataset_record(request, record)
     
     # render records according to MetaDatum constraints
