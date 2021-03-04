@@ -19,10 +19,13 @@
 # SOFTWARE.
 
 from datameta.models import MetaDataSet, MetaDatum, File
+from .errors import get_validation_error
 from sqlalchemy import and_
+from pyramid.request import Request
 
 from collections import Counter
 import re
+import datetime
 
 def lint_pending_msets(request, user, mset_ids = None):
     """Performs linting on the pending metadatasets for a given user. Optionally filter those
@@ -103,3 +106,84 @@ def lint_pending_msets(request, user, mset_ids = None):
     # report for the failed records
     good_sets = [ mdataset for mdataset in mdatasets if not linting_report[mdataset.id] ]
     return good_sets, file_pairs, linting_report
+
+
+def validate_metadataset_fields(
+    request:Request,
+    fields:dict, 
+    return_err_message:bool=False
+):
+    """Validate single metadataset in isolation"""
+    errors = [] # list of error
+                # empty means success
+
+    # get all metadatum fields:
+    db = request.dbsession
+    mdats_query = db.query(MetaDatum).order_by(MetaDatum.order).all()
+    mdats = { mdat.name: mdat for mdat in mdats_query }
+    
+    for name, value in fields.items():
+        # check if fields appeards in the metadatum list
+        if not name in mdats.keys():
+            errors.append({
+                "message": (
+                    f"field with name \"name\""
+                    "is not allowed"
+                ),
+                "field": name
+            })
+            continue
+        mdat = mdats[name]
+        
+        # check if values are of allowed types:
+        # (all values will be stringified later)
+        if not isinstance(value, str):
+            errors.append({
+                "message": "field value must be a string.",
+                "field": name
+            })
+            continue
+
+        # Check if the regexp pattern matches
+        if mdat.regexp and re.match(mdat.regexp, value) is None:
+            errors.append({
+                "message": mdat.lintmessage,
+                "field": name
+            })
+            continue
+        
+        if mdat.datetimefmt:
+            try:
+                _ = datetime.datetime.strptime(
+                    value, mdat.datetimefmt
+                ).isoformat()
+            except (ValueError, TypeError):
+                errors.append({
+                    "message": "The field could not be parsed as a valid date / time",
+                    "field": name
+                })
+                continue   
+    
+    # Check if all mandatory fields exist:
+    mdats_mandatory = {mdat.name for mdat in mdats if mdat.mandatory}
+    rec_names = set(fields.keys())
+    if not mdats_mandatory.issubset(rec_names):
+        errors.append({
+            "message": "The fields are missing mandatory fields.",
+        })
+    
+    # return the error messages
+    # or raise validation errors
+    if return_err_message:
+        return errors
+    elif len(errors) > 0:
+        messages = [err["message"] for err in errors]
+        fields = [
+            err["field"] if "field" in err else None 
+            for err in errors
+        ]
+        raise get_validation_error(messages, fields)
+
+            
+        
+        

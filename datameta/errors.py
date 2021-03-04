@@ -20,26 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import enum
-from typing import List
+from typing import List, Optional
 from pyramid.httpexceptions import HTTPBadRequest
 
 
 def get_validation_error(
     messages:List[str], 
-    fields:List[str]
+    fields:Optional[List[Optional[str]]]
 ) -> HTTPBadRequest:
     """Generate a Validation Error (400) with custom messages
-
-    Args:
-        messages (List[str]): a list of error messages
-
-    Returns:
-        HTTPBadRequest
     """
     assert len(messages)>0, "messages cannot be empty"
-    assert fields is None or len(fields)==len(messages), \
+    assert fields is None or len(fields)==len(messages), (
         "The fields list must be of same length as messages."
-
+    )
+    
     response_body = []
     for idx, msg in enumerate(messages):
         err = {
