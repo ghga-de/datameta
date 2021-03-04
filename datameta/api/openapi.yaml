@@ -37,6 +37,7 @@ paths:
       description: Create new API Key/Token
       tags:
         - Authentication
+        - Users
       operationId: CreateApiKey
       requestBody:
         content:
@@ -66,6 +67,34 @@ paths:
         - cookieAuth: []
         - {}
 
+  /keys/{id}:
+    delete:
+      summary: Delete ApiKey by label
+      description: >-
+        Delete ApiKey by label.
+      tags:
+        - Authentication
+        - Users
+      operationId: DeleteApiKey
+      parameters:
+        - name: id
+          in: path
+          description: ID (not label) of Apikey
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
+          
   /users:
     post:
       summary: Register a New User
@@ -103,6 +132,41 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
   
+  /users/{id}/keys:
+    get:
+      summary: All API keys for a user
+      description: >-
+        Get a list of all API keys for a user.
+        Please note that you cannot retrieve
+        the tokens themselves because they are
+        stored in a hashed format in our database
+        as only the respective user is allowed
+        to know them.
+      tags:
+        - Authentication
+        - User
+      operationId: GetUserApiKeys
+      parameters:
+        - name: id
+          in: path
+          description: ID of the User
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyList"
+        "401":
+          description: Unauthorized
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
+
   /users/{id}/password:
     put:
       summary: Update a user's password
@@ -442,6 +506,8 @@ components:
     UserSession:
       type: object
       properties:
+        apiKeyId:
+          type: string
         userId:
           type: string
         email:
@@ -454,9 +520,29 @@ components:
           type: string
           nullable: true
       required:
+        - apiKeyId
         - userId
         - token
+        - label
         - expiresAt
+      additionalProperties: false
+
+    ApiKeyList:
+      type: array
+      items:
+        type: object
+        properties:
+          apiKeyId:
+            type: string
+          label:
+            type: string
+          expiresAt:
+            type: string
+            nullable: True
+        required:
+          - apiKeyId
+          - label
+          - expiresAt
       additionalProperties: false
 
     PasswordChange:

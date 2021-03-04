@@ -60,12 +60,13 @@ class SubmissionResponse(SubmissionBase):
     submission_id:str
 
     def __json__(self, request: Request) -> dict:
-        
-        return self._json().update(
+        json_ = self._json()
+        json_.update(        
             {
                 "submissionId": self.submission_id
             }
         )
+        return json_
 
 
 @view_config(
