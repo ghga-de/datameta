@@ -238,7 +238,6 @@ window.addEventListener("load", function() {
         var label = data.get("label");
         var expires = data.get("expires");
 
-        console.log(expires);
         if (label == "") {
             document.getElementById("label").classList.add("is-invalid");
             return;
