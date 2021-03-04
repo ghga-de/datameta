@@ -111,7 +111,10 @@ def lint_pending_msets(request, user, mset_ids = None):
 def validate_metadataset_record(
     request:Request,
     record:dict, 
-    return_err_message:bool=False
+    return_err_message:bool=False,
+    rendered:bool=False # set to true if values have already
+                        # been rendered (e.g. datetime fields
+                        # already in isoformat) 
 ):
     """Validate single metadataset in isolation"""
     errors = [] # list of error
@@ -154,9 +157,14 @@ def validate_metadataset_record(
         # check if datetime formats are matched
         if mdat.datetimefmt:
             try:
-                _ = datetime.datetime.strptime(
-                    value, mdat.datetimefmt
-                ).isoformat()
+                if rendered:
+                    # check if value is in isoformat:
+                    _ = datetime.datetime.fromisoformat(value)
+                else:
+                    # check whether value matches the datetime format
+                    _ = datetime.datetime.strptime(
+                        value, mdat.datetimefmt
+                    ).isoformat()
             except (ValueError, TypeError):
                 errors.append({
                     "message": "The field could not be parsed as a valid date / time",
