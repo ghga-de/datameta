@@ -177,7 +177,7 @@ def validate_metadataset_record(
     rec_names = set(record.keys())
     if not mdats_mandatory.issubset(rec_names):
         errors.append({
-            "message": "The record are missing mandatory fields.",
+            "message": "The record is missing mandatory fields.",
         })
     
     # return the error messages
