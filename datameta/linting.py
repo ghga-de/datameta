@@ -165,7 +165,7 @@ def validate_metadataset_record(
                 continue   
     
     # Check if all mandatory fields exist:
-    mdats_mandatory = {mdat.name for mdat in mdats if mdat.mandatory}
+    mdats_mandatory = {name for name, mdat in mdats.items() if mdat.mandatory}
     rec_names = set(record.keys())
     if not mdats_mandatory.issubset(rec_names):
         errors.append({
@@ -183,7 +183,3 @@ def validate_metadataset_record(
             for err in errors
         ]
         raise get_validation_error(messages, fields)
-
-            
-        
-        

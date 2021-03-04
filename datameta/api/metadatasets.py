@@ -24,20 +24,14 @@ from dataclasses import dataclass
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
-from .. import models
-
-
-
-# For Developers: if needed change the dataclasses to
-# regular classes and supply custom __init__ functions
-# (for instance if create of that class object should
-# also trigger creation of the respective db model)
-
+from ..linting import validate_metadataset_record
+from .. import security, siteid, models
+import datetime
 
 @dataclass
 class MetaDataSet:
     """MetaDataSet container for OpenApi communication"""
-    records: dict
+    record: dict
     group_id: str
     user_id: str
     metadataset_id: str
@@ -45,12 +39,24 @@ class MetaDataSet:
 
     def __json__(self, request: Request) -> dict:
         return {
-                "records": self.records,
+                "record": self.record,
                 "groupId": self.group_id,
                 "userId": self.user_id,
                 "submissionId": self.submission_id,
                 "metaDataSetId": self.metadataset_id,
             }
+
+
+def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dict:
+    """Renders values of a metadataset record"""
+    for field in record:
+        if mdatum[field].datetimefmt:
+            record[field] = datetime.datetime.strptime(
+                    record[field], 
+                    mdatum[field].datetimefmt
+                ).isoformat()
+
+    return(record)
 
 
 @view_config(
@@ -61,9 +67,46 @@ class MetaDataSet:
 )
 def post(request:Request) -> MetaDataSet:
     """Create new metadataset"""
-    pass
-    return {}
+    auth_user = security.revalidate_user(request)
+    record = request.openapi_validated.body["record"]
+    # prevalidate:
+    validate_metadataset_record(request, record)
     
+    # render records according to MetaDatum constraints
+    db = request.dbsession
+    mdatum_query = db.query(models.MetaDatum).order_by(
+        models.MetaDatum.order
+    ).all()
+    mdatum = {mdat.name: mdat for mdat in mdatum_query }
+    record = render_record_values(mdatum, record)
+
+    # construct new MetaDataSet:
+    mdata_set = models.MetaDataSet(
+        site_id = siteid.generate(request, models.MetaDataSet),
+        user_id = auth_user.id,
+        group_id = auth_user.group.id,
+        submission_id = None
+    )
+    db.add(mdata_set)
+    db.flush()
+
+    # construct new MetaDatumRecords
+    for name, value in record.items():
+        mdatum_rec = models.MetaDatumRecord(
+            metadatum_id = mdatum[name].id,
+            metadataset_id = mdata_set.id,
+            file_id = None,
+            value = value
+        )
+
+    return MetaDataSet(
+        metadataset_id=mdata_set.site_id,
+        record=record,
+        group_id=mdata_set.group.site_id,
+        user_id=mdata_set.user.site_id,
+        submission_id=mdata_set.submission_id,
+    )
+        
 
 @view_config(
     route_name="metadatasets_id", 

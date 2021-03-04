@@ -47,5 +47,6 @@ def get_validation_error(
                     "field": fields[idx]
                 }
             )
+        response_body.append(err)
 
     return HTTPBadRequest(json=response_body)
