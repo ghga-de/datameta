@@ -51,14 +51,15 @@ class MetaDataSetResponse:
 
 def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dict:
     """Renders values of a metadataset record"""
-    for field in record:
+    record_rendered = record.copy()
+    for field in record_rendered:
         if mdatum[field].datetimefmt:
-            record[field] = datetime.datetime.strptime(
-                    record[field], 
+            record_rendered[field] = datetime.datetime.strptime(
+                    record_rendered[field], 
                     mdatum[field].datetimefmt
                 ).isoformat()
 
-    return(record)
+    return record_rendered
 
 
 def get_record_from_metadataset(mdata_set=models.MetaDataSet) -> dict:
