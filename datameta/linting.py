@@ -108,9 +108,9 @@ def lint_pending_msets(request, user, mset_ids = None):
     return good_sets, file_pairs, linting_report
 
 
-def validate_metadataset_fields(
+def validate_metadataset_record(
     request:Request,
-    fields:dict, 
+    record:dict, 
     return_err_message:bool=False
 ):
     """Validate single metadataset in isolation"""
@@ -122,8 +122,16 @@ def validate_metadataset_fields(
     mdats_query = db.query(MetaDatum).order_by(MetaDatum.order).all()
     mdats = { mdat.name: mdat for mdat in mdats_query }
     
-    for name, value in fields.items():
-        # check if fields appeards in the metadatum list
+    for name, value in record.items():
+        # check if values are of allowed types:
+        # (all values will be stringified later)
+        if not isinstance(value, str):
+            errors.append({
+                "message": "field value must be a string.",
+                "field": name
+            })
+
+        # check if the name appears in the metadatum list
         if not name in mdats.keys():
             errors.append({
                 "message": (
@@ -134,15 +142,6 @@ def validate_metadataset_fields(
             })
             continue
         mdat = mdats[name]
-        
-        # check if values are of allowed types:
-        # (all values will be stringified later)
-        if not isinstance(value, str):
-            errors.append({
-                "message": "field value must be a string.",
-                "field": name
-            })
-            continue
 
         # Check if the regexp pattern matches
         if mdat.regexp and re.match(mdat.regexp, value) is None:
@@ -152,6 +151,7 @@ def validate_metadataset_fields(
             })
             continue
         
+        # check if datetime formats are matched
         if mdat.datetimefmt:
             try:
                 _ = datetime.datetime.strptime(
@@ -166,10 +166,10 @@ def validate_metadataset_fields(
     
     # Check if all mandatory fields exist:
     mdats_mandatory = {mdat.name for mdat in mdats if mdat.mandatory}
-    rec_names = set(fields.keys())
+    rec_names = set(record.keys())
     if not mdats_mandatory.issubset(rec_names):
         errors.append({
-            "message": "The fields are missing mandatory fields.",
+            "message": "The record are missing mandatory fields.",
         })
     
     # return the error messages

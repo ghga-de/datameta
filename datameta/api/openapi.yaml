@@ -581,19 +581,19 @@ components:
     MetaDataSet:
       type: object
       properties:
-        fields:
+        record:
           type: object
           additionalProperties: true
           # a free-form object,
           # any property is allowed
       required:
-        - fields
+        - record
       additionalProperties: false
           
     MetaDataSetResponse:
       type: object
       properties:
-        fields:
+        record:
           type: object
           additionalProperties: true
           # a free-form object,
@@ -608,7 +608,7 @@ components:
         userId:
           type: string
       required:
-        - fields
+        - record
       additionalProperties: false
         
     FileAnnouncement:
