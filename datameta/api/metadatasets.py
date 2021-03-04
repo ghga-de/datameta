@@ -21,16 +21,17 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
 from ..linting import validate_metadataset_record
 from .. import security, siteid, models
 import datetime
-
+from ..resource import resource_by_id
 @dataclass
-class MetaDataSet:
-    """MetaDataSet container for OpenApi communication"""
+class MetaDataSetResponse:
+    """MetaDataSetResponse container for OpenApi communication"""
     record: dict
     group_id: str
     user_id: str
@@ -65,7 +66,7 @@ def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dic
     request_method="POST", 
     openapi=True
 )
-def post(request:Request) -> MetaDataSet:
+def post(request:Request) -> MetaDataSetResponse:
     """Create new metadataset"""
     auth_user = security.revalidate_user(request)
     record = request.openapi_validated.body["record"]
@@ -99,7 +100,7 @@ def post(request:Request) -> MetaDataSet:
             value = value
         )
 
-    return MetaDataSet(
+    return MetaDataSetResponse(
         metadataset_id=mdata_set.site_id,
         record=record,
         group_id=mdata_set.group.site_id,
@@ -114,7 +115,20 @@ def post(request:Request) -> MetaDataSet:
     request_method="GET", 
     openapi=True
 )
-def get_metadataset(request:Request) -> MetaDataSet:
+def get_metadataset(request:Request) -> MetaDataSetResponse:
     """Create new metadataset"""
-    pass
-    return {}
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+    mdata_set = resource_by_id(db, models.MetaDataSet, request.matchdict['id'])
+    
+    # check if user is in the group of that metadataset:
+    if not auth_user.group.id == mdata_set.group.id:
+        raise HTTPForbidden()
+
+    return MetaDataSetResponse(
+        metadataset_id=mdata_set.site_id,
+        record=mdata_set.record,
+        group_id=mdata_set.group.site_id,
+        user_id=mdata_set.user.site_id,
+        submission_id=mdata_set.submission_id,
+    )
