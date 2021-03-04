@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
-from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
@@ -29,6 +29,7 @@ from ..linting import validate_metadataset_record
 from .. import security, siteid, models
 import datetime
 from ..resource import resource_by_id
+
 @dataclass
 class MetaDataSetResponse:
     """MetaDataSetResponse container for OpenApi communication"""
@@ -129,6 +130,9 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     auth_user = security.revalidate_user(request)
     db = request.dbsession
     mdata_set = resource_by_id(db, models.MetaDataSet, request.matchdict['id'])
+
+    if not mdata_set:
+        raise HTTPNotFound()
     
     # check if user is in the group of that metadataset:
     if not auth_user.group.id == mdata_set.group.id:
