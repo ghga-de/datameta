@@ -19,25 +19,34 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import List
+import enum
+from typing import List, Optional
 from pyramid.httpexceptions import HTTPBadRequest
 
 
-def get_validation_error(messages:List[str]) -> HTTPBadRequest:
+def get_validation_error(
+    messages:List[str], 
+    fields:Optional[List[Optional[str]]]
+) -> HTTPBadRequest:
     """Generate a Validation Error (400) with custom messages
-
-    Args:
-        messages (List[str]): a list of error messages
-
-    Returns:
-        HTTPBadRequest
     """
-    response_body = [
-        {
+    assert len(messages)>0, "messages cannot be empty"
+    assert fields is None or len(fields)==len(messages), (
+        "The fields list must be of same length as messages."
+    )
+    
+    response_body = []
+    for idx, msg in enumerate(messages):
+        err = {
             "exception": "ValidationError",
             "message": msg
         }
-        for msg in messages
-    ]
+        if fields is not None and fields[idx] is not None:
+            err.update(
+                {
+                    "field": fields[idx]
+                }
+            )
+        response_body.append(err)
 
     return HTTPBadRequest(json=response_body)

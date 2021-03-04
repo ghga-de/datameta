@@ -257,9 +257,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/MetaDataSetResponse"
+                $ref: "#/components/schemas/MetaDataSetResponse"
         '401':
           description: Unauthorized
         '403':
@@ -581,19 +579,19 @@ components:
     MetaDataSet:
       type: object
       properties:
-        records:
+        record:
           type: object
           additionalProperties: true
           # a free-form object,
           # any property is allowed
       required:
-        - records
+        - record
       additionalProperties: false
           
     MetaDataSetResponse:
       type: object
       properties:
-        records:
+        record:
           type: object
           additionalProperties: true
           # a free-form object,
@@ -608,7 +606,7 @@ components:
         userId:
           type: string
       required:
-        - records
+        - record
       additionalProperties: false
         
     FileAnnouncement:
