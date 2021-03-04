@@ -60,6 +60,14 @@ def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dic
     return(record)
 
 
+def get_record_from_metadataset(mdata_set=models.MetaDataSet) -> dict:
+    """ Construct a dict containing all records of that MetaDataSet"""
+    return {
+        rec.metadatum.name: rec.value
+        for rec in mdata_set.metadatumrecords
+    }
+
+
 @view_config(
     route_name="metadatasets", 
     renderer='json', 
@@ -99,6 +107,7 @@ def post(request:Request) -> MetaDataSetResponse:
             file_id = None,
             value = value
         )
+        db.add(mdatum_rec)
 
     return MetaDataSetResponse(
         metadataset_id=mdata_set.site_id,
@@ -127,7 +136,7 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
 
     return MetaDataSetResponse(
         metadataset_id=mdata_set.site_id,
-        record=mdata_set.record,
+        record=get_record_from_metadataset(mdata_set),
         group_id=mdata_set.group.site_id,
         user_id=mdata_set.user.site_id,
         submission_id=mdata_set.submission_id,
