@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest, HTTPConflict
+from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest, HTTPConflict, HTTPNoContent
 from pyramid.view import view_config
 
 import hashlib
@@ -31,14 +31,14 @@ from .. import resource, models, storage, security
     renderer="json",
     request_method="POST",
 )
-def post(request):
+def post(request) -> HTTPNoContent:
     """Handles POST requests against /api/upload to upload files.
 
     Raises:
-        HTTPBadRequest - The request is malformed, i.e. the formdata field 'file' is not present or is not a file.
-        HTTPNotFound   - The requested file ID cannot be found or is not handled by the datameta backend
-        HTTPConflict   - Content was already uploaded for this file and the file was marked as completed by the submitting entity
-        HTTPForbidden  - Requesting entity is not authorized to upload content for this file
+        400 HTTPBadRequest - The request is malformed, i.e. the formdata field 'file' is not present or is not a file.
+        404 HTTPNotFound   - The requested file ID cannot be found or is not handled by the datameta backend
+        409 HTTPConflict   - Content was already uploaded for this file and the file was marked as completed by the submitting entity
+        403 HTTPForbidden  - Requesting entity is not authorized to upload content for this file
     """
     db = request.dbsession
 
@@ -53,13 +53,15 @@ def post(request):
     if req_file is None or req_file_id is None or not isinstance(req_file, webob.compat.cgi_FieldStorage):
         raise HTTPBadRequest(json=None)
 
+    req_file_data = req_file.file
+
     # Try to find the references file in the database
     db_file = resource.resource_by_id(db, models.File, req_file_id)
     if db_file is None:
         raise HTTPNotFound(json=None)
 
     # Authorization
-    if db_file.user_id != auth_user.user_id or db_file.group_id != auth_user.group_id:
+    if db_file.user_id != auth_user.id or db_file.group_id != auth_user.group_id:
         raise HTTPForbidden(json=None)
 
     # Verify that this file is still open for uploads
@@ -78,4 +80,4 @@ def post(request):
     # Store the file on disk
     storage.write_file(request, db_file, req_file_data)
 
-    return None
+    return HTTPNoContent()

@@ -175,6 +175,8 @@ def submit_data(request, user):
             }
 
 def sizeof_fmt(num, suffix='B'):
+    if num is None:
+        return "unknown";
     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
         if abs(num) < 1024.0:
             return "%3.2f %s%s" % (num, unit, suffix)
@@ -184,7 +186,7 @@ def sizeof_fmt(num, suffix='B'):
 
 def get_pending_unannotated(dbsession, user):
     # Find files that have not yet been associated with metadata
-    files = dbsession.query(File).filter(and_(File.user_id==user.id, File.group_id==user.group_id, File.metadatumrecord==None)).order_by(File.id.desc())
+    files = dbsession.query(File).filter(and_(File.user_id==user.id, File.group_id==user.group_id, File.metadatumrecord==None, File.content_uploaded==True)).order_by(File.id.desc())
     return {
             'table_data' : [
                 {

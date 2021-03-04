@@ -423,6 +423,7 @@ window.addEventListener("load", function() {
         });
 });
 </script>
+<script src="${request.static_url('datameta:static/node_modules/crypto-js/crypto-js.js')}"></script>
 <script src="/static/js/fileupload.js"></script>
 </metal:block>
 </metal:block>
