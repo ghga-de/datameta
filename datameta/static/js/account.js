@@ -107,56 +107,84 @@ window.addEventListener("load", function() {
     });
 
     function show_api_alert(text) {
+        clear_api_alerts();        
         var al = document.getElementById("api_alert");
         al.innerHTML = text;
         new bootstrap.Collapse(al, { show: true });
     }
 
     function show_api_success(text) {
-        var al = document.getElementById("api_success");
-        al.innerHTML = text;
-        new bootstrap.Collapse(al, { show: true });
+        clear_api_alerts();        
+        var success = document.getElementById("api_success");
+        success.innerHTML = text;
+        new bootstrap.Collapse(success, { show: true });
     }
 
     function clear_api_form() {
-        document.getElementById("label").classList.remove("is-invalid")
+        document.getElementById("label").classList.remove("is-invalid");
+        document.getElementById("expires").classList.remove("is-invalid");
         document.getElementById("add_api_key_form").reset();
     }
 
     // Adds an Api Key to the table
-    function add_api_key(apikey) {
-        table = document.getElementById("table_apikeys");
-        row = table.insertRow();
-        row.id = label
-        cell1 = row.insertCell();
-        cell2 = row.insertCell();
-        cell3 = row.insertCell();
-        cell1.innerHTML = apikey.label;
-        cell2.innerHTML = apikey.expiresAt;
+    function add_api_key(apiKey) {
+        var id = apiKey.apiKeyId;
+        var label = apiKey.label;
+        var tableBody = document.getElementById("tbody_apikeys");
+
+        var row = tableBody.insertRow();
+        row.id = apiKey.apiKeyId;
+
+        var cell1 = row.insertCell();
+        var cell2 = row.insertCell();
+        var cell3 = row.insertCell();
+        
+        cell1.innerHTML = label;
+        cell2.innerHTML = apiKey.expiresAt;
         cell3.innerHTML = '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>'
         cell3.querySelector(".btn").addEventListener("click", function(event) {
-            delete_api_key(label);
+            delete_api_key(label, id);
         });
     }
 
     // Deletes an API key from the table and database
-    function delete_api_key(label) {
-        //TODO DELTE key
-
-        //TODO: Only do this, if deletion was successfull
-        row = document.getElementById(label);
-        document.getElementById("tbody_apikeys").removeChild(row); 
-        show_api_success("Key " + label + " has been removed successfully.");
+    function delete_api_key(label, id) {
+        
+        // API call
+        fetch('/api/keys/' + id ,
+        {
+            method: 'delete',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then((response) => {
+            if (response.status == "200") {
+                // Only deletes key in table, if deletion in database was successfull
+                var row = document.getElementById(id);
+                document.getElementById("tbody_apikeys").removeChild(row); 
+                show_api_success("Key '" + label + "' has been removed successfully.");
+            } else if (response.status == "400" || response.status == "500") {
+                response.json().then((json) => {
+                    show_api_alert(json.message);
+                });
+            } else if (response.status == "401") {
+                show_api_alert("You have to be logged in to perform this action.");
+            } else {
+                show_api_alert("An unknown error occurred. Please try again later.");
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            show_api_alert("An unknown error occurred. Please try again later.");
+        });
     }
 
     // Clears the success and alert boxes
     function clear_api_alerts() {
-        api_alert = document.getElementById("api_alert");
-        api_success = document.getElementById("api_success");
-        api_alert.innerHTML = "";
-        api_success.innerHTML = "";
-        api_alert.classList.remove("show");
-        api_success.classList.remove("show");
+        document.getElementById("api_alert").classList.remove("show");
+        document.getElementById("api_success").classList.remove("show");
     }
 
     uuid = document.getElementById("uuid").value;
@@ -177,21 +205,21 @@ window.addEventListener("load", function() {
                     add_api_key(apikey);
             });
         });
+        } else if (response.status == "400" || response.status == "500") {
+            response.json().then((json) => {
+                show_api_alert(json.message);
+            });
+        } else if (response.status == "401") {
+            show_api_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_api_alert("You don't have the rights to perform this action.");
         } else {
-            if (response.status == "400" || response.status == "500") {
-                response.json().then((json) => {
-                    show_api_alert(json.message);
-                });
-            } else if (response.status == "401") {
-                show_api_alert("You have to be logged in to perform this action.");
-            } else {
-                show_api_alert("An unknown error occurred. Please try again later.");
-            }
+            show_api_alert("An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
         console.log(error);
-        show_alert("An unknown error occurred. Please try again later.");
+        show_api_alert("An unknown error occurred. Please try again later.");
     });
 
     document.getElementById("api_keys_tab").addEventListener("click", function() {
@@ -199,56 +227,63 @@ window.addEventListener("load", function() {
         clear_api_form();
     }); 
 
-    document.getElementById("generate_api_key_button").addEventListener("click", function() {
+    document.getElementById("add_api_key_form").addEventListener("submit", function(event) {  
 
-        // TODO: Open Form: Label && Expiration Date, get both from form
-        //
+        event.preventDefault();
 
-        label = "test";
+        var form = event.target;
 
-        d = new Date();
-        d.setTime(d.getTime() + 24*60*60*1000);
-        expires = d.toUTCString();
+        // Validataion
+        var data = new FormData(form);
+        var label = data.get("label");
+        var expires = data.get("expires");
+
+        console.log(expires);
+        if (label == "") {
+            document.getElementById("label").classList.add("is-invalid");
+            return;
+        }else if (expires == "") {
+            document.getElementById("label").classList.remove("is-invalid");
+            document.getElementById("expires").classList.add("is-invalid");
+            return;
+        } else {
+            document.getElementById("label").classList.remove("is-invalid");
+            document.getElementById("expires").classList.remove("is-invalid");
+        } 
 
         // POST API key
-        fetch('/api/users/' + data.get("uuid") + '/password',
+        fetch('/api/keys',
             {
-                method: 'put',
+                method: 'post',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    passwordChangeCredential: data.get("old_password"),
-                    newPassword: data.get("new_password")
+                    label : label
+                    // Needed, once the API allows custom expiration Dates
+                    //"expires" : expires
                 })
-            })
-            .then((response) => {
-                document.resp = response;
-                if (response.status == "204") {
-                    view_success();
-                    return;
-                } else {
-                    if (response.status == "401") {
-                        show_alert("You have to be logged in to perform this action.");
-                    } else if (response.status == "403") {
-                        show_alert("Wrong password.");
-                    } else if(response.status == "400") {
-                        show_alert("Your password has to have at least 10 Characters");   
-                    } else {
-                        show_alert("An unknown error occurred. Please try again later.");
-                    }
-                }
-            })
-            .catch((error) => {
-                console.log(error);
-                show_alert("An unknown error occurred. Please try again later.");
+        }).then((response) => {
+            if (response.status == "200") {
+                response.json().then((json) => {
+                    add_api_key(json);
+                    show_api_success("Your new API key '" + label +"' is:<br>" + json.token);
+                });
+            } else  if (response.status == "400" || response.status == "500") {
+                response.json().then((json) => {
+                    show_api_alert(json.message);
+                });
+            } else if (response.status == "401") {
+                show_api_alert("You have to be logged in to perform this action.");
+            } else if (response.status == "403") {
+                show_api_alert("You don't have the rights to perform this action.");
+            } else {
+                show_api_alert("An unknown error occurred. Please try again later.");
+            }
+        }).catch((error) => {
+            console.log(error);
+            show_api_alert("An unknown error occurred. Please try again later.");
         });
-
-        // Post Return Value to table && success box
-
     });
-
-     
-
 });

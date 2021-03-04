@@ -71,32 +71,34 @@
             </div>
             <div class="card-body tab-pane fade" id="nav-api-keys" role="tabpanel" aria-labelledby="nav-home-tab">
                 <h5 class="card-title mb-4">Manage API Keys</h5>
-
-                <div class="form-small">
                     <div id="api_alert" class="alert alert-danger collapse" role="alert">
                     </div>
 
                     <div id="api_success" class="alert alert-success collapse" role="alert">
                     </div>
-                    <form action="#" id="change_password_form">
+                <div class="form-small ms-0">
+                    
+                    <form action="#" id="add_api_key_form">
                         <div class="mb-4 input-group">
                             <span class="input-group-text" id="desc_input_old_password">
-                                <i class="bi bi-key"></i>
-                            </span>                   
-                            <input type="date" class="form-control" name="expires" id="expires" value="01.01.2022">
-                            <div class="invalid-feedback">
-                            </div>
-                        </div>
-                        <div class="mb-4 input-group">
-                            <span class="input-group-text" id="desc_input_old_password">
-                                <i class="bi bi-key"></i>
+                                <i class="bi bi-textarea-t"></i>
                             </span>                   
                             <input type="text" class="form-control" name="label" id="label" placeholder="Label">
                             <div class="invalid-feedback">
+                                Please specify a label.
+                            </div>
+                        </div>
+                        <div class="mb-4 input-group">
+                            <span class="input-group-text" id="desc_input_old_password">
+                                <i class="bi bi-calendar-date"></i>
+                            </span>                   
+                            <input type="date" class="form-control" name="expires" id="expires">
+                            <div class="invalid-feedback">
+                                Please specify an expiration date.
                             </div>
                         </div>
                         <div class="input-group mb-4">
-                            <button id="generate_api_key_button" type="button" class="btn btn-outline-success mb-4">Generate new API key</button>
+                            <button id="generate_api_key_button" type="submit" class="btn btn-outline-success">Generate new API key</button>
                         </div>
                     </form>
                 </div>
