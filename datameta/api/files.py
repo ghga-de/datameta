@@ -107,9 +107,41 @@ def post(request: Request) -> FileUploadResponse:
     openapi=True
 )
 def get_file(request: Request) -> FileResponse:
-    """Get details for a file."""
-    pass
-    return {}
+    """Get details for a file.
+
+    Raises:
+        400 HTTPBadRequest - The request is malformed
+        401 HTTPUnauthorized - Unauthorized access
+        403 HTTPForbidden  - Requesting entity is not authorized to access this file
+        404 HTTPNotFound   - The requested file ID cannot be found
+    """
+    # Check authentication and raise 401 if unavailable
+    auth_user = security.revalidate_user(request)
+
+    db = request.dbsession
+
+    # Obtain file from database
+    db_file = resource.resource_by_id(db, models.File, request.matchdict['id'])
+
+    # Check if file could be found
+    if db_file is None:
+        raise HTTPNotFound(json=None)
+
+    # Check if requesting user has access to the file. Group based!
+    if db_file.group_id != auth_user.group_id:
+        raise HTTPForbidden(json=None)
+
+    # Return details
+    return FileResponse(
+            name              = db_file.name,
+            file_id           = db_file.site_id,
+            content_uploaded  = db_file.content_uploaded,
+            checksum          = db_file.checksum,
+            filesize          = db_file.filesize,
+            user_id           = db_file.user.site_id,
+            group_id          = db_file.group.site_id,
+            expires_at        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
+            )
 
 @view_config(
     route_name="files_id",
