@@ -141,7 +141,7 @@ def post(request:Request) -> UserSession:
     openapi=True
 )
 def get_user_keys(request:Request) -> UserSession:
-    """Request new ApiKey"""
+    """Get all ApiKeys from a user"""
     
     auth_user = security.revalidate_user(request)
     
@@ -160,7 +160,7 @@ def get_user_keys(request:Request) -> UserSession:
     openapi=True
 )
 def delete_key(request:Request) -> UserSession:
-    """Request new ApiKey"""
+    """Delete an ApiKey"""
     auth_user = security.revalidate_user(request)
     
     db = request.dbsession

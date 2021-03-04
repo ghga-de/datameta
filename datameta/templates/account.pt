@@ -1,7 +1,7 @@
 <div metal:use-macro="load: layout.pt">
 
     <style metal:fill-slot="head">
-        .form-passwords {
+        .form-small {
             width: 100%;
             max-width: 450px;
             padding: 15px;
@@ -23,7 +23,7 @@
         
         <div class="tab-content">
             <div class="card-body tab-pane fade show active" id="nav-change-pw" role="tabpanel" aria-labelledby="nav-home-tab">
-                <div class="position-absolute form-passwords">    
+                <div class="position-absolute form-small">    
                     <h5 class="card-title mb-4">Change Password</h5>
 
                     <div id="alert" class="alert alert-danger collapse" role="alert">
@@ -72,15 +72,35 @@
             <div class="card-body tab-pane fade" id="nav-api-keys" role="tabpanel" aria-labelledby="nav-home-tab">
                 <h5 class="card-title mb-4">Manage API Keys</h5>
 
-                <div id="api_alert" class="alert alert-danger collapse" role="alert">
+                <div class="form-small">
+                    <div id="api_alert" class="alert alert-danger collapse" role="alert">
+                    </div>
+
+                    <div id="api_success" class="alert alert-success collapse" role="alert">
+                    </div>
+                    <form action="#" id="change_password_form">
+                        <div class="mb-4 input-group">
+                            <span class="input-group-text" id="desc_input_old_password">
+                                <i class="bi bi-key"></i>
+                            </span>                   
+                            <input type="date" class="form-control" name="expires" id="expires" value="01.01.2022">
+                            <div class="invalid-feedback">
+                            </div>
+                        </div>
+                        <div class="mb-4 input-group">
+                            <span class="input-group-text" id="desc_input_old_password">
+                                <i class="bi bi-key"></i>
+                            </span>                   
+                            <input type="text" class="form-control" name="label" id="label" placeholder="Label">
+                            <div class="invalid-feedback">
+                            </div>
+                        </div>
+                        <div class="input-group mb-4">
+                            <button id="generate_api_key_button" type="button" class="btn btn-outline-success mb-4">Generate new API key</button>
+                        </div>
+                    </form>
                 </div>
-
-                <div id="api_success" class="alert alert-success collapse" role="alert">
-                </div>
-
-                <input type="date" class="form-control" name="expires" id="expires" value="01.01.2022">
-                <button id="generate_api_key_button" type="button" class="btn btn-outline-success mb-4">Generate new API key</button>
-
+            
                 <p class="card-text">You are currently using the following API Keys:</p>
                 <div class="card col-9">
                     <div class="card-body">
@@ -93,11 +113,6 @@
                                 </tr>
                             </thead>
                             <tbody id="tbody_apikeys">
-                                <tr>
-                                    <td>Test</td>
-                                    <td>04.03.2021</td>
-                                    <td><button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button></td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>

@@ -85,7 +85,6 @@ window.addEventListener("load", function() {
                 })
             })
             .then((response) => {
-                document.resp = response;
                 if (response.status == "204") {
                     view_success();
                     return;
@@ -107,68 +106,51 @@ window.addEventListener("load", function() {
             });
     });
 
-    //Gets all the API keys and adds them to the table
-    fetch('/api/keys/' + data.get("uuid") + '/password',
-    {
-        method: 'get',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            
-        })
-    })
-    .then((response) => {
-        document.resp = response;
-        if (response.status == "204") {
-            view_success();
-            return;
-        } else {
-            if (response.status == "401") {
-                show_alert("You have to be logged in to perform this action.");
-            } else if (response.status == "403") {
-                show_alert("Wrong password.");
-            } else if(response.status == "400") {
-                show_alert("Your password has to have at least 10 Characters");   
-            } else {
-                show_alert("An unknown error occurred. Please try again later.");
-            }
-        }
-    })
-    .catch((error) => {
-        console.log(error);
-        show_alert("An unknown error occurred. Please try again later.");
-    });
+    function show_api_alert(text) {
+        var al = document.getElementById("api_alert");
+        al.innerHTML = text;
+        new bootstrap.Collapse(al, { show: true });
+    }
 
+    function show_api_success(text) {
+        var al = document.getElementById("api_success");
+        al.innerHTML = text;
+        new bootstrap.Collapse(al, { show: true });
+    }
+
+    function clear_api_form() {
+        document.getElementById("label").classList.remove("is-invalid")
+        document.getElementById("add_api_key_form").reset();
+    }
 
     // Adds an Api Key to the table
-    function addApiKey(id, label, expires) {
+    function add_api_key(apikey) {
         table = document.getElementById("table_apikeys");
         row = table.insertRow();
-        row.id = id
+        row.id = label
         cell1 = row.insertCell();
         cell2 = row.insertCell();
         cell3 = row.insertCell();
-        cell1.innerHTML = label;
-        cell2.innerHTML = expires;
+        cell1.innerHTML = apikey.label;
+        cell2.innerHTML = apikey.expiresAt;
         cell3.innerHTML = '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>'
         cell3.querySelector(".btn").addEventListener("click", function(event) {
-            deleteApiKey(id);
+            delete_api_key(label);
         });
     }
 
     // Deletes an API key from the table and database
-    function deleteApiKey(id) {
+    function delete_api_key(label) {
         //TODO DELTE key
 
         //TODO: Only do this, if deletion was successfull
-        row = document.getElementById(id);
+        row = document.getElementById(label);
         document.getElementById("tbody_apikeys").removeChild(row); 
+        show_api_success("Key " + label + " has been removed successfully.");
     }
 
     // Clears the success and alert boxes
-    function clearApiAlerts() {
+    function clear_api_alerts() {
         api_alert = document.getElementById("api_alert");
         api_success = document.getElementById("api_success");
         api_alert.innerHTML = "";
@@ -177,8 +159,44 @@ window.addEventListener("load", function() {
         api_success.classList.remove("show");
     }
 
+    uuid = document.getElementById("uuid").value;
+
+    //Gets all the API keys and adds them to the table
+    fetch('/api/users/' + uuid + '/keys',
+    {
+        method: 'get',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    })
+    .then((response) => {
+        if (response.status == "200") {
+            response.json().then((json) => {
+                json.forEach(function (apikey, index) {
+                    add_api_key(apikey);
+            });
+        });
+        } else {
+            if (response.status == "400" || response.status == "500") {
+                response.json().then((json) => {
+                    show_api_alert(json.message);
+                });
+            } else if (response.status == "401") {
+                show_api_alert("You have to be logged in to perform this action.");
+            } else {
+                show_api_alert("An unknown error occurred. Please try again later.");
+            }
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+        show_alert("An unknown error occurred. Please try again later.");
+    });
+
     document.getElementById("api_keys_tab").addEventListener("click", function() {
-        clearApiAlerts();
+        clear_api_alerts();
+        clear_api_form();
     }); 
 
     document.getElementById("generate_api_key_button").addEventListener("click", function() {
