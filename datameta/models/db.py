@@ -146,19 +146,21 @@ class Submission(Base):
     metadatasets     = relationship('MetaDataSet', back_populates='submission')
 
 class MetaDatum(Base):
-    __tablename__    = 'metadata'
-    id               = Column(Integer, primary_key=True)
-    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
-    name             = Column(Text, nullable=False)
-    regexp           = Column(Text, nullable=True)
-    lintmessage      = Column(Text, nullable=True)
-    datetimefmt      = Column(Text, nullable=True)
-    datetimemode     = Column(Enum(DateTimeMode), nullable=True)
-    mandatory        = Column(Boolean(create_constraint=False), nullable=False)
-    order            = Column(Integer, nullable=False)
-    isfile           = Column(Boolean(create_constraint=False), nullable=False)
+    __tablename__      = 'metadata'
+    id                 = Column(Integer, primary_key=True)
+    uuid               = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    name               = Column(Text, nullable=False)
+    regexp             = Column(Text, nullable=True)
+    lintmessage        = Column(Text, nullable=True)
+    datetimefmt        = Column(Text, nullable=True)
+    datetimemode       = Column(Enum(DateTimeMode), nullable=True)
+    mandatory          = Column(Boolean(create_constraint=False), nullable=False)
+    order              = Column(Integer, nullable=False)
+    isfile             = Column(Boolean(create_constraint=False), nullable=False)
+    submission_unique  = Column(Boolean(create_constraint=False), nullable=False)
+    site_unique        = Column(Boolean(create_constraint=False), nullable=False)
     # Relationships
-    metadatumrecords  = relationship('MetaDatumRecord', back_populates='metadatum')
+    metadatumrecords   = relationship('MetaDatumRecord', back_populates='metadatum')
 
 class MetaDatumRecord(Base):
     __tablename__    = 'metadatumrecords'

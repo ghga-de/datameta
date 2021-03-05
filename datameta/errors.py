@@ -26,7 +26,8 @@ from pyramid.httpexceptions import HTTPBadRequest
 
 def get_validation_error(
     messages:List[str], 
-    fields:Optional[List[Optional[str]]]
+    fields:Optional[List[Optional[str]]],
+    entities:Optional[List[Optional[str]]]
 ) -> HTTPBadRequest:
     """Generate a Validation Error (400) with custom messages
     """
@@ -34,19 +35,28 @@ def get_validation_error(
     assert fields is None or len(fields)==len(messages), (
         "The fields list must be of same length as messages."
     )
+    assert entities is None or len(entities)==len(messages), (
+        "The entities list must be of same length as messages."
+    )
     
     response_body = []
     for idx, msg in enumerate(messages):
         err = {
             "exception": "ValidationError",
-            "message": msg
         }
+        if entities is not None and entities[idx] is not None:
+            err.update(
+                {
+                    "entity": entities[idx]
+                }
+            )
         if fields is not None and fields[idx] is not None:
             err.update(
                 {
                     "field": fields[idx]
                 }
             )
+        err["message"] = msg
         response_body.append(err)
 
     return HTTPBadRequest(json=response_body)
