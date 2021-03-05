@@ -409,7 +409,6 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
 
-
   /submissions:
     post:
       summary: Create a New Submission
@@ -434,6 +433,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SubmissionResponse"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Unauthorized
+        '500':
+          $ref: '#/components/responses/ValidationError'
+
+  /presubvalidation:
+    post:
+      summary: Pre-validate a submission
+      description: >-
+        Pre-validates a submission request without actually creating a
+        submission.  A submission request consists of a list of metadatasets
+        and a list of files.
+      tags:
+        - Submissions
+      operationId: PrevalidateSubmission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionRequest"
+        description: >-
+          Provide a list of metadatasets and a list of files.
+      responses:
+        '204':
+          description: OK
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -697,7 +723,7 @@ components:
     SubmissionRequest:
       type: object
       properties:
-        metaDataSetIds:
+        metadatasetIds:
           type: array
           items:
             type: string
@@ -706,14 +732,14 @@ components:
           items: 
             type: string
       required:
-        - metaDataSetIds
+        - metadatasetIds
         - fileIds
       additionalProperties: false
 
     SubmissionResponse:
       type: object
       properties:
-        metaDataSetIds:
+        metadatasetIds:
           type: array
           items:
             type: string
@@ -724,7 +750,7 @@ components:
         submissionId:
           type: string
       required:
-        - metaDataSetIds
+        - metadatasetIds
         - fileIds
         - submissionId
       additionalProperties: false
@@ -740,6 +766,8 @@ components:
         exception:
           type: string
         message:
+          type: string
+        entity:
           type: string
         field:
           type: string

@@ -19,7 +19,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from sqlalchemy import or_
 from uuid import UUID
+
+def resource_query_by_id(db, model, idstring):
+    """Returns a database query that returns an entity based on it's uuid or
+    site_ide as specified by idstring.
+
+    Args:
+        dbessions: A database session
+        model: The model class describing the resource
+        idstring: The UUID or site_id to be found
+
+    Returns:
+        Database Query object"""
+
+    uuid_string = None
+    try:
+        uuid_string = UUID(idstring)
+    except ValueError:
+        pass
+
+    if 'site_id' in model.__dict__:
+        or_clause  = [ model.site_id==idstring ]
+        or_clause += [] if uuid_string is None else [ model.uuid==uuid_string ]
+        return db.query(model).filter(or_(*or_clause))
+    else:
+        return db.query(model).filter(model.uuid==uuid_string)
+
 
 def resource_by_id(dbsession, model, idstring):
     """Tries to find a resource using the provided id. The search is initially
@@ -34,15 +61,5 @@ def resource_by_id(dbsession, model, idstring):
     Returns:
         The database entity or None if no match could be found"""
 
-    entity = None
-    try:
-        entity = dbsession.query(model).filter(model.uuid==UUID(idstring)).one_or_none();
-    except ValueError: # The specified string is not a valid UUID and the UUID constructor raises
-        pass
-
-    try:
-        entity = entity if entity is not None else dbsession.query(model).filter(model.site_id==idstring).one_or_none();
-    except AttributeError: # This entity doesn't have a site_id
-        pass
-
-    return entity
+    print("DING")
+    return resource_query_by_id(dbsession, model, idstring).one_or_none()
