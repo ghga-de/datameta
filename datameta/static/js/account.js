@@ -264,7 +264,8 @@ window.addEventListener("load", function() {
         // Validataion
         var data = new FormData(form);
         var label = data.get("label");
-        var expires = data.get("expires");
+        var expires = new Date(data.get("expires"));
+        expires = expires.toISOString();
 
         if (label == "") {
             document.getElementById("label").classList.add("is-invalid");
