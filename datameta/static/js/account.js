@@ -227,6 +227,34 @@ window.addEventListener("load", function() {
         clear_api_form();
     }); 
 
+    // Sets the min and max date strings for the date input.
+    function set_date(date) {
+
+        var dd = date.getDate();
+        var mm = date.getMonth() + 1; //January is 0!
+        var yyyy = date.getFullYear();
+    
+        if (dd < 10) {
+        dd = '0' + dd
+        }
+    
+        if (mm < 10) {
+        mm = '0' + mm
+        }
+        date = yyyy + '-' + mm + '-' + dd;
+
+        return date
+    }
+
+    // Needs to be adjusted once it is a property in the config file. Using 1 year for testing
+    var days = 365;
+
+    var min = new Date();
+    var max = new Date(min);
+    max.setDate(min.getDate() + days);
+    document.getElementById('expires').setAttribute("min", set_date(min));
+    document.getElementById('expires').setAttribute("max", set_date(max));
+
     document.getElementById("add_api_key_form").addEventListener("submit", function(event) {  
 
         event.preventDefault();
@@ -259,9 +287,8 @@ window.addEventListener("load", function() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    label : label
-                    // Needed, once the API allows custom expiration Dates
-                    //"expires" : expires
+                    label : label,
+                    expires : expires
                 })
         }).then((response) => {
             if (response.status == "200") {

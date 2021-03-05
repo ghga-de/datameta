@@ -51,7 +51,7 @@ class UserSession:
                 "email": self.email,
                 "token": self.token,
                 "label": self.label,
-                "expiresAt": self.expires_at.isoformat() if self.expires_at else None
+                "expiresAt": self.expires_at
             }
 
 
@@ -75,7 +75,7 @@ class ApiKeyLabels:
 
 
 
-def generate_api_key(request:Request, user:models.User, label:str):
+def generate_api_key(request:Request, user:models.User, label:str, expires:str):
     # For Token Composition:
     # Tokens consist of a core, which is stored as hash in the database,
     # plus a prefix that contains the user and the label of that ApiKey.
@@ -92,7 +92,7 @@ def generate_api_key(request:Request, user:models.User, label:str):
         user_id = user.id,
         value = security.hash_password(token_core),
         label = label,
-        expires = None
+        expires = expires
     )
     db.add(apikey)
     db.flush()
@@ -103,7 +103,7 @@ def generate_api_key(request:Request, user:models.User, label:str):
         email=user.email,
         token=apikey.value,
         label=apikey.label,
-        expires_at=apikey.expires.isoformat() if apikey.expires else None
+        expires_at=apikey.expires
     )
 
 @view_config(
@@ -130,8 +130,10 @@ def post(request:Request) -> UserSession:
             raise HTTPUnauthorized()
         
     label = request.openapi_validated.body["label"]
+    expires = request.openapi_validated.body["expires"]
 
-    return generate_api_key(request, auth_user, label)
+
+    return generate_api_key(request, auth_user, label, expires)
 
 
 @view_config(
