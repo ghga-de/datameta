@@ -126,14 +126,7 @@ def validate_metadataset_record(
     mdats = { mdat.name: mdat for mdat in mdats_query }
     
     for name, value in record.items():
-        # check if values are of allowed types:
-        # (all values will be stringified later)
-        if not isinstance(value, str):
-            errors.append({
-                "message": "field value must be a string.",
-                "field": name
-            })
-
+        
         # check if the name appears in the metadatum list
         if not name in mdats.keys():
             errors.append({
@@ -145,6 +138,25 @@ def validate_metadataset_record(
             })
             continue
         mdat = mdats[name]
+        
+        # if value is none but mandatory,
+        # throw and error, moreover, if the value is none
+        # but not mandatory skip the following checks:
+        if value is None:
+            if mdat.mandatory:
+                errors.append({
+                    "message": "field value was null, but the field is mandatory",
+                    "field": name
+                })
+            continue
+
+        # check if values are of allowed types:
+        # (all values will be stringified later)
+        if not isinstance(value, str):
+            errors.append({
+                "message": "field value must be a string.",
+                "field": name
+            })
 
         # Check if the regexp pattern matches
         if mdat.regexp and re.match(mdat.regexp, value) is None:
