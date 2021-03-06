@@ -32,6 +32,9 @@ from . import DataHolderBase
 
 log = logging.getLogger(__name__)
 
+class FileDeleteError(RuntimeError):
+    pass
+
 @dataclass
 class FileBase(DataHolderBase):
     """Base class for File communication to OpenApi"""
@@ -87,7 +90,7 @@ def post(request: Request) -> FileUploadResponse:
     db.flush()
 
     # Annotate internal storage path and obtain upload URL with request headers
-    upload_url, request_headers = storage.annotate_storage(request, db_file)
+    upload_url, request_headers = storage.create_and_annotate_storage(request, db_file)
 
     # Prepare response
     return FileUploadResponse(
@@ -210,11 +213,10 @@ def delete_files_db(db, db_files:list) -> list:
     storage_uris = [ db_file.storage_uri for db_file in db_files ]
     for db_file in db_files:
         if db_file.metadatumrecord is not None:
-            raise FileDeleteError()
+            raise FileDeleteError(db_file.site_id)
         db.delete(db_file)
 
     return storage_uris
-
 
 @view_config(
     route_name="files_id",
@@ -249,16 +251,21 @@ def delete_file(request: Request) -> HTTPNoContent:
         raise HTTPForbidden(json=None)
 
     # Delete the database record
-    storage_uri = delete_files_db(db, [db_file])[0]
+    try:
+        storage_uri = delete_files_db(db, [db_file])[0]
+    except FileDeleteError as e:
+        raise errors.get_validation_error(messages=["The resource cannot be modified"], fields=[str(e)])
+
+    user_uuid = db_file.user.uuid
+    file_uuid = db_file.uuid
 
     # Commit transaction
     request.tm.commit()
     request.tm.begin()
-
-    log.info(f"[STORAGE][DELETE][user={db_file.user.uuid}][file={db_file.uuid}]")
+    log.info(f"[DB_FILE][DELETE][user={user_uuid}][file={file_uuid}]")
 
     # Delete the file in storage if exists
-    if storage_uri is not None:
-        storage.rm(request, storage_uri)
+    storage.rm(request, storage_uri)
+    log.info(f"[STORAGE][DELETE][user={user_uuid}][file={file_uuid}]")
 
     return HTTPNoContent()

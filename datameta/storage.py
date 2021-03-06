@@ -47,7 +47,19 @@ def rm(request, storage_path):
     else:
         log.debug("DID NOT DELETE. DEMO MODE.")
 
-def annotate_storage(request, db_file):
+def get_local_storage_path(request, storage_uri):
+    """Given a request and a database File object, determine the local storage path for the given storage_uri"""
+    if storage_uri is None:
+        raise NoDataError
+    if not storage_uri.startswith("file://"):
+        raise RuntimeError("Cannot obtain local storage path for non-local file object")
+    # Find the output folder and try to create it if it does not exist
+    outdir = request.registry.settings['datameta.storage_path']
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+    return os.path.join(outdir, storage_uri[7:]) # Strip the file:// prefix
+
+def create_and_annotate_storage(request, db_file):
     """Returns an upload URL and corresponding request headers for uploading
     the referred file object and annotates the storage URI in the file
     object"""
@@ -57,26 +69,19 @@ def annotate_storage(request, db_file):
 
     # Currently, only local storage is supported
     db_file.storage_uri = f"file://{db_file.uuid}__{db_file.checksum}"
-    return request.route_url('upload', id=db_file.uuid), {}
 
-def get_local_storage_path(request, db_file):
-    """Given a request and a database File object, determine the local storage path for the given db_file"""
-    if db_file.storage_uri is None:
-        raise NoDataError
-    if not db_file.storage_uri.startswith("file://"):
-        raise RuntimeError("Cannot obtain local storage path for non-local file object")
-    # Find the output folder and try to create it if it does not exist
-    outdir = request.registry.settings['datameta.storage_path']
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
-    return os.path.join(outdir, db_file.storage_uri[7:]) # Strip the file:// prefix
+    # Create empty file
+    open(get_local_storage_path(request, db_file.storage_uri), 'w').close()
+
+    # Return the Upload URL
+    return request.route_url('upload', id=db_file.uuid), {}
 
 def write_file(request, db_file, file):
     """Write the file content specified by 'file' to the storage denoted in 'db_file'"""
     # Sanity checks and output path generation
     if db_file.storage_uri is None or not db_file.storage_uri.startswith("file://"):
         raise RuntimeError(f"Unable to store to storage URI '{db_file.storage_uri}'")
-    out_path = get_local_storage_path(request, db_file)
+    out_path = get_local_storage_path(request, db_file.storage_uri)
 
     # Write the file
     if not demo_mode(request):
@@ -90,7 +95,7 @@ def write_file(request, db_file, file):
 def _freeze_local(request, db_file):
     # Perform checksum comparison
     try:
-        with open(get_local_storage_path(request, db_file), 'rb') as infile:
+        with open(get_local_storage_path(request, db_file.storage_uri), 'rb') as infile:
             # Calculate filesize
             infile.seek(0,2)
             filesize = infile.tell()
