@@ -60,12 +60,12 @@
         <input name="input_email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
         <label for="inputPassword" class="visually-hidden">Password</label>
         <input name="input_password" type="password" id="inputPassword" class="form-control" placeholder="Password">
-        <div class="row">
-            <div class="col-lg-6 mt-2">
-                <a href="/register" class="w-100 btn  btn-warning">Register</a>
+        <div class="row mt-2">
+            <div class="col-6">
+                <a href="/register" class="w-100 btn btn-warning">Register</a>
             </div>
-            <div class="col-lg-6 mt-2">
-                <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Sign in</button>
+            <div class="col-6">
+                <button class="w-100 btn btn-warning" type="submit" name="form.submitted">Sign in</button>
             </div>
         </div>
     </form>
