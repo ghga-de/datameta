@@ -56,7 +56,7 @@
             <span class="me-2"><i class="bi bi-check-circle-fill text-success"></i> Ready to commit</span>
             <span class="me-2"><i class="bi bi-exclamation-diamond-fill text-warning"></i> Faulty record</span>
             <span class="me-2"><i class="bi bi-hdd-rack-fill text-danger"></i> Waiting for file</span>
-            <span class="me-2"><i class="bi bi-hdd-rack-fill text-success"></i> File received</span>
+            <span class="me-2"><i class="bi bi-hdd-rack-fill text-success"></i> File received or not mandatory</span>
         </div>
     </div>
 </div>
@@ -277,7 +277,7 @@ DataMeta.refresh_annotated = function(json_annotated, json_linting) {
                 });
                 var exp = /"/g;
                 linting_report = linting_report.replace(exp, '&quot;')
-                    cell.innerHTML='<a tabindex="0" role="button" data-bs-html="true" data-bs-toggle="popover" data-bs-trigger="focus" title="Linting report" data-bs-content="' + linting_report + '"><i class="bi bi-exclamation-diamond-fill text-warning"></i></a>';
+                    cell.innerHTML='<a tabindex="0" role="button" data-bs-html="true" data-bs-toggle="popover" data-bs-trigger="focus" title="Validation Report" data-bs-content="' + linting_report + '"><i class="bi bi-exclamation-diamond-fill text-warning"></i></a>';
             }
             DataMeta.mdat_names.forEach(function(colname, colidx)
             {
@@ -423,6 +423,7 @@ window.addEventListener("load", function() {
         });
 });
 </script>
+<script src="${request.static_url('datameta:static/node_modules/crypto-js/crypto-js.js')}"></script>
 <script src="/static/js/fileupload.js"></script>
 </metal:block>
 </metal:block>

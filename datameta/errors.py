@@ -1,4 +1,6 @@
-# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright (c) 2021 Universität Tübingen, Germany
+# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>,
+#          Kersten Breuer <k.breuer@dkfz.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -17,31 +19,34 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import enum
+from typing import List, Optional
+from pyramid.httpexceptions import HTTPBadRequest
 
-from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPException, HTTPFound
 
-from sqlalchemy.exc import DBAPIError
+def get_validation_error(
+    messages:List[str], 
+    fields:Optional[List[Optional[str]]]
+) -> HTTPBadRequest:
+    """Generate a Validation Error (400) with custom messages
+    """
+    assert len(messages)>0, "messages cannot be empty"
+    assert fields is None or len(fields)==len(messages), (
+        "The fields list must be of same length as messages."
+    )
+    
+    response_body = []
+    for idx, msg in enumerate(messages):
+        err = {
+            "exception": "ValidationError",
+            "message": msg
+        }
+        if fields is not None and fields[idx] is not None:
+            err.update(
+                {
+                    "field": fields[idx]
+                }
+            )
+        response_body.append(err)
 
-from ..models import ApplicationSettings
-from .. import security
-
-from pyramid.events import subscriber
-from pyramid.events import BeforeRender
-
-import logging
-log = logging.getLogger(__name__)
-
-@subscriber(BeforeRender)
-def add_global(event):
-    appsetting = event['request'].dbsession.query(ApplicationSettings).filter(ApplicationSettings.key=="logo_html").one_or_none();
-    if appsetting is None:
-        event['logo_html'] = None
-        log.error("Missing application settings 'logo_html'")
-    else:
-        event['logo_html'] = appsetting.str_value
-
-@view_config(route_name='root')
-def root_view(request):
-    security.revalidate_user_or_login(request)
-    return HTTPFound(location="/home")
+    return HTTPBadRequest(json=response_body)

@@ -25,6 +25,23 @@ services:
         protocol: tcp
         mode: host
 
+    environment:
+      SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
+      SESSION_URL: datameta-memcached:11211
+      SESSION_KEY: datameta
+      SESSION_SECRET: "test"
+      DATAMETA_STORAGE_PATH: /var/datameta/storage
+      DATAMETA_DEMO_MODE: "false"
+      DATAMETA_INITIAL_FULLNAME: "admin"
+      DATAMETA_INITIAL_EMAIL: "admin@admin.admin"
+      DATAMETA_INITIAL_PASS: "admin"
+      DATAMETA_INITIAL_GROUPNAME: "admin"
+      WAITRESS_MAX_REQUEST_BODY_SIZE: 10737418240 # 10 GB
+      WAITRESS_LISTEN: "*:8080"
+      WAITRESS_URL_SCHEME:
+      WAITRESS_TRUSTED_PROXY_HEADERS:
+      WAITRESS_TRUSTED_PROXY:
+
 volumes:
   datameta-db:
     external: false

@@ -1,13 +1,4 @@
-## Developer Documentation
-
-## Table of Contents
-
-1. [Introduction](#introduction)
-1. [Relational Data Mode](#relational-data-model)
-1. [Conceptual Notes](#conceptual-notes)
-1. [Application Cases](#application-cases)
-   1. [Data File Submission](#data-file-submission)
-   1. [Sample Sheet Submission](#sample-sheet-submission)
+# Application Features
 
 ## Introduction
 
@@ -47,7 +38,7 @@ The relational database model comprises the following entities:
    * `name` - The name of the metadata. This defines the text required in the header of the corresponding sample sheet column.
    * `regexp` - A regular expression. If specified, it's applied to the field during linting.
    * `lintmessage` - A message to display in the interface when linting based on `regexp` failes, e.g. "Only three digits are allowed in this field".
-   * `datetimefmt` - C standard date time format code string (see e.g. [here](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)). If specified, the application assumes that this field holds a datetime value. When reading sample sheets from plain text formats (CSV, TSV) or if the corresponding column in a submitted Excel sheet is formatted as plain text, this format string is applied to parse the column values. Additionally, this format string is applied to display the values of this column in the user interface. *Note that date, time and datetime values are always stored as plain text datetime values in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format internally. The missing component falls back to 00:00 and 1900-01-01 respectively.* 
+   * `datetimefmt` - C standard date time format code string (see e.g. [here](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)). If specified, the application assumes that this field holds a datetime value. When reading sample sheets from plain text formats (CSV, TSV) or if the corresponding column in a submitted Excel sheet is formatted as plain text, this format string is applied to parse the column values. Additionally, this format string is applied to display the values of this column in the user interface. *Note that date, time and datetime values are always stored as plain text datetime values in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format internally. The missing component falls back to 00:00 and 1900-01-01 respectively.*
    * `datetimemode` - An enum holding DATE, TIME or DATETIME. If set, denotes that the field should be treated as the corresponding type internally.
    * `mandatory` -  A flag indicating whether this field may be empty in sample sheets or not
    * `order` - An integer. When displaying the sample sheet in the user interface, the columns are shown in the order of their `order` values.

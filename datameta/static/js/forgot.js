@@ -37,6 +37,10 @@ window.addEventListener("load", function() {
         var form = event.target;
         var data = new FormData(form);
 
+        var fieldset = document.getElementById("forgotfieldset");
+        fieldset.disabled = true;
+
+
         document.getElementById("email").classList.remove("is-invalid");
         document.getElementById("success").classList.remove("show");
 
@@ -53,6 +57,7 @@ window.addEventListener("load", function() {
             })
             .then(response => response.json())
             .then(function (json) {
+                fieldset.disabled = false;
                 if (json.success) {
                     view_success();
                     return;
@@ -63,6 +68,7 @@ window.addEventListener("load", function() {
                 }
             })
             .catch((error) => {
+                fieldset.disabled = false;
                 show_alert("An unknown error occurred. Please try again.");
                 console.log(error);
             });

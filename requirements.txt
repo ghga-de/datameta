@@ -1,0 +1,5 @@
+# these requirements are needed for sphinx readthedocs builds
+# app requirements can be found on setup.py
+sphinx
+sphinxcontrib-openapi
+recommonmark

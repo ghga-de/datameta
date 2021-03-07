@@ -1,4 +1,3 @@
-#!/bin/sh
 # Copyright (c) 2021 Universität Tübingen, Germany
 # Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
 #
@@ -20,20 +19,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set -x
-set -e
+from uuid import UUID
 
-# Replace environment variables with their respective values
-envsubst < /docker_production.ini > /tmp/config.ini
+def resource_by_id(dbsession, model, idstring):
+    """Tries to find a resource using the provided id. The search is initially
+    performed against the resources UUID property. If that yields no match, the
+    search is repeated against the resources site_id property if available.
 
-# Try to connect to the database, fail startup otherwise
-psql -c '\dt' "$SQLALCHEMY_URL"
+    Args:
+        dbessions: A database session
+        model: The model class describing the resource
+        idstring: The UUID or site_id to be found
 
-# Check if the database has been initialized and if not initialize it
-cd /tmp/datameta.src/
-alembic -c /tmp/config.ini upgrade head
-initialize_datameta_db -c /tmp/config.ini --initial-user-fullname "$DATAMETA_INITIAL_FULLNAME" --initial-user-email "$DATAMETA_INITIAL_EMAIL" --initial-user-pass "$DATAMETA_INITIAL_PASS" --initial-group "$DATAMETA_INITIAL_GROUPNAME"
-cd /
+    Returns:
+        The database entity or None if no match could be found"""
 
-# Launch the application
-pserve /tmp/config.ini
+    entity = None
+    try:
+        entity = dbsession.query(model).filter(model.uuid==UUID(idstring)).one_or_none();
+    except ValueError: # The specified string is not a valid UUID and the UUID constructor raises
+        pass
+
+    try:
+        entity = entity if entity is not None else dbsession.query(model).filter(model.site_id==idstring).one_or_none();
+    except AttributeError: # This entity doesn't have a site_id
+        pass
+
+    return entity

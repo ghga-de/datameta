@@ -58,6 +58,11 @@ jobs:
         alembic -c ./conf/ci.ini upgrade head
     - name: Load default data
       run: |
-        initialize_datameta_db ./conf/ci.ini
+        initialize_datameta_db \
+          --config ./conf/ci.ini \
+          --initial-user-fullname CI \
+          --initial-user-email ci@ci.ci \
+          --initial-user-pass ci \
+          --initial-group ci
     - name: Run tests
       run: pytest

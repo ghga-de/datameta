@@ -1,14 +1,18 @@
 version: '3.2'
 services:
   datameta-app:
-    image: "lkuchenb/datameta:dev"
+    image: "datameta/datameta:dev"
     environment:
       SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
       SESSION_URL: datameta-memcached:11211
       SESSION_KEY: datameta
-      SESSION_SECRET: changeme
+      SESSION_SECRET: # Set a 64 character random string here
       DATAMETA_STORAGE_PATH: /var/datameta/storage
-      DATAMETA_DEMO_MODE: "true"
+      DATAMETA_DEMO_MODE: "false"
+      DATAMETA_INITIAL_FULLNAME:
+      DATAMETA_INITIAL_EMAIL:
+      DATAMETA_INITIAL_PASS:
+      DATAMETA_INITIAL_GROUPNAME:
       WAITRESS_MAX_REQUEST_BODY_SIZE: 10737418240 # 10 GB
       WAITRESS_LISTEN: "*:8080"
       WAITRESS_URL_SCHEME:

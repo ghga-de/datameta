@@ -27,3 +27,6 @@ development_notb.ini
 *.idea
 *venv*
 .vscode/
+_build*
+docs/make.bat
+docs/Makefile

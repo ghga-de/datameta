@@ -1,4 +1,4 @@
-## Getting Started
+# Local Installation
 
 - Change directory into your newly created project if not already there. Your
   current directory should be the same as this README.txt file and setup.py.
@@ -25,9 +25,14 @@
 
     env/bin/alembic -c development.ini upgrade head
 
-- Load default data into the database using a script.
+- Load default data into the database using a script. Change the initial user and group information to your requirements.
 
-    env/bin/initialize_datameta_db development.ini
+    env/bin/initialize_datameta_db \
+        -c development.ini \
+        --initial-user-fullname "First User Fullname" \
+        --initial-user-email "first@user.email" \
+        --initial-user-pass "initialPassword" \
+        --initial-group "My Organization"
 
 - Run your project's tests.
 

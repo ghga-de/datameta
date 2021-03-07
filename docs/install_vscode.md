@@ -1,8 +1,10 @@
-# Install instruction when using the remote container feature of vscode
+# VS Code Docker Installation
+
+Install instruction when using the remote container feature of vscode
 
 The remote container feature allows to run the editors backend insight a docker container which is all setup for development.  
 
-## Quickstart:
+## Quickstart
 Clone this repository:  
 ```
 git clone https://github.com/ghga-de/datameta.git
@@ -18,12 +20,12 @@ Install the remote develoment extension:
 - search for `Remote Development` and install it
 
 To reopen vscode inside the dev container:
-- select `View > Command Palette` in the dropdown menu 
+- select `View > Command Palette` in the dropdown menu
 - then select (or type): `Remote-Containers: Reopen in Container`
 
 If you are executing this for the first time, the containers will be set up via docker-compose. This might take some time.
 
-## Developing inside the container:
+## Using the container
 Once the build succeeded, you will be able to use vscode as usual.
 The workspace will be mounted at `/workspace`.
 
@@ -42,11 +44,10 @@ dev_launcher
 
 The frontend should be available at http://localhost:8080/ in your browser.
 
-## Configuration and further information:
+## Configuration
 Any configuration regarding the dev container environment can be found at `/.devcontainer`.
 
-The environment includes a few useful vscode extensions out of the box. 
+The environment includes a few useful vscode extensions out of the box.
 If you find a extension that might be of use to everybody, feel free to add it to the `/.devcontainer/devcontainer.json`.
 
 For general information on this vscode feature please look [here](https://code.visualstudio.com/docs/remote/create-dev-container).
- 

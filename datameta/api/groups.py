@@ -1,4 +1,6 @@
-# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright (c) 2021 Universität Tübingen, Germany
+# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>,
+#          Kersten Breuer <k.breuer@dkfz.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,29 +21,35 @@
 # SOFTWARE.
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPException, HTTPFound
+from pyramid.request import Request
+from typing import Optional, Dict, List
+from .. import models
 
-from sqlalchemy.exc import DBAPIError
 
-from ..models import ApplicationSettings
-from .. import security
+class GroupSubmissions:
+    """GroupSubmissions container for OpenApi communication"""
+    submissions: List[dict]
 
-from pyramid.events import subscriber
-from pyramid.events import BeforeRender
+    def __init__(self, request:Request, group_id:str):
+        db = request.dbsession
+        # To Developer:
+        # Please insert code that queries the db
+        # for all submissions for the given group_id
+        # and store that list in self.submissions
 
-import logging
-log = logging.getLogger(__name__)
 
-@subscriber(BeforeRender)
-def add_global(event):
-    appsetting = event['request'].dbsession.query(ApplicationSettings).filter(ApplicationSettings.key=="logo_html").one_or_none();
-    if appsetting is None:
-        event['logo_html'] = None
-        log.error("Missing application settings 'logo_html'")
-    else:
-        event['logo_html'] = appsetting.str_value
+    def __json__(self) -> List[dict]:
+        return self(submissions)
 
-@view_config(route_name='root')
-def root_view(request):
-    security.revalidate_user_or_login(request)
-    return HTTPFound(location="/home")
+
+@view_config(
+    route_name="groups_id_submissions", 
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get(request: Request) -> GroupSubmissions:
+    """Get all submissions of a given group."""
+    pass
+    return {}
+    

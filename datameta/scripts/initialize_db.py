@@ -11,55 +11,67 @@ from ..models import User, Group, MetaDatum, DateTimeMode, ApplicationSettings
 
 def parse_args(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        'config_uri',
-        help='Configuration file, e.g., development.ini',
-    )
+    parser.add_argument('-c', '--config_uri', required=True, help='Configuration file, e.g., development.ini')
+    parser.add_argument('-un', '--initial-user-fullname', required=True, type=str, help='Full name of the initial user')
+    parser.add_argument('-ue', '--initial-user-email', required=True, type=str, help='Email address of the initial user')
+    parser.add_argument('-up', '--initial-user-pass', required=True, type=str, help='Password of the initial user')
+    parser.add_argument('-g', '--initial-group', required=True, type=str, help='Name of the initial group')
     return parser.parse_args(argv[1:])
 
-def create_initial_user(request):
+def create_initial_user(request, email, fullname, password, groupname):
     from .. import siteid
 
     db = request.dbsession
     # Perform initialization only if the group table is empty
-    rnd = list(str(uuid.uuid4()).replace("-", ""))
-    random.shuffle(rnd)
-    newpass = "admin_" + "".join(rnd[:5])
     if (db.query(Group.id).count() == 0):
         init_group = Group(
                 id=0,
-                name="My Organization",
+                name=groupname,
                 site_id=siteid.generate(request, Group)
                 )
         root = User(
                 id=0,
                 site_id=siteid.generate(request, User),
                 enabled=True,
-                email="admin@admin.admin",
-                pwhash=hash_password(newpass),
-                fullname="Administrator",
+                email=email,
+                pwhash=hash_password(password),
+                fullname=fullname,
                 group=init_group,
                 group_admin=True,
                 site_admin=True
                 )
         db.add(root)
-        print(f"""\
-+
-+
-+
-INITIAL USER CREATED! EMAIL 'admin@admin.admin' PASS '{newpass}'
-+
-+
-+""", file = sys.stderr)
 
 def create_example_metadata(dbsession):
     if dbsession.query(MetaDatum).first() is None:
         metadata = [
-                MetaDatum(name = "#ID", mandatory=True, order=100, isfile=False),
-                MetaDatum(name = "Date", mandatory=True, order=200, datetimefmt="%Y-%m-%d", datetimemode=DateTimeMode.DATE, isfile=False),
-                MetaDatum(name = "ZIP Code", mandatory=True, order=300, isfile=False),
-                MetaDatum(name = "FileR1", mandatory=True, order=400, isfile=True),
-                MetaDatum(name = "FileR2", mandatory=True, order=500, isfile=True)
+                MetaDatum(name = "#ID",
+                    mandatory=True,
+                    order=100,
+                    isfile=False,
+                    regexp=r"^[A-Z][A-Z][0-9][0-9]$",
+                    lintmessage="The ID must be specified as two uppercase characters followed by two digits."),
+                MetaDatum(name = "Date",
+                    mandatory=True,
+                    order=200,
+                    datetimefmt="%Y-%m-%d",
+                    datetimemode=DateTimeMode.DATE,
+                    isfile=False),
+                MetaDatum(name = "ZIP Code",
+                    mandatory=True,
+                    order=300,
+                    isfile=False,
+                    regexp=r"^[0-9][0-9][0-9]$",
+                    lintmessage="Please specify the first three digits of the ZIP code",
+                    ),
+                MetaDatum(name = "FileR1",
+                    mandatory=True,
+                    order=400,
+                    isfile=True),
+                MetaDatum(name = "FileR2",
+                    mandatory=True,
+                    order=500,
+                    isfile=True)
                 ]
         dbsession.add_all(metadata)
 
@@ -147,8 +159,15 @@ Best regards,
 The Support Team"""))
 
 
+def create_default_site_settings(db):
+    db.add(ApplicationSettings(
+        key='logo_html',
+        str_value = '<p class="h4 my-0 me-md-auto fw-normal" style="font-family: \'Fira Sans\', sans-serif;"><a href="/" class="link-bare"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</a></p>'
+        ))
+
 def main(argv=sys.argv):
     args = parse_args(argv)
+
     setup_logging(args.config_uri)
     env = bootstrap(args.config_uri)
 
@@ -156,14 +175,27 @@ def main(argv=sys.argv):
         with env['request'].tm:
             dbsession = env['request'].dbsession
 
+            # Check if a user exists, if so don't initialize
+            if dbsession.query(User).first() is not None:
+                print("Database appears to already have data. Not inserting any defaults.", file=sys.stderr)
+                sys.exit(0)
+
+            # Check that specified defaults aren't empty strings (e.g. from the shipped compose file)
+            for arg in ['initial_user_fullname','initial_user_email','initial_user_pass','initial_group']:
+                if not vars(args)[arg]:
+                    sys.exit(f"Please specify a valid string for '{arg}'!")
+
             # Create the initial admin user
-            create_initial_user(env['request'])
+            create_initial_user(env['request'], args.initial_user_email, args.initial_user_fullname, args.initial_user_pass, args.initial_group)
 
             # Create example sample sheet columns
             create_example_metadata(dbsession)
 
             # Create email templates
             create_email_templates(dbsession)
+
+            # Create default site settings
+            create_default_site_settings(dbsession)
 
     except OperationalError:
         print('''

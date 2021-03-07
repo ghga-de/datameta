@@ -1,12 +1,8 @@
 # DataMeta Documentation
 
 ## Installation Instructions
-  * [Deployment using Docker Stack](./INSTALL_DOCKER.md)
-  * [Local installation](./INSTALL_LOCAL.md)
+  * [Deployment using Docker Stack](./install_vscode.md)
+  * [Local installation](./install_local.md)
 
 ## Development
-* [Developer Documentation](./DEVELOPERS.md)
-
-
-
-
+* [Application Features](./application_features.md)
