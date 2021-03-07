@@ -13,8 +13,8 @@ services:
       DATAMETA_INITIAL_EMAIL:
       DATAMETA_INITIAL_PASS:
       DATAMETA_INITIAL_GROUPNAME:
-      LETSENCRYPT_HOST:   # Example: "dev.cogdat.de"
-      VIRTUAL_HOST:       # Example: "dev.cogdat.de"
+      LETSENCRYPT_HOST:   # Picked up by nginx-proxy / letsencrypt. Comma separated list of hostnames.
+      VIRTUAL_HOST:       # Picked up by nginx-proxy / letsencrypt. Comma separated list of hostnames. Every hostname in LETSENCRYPT_HOST must appear also here, otherwise cert acquisition will fail
       WAITRESS_MAX_REQUEST_BODY_SIZE: 10737418240 # 10 GB
       WAITRESS_LISTEN: "*:8080"
       WAITRESS_URL_SCHEME: "https"
