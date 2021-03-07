@@ -6,7 +6,7 @@ services:
       SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
       SESSION_URL: datameta-memcached:11211
       SESSION_KEY: datameta
-      SESSION_SECRET: cheeph9shiew8baNg0iupohzuboi9efiuqu4ae2chien1naeWeew0uuviiSh8dee
+      SESSION_SECRET: # Set a 64 character random string here
       DATAMETA_STORAGE_PATH: /var/datameta/storage
       DATAMETA_DEMO_MODE: "true"
       DATAMETA_INITIAL_FULLNAME:
