@@ -1,0 +1,34 @@
+##Docker Compose
+
+###Purpose of this compose file
+The purpose of this compose file is to serve as a basic, replicable node for scaling out the capacity of datameta
+without using docker swarm. It can be run on its own as a single node system, or it can be deployed as a node in a
+hierarchical architecture at scale.
+
+####Details
+The envisioned way to scale out this node is to deploy an outward facing nginx container or set of nginx containers as a
+gateway into the cogdat system.
+
+Behind that outward facing container would be instances of the Docker engine running the compose setup from this
+docker-compose.yml file. The outward facing nginx container would act as a reverse proxy and load balance across the
+back end instances of this compose set up in a two-tiered, hierarchical architecture.
+
+This basic, replicable node contains:
+
+nginx-proxy container
+letsencrypt companion container to nginx-proxy
+datameta-app container
+postgres database container
+memcached container
+
+The nginx-proxy container acts as a reverse proxy in front of the block of datameta-app containers. The reverse proxy
+along with its letscencrypt companion handle SSL and convert all incoming requests to https and forward them to the
+instances of datameta-app in a round-robin load balancing scheme.
+
+###Running this compose file at scale on a single node
+In a single instance of this file, you can scale up the number of datameta-app containers, which will drastically
+increase the traffic it can handle, until the machine on which it's running becomes resource constrained. Because Python
+cannot do concurrent multithreading, spinning up different instances of the app and its built-in server were the fastest
+way to scale up. To run with a specified number of datameta-app containers, run this command:
+
+`docker-compose up --scale datameta-app=<desired_number_of_containers>`
