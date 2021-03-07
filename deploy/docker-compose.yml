@@ -1,21 +1,27 @@
 version: '3.2'
 services:
   datameta-app:
-    image: "lkuchenb/datameta:dev"
+    image: "datameta/datameta:dev"
     environment:
       SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
       SESSION_URL: datameta-memcached:11211
       SESSION_KEY: datameta
-      SESSION_SECRET: changeme
+      SESSION_SECRET: cheeph9shiew8baNg0iupohzuboi9efiuqu4ae2chien1naeWeew0uuviiSh8dee
       DATAMETA_STORAGE_PATH: /var/datameta/storage
       DATAMETA_DEMO_MODE: "true"
-      LETSENCRYPT_HOST:
-      VIRTUAL_HOST:
+      DATAMETA_INITIAL_FULLNAME:
+      DATAMETA_INITIAL_EMAIL:
+      DATAMETA_INITIAL_PASS:
+      DATAMETA_INITIAL_GROUPNAME:
+      LETSENCRYPT_HOST:   # Example: "dev.cogdat.de"
+      VIRTUAL_HOST:       # Example: "dev.cogdat.de"
       WAITRESS_MAX_REQUEST_BODY_SIZE: 10737418240 # 10 GB
       WAITRESS_LISTEN: "*:8080"
-      WAITRESS_URL_SCHEME:
+      WAITRESS_URL_SCHEME: "https"
       WAITRESS_TRUSTED_PROXY_HEADERS: "x-forwarded-for x-forwarded-host x-forwarded-proto x-forwarded-port"
       WAITRESS_TRUSTED_PROXY: "reverse-proxy"
+    depends_on:
+      - reverse-proxy
     volumes:
       - type: volume
         source: datameta-filestorage
@@ -26,12 +32,7 @@ services:
       - "net"
       - "cogdat"
     ports:
-      - target: 8080
-        published: 9950
-        protocol: tcp
-        mode: host
-    deploy:
-      endpoint_mode : dnsrr
+      - "8080" # Make containerized service available on port 8080 to any other container on a shared bridge network
 
   datameta-memcached:
     image: "memcached:1.6.3"
@@ -40,6 +41,7 @@ services:
       endpoint_mode : dnsrr
     networks:
       - "cogdat"
+
   datameta-postgresql:
     image: "postgres:13-alpine"
     volumes:
@@ -59,6 +61,7 @@ services:
 
   reverse-proxy:
     image: "jwilder/nginx-proxy:latest"
+    container_name: "reverse-proxy"
     volumes:
       - "html:/usr/share/nginx/html"
       - "dhparam:/etc/nginx/dhparam"
@@ -80,12 +83,14 @@ services:
       - "vhost:/etc/nginx/vhost.d"
       - "certs:/etc/nginx/certs"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    environment:
-      NGINX_PROXY_CONTAINER: "reverse-proxy"
-      DEFAULT_EMAIL: 
-    restart: "always"
+      - "/etc/acme.sh"
     depends_on:
       - "reverse-proxy"
+    environment:
+      NGINX_PROXY_CONTAINER: "reverse-proxy"
+      NGINX_DOCKER_GEN_CONTAINER: "reverse-proxy"
+      DEFAULT_EMAIL:
+    restart: "always"
     networks:
       - "net"
 
@@ -95,10 +100,17 @@ volumes:
   datameta-filestorage:
     external: true
   certs:
+    external: true
   html:
+    external: true
   vhost:
+    external: true
   dhparam:
+    external: true
 
+# Setting external to false for networks means Docker will look for an existing network rather than making a throwaway
+# one when you run `docker-compose up [args]`. Run `docker network create <network name>` to create the network if it
+# doesn't already exist on the local docker engine.
 networks:
   net:
     external: false
