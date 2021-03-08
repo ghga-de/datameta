@@ -50,10 +50,17 @@ class MetaDataSetResponse:
 
 
 def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dict:
-    """Renders values of a metadataset record"""
+    """Renders values of a metadataset record. Please note: the record should already have passed validation."""
     record_rendered = record.copy()
-    for field in record_rendered:
-        if mdatum[field].datetimefmt:
+    for field in mdatum:
+        if not field in record_rendered.keys():
+            # if field is not contained in record, add it as None to the record:
+            record_rendered[field] = None
+            continue
+        elif field is None:
+            continue
+        elif mdatum[field].datetimefmt:
+            # if MetaDatum is a datetime field, render the value in isoformat
             record_rendered[field] = datetime.datetime.strptime(
                     record_rendered[field], 
                     mdatum[field].datetimefmt
