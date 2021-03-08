@@ -24,7 +24,7 @@ from uuid import UUID
 
 def resource_query_by_id(db, model, idstring):
     """Returns a database query that returns an entity based on it's uuid or
-    site_ide as specified by idstring.
+    site_id as specified by idstring.
 
     Args:
         dbessions: A database session
@@ -61,5 +61,4 @@ def resource_by_id(dbsession, model, idstring):
     Returns:
         The database entity or None if no match could be found"""
 
-    print("DING")
     return resource_query_by_id(dbsession, model, idstring).one_or_none()
