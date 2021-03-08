@@ -130,7 +130,7 @@ def post(request:Request) -> UserSession:
             raise HTTPUnauthorized()
         
     label = request.openapi_validated.body["label"]
-    expires = request.openapi_validated.body["expires"]
+    expires = request.openapi_validated.body.get("expires")
 
 
     return generate_api_key(request, auth_user, label, expires)
