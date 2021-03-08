@@ -710,15 +710,28 @@ components:
       items:
         $ref: "#/components/schemas/SubmissionResponse"
 
+    Identifier:
+      type: object
+      properties:
+        uuid:
+          type: string
+        site:
+          type: string
+      required:
+        - uuid
+      additionalProperties: false
+
     Error:
       type: object
       properties:
         exception:
           type: string
+        error_code:
+          type: string
         message:
           type: string
         entity:
-          type: string
+          $ref: "#/components/schemas/Identifier"
         field:
           type: string
       required:
