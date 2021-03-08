@@ -54,19 +54,20 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
         400 HTTPBadRequest
     """
     # Collect missing files
-    val_errors = [ (file_id, None, "Not found") for file_id, db_file in db_files.items() if db_file is None ]
+    val_errors = [ (db_file, None, "Not found") for file_id, db_file in db_files.items() if db_file is None ]
     # Collect authorization issues
-    val_errors += [ (file_id, None, "Access denied") for file_id, db_file in db_files.items() if db_file is not None and (db_file.user_id!=auth_user.id or db_file.group_id!=auth_user.group_id) ]
+    val_errors += [ (db_file, None, "Access denied") for file_id, db_file in db_files.items() if db_file is not None and (db_file.user_id!=auth_user.id or db_file.group_id!=auth_user.group_id) ]
 
     # Collect missing metadatasets
-    val_errors += [ (mset_id, None, "Not found") for mset_id, db_mset in db_msets.items() if db_mset is None ]
+    val_errors += [ (db_mset, None, "Not found") for mset_id, db_mset in db_msets.items() if db_mset is None ]
     # Collect authorization issues
-    val_errors += [ (mset_id, None, "Access denied") for mset_id, db_mset in db_msets.items() if db_mset is not None and (db_mset.user_id!=auth_user.id or db_mset.group_id!=auth_user.group_id) ]
+    val_errors += [ (db_mset, None, "Access denied") for mset_id, db_mset in db_msets.items() if db_mset is not None and (db_mset.user_id!=auth_user.id or db_mset.group_id!=auth_user.group_id) ]
 
     # If we collected any val_errors so far, raise 400 to avoid exposing internals
     # about data the user should not be able to access
     if val_errors:
         entities, fields, messages = zip(*val_errors)
+        entities = [ { 'uuid' : str(entity.uuid), 'site_id' : entity.site_id } for entity in entities ]
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
 def validate_submission_association(db_files, db_msets):
@@ -77,35 +78,48 @@ def validate_submission_association(db_files, db_msets):
     - All referenced entities have not been submitted before
 
     Returns (tuple):
-        fnames      - A dict mapping file names to database file object
+        f_names_obj - A dict mapping file names to database file object
         ref_fnames  - A dict mapping file names referenced by metadatumrecords to the metadatumrecord
         errors      - A list of tuples (entity, field, message) describing the errors that occurred
     """
     errors = []
     # Collect files with no data associated
-    errors += [ (file_id, None, "No data uploaded") for file_id, db_file in db_files.items() if db_file.content_uploaded==False ]
+    errors += [ (db_file, None, "No data uploaded") for file_id, db_file in db_files.items() if db_file.content_uploaded==False ]
     # Collect files which already have other metadata associated
-    errors += [ (file_id, None, "Already submitted") for file_id, db_file in db_files.items() if db_file.metadatumrecord is not None ]
+    errors += [ (db_file, None, "Already submitted") for file_id, db_file in db_files.items() if db_file.metadatumrecord is not None ]
     # Collect metadatasets that were already submitted
-    errors += [ (mset_id, None, "Already submitted") for mset_id, db_mset in db_msets.items() if db_mset.submission_id is not None ]
+    errors += [ (db_mset, None, "Already submitted") for mset_id, db_mset in db_msets.items() if db_mset.submission_id is not None ]
 
     # Collect the file names of the provided files
-    fnames = { db_file.name : db_file for db_file in db_files.values() if db_file is not None }
+    f_names_obj = defaultdict(list)
+    for db_file in db_files.values():
+        if db_file is not None:
+            f_names_obj[db_file.name].append(db_file)
+
     # Make sure the filenames are unique
-    fname_counts = Counter(fnames.keys())
-    errors += [ (fname, None, "Filename occurs multiple times among provided files") for fname, count in fname_counts.items() if count > 1 ]
+    for fname, db_objs in f_names_obj.items():
+        if len(db_objs)>1:
+            errors += [ (db_file, None, "Filename occurs multiple times among provided files") for db_file in db_objs ]
 
     # Collect the file names referenced by the metadata sets - null values are not considered here
+    mdat_fnames_obj = defaultdict(list)
+    for mset in db_msets.values():
+        for mdatrec in mset.metadatumrecords:
+            if mdatrec.value is not None and mdatrec.metadatum.isfile:
+                mdat_fnames_obj[mdatrec.value].append(mdatrec)
+
     ref_fnames = { mdatrec.value : mdatrec for mset in db_msets.values() for mdatrec in mset.metadatumrecords if mdatrec.metadatum.isfile and mdatrec.value}
     # Make sure referenced file names are unique
-    ref_fname_counts = Counter(ref_fnames.keys())
-    errors += [ (ref_fname, None, "Filename occurs multiple times in metadata") for ref_fname, count in ref_fname_counts.items() if count > 1 ]
+    ref_fname_counts = Counter(mdatrec.value for mdatrecs in mdat_fnames_obj.values() for mdatrec in mdatrecs)
+    errors += [ (mdatrec.metadataset, mdatrec.metadatum.name, "Filename occurs multiple times in metadata")
+            for ref_fname, count in ref_fname_counts.items() if count > 1 
+            for mdatrec in mdat_fnames_obj[ref_fname]]
 
     # Make sure the files' filenames and the referenced filenames match
-    errors += [ (db_file.site_id, None, "File included without reference in metadata") for fname, db_file in fnames.items() if fname not in ref_fnames.keys() ]
-    errors += [ (mdatrec.metadataset.site_id, mdatrec.metadatum.name, "File referenced in metadata but not provided") for ref_fname, mdatrec in ref_fnames.items() if ref_fname not in fnames ]
+    errors += [ (db_file, None, "File included without reference in metadata") for db_file in db_files.values() if db_file.name not in ref_fnames.keys() ]
+    errors += [ (mdatrec.metadataset, mdatrec.metadatum.name, "Referenced file not provided") for ref_fname, mdatrec in ref_fnames.items() if ref_fname not in f_names_obj ]
 
-    return fnames, ref_fnames, errors
+    return f_names_obj, ref_fnames, errors
 
 def validate_submission_uniquekeys(db, db_files, db_msets):
     errors = []
@@ -126,7 +140,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         # Reduce to those values that occur in more than one metadatast
         value_msets = { k: v for k, v in value_msets.items() if len(v) > 1 }
         # Produce errrors
-        errors += [ (db_mset.site_id, key, "Violation of intra-submission unique constraint") for msets in value_msets.values() for db_mset in msets ]
+        errors += [ (db_mset, key, "Violation of intra-submission unique constraint") for msets in value_msets.values() for db_mset in msets ]
 
     # Validate the set of metadatasets with regard to site-wise unique key constraints
     for key in keys_site_unique:
@@ -148,7 +162,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
                     ))
 
         db_values = [ rec.value for rec in q ]
-        errors += [ (db_mset.site_id, key, "Violation of global unique constraint") for value, msets in value_msets.items() if value in db_values for db_mset in msets ]
+        errors += [ (db_mset, key, "Violation of global unique constraint") for value, msets in value_msets.items() if value in db_values for db_mset in msets ]
 
     return errors
 
@@ -181,7 +195,11 @@ def validate_submission(request, auth_user):
     # If we collected any val_errors, raise 400
     if val_errors:
         entities, fields, messages = zip(*val_errors)
+        entities = [ { 'uuid' : str(entity.uuid), 'site_id' : entity.site_id } for entity in entities ]
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
+
+    # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
+    fnames = { k : v[0] for k,v in fnames.items() }
 
     return fnames, ref_fnames, db_files, db_msets
 
