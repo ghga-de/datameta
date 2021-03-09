@@ -1,6 +1,6 @@
 from . import BaseIntegrationTest
 
-class TestAuthSenario(BaseIntegrationTest):
+class TestBasics(BaseIntegrationTest):
 
     def test_swagger_api_loaded(self):
         """Swagger's API Explorer should be served on /api/."""
@@ -8,6 +8,3 @@ class TestAuthSenario(BaseIntegrationTest):
         assert "<title>Swagger UI</title>" in res.text, (
             "Swagger UI could not be loaded"
         )
-
-    # def test_apikey_request(self):
-        # apikey = self.testapp.post("/api/keys", status=200)
