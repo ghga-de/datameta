@@ -57,10 +57,6 @@ def hash_token(token):
     hashed_token =  hashlib.sha256(token.encode('utf-8')).hexdigest()
     return hashed_token
 
-def check_token_by_hash(token, hashed_token):
-    """Check a token against an usalted hash"""
-    return hash_token(token) == hashed_token
-
 def get_user_by_credentials(request, email:str, password:str):
     """Check a compination of email and password, returns a user object if valid"""
     db = request.dbsession
