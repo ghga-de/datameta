@@ -4,6 +4,7 @@ from pyramid import testing
 from pyramid.httpexceptions import HTTPFound
 import pytest
 import transaction
+from datameta import scripts, models, security
 
 
 def dummy_request(dbsession):
@@ -69,6 +70,34 @@ class BaseIntegrationTest(unittest.TestCase):
         Base.metadata.create_all(self.engine)
 
         session_factory = get_session_factory(self.engine)
+
+        # populate db:
+        with transaction.manager:
+            temp_session = get_tm_session(session_factory, transaction.manager)
+
+            email = "admin@admin.admin"
+            password = "admin"
+            fullname = "admin"
+            groupname = "admin"
+
+            init_group = models.Group(
+                id=0,
+                name=groupname,
+                site_id="init_test_user_id"
+            )
+            root = models.User(
+                id=0,
+                site_id="init_test_user_id",
+                enabled=True,
+                email=email,
+                pwhash=security.hash_password(password),
+                fullname=fullname,
+                group=init_group,
+                group_admin=True,
+                site_admin=True
+            )
+            temp_session.add(root)
+
         self.session = get_tm_session(session_factory, transaction.manager)
         
     def tearDown(self):
