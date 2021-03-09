@@ -12,6 +12,7 @@ def dummy_request(dbsession):
 
 class BaseIntegrationTest(unittest.TestCase):
     def setUp(self):
+        """Setup Test Server"""
         from datameta import main
         settings = {
             'datameta.site_id_prefix.users': "DMU-",
@@ -30,7 +31,7 @@ class BaseIntegrationTest(unittest.TestCase):
             'datameta.smtp_pass': "",      
             'datameta.smtp_tls': "",       
             'datameta.smtp_from': "",       
-            'datameta.site_id_digits.files': 8,    
+            'datameta.apikeys.max_expiration_period': 30,
             
             'pyramid.reload_templates': True,
             'pyramid.debug_authorization': False,
@@ -44,9 +45,8 @@ class BaseIntegrationTest(unittest.TestCase):
             'sqlalchemy.isolation_level': "SERIALIZABLE",
 
             'session.type': "ext:memcached",
-            'session.url': "127.0.0.1:11211",
+            'session.url': "datameta-memcached:11211",
             'session.key': "datameta",
-            # 'session.secret': "changemechangemechangemechangeme",
             'session.secret': "test",
             'session.cookie_on_exception': False,
 
@@ -72,7 +72,25 @@ class BaseIntegrationTest(unittest.TestCase):
         self.session = get_tm_session(session_factory, transaction.manager)
         
     def tearDown(self):
+        """Teardown Test Server"""
         from datameta.models.meta import Base
         transaction.abort()
         Base.metadata.drop_all(self.engine)
         del self.testapp
+
+    def _steps(self):
+        """
+        If a class inheriting from this class defines methods named according to the
+        pattern \"step_<no.>_<titel>\", this function can be called to iterate over
+        them in the correct order.
+        """
+        for name in sorted(dir(self)):
+            if name.startswith("step"):
+                yield name, getattr(self, name) 
+
+    def _test_all_steps(self):
+        """
+        Can be called to test all steps in alphanumerical order
+        """
+        for name, step in self._steps():
+            step()
