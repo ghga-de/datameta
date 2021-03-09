@@ -51,7 +51,7 @@ class UserSession:
                 "email": self.email,
                 "token": self.token,
                 "label": self.label,
-                "expiresAt": self.expires_at
+                "expiresAt": self.expires_at.isoformat() if self.expires_at else None
             }
 
 
@@ -75,14 +75,28 @@ class ApiKeyLabels:
 
 
 
-def generate_api_key(request:Request, user:models.User, label:str, expires:str):
-    # For Token Composition:
-    # Tokens consist of a core, which is stored as hash in the database,
-    # plus a prefix that contains the user and the label of that ApiKey.
-    # The user always provides the entire token, which is then split up
-    # into prefic and core component. The prefix is used to identify the
-    # ApiKey object in the database and the core component is matched
-    # against the hash for validating it.
+def generate_api_key(request:Request, user:models.User, label:str, expires:Optional[str]=None):
+    """For Token Composition:
+    Tokens consist of a core, which is stored as hash in the database,
+    plus a prefix that contains the user and the label of that ApiKey.
+    The user always provides the entire token, which is then split up
+    into prefic and core component. The prefix is used to identify the
+    ApiKey object in the database and the core component is matched
+    against the hash for validating it.
+    """
+
+    # check if expires str is in iso format:
+    if expires is not None:
+        try:
+            expires_date = datetime.fromisoformat(value)
+        except (ValueError, TypeError):
+            raise get_validation_error(
+                messages=["Wrong datetime format. Please use isoformat."],
+                fields=["expiresAt"]
+            )
+    else:
+        expires_date = None
+
     token_core = "".join(choice(ascii_letters+digits) for _ in range(64) )
     token_prefix = f"{user.id}-{label}-"
 
@@ -92,7 +106,7 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:str):
         user_id = user.id,
         value = security.hash_password(token_core),
         label = label,
-        expires = expires
+        expires = expires_date
     )
     db.add(apikey)
     db.flush()
