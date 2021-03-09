@@ -31,7 +31,8 @@ from .. import security
 from pyramid.httpexceptions import HTTPOk, HTTPUnauthorized, HTTPForbidden
 from ..resource import resource_by_id
 from ..errors import get_validation_error
-from datetime import datetime
+from datetime import datetime, timedelta
+from pyramid import threadlocal
 
 
 @dataclass
@@ -74,8 +75,41 @@ class ApiKeyLabels:
         return self.apikeys
 
 
+def get_expiration_date_from_str(expires_str:Optional[str]):
+    """Validates a user-defined ApiKey expiration date and converts it into a datetime object"""
+    # calculated the latest expiration date allowed
+    max_expiration_period = int(threadlocal.get_current_registry().settings['datameta.apikeys.max_expiration_period']) 
+    max_expiration_datetime = datetime.now() + timedelta(days=max_expiration_period)
+    
+    if expires_str is None:
+        expires_datetime = max_expiration_datetime
+    else:
+        # check if str matches isoformat
+        try:
+            expires_datetime = datetime.fromisoformat(expires_str)
+        except (ValueError, TypeError):
+            raise get_validation_error(
+                messages=["Wrong datetime format. Please use isoformat."],
+                fields=["expiresAt"]
+            )
 
-def generate_api_key(request:Request, user:models.User, label:str, expires:Optional[str]=None):
+        # check if chosen expiratio date exceeds max_expiration_datetime:
+        if expires_datetime > max_expiration_datetime:
+            raise get_validation_error(
+                messages=[
+                    (
+                        "The defined expiration date exceeded"
+                        " the max allowed expiration period, "
+                        f"which is {max_expiration_period} days."
+                    )
+                ],
+                fields=["expiresAt"]
+            )
+    
+    return expires_datetime
+    
+
+def generate_api_key(request:Request, user:models.User, label:str, expires:Optional[datetime]=None):
     """For Token Composition:
     Tokens consist of a core, which is stored as hash in the database,
     plus a prefix that contains the user and the label of that ApiKey.
@@ -84,19 +118,6 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:Optio
     ApiKey object in the database and the core component is matched
     against the hash for validating it.
     """
-
-    # check if expires str is in iso format:
-    if expires is not None:
-        try:
-            expires_date = datetime.fromisoformat(value)
-        except (ValueError, TypeError):
-            raise get_validation_error(
-                messages=["Wrong datetime format. Please use isoformat."],
-                fields=["expiresAt"]
-            )
-    else:
-        expires_date = None
-
     token_core = "".join(choice(ascii_letters+digits) for _ in range(64) )
     token_prefix = f"{user.id}-{label}-"
 
@@ -106,7 +127,7 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:Optio
         user_id = user.id,
         value = security.hash_password(token_core),
         label = label,
-        expires = expires_date
+        expires = expires
     )
     db.add(apikey)
     db.flush()
@@ -146,8 +167,9 @@ def post(request:Request) -> UserSession:
     label = request.openapi_validated.body["label"]
     expires = request.openapi_validated.body.get("expires")
 
+    expires_datetime = get_expiration_date_from_str(expires)
 
-    return generate_api_key(request, auth_user, label, expires)
+    return generate_api_key(request, auth_user, label, expires_datetime)
 
 
 @view_config(

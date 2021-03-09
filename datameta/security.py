@@ -21,12 +21,28 @@
 # SOFTWARE.
 
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
+from datetime import datetime
+from typing import Optional
 
 from .models import User, ApiKey
 
 import bcrypt
 import logging
 log = logging.getLogger(__name__)
+
+def check_expiration(
+    expiration_datetime:Optional[datetime], 
+    datetime_to_check:Optional[datetime]=None
+):
+    """
+    Check a datetime against an expiration date. Returns true if expired.
+    If datetime_to_check is None, the current datetime will be used.
+    """
+    if expiration_datetime is None:
+        return False
+    if datetime_to_check is None:
+        datetime_to_check = datetime.now()
+    return datetime_to_check >= expiration_datetime
 
 def verify_password(s):
     if len(s)<10:
@@ -71,10 +87,12 @@ def revalidate_user(request):
     # Check for token based auth
     token = get_bearer_token(request)
     if token is not None:
-        user = db.query(User).select_from(User).join(ApiKey).filter(ApiKey.value==token).one_or_none()
-        if user is not None:
-            log.info("APIKEY AUTH FROM '{user.email}'")
-            return user
+        apikey = db.query(ApiKey).filter(ApiKey.value==token).one_or_none()
+        if apikey is not None:
+            if check_expiration(apikey.expires):
+                raise HTTPUnauthorized()
+            log.info("APIKEY AUTH FROM '{apikey.user.email}'")
+            return apikey.user
 
     # Check for session based auth
     if 'user_uid' not in request.session:
