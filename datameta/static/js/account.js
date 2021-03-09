@@ -227,33 +227,10 @@ window.addEventListener("load", function() {
         clear_api_form();
     }); 
 
-    // Sets the min and max date strings for the date input.
-    function set_date(date) {
-
-        var dd = date.getDate();
-        var mm = date.getMonth() + 1; //January is 0!
-        var yyyy = date.getFullYear();
-    
-        if (dd < 10) {
-        dd = '0' + dd
-        }
-    
-        if (mm < 10) {
-        mm = '0' + mm
-        }
-        date = yyyy + '-' + mm + '-' + dd;
-
-        return date
-    }
-
-    // Needs to be adjusted once it is a property in the config file. Using 1 year for testing
-    var days = 365;
-
-    var min = new Date();
-    var max = new Date(min);
-    max.setDate(min.getDate() + days);
-    document.getElementById('expires').setAttribute("min", set_date(min));
-    document.getElementById('expires').setAttribute("max", set_date(max));
+    // Sets the min Date String for the date field as today
+    var min = new Date();  
+    document.min = min;  
+    document.getElementById('expires').setAttribute("min", min.toISOString().split('T')[0]);
 
     document.getElementById("add_api_key_form").addEventListener("submit", function(event) {  
 
@@ -265,14 +242,17 @@ window.addEventListener("load", function() {
         var data = new FormData(form);
         var label = data.get("label");
         var expires = new Date(data.get("expires"));
-        expires = expires.toISOString();
+
+        try {
+            expires = expires.toISOString().split('T')[0];
+        } catch (error) {
+            document.getElementById("expires").classList.add("is-invalid");
+            return;
+        }
 
         if (label == "") {
+            document.getElementById("expires").classList.remove("is-invalid");
             document.getElementById("label").classList.add("is-invalid");
-            return;
-        }else if (expires == "") {
-            document.getElementById("label").classList.remove("is-invalid");
-            document.getElementById("expires").classList.add("is-invalid");
             return;
         } else {
             document.getElementById("label").classList.remove("is-invalid");
@@ -299,7 +279,7 @@ window.addEventListener("load", function() {
                 });
             } else  if (response.status == "400" || response.status == "500") {
                 response.json().then((json) => {
-                    show_api_alert(json.message);
+                    show_api_alert(json[0].message);
                 });
             } else if (response.status == "401") {
                 show_api_alert("You have to be logged in to perform this action.");
