@@ -30,19 +30,11 @@ import bcrypt
 import logging
 log = logging.getLogger(__name__)
 
-def check_expiration(
-    expiration_datetime:Optional[datetime], 
-    datetime_to_check:Optional[datetime]=None
-):
+def check_expiration(expiration_datetime:Optional[datetime]):
     """
-    Check a datetime against an expiration date. Returns true if expired.
-    If datetime_to_check is None, the current datetime will be used.
+    Checks if an expiration date was exceeded. Returns true if expired.
     """
-    if expiration_datetime is None:
-        return False
-    if datetime_to_check is None:
-        datetime_to_check = datetime.now()
-    return datetime_to_check >= expiration_datetime
+    return datetime.now() >= expiration_datetime
 
 def verify_password(s):
     if len(s)<10:
