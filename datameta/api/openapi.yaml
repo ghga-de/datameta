@@ -572,6 +572,8 @@ components:
           expiresAt:
             type: string
             nullable: True
+          hasExpired:
+            type: boolean
         required:
           - apiKeyId
           - label

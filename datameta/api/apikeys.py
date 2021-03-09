@@ -32,7 +32,7 @@ from pyramid.httpexceptions import HTTPOk, HTTPUnauthorized, HTTPForbidden
 from ..resource import resource_by_id
 from ..errors import get_validation_error
 from datetime import datetime, timedelta
-from pyramid import threadlocal
+from pyramid import threadlocal 
 
 
 @dataclass
@@ -67,6 +67,7 @@ class ApiKeyLabels:
                 "apiKeyId": str(key.uuid),
                 "label": key.label,
                 "expiresAt": key.expires.isoformat() if key.expires else None,
+                "hasExpired": security.check_expiration(key.expires, datetime.now())
             }
             for key in user.apikeys
         ]
