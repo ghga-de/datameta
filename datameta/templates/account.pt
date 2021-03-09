@@ -1,7 +1,7 @@
 <div metal:use-macro="load: layout.pt">
 
     <style metal:fill-slot="head">
-        .form-passwords {
+        .form-small {
             width: 100%;
             max-width: 450px;
             padding: 15px;
@@ -23,7 +23,7 @@
         
         <div class="tab-content">
             <div class="card-body tab-pane fade show active" id="nav-change-pw" role="tabpanel" aria-labelledby="nav-home-tab">
-                <div class="position-absolute form-passwords">    
+                <div class="position-absolute form-small">    
                     <h5 class="card-title mb-4">Change Password</h5>
 
                     <div id="alert" class="alert alert-danger collapse" role="alert">
@@ -71,8 +71,53 @@
             </div>
             <div class="card-body tab-pane fade" id="nav-api-keys" role="tabpanel" aria-labelledby="nav-home-tab">
                 <h5 class="card-title mb-4">Manage API Keys</h5>
-                <div class="alert alert-warning" role="alert">
-                    This feature is not yet implemented.
+                    <div id="api_alert" class="alert alert-danger collapse" role="alert">
+                    </div>
+
+                    <div id="api_success" class="alert alert-success collapse" role="alert">
+                    </div>
+                <div class="form-small ms-0">
+                    
+                    <form action="#" id="add_api_key_form">
+                        <div class="mb-4 input-group">
+                            <span class="input-group-text" id="desc_input_old_password">
+                                <i class="bi bi-textarea-t"></i>
+                            </span>                   
+                            <input type="text" class="form-control" name="label" id="label" placeholder="Label">
+                            <div class="invalid-feedback">
+                                Please specify a label.
+                            </div>
+                        </div>
+                        <div class="mb-4 input-group">
+                            <span class="input-group-text" id="desc_input_old_password">
+                                <i class="bi bi-calendar-date"></i>
+                            </span>                   
+                            <input type="date" class="form-control" name="expires" id="expires">
+                            <div class="invalid-feedback">
+                                Please specify an expiration date.
+                            </div>
+                        </div>
+                        <div class="input-group mb-4">
+                            <button id="generate_api_key_button" type="submit" class="btn btn-outline-success">Generate new API key</button>
+                        </div>
+                    </form>
+                </div>
+            
+                <p class="card-text">You are currently using the following API Keys:</p>
+                <div class="card col-9">
+                    <div class="card-body">
+                        <table id="table_apikeys" class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Label</th>
+                                    <th scope="col">Expires</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_apikeys">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

@@ -27,7 +27,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 def get_validation_error(
     messages:List[str], 
     fields:Optional[List[Optional[str]]],
-    entities:Optional[List[Optional[str]]]
+    entities:Optional[List[Optional[str]]]=None
 ) -> HTTPBadRequest:
     """Generate a Validation Error (400) with custom messages
     """
