@@ -27,6 +27,10 @@ import os
 import yaml
 
 openapi_spec_path = os.path.join(os.path.dirname(__file__), "openapi.yaml")
+# read base url from openapi.yaml:
+with open(openapi_spec_path, "r") as spec_file:
+    openapi_spec = yaml.safe_load(spec_file)
+base_url = openapi_spec["servers"][0]["url"]
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
@@ -37,12 +41,6 @@ class DataHolderBase:
 
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
-
-    # read base url from openapi.yaml:
-    with open(openapi_spec_path, "r") as spec_file:
-        spec = yaml.safe_load(spec_file)
-    base_url = spec["servers"][0]["url"]
-
     config.add_route("apikeys", base_url + "/keys")
     config.add_route("apikeys_id", base_url + "/keys/{id}")
     config.add_route("user_id_keys", base_url + "/users/{id}/keys")
