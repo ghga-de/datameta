@@ -4,105 +4,107 @@ from pyramid import testing
 from pyramid.httpexceptions import HTTPFound
 import pytest
 import transaction
+from sqlalchemy_utils import create_database, drop_database, database_exists
+import os
+import json
 from datameta import scripts, models, security
+from datameta.models import (
+    get_engine,
+    get_session_factory,
+    get_tm_session,
+)
+from datameta.models.meta import Base
+from webtest import TestApp
+
+# get URL to test db from environment variable:
+db_url = os.getenv("SQLALCHEMY_TEST_URL")
+assert db_url, "Could not find environment variable \"SQLALCHEMY_TEST_URL\""
+
+# read settings.json
+default_settings_json = os.path.join(
+    os.path.dirname(__file__), 
+    "fixtures", 
+    "settings.json"
+)
+with open(default_settings_json, "r") as json_:
+    default_settings = json.load(json_)
+default_settings["sqlalchemy.url"] = db_url
+
+# read default user.json:
+default_user_json = os.path.join(
+    os.path.dirname(__file__), 
+    "fixtures", 
+    "default_user.json"
+)
+with open(default_user_json, "r") as json_:
+    default_user = json.load(json_)
 
 
-def dummy_request(dbsession):
-    return testing.DummyRequest(dbsession=dbsession)
-
+def create_user(
+    session_factory, 
+    email:str, 
+    password:str, 
+    fullname:str, 
+    groupname:str
+):
+    """Add a datameta user to the database"""
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        init_group = models.Group(
+            id=0,
+            name=groupname,
+            site_id=f"{groupname}_id" # ingore usual site id format
+        )
+        root = models.User(
+            id=0,
+            site_id="{email}_id", # ingore usual site id format
+            enabled=True,
+            email=email,
+            pwhash=security.hash_password(password),
+            fullname=fullname,
+            group=init_group,
+            group_admin=True,
+            site_admin=True
+        )
+        session.add(root)
 
 class BaseIntegrationTest(unittest.TestCase):
-    def setUp(self):
-        """Setup Test Server"""
-        from datameta import main
-        settings = {
-            'datameta.site_id_prefix.users': "DMU-",
-            'datameta.site_id_prefix.groups': "DMG-",
-            'datameta.site_id_prefix.submissions': "DMS-",
-            'datameta.site_id_prefix.metadatasets': "DMR-",
-            'datameta.site_id_prefix.files': "DMF-",
-            'datameta.site_id_digits.users': 8,    
-            'datameta.site_id_digits.groups': 8,    
-            'datameta.site_id_digits.submissions': 8,    
-            'datameta.site_id_digits.metadatasets': 8,   
-            'datameta.site_id_digits.files': 8,      
-            'datameta.smtp_host': "localhost",      
-            'datameta.smtp_port': "587",      
-            'datameta.smtp_user': "",      
-            'datameta.smtp_pass': "",      
-            'datameta.smtp_tls': "",       
-            'datameta.smtp_from': "",       
-            'datameta.apikeys.max_expiration_period': 30,
-            
-            'pyramid.reload_templates': True,
-            'pyramid.debug_authorization': False,
-            'pyramid.debug_notfound': False,
-            'pyramid.debug_routematch': False,
-            'pyramid.default_locale_name': "en",
-            'pyramid.includes': "pyramid_debugtoolbar",
-                
-            #'sqlalchemy.url': 'sqlite:///:memory:',
-            'sqlalchemy.url': 'postgresql://datameta:datameta@datameta-postgresql/datameta',
-            'sqlalchemy.isolation_level': "SERIALIZABLE",
+    """Base TestCase to inherit from"""
 
-            'session.type': "ext:memcached",
-            'session.url': "datameta-memcached:11211",
-            'session.key': "datameta",
-            'session.secret': "test",
-            'session.cookie_on_exception': False,
+    def initDb(self):
+        # create database from scratch:
+        if database_exists(db_url):
+            drop_database(db_url)
+        create_database(db_url)
 
-            'retry.attempts': 10,
-        }
-        app = main({}, **settings)
-        from webtest import TestApp
-        self.testapp = TestApp(app)
+        # get engine and session factory
+        self.engine = get_engine(self.settings)
+        self.session_factory = get_session_factory(self.engine)
 
-        # init database:
-        from datameta.models import (
-            get_engine,
-            get_session_factory,
-            get_tm_session,
+        # create models:
+        Base.metadata.create_all(self.engine)
+        
+        # create default user:
+        create_user(
+            self.session_factory,
+            email=default_user["email"],
+            fullname=default_user["fullname"],
+            groupname=default_user["groupname"],
+            password=default_user["password"],
         )
 
-        self.engine = get_engine(settings)
+    def setUp(self):
+        """Setup Test Server"""
+        self.settings = default_settings
         
-        from datameta.models.meta import Base
-        Base.metadata.create_all(self.engine)
+        self.initDb()
 
-        session_factory = get_session_factory(self.engine)
-
-        # populate db:
-        with transaction.manager:
-            temp_session = get_tm_session(session_factory, transaction.manager)
-
-            email = "admin@admin.admin"
-            password = "admin"
-            fullname = "admin"
-            groupname = "admin"
-
-            init_group = models.Group(
-                id=0,
-                name=groupname,
-                site_id="init_test_user_id"
-            )
-            root = models.User(
-                id=0,
-                site_id="init_test_user_id",
-                enabled=True,
-                email=email,
-                pwhash=security.hash_password(password),
-                fullname=fullname,
-                group=init_group,
-                group_admin=True,
-                site_admin=True
-            )
-            temp_session.add(root)
-
-        self.session = get_tm_session(session_factory, transaction.manager)
+        from datameta import main
+        app = main({}, **self.settings)
+        self.testapp = TestApp(app)
         
     def tearDown(self):
         """Teardown Test Server"""
-        from datameta.models.meta import Base
         transaction.abort()
         Base.metadata.drop_all(self.engine)
         del self.testapp

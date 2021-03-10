@@ -27,6 +27,7 @@ services:
 
     environment:
       SQLALCHEMY_URL: postgresql://datameta:datameta@datameta-postgresql/datameta
+      SQLALCHEMY_TEST_URL: postgresql://datameta:datameta@datameta-postgresql/test
       SESSION_URL: datameta-memcached:11211
       SESSION_KEY: datameta
       SESSION_SECRET: "test"
