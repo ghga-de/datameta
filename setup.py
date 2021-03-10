@@ -50,6 +50,7 @@ requires = [
     'pyramid_openapi3',
     'pytest >= 3.7.4',
     'dataclasses-json==0.5.2',
+    "pyaml",
 ]
 
 tests_require = [

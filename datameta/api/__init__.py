@@ -19,11 +19,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 from pyramid.config import Configurator
 
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json, LetterCase
+import os
+import yaml
+
+openapi_spec_path = os.path.join(os.path.dirname(__file__), "openapi.yaml")
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
@@ -32,20 +35,25 @@ class DataHolderBase:
     def __json__(self, request):
         return self.to_dict()
 
-
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
-    config.add_route("apikeys", "/api/keys")
-    config.add_route("apikeys_id", "/api/keys/{id}")
-    config.add_route("user_id_keys", "/api/users/{id}/keys")
-    config.add_route("SetUserPassword", "/api/users/{id}/password")
-    config.add_route("users", "/api/users")
-    config.add_route("metadatasets", "/api/metadatasets")
-    config.add_route("metadatasets_id", "/api/metadatasets/{id}")
-    config.add_route("files", "/api/files")
-    config.add_route("files_id", "/api/files/{id}")
-    config.add_route("submissions", "/api/submissions")
-    config.add_route("presubvalidation", "/api/presubvalidation")
-    config.add_route("groups_id_submissions", "/api/groups/{id}/submissions")
+
+    # read base url from openapi.yaml:
+    with open(openapi_spec_path, "r") as spec_file:
+        spec = yaml.safe_load(spec_file)
+    base_url = spec["servers"][0]["url"]
+
+    config.add_route("apikeys", base_url + "/keys")
+    config.add_route("apikeys_id", base_url + "/keys/{id}")
+    config.add_route("user_id_keys", base_url + "/users/{id}/keys")
+    config.add_route("SetUserPassword", base_url + "/users/{id}/password")
+    config.add_route("users", base_url + "/users")
+    config.add_route("metadatasets", base_url + "/metadatasets")
+    config.add_route("metadatasets_id", base_url + "/metadatasets/{id}")
+    config.add_route("files", base_url + "/files")
+    config.add_route("files_id", base_url + "/files/{id}")
+    config.add_route("submissions", base_url + "/submissions")
+    config.add_route("presubvalidation", base_url + "/presubvalidation")
+    config.add_route("groups_id_submissions", base_url + "/groups/{id}/submissions")
     # Endpoint outside of openapi
-    config.add_route("upload", "/api/upload/{id}")
+    config.add_route("upload", base_url + "/upload/{id}")
