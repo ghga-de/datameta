@@ -1,5 +1,6 @@
 from . import BaseIntegrationTest, default_users
 from datameta import models
+from datameta.api import base_url
 
 class TestApiKeyUsageSenario(BaseIntegrationTest):
     """
@@ -15,7 +16,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         }
         
         response = self.testapp.post_json(
-            "/api/keys", 
+            base_url + "/keys", 
             params=request_body, 
             status=200
         ) 
@@ -32,7 +33,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         }
 
         response = self.testapp.get(
-            f"/api/users/{user_id}/keys",
+            base_url + f"/users/{user_id}/keys",
             headers=request_headers,
             status=200
         ) 
