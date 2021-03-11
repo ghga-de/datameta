@@ -39,7 +39,7 @@ DataMeta.admin.answer_request = function(accept, form) {
         group_id: fdata.get("group_id") == -1 ? null :fdata.get("group_id"),
         fullname: fdata.get("fullname")
     });
-    fetch('/api/admin/request',
+    fetch('/api/v0/admin/request',
         {
             method: 'put',
             headers: {
@@ -176,7 +176,7 @@ DataMeta.admin.subnav = function() {
  * update functions for the individual tabs
  */
 DataMeta.admin.reload = function() {
-        fetch('/api/admin',
+        fetch('/api/v0/admin',
             {
                 method: 'GET'
             })

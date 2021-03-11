@@ -72,7 +72,7 @@ window.addEventListener("load", function() {
             document.getElementById("new_password_repeat").classList.remove("is-invalid")
         }        
         // Talk to the API
-        fetch('/api/users/' + data.get("uuid") + '/password',
+        fetch('/api/v0/users/' + data.get("uuid") + '/password',
             {
                 method: 'put',
                 headers: {
@@ -94,6 +94,10 @@ window.addEventListener("load", function() {
                     } else if (response.status == "403") {
                         show_alert("Wrong password.");
                     } else if(response.status == "400") {
+                        response.json().then((json) => {
+                            show_alert(json.message);
+                        });
+                    } else if(response.status == "500") {
                         show_alert("Your password has to have at least 10 Characters");   
                     } else {
                         show_alert("An unknown error occurred. Please try again later.");
@@ -151,7 +155,7 @@ window.addEventListener("load", function() {
     function delete_api_key(label, id) {
         
         // API call
-        fetch('/api/keys/' + id ,
+        fetch('/api/v0/keys/' + id ,
         {
             method: 'delete',
             headers: {
@@ -190,7 +194,7 @@ window.addEventListener("load", function() {
     uuid = document.getElementById("uuid").value;
 
     //Gets all the API keys and adds them to the table
-    fetch('/api/users/' + uuid + '/keys',
+    fetch('/api/v0/users/' + uuid + '/keys',
     {
         method: 'get',
         headers: {
@@ -259,7 +263,7 @@ window.addEventListener("load", function() {
         } 
 
         // POST API key
-        fetch('/api/keys',
+        fetch('/api/v0/keys',
             {
                 method: 'post',
                 headers: {
