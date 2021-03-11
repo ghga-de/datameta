@@ -13,7 +13,6 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
             "label": "test"
         }
         response = self.testapp.post_json("/api/keys", request_body, status=200) 
-        assert False, str(response.json)
-
+    
     def test_steps(self):
         self._test_all_steps()
