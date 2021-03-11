@@ -229,7 +229,6 @@ window.addEventListener("load", function() {
 
     // Sets the min Date String for the date field as today
     var min = new Date();  
-    document.min = min;  
     document.getElementById('expires').setAttribute("min", min.toISOString().split('T')[0]);
 
     document.getElementById("add_api_key_form").addEventListener("submit", function(event) {  
