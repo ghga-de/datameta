@@ -35,11 +35,6 @@ jobs:
       memcached:
         # Docker Hub image
         image: memcached
-        options: >-
-          -v
-          -m 3072
-          -I 50m
-          --port 11211
         ports:
           # Maps tcp port 11211 on service container to the host
           - 11211:11211
