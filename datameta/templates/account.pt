@@ -94,7 +94,7 @@
                             </span>                   
                             <input type="date" class="form-control" name="expires" id="expires">
                             <div class="invalid-feedback">
-                                Please specify an expiration date.
+                                Please specify a valid expiration date.
                             </div>
                         </div>
                         <div class="input-group mb-4">

@@ -72,7 +72,7 @@ window.addEventListener("load", function() {
             document.getElementById("new_password_repeat").classList.remove("is-invalid")
         }        
         // Talk to the API
-        fetch('/api/users/' + data.get("uuid") + '/password',
+        fetch('/api/v0/users/' + data.get("uuid") + '/password',
             {
                 method: 'put',
                 headers: {
@@ -94,6 +94,10 @@ window.addEventListener("load", function() {
                     } else if (response.status == "403") {
                         show_alert("Wrong password.");
                     } else if(response.status == "400") {
+                        response.json().then((json) => {
+                            show_alert(json.message);
+                        });
+                    } else if(response.status == "500") {
                         show_alert("Your password has to have at least 10 Characters");   
                     } else {
                         show_alert("An unknown error occurred. Please try again later.");
@@ -140,7 +144,7 @@ window.addEventListener("load", function() {
         var cell3 = row.insertCell();
         
         cell1.innerHTML = label;
-        cell2.innerHTML = apiKey.expiresAt;
+        cell2.innerHTML = apiKey.expiresAt.split('T')[0];
         cell3.innerHTML = '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>'
         cell3.querySelector(".btn").addEventListener("click", function(event) {
             delete_api_key(label, id);
@@ -151,7 +155,7 @@ window.addEventListener("load", function() {
     function delete_api_key(label, id) {
         
         // API call
-        fetch('/api/keys/' + id ,
+        fetch('/api/v0/keys/' + id ,
         {
             method: 'delete',
             headers: {
@@ -165,7 +169,7 @@ window.addEventListener("load", function() {
                 var row = document.getElementById(id);
                 document.getElementById("tbody_apikeys").removeChild(row); 
                 show_api_success("Key '" + label + "' has been removed successfully.");
-            } else if (response.status == "400" || response.status == "500") {
+            } else if (response.status == "400") {
                 response.json().then((json) => {
                     show_api_alert(json.message);
                 });
@@ -190,7 +194,7 @@ window.addEventListener("load", function() {
     uuid = document.getElementById("uuid").value;
 
     //Gets all the API keys and adds them to the table
-    fetch('/api/users/' + uuid + '/keys',
+    fetch('/api/v0/users/' + uuid + '/keys',
     {
         method: 'get',
         headers: {
@@ -205,7 +209,7 @@ window.addEventListener("load", function() {
                     add_api_key(apikey);
             });
         });
-        } else if (response.status == "400" || response.status == "500") {
+        } else if (response.status == "400") {
             response.json().then((json) => {
                 show_api_alert(json.message);
             });
@@ -227,33 +231,9 @@ window.addEventListener("load", function() {
         clear_api_form();
     }); 
 
-    // Sets the min and max date strings for the date input.
-    function set_date(date) {
-
-        var dd = date.getDate();
-        var mm = date.getMonth() + 1; //January is 0!
-        var yyyy = date.getFullYear();
-    
-        if (dd < 10) {
-        dd = '0' + dd
-        }
-    
-        if (mm < 10) {
-        mm = '0' + mm
-        }
-        date = yyyy + '-' + mm + '-' + dd;
-
-        return date
-    }
-
-    // Needs to be adjusted once it is a property in the config file. Using 1 year for testing
-    var days = 365;
-
-    var min = new Date();
-    var max = new Date(min);
-    max.setDate(min.getDate() + days);
-    document.getElementById('expires').setAttribute("min", set_date(min));
-    document.getElementById('expires').setAttribute("max", set_date(max));
+    // Sets the min Date String for the date field as today
+    var min = new Date();  
+    document.getElementById('expires').setAttribute("min", min.toISOString().split('T')[0]);
 
     document.getElementById("add_api_key_form").addEventListener("submit", function(event) {  
 
@@ -265,14 +245,17 @@ window.addEventListener("load", function() {
         var data = new FormData(form);
         var label = data.get("label");
         var expires = new Date(data.get("expires"));
-        expires = expires.toISOString();
+
+        try {
+            expires = expires.toISOString().split('T')[0];
+        } catch (error) {
+            document.getElementById("expires").classList.add("is-invalid");
+            return;
+        }
 
         if (label == "") {
+            document.getElementById("expires").classList.remove("is-invalid");
             document.getElementById("label").classList.add("is-invalid");
-            return;
-        }else if (expires == "") {
-            document.getElementById("label").classList.remove("is-invalid");
-            document.getElementById("expires").classList.add("is-invalid");
             return;
         } else {
             document.getElementById("label").classList.remove("is-invalid");
@@ -280,7 +263,7 @@ window.addEventListener("load", function() {
         } 
 
         // POST API key
-        fetch('/api/keys',
+        fetch('/api/v0/keys',
             {
                 method: 'post',
                 headers: {
@@ -297,9 +280,9 @@ window.addEventListener("load", function() {
                     add_api_key(json);
                     show_api_success("Your new API key '" + label +"' is:<br>" + json.token);
                 });
-            } else  if (response.status == "400" || response.status == "500") {
+            } else  if (response.status == "400") {
                 response.json().then((json) => {
-                    show_api_alert(json.message);
+                    show_api_alert(json[0].message);
                 });
             } else if (response.status == "401") {
                 show_api_alert("You have to be logged in to perform this action.");
