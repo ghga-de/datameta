@@ -22,6 +22,8 @@ from copy import deepcopy
 # get URL to test db from environment variable:
 db_url = os.getenv("SQLALCHEMY_TEST_URL")
 assert db_url, "Could not find environment variable \"SQLALCHEMY_TEST_URL\""
+memcached_url = os.getenv("SESSION_URL")
+assert memcached_url, "Could not find environment variable \"SESSION_URL\""
 
 # read settings.json
 default_settings_json = os.path.join(
@@ -32,6 +34,7 @@ default_settings_json = os.path.join(
 with open(default_settings_json, "r") as json_:
     default_settings = json.load(json_)
 default_settings["sqlalchemy.url"] = db_url
+default_settings["session.url"] = memcached_url
 
 # read default user.json:
 @dataclass

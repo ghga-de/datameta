@@ -27,7 +27,6 @@
     "sqlalchemy.isolation_level": "SERIALIZABLE",
 
     "session.type": "ext:memcached",
-    "session.url": "datameta-memcached:11211",
     "session.key": "datameta",
     "session.secret": "test",
     "session.cookie_on_exception": false,
