@@ -1,0 +1,29 @@
+{
+    "admin": {
+        "email": "admin@admin.admin",
+        "password": "admin",
+        "fullname": "admin",
+        "site_id": "admin",
+        "groupname": "admin",
+        "group_admin": true,
+        "site_admin": true
+    },
+    "group_admin": {
+        "email": "group_admin@user.group",
+        "password": "group_admin",
+        "fullname": "group_admin",
+        "site_id": "group_admin",
+        "groupname": "user_group",
+        "group_admin": true,
+        "site_admin": false
+    },
+    "user": {
+        "email": "user@user.group",
+        "password": "user",
+        "fullname": "user",
+        "site_id": "user",
+        "groupname": "user_group",
+        "group_admin": false,
+        "site_admin": false
+    }
+}

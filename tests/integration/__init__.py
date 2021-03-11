@@ -31,13 +31,13 @@ with open(default_settings_json, "r") as json_:
 default_settings["sqlalchemy.url"] = db_url
 
 # read default user.json:
-default_user_json = os.path.join(
+default_users_json = os.path.join(
     os.path.dirname(__file__), 
     "fixtures", 
-    "default_user.json"
+    "default_users.json"
 )
-with open(default_user_json, "r") as json_:
-    default_user = json.load(json_)
+with open(default_users_json, "r") as json_:
+    default_users = json.load(json_)
 
 
 def create_user(
@@ -45,28 +45,40 @@ def create_user(
     email:str, 
     password:str, 
     fullname:str, 
-    groupname:str
+    site_id:str,
+    groupname:str,
+    group_admin:bool,
+    site_admin:bool
 ):
     """Add a datameta user to the database"""
     with transaction.manager:
         session = get_tm_session(session_factory, transaction.manager)
-        init_group = models.Group(
-            id=0,
-            name=groupname,
-            site_id=f"{groupname}_id" # ingore usual site id format
-        )
-        root = models.User(
-            id=0,
-            site_id="{email}_id", # ingore usual site id format
+        
+        # check if group exists otherwise create it:
+        group = session.query(models.Group).filter(models.Group.name==groupname).one_or_none()
+        if not group:
+            group = models.Group(
+                name=groupname,
+                site_id=f"{groupname}_id" # ingore usual site id format
+            )
+            session.add(group)
+            session.flush()
+        
+        # create user:
+        user = models.User(
+            site_id=site_id, # ingore usual site id format
             enabled=True,
             email=email,
             pwhash=security.hash_password(password),
             fullname=fullname,
-            group=init_group,
-            group_admin=True,
-            site_admin=True
+            group=group,
+            group_admin=group_admin,
+            site_admin=site_admin
         )
-        session.add(root)
+        session.add(user)
+        session.flush()
+
+        return user
 
 class BaseIntegrationTest(unittest.TestCase):
     """Base TestCase to inherit from"""
@@ -84,14 +96,11 @@ class BaseIntegrationTest(unittest.TestCase):
         # create models:
         Base.metadata.create_all(self.engine)
         
-        # create default user:
-        create_user(
-            self.session_factory,
-            email=default_user["email"],
-            fullname=default_user["fullname"],
-            groupname=default_user["groupname"],
-            password=default_user["password"],
-        )
+        # create default users:
+        self.users = {
+            name: create_user(self.session_factory, **user)
+            for name, user in default_users.items()
+        }
 
     def setUp(self):
         """Setup Test Server"""
