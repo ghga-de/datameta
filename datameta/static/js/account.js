@@ -165,7 +165,7 @@ window.addEventListener("load", function() {
                 var row = document.getElementById(id);
                 document.getElementById("tbody_apikeys").removeChild(row); 
                 show_api_success("Key '" + label + "' has been removed successfully.");
-            } else if (response.status == "400" || response.status == "500") {
+            } else if (response.status == "400") {
                 response.json().then((json) => {
                     show_api_alert(json.message);
                 });
@@ -205,7 +205,7 @@ window.addEventListener("load", function() {
                     add_api_key(apikey);
             });
         });
-        } else if (response.status == "400" || response.status == "500") {
+        } else if (response.status == "400") {
             response.json().then((json) => {
                 show_api_alert(json.message);
             });
