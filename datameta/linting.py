@@ -125,7 +125,31 @@ def validate_metadataset_record(
     mdats_query = db.query(MetaDatum).order_by(MetaDatum.order).all()
     mdats = { mdat.name: mdat for mdat in mdats_query }
     
-    for name, value in record.items():
+    for name, mdat in mdats.items():
+        
+        # check if mdat is present in record dict
+        # if not and mdat is mandatory, throw an error:
+        if name not in record:
+            if mdat.mandatory:
+                errors.append({
+                    "message": "field was not specified but is mandatory",
+                    "field": name
+                })
+            continue
+        
+        value = record[name]
+
+        # if value is none but mandatory,
+        # throw and error, moreover, if the value is none
+        # but not mandatory skip the following checks:
+        if value is None:
+            if mdat.mandatory:
+                errors.append({
+                    "message": "field value was null, but the field is mandatory",
+                    "field": name
+                })
+            continue
+
         # check if values are of allowed types:
         # (all values will be stringified later)
         if not isinstance(value, str):
@@ -133,18 +157,6 @@ def validate_metadataset_record(
                 "message": "field value must be a string.",
                 "field": name
             })
-
-        # check if the name appears in the metadatum list
-        if not name in mdats.keys():
-            errors.append({
-                "message": (
-                    f"field with name \"name\""
-                    "is not allowed"
-                ),
-                "field": name
-            })
-            continue
-        mdat = mdats[name]
 
         # Check if the regexp pattern matches
         if mdat.regexp and re.match(mdat.regexp, value) is None:
@@ -172,14 +184,16 @@ def validate_metadataset_record(
                 })
                 continue   
     
-    # Check if all mandatory fields exist:
-    mdats_mandatory = {name for name, mdat in mdats.items() if mdat.mandatory}
-    rec_names = set(record.keys())
-    if not mdats_mandatory.issubset(rec_names):
-        errors.append({
-            "message": "The record is missing mandatory fields.",
-        })
-    
+    # check if any of the record fields has no corresponding MetaDatum object:
+    mdats_set = set(mdats.keys())
+    record_set = set(record.keys())
+    if not record_set.issubset(mdats_set):
+        for field in record_set.difference(mdats_set):
+            errors.append({
+                "message": "The field was not expected.",
+                "field": field
+            })
+            
     # return the error messages
     # or raise validation errors
     if return_err_message:
