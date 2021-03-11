@@ -277,7 +277,7 @@ window.addEventListener("load", function() {
                     add_api_key(json);
                     show_api_success("Your new API key '" + label +"' is:<br>" + json.token);
                 });
-            } else  if (response.status == "400" || response.status == "500") {
+            } else  if (response.status == "400") {
                 response.json().then((json) => {
                     show_api_alert(json[0].message);
                 });
