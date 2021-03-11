@@ -119,14 +119,13 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:Optio
     ApiKey object in the database and the core component is matched
     against the hash for validating it.
     """
-    token_core = "".join(choice(ascii_letters+digits) for _ in range(64) )
-    token_prefix = f"{user.id}-{label}-"
-
+    token = "".join(choice(ascii_letters+digits) for _ in range(64) )
+    token_hash = security.hash_token(token)
 
     db = request.dbsession
     apikey = models.ApiKey(
         user_id = user.id,
-        value = security.hash_password(token_core),
+        value = token_hash,
         label = label,
         expires = expires
     )
@@ -137,7 +136,7 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:Optio
         apikey_id=str(apikey.uuid),
         user_id=user.site_id,
         email=user.email,
-        token=apikey.value,
+        token=token,
         label=apikey.label,
         expires_at=apikey.expires
     )

@@ -27,6 +27,7 @@ from typing import Optional
 from .models import User, ApiKey
 
 import bcrypt
+import hashlib
 import logging
 log = logging.getLogger(__name__)
 
@@ -42,14 +43,19 @@ def verify_password(s):
     return None
 
 def hash_password(pw):
-    """Hash a password/token and return the salted hash"""
+    """Hash a password and return the salted hash"""
     pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
     return pwhash.decode('utf8')
 
 def check_password_by_hash(pw, hashed_pw):
-    """Check a password/hash against a salted hash"""
+    """Check a password against a salted hash"""
     expected_hash = hashed_pw.encode('utf8')
     return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
+
+def hash_token(token):
+    """Hash a token and return the unsalted hash"""
+    hashed_token =  hashlib.sha256(token.encode('utf-8')).hexdigest()
+    return hashed_token
 
 def get_user_by_credentials(request, email:str, password:str):
     """Check a compination of email and password, returns a user object if valid"""
@@ -79,7 +85,8 @@ def revalidate_user(request):
     # Check for token based auth
     token = get_bearer_token(request)
     if token is not None:
-        apikey = db.query(ApiKey).filter(ApiKey.value==token).one_or_none()
+        token_hash = hash_token(token)
+        apikey = db.query(ApiKey).filter(ApiKey.value==token_hash).one_or_none()
         if apikey is not None:
             if check_expiration(apikey.expires):
                 raise HTTPUnauthorized()
