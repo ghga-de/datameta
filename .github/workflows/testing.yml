@@ -41,7 +41,7 @@ jobs:
 
     env:
       SQLALCHEMY_TEST_URL: postgresql://datameta:datameta@localhost/test
-      SESSION_URL: "memcached:11211"
+      SESSION_URL: "localhost:11211"
 
     steps:
     - uses: actions/checkout@v2
