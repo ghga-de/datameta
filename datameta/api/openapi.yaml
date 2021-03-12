@@ -60,7 +60,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
       security:
         - bearerAuth: []
         - cookieAuth: []
@@ -91,7 +91,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
   /users:
     post:
@@ -127,7 +127,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
   /users/{id}/keys:
     get:
@@ -163,7 +163,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
   /users/{id}/password:
     put:
@@ -203,7 +203,7 @@ paths:
         "400":
           $ref: '#/components/responses/ValidationError'
         "500":
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
 
   /metadatasets:
@@ -235,7 +235,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
 
   /metadatasets/{id}:
@@ -267,7 +267,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
 
   /files:
@@ -301,7 +301,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
   /files/{id}:
     get:
@@ -334,7 +334,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
     put:
       summary: Update File Details
       description: >-
@@ -380,7 +380,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
     delete:
       summary: Delete Not-Submitted File
       description: >-
@@ -409,7 +409,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
   /submissions:
     post:
@@ -440,7 +440,7 @@ paths:
         '401':
           description: Unauthorized
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
   /presubvalidation:
     post:
@@ -465,7 +465,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
   /groups/{id}/submissions:
     get:
@@ -499,7 +499,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Iternal Server Error
 
 security:
   - bearerAuth: []
