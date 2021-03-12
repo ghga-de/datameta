@@ -98,8 +98,10 @@
                 <a class="p-2 text-dark" href="/view">View Data</a>
                 <a class="p-2 text-dark" href="/account">Account</a>
             </nav>
-            <a tal:condition="request.session['site_admin'] or request.session['group_admin']" class="ms-2 btn btn-outline-danger" href="/admin">Admin</a>
-            <a class="ms-2 btn btn-outline-danger" href="/login">Logout</a>
+            <div class="row">
+                <a tal:condition="request.session['site_admin'] or request.session['group_admin']" class="col ms-2 btn btn-outline-danger" href="/admin">Admin</a>
+                <a class="col ms-2 btn btn-outline-danger" href="/login">Logout</a>
+            </div>
         </header>
 
         <main class="flex-shrink-0">
