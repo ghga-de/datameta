@@ -1,23 +1,26 @@
-from typing import Optional
+"""The skeleton of the test framework.
+"""
+
+import os
+import json
+
 import unittest
+from webtest import TestApp
+import pytest
 
 from pyramid import testing
 from pyramid.httpexceptions import HTTPFound
-import pytest
 import transaction
 from sqlalchemy_utils import create_database, drop_database, database_exists
-import os
-import json
-from datameta import scripts, models, security
+
+from datameta import models
 from datameta.models import (
     get_engine,
-    get_session_factory,
-    get_tm_session,
+    get_session_factory
 )
 from datameta.models.meta import Base
-from webtest import TestApp
-from dataclasses import dataclass
-from copy import deepcopy
+
+from .utils import UserFixture, create_user
 
 # get URL to test db from environment variable:
 db_url = os.getenv("SQLALCHEMY_TEST_URL")
@@ -37,19 +40,6 @@ default_settings["sqlalchemy.url"] = db_url
 default_settings["session.url"] = memcached_url
 
 # read default user.json:
-@dataclass
-class UserFixture():
-    """A container for user information"""
-    email:str
-    password:str 
-    fullname:str
-    site_id:str
-    groupname:str
-    group_admin:bool
-    site_admin:bool
-    uuid:Optional[str] = None # will be set once
-                              # added to the DB
-
 default_users_json = os.path.join(
     os.path.dirname(__file__), 
     "fixtures", 
@@ -61,43 +51,6 @@ with open(default_users_json, "r") as json_:
         for name, user in json.load(json_).items()
     }
 
-
-def create_user(
-    session_factory,
-    user:UserFixture 
-):
-    """Add a datameta user to the database"""
-    with transaction.manager:
-        session = get_tm_session(session_factory, transaction.manager)
-        
-        # check if group exists otherwise create it:
-        group_obj = session.query(models.Group).filter(models.Group.name==user.groupname).one_or_none()
-        if not group_obj:
-            group_obj = models.Group(
-                name=user.groupname,
-                site_id=f"{user.groupname}_id" # ingore usual site id format
-            )
-            session.add(group_obj)
-            session.flush()
-        
-        # create user:
-        user_obj = models.User(
-            site_id=user.site_id, # ingore usual site id format
-            enabled=True,
-            email=user.email,
-            pwhash=security.hash_password(user.password),
-            fullname=user.fullname,
-            group=group_obj,
-            group_admin=user.group_admin,
-            site_admin=user.site_admin
-        )
-        session.add(user_obj)
-        session.flush()
-
-        # return user updated with uuid:
-        user_updated = deepcopy(user)
-        user_updated.uuid = str(user_obj.uuid)
-        return user_updated
 
 class BaseIntegrationTest(unittest.TestCase):
     """Base TestCase to inherit from"""

@@ -1,3 +1,6 @@
+"""Basic test that ensure that the API start correctly.
+"""
+
 from . import BaseIntegrationTest
 from datameta.api import base_url
 

@@ -1,4 +1,9 @@
+"""Test to check APIKey-related endpoint.
+"""
+
 from . import BaseIntegrationTest, default_users
+from .utils import get_auth_headers
+
 from datameta import models
 from datameta.api import base_url
 
@@ -29,9 +34,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         # request params:
         user_id = self.state["user"].uuid
         token = self.state["apikey_response"]["token"] # previously created apikey 
-        request_headers = {
-            "Authorization": f"Bearer {token}"
-        }
+        request_headers = get_auth_headers(token)
 
         response = self.testapp.get(
             base_url + f"/users/{user_id}/keys",
@@ -61,9 +64,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         """Delete ApiKey"""
         apikey_id = self.state["apikey_response"]["apiKeyId"] # previously created apikey 
         token = self.state["apikey_response"]["token"] # previously created apikey 
-        request_headers = {
-            "Authorization": f"Bearer {token}"
-        }
+        request_headers = get_auth_headers(token)
 
         response = self.testapp.delete(
             base_url + f"/keys/{apikey_id}",
