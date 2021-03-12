@@ -93,42 +93,6 @@ paths:
         '500':
           description: Iternal Server Error
 
-  /users:
-    post:
-      summary: Register a New User
-      description: >-
-        Register a new user.
-        The password will be set later, after
-        an admin has approved the registration.
-      tags:
-        - Authentication and Users
-      operationId: RegisterUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegRequest"
-        description: >-
-          Information required for registration.
-          Please provide either a "newGroupName" or a "groupId"
-          but not both:
-          If you are the first member of your group to register,
-          please provide a descriptive name of the new group
-          using the "newGroupName" property.
-          If your group already exists, please refer to it using
-          its "groupId" (not name).
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RegRequest"
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          description: Iternal Server Error
-
   /users/{id}/keys:
     get:
       summary: All API keys for a user
@@ -590,26 +554,6 @@ components:
       required:
         - newPassword
         - passwordChangeCredential
-      additionalProperties: false
-
-    RegRequest:
-      type: object
-      properties:
-        fullname:
-          type: string
-        email:
-          type: string
-        groupId:
-          type: string
-          nullable: True
-        newGroupName:
-          type: string
-          nullable: True
-      required:
-        - fullname
-        - email
-        # either provide
-        # groupId or newGroupName
       additionalProperties: false
 
     MetaDataSet:
