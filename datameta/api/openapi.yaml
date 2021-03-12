@@ -92,7 +92,7 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ValidationError'
-          
+
   /users:
     post:
       summary: Register a New User
@@ -113,7 +113,7 @@ paths:
           Please provide either a "newGroupName" or a "groupId"
           but not both:
           If you are the first member of your group to register,
-          please provide a descriptive name of the new group 
+          please provide a descriptive name of the new group
           using the "newGroupName" property.
           If your group already exists, please refer to it using
           its "groupId" (not name).
@@ -128,7 +128,7 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ValidationError'
-  
+
   /users/{id}/keys:
     get:
       summary: All API keys for a user
@@ -205,7 +205,7 @@ paths:
         "500":
           $ref: '#/components/responses/ValidationError'
 
-  
+
   /metadatasets:
     post:
       summary: Create a New MetaDataSet
@@ -237,7 +237,7 @@ paths:
         '500':
           $ref: '#/components/responses/ValidationError'
 
-      
+
   /metadatasets/{id}:
     get:
       summary: Get Details for A MetaDataSet
@@ -268,7 +268,7 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ValidationError'
-          
+
 
   /files:
     post:
@@ -302,7 +302,7 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ValidationError'
-      
+
   /files/{id}:
     get:
       summary: Get Details for A File
@@ -338,8 +338,8 @@ paths:
     put:
       summary: Update File Details
       description: >-
-        Update details for a File. 
-        E.g. to indicate that the File content 
+        Update details for a File.
+        E.g. to indicate that the File content
         has been uploaded (set contentUploaded=true).
         Please note: this only works for Files that
         have not been submitted, yet. Other file
@@ -466,7 +466,7 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ValidationError'
-      
+
   /groups/{id}/submissions:
     get:
       summary: Get A List of All Submissions of A Group.
@@ -611,7 +611,7 @@ components:
         # either provide
         # groupId or newGroupName
       additionalProperties: false
-    
+
     MetaDataSet:
       type: object
       properties:
@@ -623,7 +623,7 @@ components:
       required:
         - record
       additionalProperties: false
-          
+
     MetaDataSetResponse:
       type: object
       properties:
@@ -644,7 +644,7 @@ components:
       required:
         - record
       additionalProperties: false
-        
+
     FileAnnouncement:
       type: object
       properties:
@@ -656,7 +656,7 @@ components:
         - name
         - checksum
       additionalProperties: false
-    
+
     FileUploadResponse:
       type: object
       properties:
@@ -725,7 +725,7 @@ components:
         checksum:
           type: string
       additionalProperties: false
-      
+
     SubmissionRequest:
       type: object
       properties:
@@ -735,7 +735,7 @@ components:
             type: string
         fileIds:
           type: array
-          items: 
+          items:
             type: string
       required:
         - metadatasetIds
@@ -751,7 +751,7 @@ components:
             type: string
         fileIds:
           type: array
-          items: 
+          items:
             type: string
         submissionId:
           type: string
