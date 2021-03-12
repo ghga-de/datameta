@@ -32,6 +32,16 @@ jobs:
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
+      memcached:
+        # Docker Hub image
+        image: memcached
+        ports:
+          # Maps tcp port 11211 on service container to the host
+          - 11211:11211
+
+    env:
+      SQLALCHEMY_TEST_URL: postgresql://datameta:datameta@localhost/test
+      SESSION_URL: "localhost:11211"
 
     steps:
     - uses: actions/checkout@v2
@@ -53,16 +63,5 @@ jobs:
     - name: Install datameta
       run: |
         pip install ".[testing]"
-    - name: Initialize Database
-      run: |
-        alembic -c ./conf/ci.ini upgrade head
-    - name: Load default data
-      run: |
-        initialize_datameta_db \
-          --config ./conf/ci.ini \
-          --initial-user-fullname CI \
-          --initial-user-email ci@ci.ci \
-          --initial-user-pass ci \
-          --initial-group ci
     - name: Run tests
-      run: pytest
+      run: pytest .

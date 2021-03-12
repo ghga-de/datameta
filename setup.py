@@ -56,6 +56,7 @@ requires = [
 tests_require = [
     'WebTest >= 1.3.1',  # py3 compat
     'pytest-cov',
+    "sqlalchemy_utils",
 ]
 
 setup(
