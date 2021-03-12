@@ -74,7 +74,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
     def test_steps(self):
         # set initial state:
         self.state = {
-            "user": self.users["user"],
+            "user": self.users["user_a"],
             "apikey_label": "test_key",
             "apikey_response": None # slot to store the apikey response
         }
