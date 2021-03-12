@@ -632,7 +632,7 @@ components:
           additionalProperties: true
           # a free-form object,
           # any property is allowed
-        metaDataSetId:
+        metadatasetId:
           type: string
         submissionId:
           type: string
