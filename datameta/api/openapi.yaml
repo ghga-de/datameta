@@ -36,8 +36,7 @@ paths:
       summary: Create new API Key/Token
       description: Create new API Key/Token
       tags:
-        - Authentication
-        - Users
+        - Authentication and Users
       operationId: CreateApiKey
       requestBody:
         content:
@@ -73,8 +72,7 @@ paths:
       description: >-
         Delete ApiKey by label.
       tags:
-        - Authentication
-        - Users
+        - Authentication and Users
       operationId: DeleteApiKey
       parameters:
         - name: id
@@ -103,8 +101,7 @@ paths:
         The password will be set later, after
         an admin has approved the registration.
       tags:
-        - Authentication
-        - Users
+        - Authentication and Users
       operationId: RegisterUser
       requestBody:
         content:
@@ -143,8 +140,7 @@ paths:
         as only the respective user is allowed
         to know them.
       tags:
-        - Authentication
-        - User
+        - Authentication and Users
       operationId: GetUserApiKeys
       parameters:
         - name: id
@@ -174,7 +170,7 @@ paths:
       summary: Update a user's password
       description: Update a user's password. The user ID can be specified either as a UUID or as a site ID.
       tags:
-        - Authentication
+        - Authentication and Users
       operationId: SetUserPassword
       requestBody:
         content:
