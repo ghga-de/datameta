@@ -220,7 +220,7 @@ paths:
             schema:
               $ref: "#/components/schemas/MetaDataSet"
         description: >-
-          Provide all properties for of one MetaDataSet.
+          Provide all properties for one MetaDataSet.
       responses:
         "200":
           description: OK
@@ -240,7 +240,7 @@ paths:
 
   /metadatasets/{id}:
     get:
-      summary: Get Details for A MetaDataSet
+      summary: Get Details for a MetaDataSet
       description: >-
         Get details for a metadataset.
       tags:
