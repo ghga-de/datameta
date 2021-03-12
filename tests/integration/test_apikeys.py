@@ -45,7 +45,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         if status==200:
             # check whether current response is consistent with the previous responce
             # obtained when creating the api keys
-            keys_to_compare = ["apiKeyId", "label", "expiresAt"]
+            keys_to_compare = ["apikeyId", "label", "expiresAt"]
             curr_response = {
                 key: value 
                 for key, value in response.json[0].items()
@@ -62,7 +62,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
 
     def step_3(self, status=200):
         """Delete ApiKey"""
-        apikey_id = self.state["apikey_response"]["apiKeyId"] # previously created apikey 
+        apikey_id = self.state["apikey_response"]["apikeyId"] # previously created apikey 
         token = self.state["apikey_response"]["token"] # previously created apikey 
         request_headers = get_auth_headers(token)
 
