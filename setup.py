@@ -51,6 +51,7 @@ requires = [
     'pytest >= 3.7.4',
     'dataclasses-json==0.5.2',
     "pyaml",
+    "gunicorn==20.0.4",
 ]
 
 tests_require = [
