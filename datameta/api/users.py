@@ -25,6 +25,7 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
 from .. import models
+from . import DataHolderBase
 
 
 # For Developers: if needed change the dataclasses to
@@ -34,20 +35,13 @@ from .. import models
 
 
 @dataclass
-class ReqRequest:
+class ReqRequest(DataHolderBase):
     """ReqRequest container for OpenApi communication"""
     fullname: str
     email: str
     group_id: Optional[str] = None
     new_group_name: Optional[str] = None
-
-    def __json__(self, request: Request) -> dict:
-        return {
-                "fullname": self.fullname,
-                "email": self.email,
-                "groupId": self.group_id,
-                "newGroupName": self.new_group_name,
-            }
+    
 
 @view_config(
     route_name="users", 
