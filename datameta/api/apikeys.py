@@ -43,7 +43,7 @@ class UserSession:
     email: str
     token: str
     label: str
-    expires_at: Optional[datetime]
+    expires: Optional[datetime]
 
     def __json__(self, request: Request) -> dict:
         return {
@@ -52,7 +52,7 @@ class UserSession:
                 "email": self.email,
                 "token": self.token,
                 "label": self.label,
-                "expiresAt": self.expires_at.isoformat() if self.expires_at else None
+                "expires": self.expires.isoformat() if self.expires else None
             }
 
 
@@ -66,7 +66,7 @@ class ApiKeyLabels:
             {
                 "apiKeyId": str(key.uuid),
                 "label": key.label,
-                "expiresAt": key.expires.isoformat() if key.expires else None,
+                "expires": key.expires.isoformat() if key.expires else None,
                 "hasExpired": security.check_expiration(key.expires)
             }
             for key in user.apikeys
@@ -91,7 +91,7 @@ def get_expiration_date_from_str(expires_str:Optional[str]):
         except (ValueError, TypeError):
             raise get_validation_error(
                 messages=["Wrong datetime format. Please use isoformat."],
-                fields=["expiresAt"]
+                fields=["expires"]
             )
 
         # check if chosen expiratio date exceeds max_expiration_datetime:
@@ -104,7 +104,7 @@ def get_expiration_date_from_str(expires_str:Optional[str]):
                         f"which is {max_expiration_period} days."
                     )
                 ],
-                fields=["expiresAt"]
+                fields=["expires"]
             )
     
     return expires_datetime
@@ -138,7 +138,7 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:Optio
         email=user.email,
         token=token,
         label=apikey.label,
-        expires_at=apikey.expires
+        expires=apikey.expires
     )
 
 @view_config(

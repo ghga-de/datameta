@@ -549,7 +549,7 @@ components:
           type: string
         label:
           type: string
-        expiresAt:
+        expires:
           type: string
           nullable: true
       required:
@@ -557,7 +557,7 @@ components:
         - userId
         - token
         - label
-        - expiresAt
+        - expires
       additionalProperties: false
 
     ApiKeyList:
@@ -569,7 +569,7 @@ components:
             type: string
           label:
             type: string
-          expiresAt:
+          expires:
             type: string
             nullable: True
           hasExpired:
@@ -577,7 +577,7 @@ components:
         required:
           - apiKeyId
           - label
-          - expiresAt
+          - expires
       additionalProperties: false
 
     PasswordChange:
@@ -673,7 +673,7 @@ components:
           type: string
         groupId:
           type: string
-        expiresAt:
+        expires:
           type: string
       required:
         - name
@@ -681,7 +681,7 @@ components:
         - urlToUpload
         - userId
         - groupId
-        - expiresAt
+        - expires
       additionalProperties: false
 
     FileResponse:
@@ -703,7 +703,7 @@ components:
           type: string
         groupId:
           type: string
-        expiresAt:
+        expires:
           type: string
       required:
         - name
@@ -712,7 +712,7 @@ components:
         - checksum
         - userId
         - groupId
-        - expiresAt
+        - expires
       additionalProperties: false
 
     FileUpdateRequest:

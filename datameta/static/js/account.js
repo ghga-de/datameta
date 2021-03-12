@@ -144,7 +144,7 @@ window.addEventListener("load", function() {
         var cell3 = row.insertCell();
         
         cell1.innerHTML = label;
-        cell2.innerHTML = apiKey.expiresAt.split('T')[0];
+        cell2.innerHTML = apiKey.expires.split('T')[0];
         cell3.innerHTML = '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>'
         cell3.querySelector(".btn").addEventListener("click", function(event) {
             delete_api_key(label, id);
