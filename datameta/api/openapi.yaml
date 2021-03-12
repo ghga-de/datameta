@@ -539,7 +539,7 @@ components:
     UserSession:
       type: object
       properties:
-        apiKeyId:
+        apikeyId:
           type: string
         userId:
           type: string
@@ -553,7 +553,7 @@ components:
           type: string
           nullable: true
       required:
-        - apiKeyId
+        - apikeyId
         - userId
         - token
         - label
@@ -565,7 +565,7 @@ components:
       items:
         type: object
         properties:
-          apiKeyId:
+          apikeyId:
             type: string
           label:
             type: string
@@ -575,7 +575,7 @@ components:
           hasExpired:
             type: boolean
         required:
-          - apiKeyId
+          - apikeyId
           - label
           - expires
       additionalProperties: false

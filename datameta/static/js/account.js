@@ -131,20 +131,20 @@ window.addEventListener("load", function() {
     }
 
     // Adds an Api Key to the table
-    function add_api_key(apiKey) {
-        var id = apiKey.apiKeyId;
-        var label = apiKey.label;
+    function add_api_key(apikey) {
+        var id = apikey.apikeyId;
+        var label = apikey.label;
         var tableBody = document.getElementById("tbody_apikeys");
 
         var row = tableBody.insertRow();
-        row.id = apiKey.apiKeyId;
+        row.id = apikey.apikeyId;
 
         var cell1 = row.insertCell();
         var cell2 = row.insertCell();
         var cell3 = row.insertCell();
         
         cell1.innerHTML = label;
-        cell2.innerHTML = apiKey.expires.split('T')[0];
+        cell2.innerHTML = apikey.expires.split('T')[0];
         cell3.innerHTML = '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></button>'
         cell3.querySelector(".btn").addEventListener("click", function(event) {
             delete_api_key(label, id);
