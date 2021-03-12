@@ -722,7 +722,7 @@ components:
           type: string
         contentUploaded:
           type: boolean
-        checkSum:
+        checksum:
           type: string
       additionalProperties: false
       
