@@ -42,7 +42,7 @@ class FileBase(DataHolderBase):
     file_id     : str
     user_id     : str
     group_id    : str
-    expires_at  : Optional[str]
+    expires  : Optional[str]
 
 @dataclass
 class FileUploadResponse(FileBase):
@@ -98,7 +98,7 @@ def post(request: Request) -> FileUploadResponse:
             file_id           = db_file.site_id,
             user_id           = db_file.user.site_id,
             group_id          = db_file.group.site_id,
-            expires_at        = db_file.upload_expires.isoformat(),
+            expires        = db_file.upload_expires.isoformat(),
             url_to_upload     = upload_url,
             request_headers   = request_headers,
             )
@@ -143,7 +143,7 @@ def get_file(request: Request) -> FileResponse:
             filesize          = db_file.filesize,
             user_id           = db_file.user.site_id,
             group_id          = db_file.group.site_id,
-            expires_at        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
+            expires        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 
 @view_config(
@@ -199,7 +199,7 @@ def update_file(request: Request) -> HTTPOk:
             filesize          = db_file.filesize,
             user_id           = db_file.user.site_id,
             group_id          = db_file.group.site_id,
-            expires_at        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
+            expires        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 
 def delete_files_db(db, db_files:list) -> list:
