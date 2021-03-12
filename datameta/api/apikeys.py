@@ -47,7 +47,7 @@ class UserSession:
 
     def __json__(self, request: Request) -> dict:
         return {
-                "apiKeyId": self.apikey_id,
+                "apikeyId": self.apikey_id,
                 "userId": self.user_id,
                 "email": self.email,
                 "token": self.token,
@@ -64,7 +64,7 @@ class ApiKeyLabels:
     def __init__(self, user:models.User):
         self.apikeys = [
             {
-                "apiKeyId": str(key.uuid),
+                "apikeyId": str(key.uuid),
                 "label": key.label,
                 "expires": key.expires.isoformat() if key.expires else None,
                 "hasExpired": security.check_expiration(key.expires)
