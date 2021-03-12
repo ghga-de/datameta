@@ -29,24 +29,16 @@ from ..linting import validate_metadataset_record
 from .. import security, siteid, models
 import datetime
 from ..resource import resource_by_id
+from . import DataHolderBase
 
 @dataclass
-class MetaDataSetResponse:
+class MetaDataSetResponse(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
     record: dict
     group_id: str
     user_id: str
     metadataset_id: str
     submission_id: Optional[str] = None
-
-    def __json__(self, request: Request) -> dict:
-        return {
-                "record": self.record,
-                "groupId": self.group_id,
-                "userId": self.user_id,
-                "submissionId": self.submission_id,
-                "metaDataSetId": self.metadataset_id,
-            }
 
 
 def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dict:
