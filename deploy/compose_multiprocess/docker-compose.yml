@@ -1,0 +1,73 @@
+version: '3.2'
+services:
+
+  sessionserver:
+    image: "memcached:1.6.3"
+    command: ['memcached', '-v', '-m', '3072', '-I', '50m']
+
+  dbserver:
+    image: "postgres:13-alpine"
+    volumes:
+      - datameta-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: datameta
+      POSTGRES_PASSWORD: datameta
+    command: ['postgres', '-c', 'work_mem=512MB'] # Adjust if needed
+
+  appserver:
+    image: "datameta/datameta:dev"
+    restart: "always"
+    environment:
+      SQLALCHEMY_URL: postgresql://datameta:datameta@dbserver/datameta
+      SESSION_URL: sessionserver:11211
+      SESSION_KEY: datameta
+      SESSION_SECRET: # TODO: Insert 64 character random string here
+      DATAMETA_STORAGE_PATH: /var/datameta/storage
+      DATAMETA_INITIAL_FULLNAME: # TODO: Insert initial user fullname here
+      DATAMETA_INITIAL_EMAIL: # TODO: Insert initial user email address here
+      DATAMETA_INITIAL_PASS: # TODO: Insert initial user password here
+      DATAMETA_INITIAL_GROUPNAME: # TODO: Insert intial user group name here
+      DATAMETA_DEMO_MODE: "false"
+      DATAMETA_SMTP_HOST: # TODO: Insert SMTP server address here
+      DATAMETA_SMTP_PORT: 587 # Adjust if needed
+      DATAMETA_SMTP_USER: # TODO: Insert SMTP user here
+      DATAMETA_SMTP_PASS: # TODO: Insert SMTP password here
+      DATAMETA_SMTP_TLS: "true"
+      DATAMETA_SMTP_FROM: # TODO: Specify SMTP FROM header here, format 'Example Support <support@example.com>'
+      GUNICORN_WORKERS: 75 # Adjust to your needs. 2-4x #CPUs
+      GUNICORN_PROC_NAME: datameta
+      GUNICORN_FORWARDED_ALLOW_IPS: "*"
+    depends_on:
+      - dbserver
+      - sessionserver
+
+  reverse-proxy:
+    image: "datameta/nginx-ssl-proxy:v1.0.0"
+    volumes:
+      - etc-le:/etc/letsencrypt
+      - www-certbot:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      NGINX_PROXY_PASS: "http://appserver/"
+      NGINX_HOSTNAME: # TODO: Insert hostname under which the application is served here
+      NGINX_CLIENT_MAX_BODY_SIZE: 4g # Adjust if necessary
+    depends_on:
+      - appserver
+
+  certbot:
+    image: "datameta/certbot-proxy:v1.0.0"
+    volumes:
+      - etc-le:/etc/letsencrypt
+      - www-certbot:/var/www/certbot
+    environment:
+      CERTBOT_ARGS: --agree-tos -m {email} -d {domain name, typically same as NGINX_HOSTNAME} # TODO: Replace email and domain name
+
+volumes: # TODO: Create external volumes before first launch
+  etc-le:
+    external: true
+  datameta-db:
+    external: true
+  www-certbot:
+    external: false
