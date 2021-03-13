@@ -191,7 +191,7 @@ window.addEventListener("load", function() {
         document.getElementById("api_success").classList.remove("show");
     }
 
-    uuid = document.getElementById("uuid").value;
+    var uuid = document.getElementById("uuid").value;
 
     //Gets all the API keys and adds them to the table
     fetch('/api/v0/users/' + uuid + '/keys',
