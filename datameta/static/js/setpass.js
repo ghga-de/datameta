@@ -52,7 +52,7 @@ window.addEventListener("load", function() {
         }
 
         // Talk to the API
-        fetch('/api/v0/setpass',
+        fetch('/api/setpass',
             {
                 method: 'post',
                 headers: {
