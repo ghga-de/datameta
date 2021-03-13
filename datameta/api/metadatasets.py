@@ -28,18 +28,17 @@ from typing import Optional, Dict
 from ..linting import validate_metadataset_record
 from .. import security, siteid, models
 import datetime
-from ..resource import resource_by_id
+from ..resource import resource_by_id, get_identifier
 from . import DataHolderBase
 
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
+    id: dict
     record: dict
     group_id: str
     user_id: str
-    metadataset_id: str
     submission_id: Optional[str] = None
-
 
 def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dict:
     """Renders values of a metadataset record. Please note: the record should already have passed validation."""
@@ -54,12 +53,11 @@ def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dic
         elif mdatum[field].datetimefmt:
             # if MetaDatum is a datetime field, render the value in isoformat
             record_rendered[field] = datetime.datetime.strptime(
-                    record_rendered[field], 
+                    record_rendered[field],
                     mdatum[field].datetimefmt
                 ).isoformat()
 
     return record_rendered
-
 
 def get_record_from_metadataset(mdata_set=models.MetaDataSet) -> dict:
     """ Construct a dict containing all records of that MetaDataSet"""
@@ -68,11 +66,10 @@ def get_record_from_metadataset(mdata_set=models.MetaDataSet) -> dict:
         for rec in mdata_set.metadatumrecords
     }
 
-
 @view_config(
-    route_name="metadatasets", 
-    renderer='json', 
-    request_method="POST", 
+    route_name="metadatasets",
+    renderer='json',
+    request_method="POST",
     openapi=True
 )
 def post(request:Request) -> MetaDataSetResponse:
@@ -81,7 +78,7 @@ def post(request:Request) -> MetaDataSetResponse:
     record = request.openapi_validated.body["record"]
     # prevalidate (raises 400 in case of validation failure):
     validate_metadataset_record(request, record)
-    
+
     # render records according to MetaDatum constraints
     db = request.dbsession
     mdatum_query = db.query(models.MetaDatum).order_by(
@@ -111,18 +108,18 @@ def post(request:Request) -> MetaDataSetResponse:
         db.add(mdatum_rec)
 
     return MetaDataSetResponse(
-        metadataset_id=mdata_set.site_id,
+        id=get_identifier(mdata_set),
         record=record,
         group_id=mdata_set.group.site_id,
         user_id=mdata_set.user.site_id,
         submission_id=mdata_set.submission_id,
     )
-        
+
 
 @view_config(
-    route_name="metadatasets_id", 
-    renderer='json', 
-    request_method="GET", 
+    route_name="metadatasets_id",
+    renderer='json',
+    request_method="GET",
     openapi=True
 )
 def get_metadataset(request:Request) -> MetaDataSetResponse:
@@ -133,13 +130,13 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
 
     if not mdata_set:
         raise HTTPNotFound()
-    
+
     # check if user is in the group of that metadataset:
     if not auth_user.group.id == mdata_set.group.id:
         raise HTTPForbidden()
 
     return MetaDataSetResponse(
-        metadataset_id=mdata_set.site_id,
+        id=get_identifier(mdata_set),
         record=get_record_from_metadataset(mdata_set),
         group_id=mdata_set.group.site_id,
         user_id=mdata_set.user.site_id,

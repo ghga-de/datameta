@@ -43,13 +43,13 @@ class GroupSubmissions:
 
 
 @view_config(
-    route_name="groups_id_submissions", 
-    renderer='json', 
-    request_method="GET", 
+    route_name="groups_id_submissions",
+    renderer='json',
+    request_method="GET",
     openapi=True
 )
 def get(request: Request) -> GroupSubmissions:
     """Get all submissions of a given group."""
     pass
     return {}
-    
+

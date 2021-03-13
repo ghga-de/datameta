@@ -36,13 +36,13 @@ from . import DataHolderBase
 @dataclass
 class SubmissionBase(DataHolderBase):
     """Base class for Submission communication to OpenApi"""
-    metadataset_ids: List[str]
-    file_ids: List[str]
+    metadataset_ids: List[dict]
+    file_ids: List[dict]
 
 @dataclass
 class SubmissionResponse(SubmissionBase):
     """SubmissionResponse container for OpenApi communication"""
-    submission_id:str
+    id:dict
 
 def validate_submission_access(db, db_files, db_msets, auth_user):
     """Validates a submission with regard to
@@ -67,7 +67,6 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
     # about data the user should not be able to access
     if val_errors:
         entities, fields, messages = zip(*val_errors)
-        entities = [ { 'uuid' : str(entity.uuid), 'site_id' : entity.site_id } for entity in entities ]
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
 def validate_submission_association(db_files, db_msets):
@@ -195,7 +194,6 @@ def validate_submission(request, auth_user):
     # If we collected any val_errors, raise 400
     if val_errors:
         entities, fields, messages = zip(*val_errors)
-        entities = [ { 'uuid' : str(entity.uuid), 'site_id' : entity.site_id } for entity in entities ]
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
     # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
@@ -263,7 +261,7 @@ def post(request: Request) -> SubmissionResponse:
     db.flush()
 
     return SubmissionResponse(
-            metadataset_ids = [ db_mset.site_id for db_mset in db_msets.values() ],
-            file_ids = [ db_file.site_id for db_file in db_files.values() ],
-            submission_id = submission.site_id
+            metadataset_ids = [ resource.get_identifier(db_mset) in db_msets.values() ],
+            file_ids = [ resource.get_identifier(db_file) for db_file in db_files.values() ],
+            id = resource.get_identifier(submission)
             )

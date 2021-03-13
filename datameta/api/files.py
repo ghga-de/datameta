@@ -39,7 +39,7 @@ class FileDeleteError(RuntimeError):
 class FileBase(DataHolderBase):
     """Base class for File communication to OpenApi"""
     name        : str
-    file_id     : str
+    id          : str
     user_id     : str
     group_id    : str
     expires  : Optional[str]
@@ -94,8 +94,8 @@ def post(request: Request) -> FileUploadResponse:
 
     # Prepare response
     return FileUploadResponse(
+            id                = resource.get_identifier(db_file),
             name              = db_file.name,
-            file_id           = db_file.site_id,
             user_id           = db_file.user.site_id,
             group_id          = db_file.group.site_id,
             expires        = db_file.upload_expires.isoformat(),
@@ -136,8 +136,8 @@ def get_file(request: Request) -> FileResponse:
 
     # Return details
     return FileResponse(
+            id                = resource.get_identifier(db_file),
             name              = db_file.name,
-            file_id           = db_file.site_id,
             content_uploaded  = db_file.content_uploaded,
             checksum          = db_file.checksum,
             filesize          = db_file.filesize,
@@ -192,8 +192,8 @@ def update_file(request: Request) -> HTTPOk:
         log.info(f"[STORAGE][FREEZE][user={db_file.user.uuid}][file={db_file.uuid}]")
 
     return FileResponse(
+            id                = resource.get_identifier(db_file),
             name              = db_file.name,
-            file_id           = db_file.site_id,
             content_uploaded  = db_file.content_uploaded,
             checksum          = db_file.checksum,
             filesize          = db_file.filesize,

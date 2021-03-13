@@ -22,6 +22,15 @@
 from sqlalchemy import or_
 from uuid import UUID
 
+def get_identifier(db_obj):
+    """Given a database object, return the identifying IDs as a dictionary"""
+    ids = { 'uuid' : str(db_obj.uuid) }
+    try:
+        ids['site'] = db_obj.site_id
+    except AttributeError:
+        pass
+    return ids
+
 def resource_query_by_id(db, model, idstring):
     """Returns a database query that returns an entity based on it's uuid or
     site_id as specified by idstring.
