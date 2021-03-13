@@ -19,13 +19,13 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
             "password": self.state["user"].password,
             "label": self.state["apikey_label"]
         }
-        
+
         response = self.testapp.post_json(
-            base_url + "/keys", 
-            params=request_body, 
+            base_url + "/keys",
+            params=request_body,
             status=status
-        ) 
-        
+        )
+
         if status==200:
             self.state["apikey_response"] = response.json
 
@@ -33,26 +33,26 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         """Get a list of all ApiKeys"""
         # request params:
         user_id = self.state["user"].uuid
-        token = self.state["apikey_response"]["token"] # previously created apikey 
+        token = self.state["apikey_response"]["token"] # previously created apikey
         request_headers = get_auth_headers(token)
 
         response = self.testapp.get(
             base_url + f"/users/{user_id}/keys",
             headers=request_headers,
             status=status
-        ) 
+        )
 
         if status==200:
             # check whether current response is consistent with the previous responce
             # obtained when creating the api keys
-            keys_to_compare = ["apikeyId", "label", "expiresAt"]
+            keys_to_compare = ["id", "label", "expires"]
             curr_response = {
-                key: value 
+                key: value
                 for key, value in response.json[0].items()
                 if key in keys_to_compare
             }
             prev_response = {
-                key: value 
+                key: value
                 for key, value in self.state["apikey_response"].items()
                 if key in keys_to_compare
             }
@@ -62,15 +62,15 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
 
     def step_3(self, status=200):
         """Delete ApiKey"""
-        apikey_id = self.state["apikey_response"]["apikeyId"] # previously created apikey 
-        token = self.state["apikey_response"]["token"] # previously created apikey 
+        apikey_id = self.state["apikey_response"]["id"]["uuid"] # previously created apikey
+        token = self.state["apikey_response"]["token"] # previously created apikey
         request_headers = get_auth_headers(token)
 
         response = self.testapp.delete(
             base_url + f"/keys/{apikey_id}",
             headers=request_headers,
             status=status
-        ) 
+        )
 
     def test_steps(self):
         # set initial state:
