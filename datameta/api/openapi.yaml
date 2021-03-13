@@ -503,12 +503,10 @@ components:
     UserSession:
       type: object
       properties:
-        apikeyId:
-          type: string
+        id:
+          $ref: "#/components/schemas/Identifier"
         userId:
-          type: string
-        email:
-          type: string
+          $ref: "#/components/schemas/Identifier"
         token:
           type: string
         label:
@@ -517,7 +515,7 @@ components:
           type: string
           nullable: true
       required:
-        - apikeyId
+        - id
         - userId
         - token
         - label
@@ -529,8 +527,8 @@ components:
       items:
         type: object
         properties:
-          apikeyId:
-            type: string
+          id:
+            $ref: "#/components/schemas/Identifier"
           label:
             type: string
           expires:
@@ -539,7 +537,7 @@ components:
           hasExpired:
             type: boolean
         required:
-          - apikeyId
+          - id
           - label
           - expires
       additionalProperties: false
@@ -576,15 +574,15 @@ components:
           additionalProperties: true
           # a free-form object,
           # any property is allowed
-        metadatasetId:
-          type: string
+        id:
+          $ref: "#/components/schemas/Identifier"
         submissionId:
           type: string
           nullable: true
         groupId:
-          type: string
+          $ref: "#/components/schemas/Identifier"
         userId:
-          type: string
+          $ref: "#/components/schemas/Identifier"
       required:
         - record
       additionalProperties: false
@@ -606,22 +604,22 @@ components:
       properties:
         name:
           type: string
-        fileId:
-          type: string
+        id:
+          $ref: "#/components/schemas/Identifier"
         urlToUpload:
           type: string
         requestHeaders:
           type: object
           additionalProperties: true
         userId:
-          type: string
+          $ref: "#/components/schemas/Identifier"
         groupId:
-          type: string
+          $ref: "#/components/schemas/Identifier"
         expires:
           type: string
       required:
         - name
-        - fileId
+        - id
         - urlToUpload
         - userId
         - groupId
@@ -633,8 +631,8 @@ components:
       properties:
         name:
           type: string
-        fileId:
-          type: string
+        id:
+          $ref: "#/components/schemas/Identifier"
         contentUploaded:
           type: boolean
           nullable: true
@@ -644,14 +642,14 @@ components:
           type: integer
           nullable: true
         userId:
-          type: string
+          $ref: "#/components/schemas/Identifier"
         groupId:
-          type: string
+          $ref: "#/components/schemas/Identifier"
         expires:
           type: string
       required:
         - name
-        - fileId
+        - id
         - contentUploaded
         - checksum
         - userId
@@ -692,11 +690,11 @@ components:
         metadatasetIds:
           type: array
           items:
-            type: string
+            $ref: "#/components/schemas/Identifier"
         fileIds:
           type: array
-          items:
-            type: string
+          items: 
+            $ref: "#/components/schemas/Identifier"
         submissionId:
           type: string
       required:

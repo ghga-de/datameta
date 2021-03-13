@@ -29,32 +29,20 @@ from string import ascii_letters, digits
 from random import choice
 from .. import security
 from pyramid.httpexceptions import HTTPOk, HTTPUnauthorized, HTTPForbidden
-from ..resource import resource_by_id
+from ..resource import resource_by_id, get_identifier
 from ..errors import get_validation_error
 from datetime import datetime, timedelta
-from pyramid import threadlocal 
-
+from pyramid import threadlocal
+from . import DataHolderBase
 
 @dataclass
-class UserSession:
+class UserSession(DataHolderBase):
     """User Session as return object when requesting new ApiKey"""
-    apikey_id: str
+    id: dict
     user_id: str
-    email: str
     token: str
     label: str
     expires: Optional[datetime]
-
-    def __json__(self, request: Request) -> dict:
-        return {
-                "apikeyId": self.apikey_id,
-                "userId": self.user_id,
-                "email": self.email,
-                "token": self.token,
-                "label": self.label,
-                "expires": self.expires.isoformat() if self.expires else None
-            }
-
 
 class ApiKeyLabels:
     """ApiKeyLabels container for OpenApi communication"""
@@ -64,14 +52,14 @@ class ApiKeyLabels:
     def __init__(self, user:models.User):
         self.apikeys = [
             {
-                "apikeyId": str(key.uuid),
+                "id": get_identifier(key),
                 "label": key.label,
                 "expires": key.expires.isoformat() if key.expires else None,
                 "hasExpired": security.check_expiration(key.expires)
             }
             for key in user.apikeys
         ]
-    
+
     def __json__(self, request: Request) -> dict:
         return self.apikeys
 
@@ -79,9 +67,9 @@ class ApiKeyLabels:
 def get_expiration_date_from_str(expires_str:Optional[str]):
     """Validates a user-defined ApiKey expiration date and converts it into a datetime object"""
     # calculated the latest expiration date allowed
-    max_expiration_period = int(threadlocal.get_current_registry().settings['datameta.apikeys.max_expiration_period']) 
+    max_expiration_period = int(threadlocal.get_current_registry().settings['datameta.apikeys.max_expiration_period'])
     max_expiration_datetime = datetime.now() + timedelta(days=max_expiration_period)
-    
+
     if expires_str is None:
         expires_datetime = max_expiration_datetime
     else:
@@ -106,9 +94,9 @@ def get_expiration_date_from_str(expires_str:Optional[str]):
                 ],
                 fields=["expires"]
             )
-    
+
     return expires_datetime
-    
+
 
 def generate_api_key(request:Request, user:models.User, label:str, expires:Optional[datetime]=None):
     """For Token Composition:
@@ -133,18 +121,17 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:Optio
     db.flush()
 
     return UserSession(
-        apikey_id=str(apikey.uuid),
-        user_id=user.site_id,
-        email=user.email,
+        id=get_identifier(apikey),
+        user_id=get_identifier(user),
         token=token,
         label=apikey.label,
-        expires=apikey.expires
+        expires=expires.isoformat() if expires else None
     )
 
 @view_config(
-    route_name="apikeys", 
-    renderer='json', 
-    request_method="POST", 
+    route_name="apikeys",
+    renderer='json',
+    request_method="POST",
     openapi=True
 )
 def post(request:Request) -> UserSession:
@@ -163,7 +150,7 @@ def post(request:Request) -> UserSession:
         auth_user = security.get_user_by_credentials(request, email, password)
         if not auth_user:
             raise HTTPUnauthorized()
-        
+
     label = request.openapi_validated.body["label"]
     expires = request.openapi_validated.body.get("expires")
 
@@ -173,34 +160,34 @@ def post(request:Request) -> UserSession:
 
 
 @view_config(
-    route_name="user_id_keys", 
-    renderer='json', 
-    request_method="GET", 
+    route_name="user_id_keys",
+    renderer='json',
+    request_method="GET",
     openapi=True
 )
 def get_user_keys(request:Request) -> UserSession:
     """Get all ApiKeys from a user"""
-    
+
     auth_user = security.revalidate_user(request)
-    
+
     db = request.dbsession
     target_user = resource_by_id(db, models.User, request.matchdict['id'])
     if not target_user or auth_user.id!=target_user.id:
         raise HTTPForbidden()
-    
+
     return ApiKeyLabels(auth_user)
 
-    
+
 @view_config(
-    route_name="apikeys_id", 
-    renderer='json', 
-    request_method="DELETE", 
+    route_name="apikeys_id",
+    renderer='json',
+    request_method="DELETE",
     openapi=True
 )
 def delete_key(request:Request) -> UserSession:
     """Delete an ApiKey"""
     auth_user = security.revalidate_user(request)
-    
+
     db = request.dbsession
     target_key = resource_by_id(db, models.ApiKey, request.matchdict['id'])
     if not target_key or auth_user.id!=target_key.user.id:
