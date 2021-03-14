@@ -70,7 +70,7 @@ window.addEventListener("load", function() {
         } else {
             document.getElementById("new_password").classList.remove("is-invalid")
             document.getElementById("new_password_repeat").classList.remove("is-invalid")
-        }        
+        }
         // Talk to the API
         fetch('/api/v0/users/' + data.get("uuid") + '/password',
             {

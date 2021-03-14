@@ -78,12 +78,7 @@
         }
 
         </script>
-        <script>
-            window.DataMeta = {};
-            DataMeta.uilocal = {};
-            DataMeta.toolTips = [];
-            DataMeta.popoverList = [];
-        </script>
+        <script src="${request.static_url('datameta:static/js/datameta.js')}"></script>
     </head>
     <body class="d-flex flex-column h-100" onload=init_widescreen()>
 

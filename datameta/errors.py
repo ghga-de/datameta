@@ -23,7 +23,7 @@ import enum
 from typing import List, Optional
 from pyramid.httpexceptions import HTTPBadRequest
 
-from . import resource
+from . import resource, models
 
 def get_validation_error(
     messages:List[str],
@@ -48,7 +48,7 @@ def get_validation_error(
         if entities is not None and entities[idx] is not None:
             err.update(
                 {
-                    "entity": resource.get_identifier(entities[idx])
+                    "entity": resource.get_identifier(entities[idx]) if isinstance(entities[idx], models.db.Base) else entities[idx]
                 }
             )
         if fields is not None and fields[idx] is not None:

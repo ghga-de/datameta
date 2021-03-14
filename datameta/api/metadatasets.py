@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from dataclasses import dataclass
-from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound
+from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
@@ -59,10 +59,16 @@ def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dic
 
     return record_rendered
 
-def get_record_from_metadataset(mdata_set=models.MetaDataSet) -> dict:
+def formatted_mrec_value(mrec):
+    if mrec.metadatum.datetimefmt is not None:
+        return datetime.datetime.fromisoformat(mrec.value).strftime(mrec.metadatum.datetimefmt)
+    else:
+        return mrec.value
+
+def get_record_from_metadataset(mdata_set:models.MetaDataSet) -> dict:
     """ Construct a dict containing all records of that MetaDataSet"""
     return {
-        rec.metadatum.name: rec.value
+        rec.metadatum.name: formatted_mrec_value(rec)
         for rec in mdata_set.metadatumrecords
     }
 
@@ -108,11 +114,11 @@ def post(request:Request) -> MetaDataSetResponse:
         db.add(mdatum_rec)
 
     return MetaDataSetResponse(
-        id=get_identifier(mdata_set),
-        record=record,
-        group_id=mdata_set.group.site_id,
-        user_id=mdata_set.user.site_id,
-        submission_id=mdata_set.submission_id,
+        id             = get_identifier(mdata_set),
+        record         = record,
+        group_id       = get_identifier(mdata_set.group),
+        user_id        = get_identifier(mdata_set.user),
+        submission_id  = get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
 
 
@@ -142,3 +148,38 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
         user_id=mdata_set.user.site_id,
         submission_id=mdata_set.submission_id,
     )
+
+@view_config(
+    route_name="metadatasets_id",
+    renderer='json',
+    request_method="DELETE",
+    openapi=True
+)
+def get_metadataset(request:Request) -> HTTPNoContent:
+    # Check authentication or raise 401
+    auth_user = security.revalidate_user(request)
+
+    db = request.dbsession
+
+    # Find the requested metadataset
+    mdata_set = resource_by_id(db, models.MetaDataSet, request.matchdict['id'])
+
+    # Check if the metadataset exists
+    if not mdata_set:
+        raise HTTPNotFound()
+
+    # Check if user owns this metadataset
+    if auth_user.group.id != mdata_set.group.id or auth_user.id != mdata_set.user_id:
+        raise HTTPForbidden()
+
+    # Check if the metadataset was already submitted
+    if mdata_set.submission:
+        raise errors.get_validation_error(messages=["The resource cannot be modified"])
+
+    # Delete the records
+    request.dbsession.query(models.MetaDatumRecord).filter(models.MetaDatumRecord.metadataset_id==mdata_set.id).delete()
+
+    # Delete the metadataset
+    db.delete(mdata_set)
+
+    return HTTPNoContent()
