@@ -31,10 +31,8 @@ def includeme(config):
     config.add_route('forgot_api', '/api/forgot')
     config.add_route('home', '/home')
     config.add_route('submit', '/submit')
-    config.add_route('submit_action', '/submit/action')
     config.add_route('account', '/account')
     config.add_route('view', '/view')
-    config.add_route('v_submit_view_json', '/submit/view.json')
     # ADMIN
     config.add_route('admin', '/admin')
     config.add_route('admin_get', '/api/admin')
