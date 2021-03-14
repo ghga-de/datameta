@@ -60,7 +60,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
       security:
         - bearerAuth: []
         - cookieAuth: []
@@ -91,7 +91,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
 
   /users/{id}/keys:
     get:
@@ -127,7 +127,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
 
   /users/{id}/password:
     put:
@@ -167,7 +167,7 @@ paths:
         "400":
           $ref: '#/components/responses/ValidationError'
         "500":
-          description: Iternal Server Error
+          description: Internal Server Error
 
 
   /metadatasets:
@@ -199,7 +199,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
 
 
   /metadatasets/{id}:
@@ -231,8 +231,36 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
-
+          description: Internal Server Error
+    delete:
+      summary: Delete Not-Submitted Metadataset
+      description: >-
+        Delete File. Please note:
+        This is only allowed if the metadataset
+        has not been part of a Submission, yet.
+      tags:
+        - Metadata
+      operationId: DeleteMetadataSet
+      parameters:
+        - name: id
+          in: path
+          description: ID of the Metadataset
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deletion successful
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: File not found
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          description: Internal Server Error
 
   /files:
     post:
@@ -265,7 +293,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
 
   /files/{id}:
     get:
@@ -298,7 +326,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
     put:
       summary: Update File Details
       description: >-
@@ -344,7 +372,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
     delete:
       summary: Delete Not-Submitted File
       description: >-
@@ -373,7 +401,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
 
   /submissions:
     post:
@@ -404,7 +432,7 @@ paths:
         '401':
           description: Unauthorized
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
 
   /presubvalidation:
     post:
@@ -429,7 +457,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
 
   /groups/{id}/submissions:
     get:
@@ -463,7 +491,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          description: Iternal Server Error
+          description: Internal Server Error
 
 security:
   - bearerAuth: []
@@ -602,10 +630,10 @@ components:
     FileUploadResponse:
       type: object
       properties:
-        name:
-          type: string
         id:
           $ref: "#/components/schemas/Identifier"
+        name:
+          type: string
         urlToUpload:
           type: string
         requestHeaders:
@@ -629,10 +657,10 @@ components:
     FileResponse:
       type: object
       properties:
-        name:
-          type: string
         id:
           $ref: "#/components/schemas/Identifier"
+        name:
+          type: string
         contentUploaded:
           type: boolean
           nullable: true
@@ -687,6 +715,8 @@ components:
     SubmissionResponse:
       type: object
       properties:
+        id:
+          $ref: "#/components/schemas/Identifier"
         metadatasetIds:
           type: array
           items:
@@ -695,12 +725,10 @@ components:
           type: array
           items: 
             $ref: "#/components/schemas/Identifier"
-        submissionId:
-          type: string
       required:
+        - id
         - metadatasetIds
         - fileIds
-        - submissionId
       additionalProperties: false
 
     GroupSubmissions:

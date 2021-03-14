@@ -38,8 +38,8 @@ class FileDeleteError(RuntimeError):
 @dataclass
 class FileBase(DataHolderBase):
     """Base class for File communication to OpenApi"""
+    id          : dict
     name        : str
-    id          : str
     user_id     : str
     group_id    : str
     expires  : Optional[str]
@@ -96,8 +96,8 @@ def post(request: Request) -> FileUploadResponse:
     return FileUploadResponse(
             id                = resource.get_identifier(db_file),
             name              = db_file.name,
-            user_id           = db_file.user.site_id,
-            group_id          = db_file.group.site_id,
+            user_id           = resource.get_identifier(db_file.user),
+            group_id          = resource.get_identifier(db_file.group),
             expires        = db_file.upload_expires.isoformat(),
             url_to_upload     = upload_url,
             request_headers   = request_headers,
@@ -141,9 +141,9 @@ def get_file(request: Request) -> FileResponse:
             content_uploaded  = db_file.content_uploaded,
             checksum          = db_file.checksum,
             filesize          = db_file.filesize,
-            user_id           = db_file.user.site_id,
-            group_id          = db_file.group.site_id,
-            expires        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
+            user_id           = resource.get_identifier(db_file.user),
+            group_id          = resource.get_identifier(db_file.group),
+            expires           = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 
 @view_config(
@@ -197,8 +197,8 @@ def update_file(request: Request) -> HTTPOk:
             content_uploaded  = db_file.content_uploaded,
             checksum          = db_file.checksum,
             filesize          = db_file.filesize,
-            user_id           = db_file.user.site_id,
-            group_id          = db_file.group.site_id,
+            user_id           = resource.get_identifier(db_file.user),
+            group_id          = resource.get_identifier(db_file.group),
             expires        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 

@@ -54,20 +54,19 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
         400 HTTPBadRequest
     """
     # Collect missing files
-    val_errors = [ (db_file, None, "Not found") for file_id, db_file in db_files.items() if db_file is None ]
+    val_errors = [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Not found") for file_id, db_file in db_files.items() if db_file is None ]
     # Collect authorization issues
-    val_errors += [ (db_file, None, "Access denied") for file_id, db_file in db_files.items() if db_file is not None and (db_file.user_id!=auth_user.id or db_file.group_id!=auth_user.group_id) ]
+    val_errors += [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Access denied") for file_id, db_file in db_files.items() if db_file is not None and (db_file.user_id!=auth_user.id or db_file.group_id!=auth_user.group_id) ]
 
     # Collect missing metadatasets
-    val_errors += [ (db_mset, None, "Not found") for mset_id, db_mset in db_msets.items() if db_mset is None ]
+    val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Not found") for mset_id, db_mset in db_msets.items() if db_mset is None ]
     # Collect authorization issues
-    val_errors += [ (db_mset, None, "Access denied") for mset_id, db_mset in db_msets.items() if db_mset is not None and (db_mset.user_id!=auth_user.id or db_mset.group_id!=auth_user.group_id) ]
+    val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Access denied") for mset_id, db_mset in db_msets.items() if db_mset is not None and (db_mset.user_id!=auth_user.id or db_mset.group_id!=auth_user.group_id) ]
 
     # If we collected any val_errors so far, raise 400 to avoid exposing internals
     # about data the user should not be able to access
     if val_errors:
         entities, fields, messages = zip(*val_errors)
-        entities = [ { 'uuid' : str(entity.uuid), 'site_id' : entity.site_id } for entity in entities ]
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
 def validate_submission_association(db_files, db_msets):
@@ -195,7 +194,6 @@ def validate_submission(request, auth_user):
     # If we collected any val_errors, raise 400
     if val_errors:
         entities, fields, messages = zip(*val_errors)
-        entities = [ { 'uuid' : str(entity.uuid), 'site_id' : entity.site_id } for entity in entities ]
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
     # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
@@ -263,7 +261,7 @@ def post(request: Request) -> SubmissionResponse:
     db.flush()
 
     return SubmissionResponse(
-            metadataset_ids = [ resource.get_identifier(db_mset) in db_msets.values() ],
-            file_ids = [ resource.get_identifier(db_file) for db_file in db_files.values() ],
-            id = resource.get_identifier(submission)
+            id = resource.get_identifier(submission),
+            metadataset_ids = [ resource.get_identifier(db_mset) for db_mset in db_msets.values() ],
+            file_ids = [ resource.get_identifier(db_file) for db_file in db_files.values() ]
             )
