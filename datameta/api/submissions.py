@@ -67,6 +67,7 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
     # about data the user should not be able to access
     if val_errors:
         entities, fields, messages = zip(*val_errors)
+        entities = [ { 'uuid' : str(entity.uuid), 'site_id' : entity.site_id } for entity in entities ]
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
 def validate_submission_association(db_files, db_msets):
@@ -194,6 +195,7 @@ def validate_submission(request, auth_user):
     # If we collected any val_errors, raise 400
     if val_errors:
         entities, fields, messages = zip(*val_errors)
+        entities = [ { 'uuid' : str(entity.uuid), 'site_id' : entity.site_id } for entity in entities ]
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
     # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
