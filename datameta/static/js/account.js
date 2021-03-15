@@ -132,12 +132,12 @@ window.addEventListener("load", function() {
 
     // Adds an Api Key to the table
     function add_api_key(apikey) {
-        var id = apikey.apikeyId;
+        var id = apikey.id.uuid;
         var label = apikey.label;
         var tableBody = document.getElementById("tbody_apikeys");
 
         var row = tableBody.insertRow();
-        row.id = apikey.apikeyId;
+        row.id = id;
 
         var cell1 = row.insertCell();
         var cell2 = row.insertCell();
