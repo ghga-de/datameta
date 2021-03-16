@@ -262,22 +262,16 @@ function toggleGroupAdmin(event) {
     var enabled = button.classList.contains("enabled");
 
     if(enabled) {
-        if(confirm("Do you want to remove the user " + name + " as admin of group " + group + "?")) {
-            button.classList.remove("enabled");
-            button.classList.remove("btn-outline-success");
-            button.classList.add("btn-outline-danger");
-            button.innerHTML = '<i class="bi bi-x"></i>';
+        if(confirm("Do you want to remove the user " + name + " as admin of " + group + "?")) {
+            DataMeta.admin.updateUser(row.id, undefined, undefined, false, undefined, undefined);
+            toggleButton(button, enabled);
         }
     } else {
-        if(confirm("Do you want to make the user " + name + " admin of group " + group + "?")) {
-            button.classList.add("enabled");
-            button.classList.add("btn-outline-success");
-            button.classList.remove("btn-outline-danger");
-            button.innerHTML = '<i class="bi bi-check2"></i>';
+        if(confirm("Do you want to make the user " + name + " admin of " + group + "?")) {
+            DataMeta.admin.updateUser(row.id, undefined, undefined, true, undefined, undefined);
+            toggleButton(button, enabled);
         }
     }
-
-    //TODO: Make API Call
 }
 
 function toggleSiteAdmin(event) {
@@ -296,22 +290,16 @@ function toggleSiteAdmin(event) {
     var enabled = button.classList.contains("enabled");
 
     if(enabled) {
-        if(confirm("Do you want to deactivate the user " + name + "?")) {
-            button.classList.remove("enabled");
-            button.classList.remove("btn-outline-success");
-            button.classList.add("btn-outline-danger");
-            button.innerHTML = '<i class="bi bi-x"></i>';
+        if(confirm("Do you want to remove the user " + name + " as site admin?")) {
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, false, undefined);
+            toggleButton(button, enabled);
         }
     } else {
-        if(confirm("Do you want to activate the user " + name + "?")) {
-            button.classList.add("enabled");
-            button.classList.add("btn-outline-success");
-            button.classList.remove("btn-outline-danger");
-            button.innerHTML = '<i class="bi bi-check2"></i>';
+        if(confirm("Do you want to make the user " + name + " site admin?")) {
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, true, undefined);
+            toggleButton(button, enabled);
         }
     }
-
-    //TODO: Make API Call
 }
 
 function toggleUserEnabled(event) {
@@ -331,20 +319,29 @@ function toggleUserEnabled(event) {
 
     if(enabled) {
         if(confirm("Do you want to deactivate the user " + name + "?")) {
-            button.classList.remove("enabled");
-            button.classList.remove("btn-outline-success");
-            button.classList.add("btn-outline-danger");
-            button.innerHTML = '<i class="bi bi-x"></i>';
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, false);
+            toggleButton(button, enabled);
         }
     } else {
         if(confirm("Do you want to activate the user " + name + "?")) {
-            button.classList.add("enabled");
-            button.classList.add("btn-outline-success");
-            button.classList.remove("btn-outline-danger");
-            button.innerHTML = '<i class="bi bi-check2"></i>';
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, true);
+            toggleButton(button, enabled);
         }
     }
-    //TODO: Make API Call
+}
+
+function toggleButton(button, enabled) {
+    if(enabled) {
+        button.classList.remove("enabled");
+        button.classList.remove("btn-outline-success");
+        button.classList.add("btn-outline-danger");
+        button.innerHTML = '<i class="bi bi-x"></i>';
+    } else {
+        button.classList.add("enabled");
+        button.classList.add("btn-outline-success");
+        button.classList.remove("btn-outline-danger");
+        button.innerHTML = '<i class="bi bi-check2"></i>';
+    }
 }
 
 function switchGroup() {
@@ -355,7 +352,8 @@ function changeName() {
     // TODO
 }
 
-DataMeta.admin.changeGroupName = function (group_id) {
+// API call to change the group name
+DataMeta.admin.changeGroupName = function (group_id, name) {
     fetch('/api/v0/groups/' + group_id,
     {
         method: 'PUT',
@@ -364,7 +362,7 @@ DataMeta.admin.changeGroupName = function (group_id) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            newGroupName: "Test2"
+            name
         })
     })
     .then(function (response) {
@@ -372,6 +370,36 @@ DataMeta.admin.changeGroupName = function (group_id) {
             //TODO: Visual confirmation
             //TODO: Change name in Table
             console.log("Request successfull")
+        } else {
+            //TODO Visual confirmation, catch other responses
+            console.log("Something went wrong")
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+// API call to change user name, group, admin and enabled settings
+DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, enabled) {
+    fetch('/api/v0/users/' + id,
+    {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name,
+            groupId,
+            groupAdmin,
+            siteAdmin,
+            enabled
+        })
+    })
+    .then(function (response) {
+        if(response.status == '204') {
+            // TODO Successfull
         } else {
             //TODO Visual confirmation, catch other responses
             console.log("Something went wrong")
