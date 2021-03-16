@@ -21,6 +21,7 @@ import os
 import shutil
 import logging
 import hashlib
+from . import security
 
 log = logging.getLogger(__name__)
 
@@ -70,11 +71,14 @@ def create_and_annotate_storage(request, db_file):
     # Currently, only local storage is supported
     db_file.storage_uri = f"file://{db_file.uuid}__{db_file.checksum}"
 
+    token = security.generate_token()
+    db_file.access_token = security.hash_token(token)
+
     # Create empty file
     open(get_local_storage_path(request, db_file.storage_uri), 'w').close()
 
     # Return the Upload URL
-    return request.route_url('upload', id=db_file.uuid), {}
+    return request.route_url('upload', id=db_file.uuid), { 'Access-Token' : token }
 
 def write_file(request, db_file, file):
     """Write the file content specified by 'file' to the storage denoted in 'db_file'"""

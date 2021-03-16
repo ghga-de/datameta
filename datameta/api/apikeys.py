@@ -25,8 +25,6 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, List
 from .. import models
-from string import ascii_letters, digits
-from random import choice
 from .. import security
 from pyramid.httpexceptions import HTTPOk, HTTPUnauthorized, HTTPForbidden
 from ..resource import resource_by_id, get_identifier
@@ -107,7 +105,7 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:Optio
     ApiKey object in the database and the core component is matched
     against the hash for validating it.
     """
-    token = "".join(choice(ascii_letters+digits) for _ in range(64) )
+    token = security.generate_token()
     token_hash = security.hash_token(token)
 
     db = request.dbsession

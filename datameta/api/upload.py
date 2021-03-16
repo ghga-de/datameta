@@ -24,7 +24,10 @@ from pyramid.view import view_config
 
 import hashlib
 import webob
+import logging
 from .. import resource, models, storage, security
+
+log = logging.getLogger(__name__)
 
 @view_config(
     route_name="upload",
@@ -36,18 +39,15 @@ def post(request) -> HTTPNoContent:
 
     Raises:
         400 HTTPBadRequest - The request is malformed, i.e. the formdata field 'file' is not present or is not a file.
-        404 HTTPNotFound   - The requested file ID cannot be found or is not handled by the datameta backend
+        404 HTTPNotFound   - The requested file ID cannot be found or is not handled by the datameta backend or access denied.
         409 HTTPConflict   - Content was already uploaded for this file and the file was marked as completed by the submitting entity
-        403 HTTPForbidden  - Requesting entity is not authorized to upload content for this file
     """
     db = request.dbsession
-
-    # Validate authentication
-    auth_user = security.revalidate_user(request)
 
     # Parse request header
     req_file     = request.POST.get("file")
     req_file_id  = request.matchdict.get("id")
+    req_token    = request.headers.get("Access-Token")
 
     # Validate request header
     if req_file is None or req_file_id is None or not isinstance(req_file, webob.compat.cgi_FieldStorage):
@@ -57,12 +57,12 @@ def post(request) -> HTTPNoContent:
 
     # Try to find the references file in the database
     db_file = resource.resource_by_id(db, models.File, req_file_id)
-    if db_file is None:
-        raise HTTPNotFound(json=None)
 
-    # Authorization
-    if db_file.user_id != auth_user.id or db_file.group_id != auth_user.group_id:
-        raise HTTPForbidden(json=None)
+    # Validate access token match
+    db_file = db_file if req_token and db_file.access_token == security.hash_token(req_token) else None
+
+    if db_file is None: # Includes token mismatch
+        raise HTTPNotFound(json=None)
 
     # Verify that this file is still open for uploads
     if db_file.content_uploaded:
