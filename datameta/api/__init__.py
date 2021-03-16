@@ -52,5 +52,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("submissions", base_url + "/submissions")
     config.add_route("presubvalidation", base_url + "/presubvalidation")
     config.add_route("groups_id_submissions", base_url + "/groups/{id}/submissions")
+    config.add_route("groups_id", base_url + "/groups/{id}")
+
     # Endpoint outside of openapi
     config.add_route("upload", base_url + "/upload/{id}")

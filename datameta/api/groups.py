@@ -23,7 +23,14 @@
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict, List
+from dataclasses import dataclass
+from . import DataHolderBase
 from .. import models
+from ..models import Group
+from .. import security, errors
+from ..resource import resource_by_id
+
+from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
 
 
 class GroupSubmissions:
@@ -53,3 +60,36 @@ def get(request: Request) -> GroupSubmissions:
     pass
     return {}
 
+@dataclass
+class ChangeGroupName(DataHolderBase):
+    """Class for Group Name Change communication to OpenApi"""
+    group_id: str
+    new_group_name: str
+
+@view_config(
+    route_name="groups_id", 
+    renderer='json', 
+    request_method="PUT", 
+    openapi=True
+)
+def get(request: Request) -> ChangeGroupName:
+    """Change the name of the group"""
+
+    group_id = request.matchdict["id"]
+    newGroupName = request.openapi_validated.body["name"]
+    db = request.dbsession
+
+    # Authenticate the user
+    auth_user = security.revalidate_user(request)
+
+    target_group = resource_by_id(db, Group, group_id)
+
+    if target_group is None:
+        raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
+
+    # Change the group name only if the user is site admin or the admin for the specific group
+    if auth_user.site_admin or auth_user.group_admin and auth_user.group.uuid == group_id:
+        target_group.name = newGroupName
+        return HTTPNoContent()
+    
+    raise HTTPForbidden() # 403 Not authorized to change this group name
