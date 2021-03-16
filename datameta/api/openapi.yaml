@@ -1,6 +1,7 @@
 # Copyright (c) 2021 Universität Tübingen, Germany
 # Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>,
 #          Kersten Breuer <k.breuer@dkfz.de>
+#          Moritz Hahn <moritz.hahn@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +24,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.2.0
+  version: 0.3.0
   title: DataMeta
 
 servers:
@@ -164,6 +165,40 @@ paths:
           description: Password reset token not found
         "410":
           description: Password reset token expired
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "500":
+          description: Internal Server Error
+
+  /users/{id}:
+    put:
+      summary: Update a user's credentials and status
+      description: Update a user's name, group, admin status and enabled status.
+      tags:
+        - Authentication and Users
+      operationId: UserUpdateRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+        description: username, group, admin status and enabled status
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: User update successful
+        "401":
+          description: Unauthorized
+        "403":
+          description: This user does not have the rights to perform this action.
+        "404":
+          description: The specified user or group does not exist.
         "400":
           $ref: '#/components/responses/ValidationError'
         "500":
@@ -781,6 +816,21 @@ components:
           type: string
       required:
         - name
+      additionalProperties: false
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        groupId:
+          type: string
+        groupAdmin:
+          type: boolean
+        siteAdmin:
+          type: boolean
+        enabled:
+          type: boolean
       additionalProperties: false
 
     Identifier:
