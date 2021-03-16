@@ -63,5 +63,8 @@ jobs:
     - name: Install datameta
       run: |
         pip install ".[testing]"
+    - name: List packagers
+      run: |
+        pip list
     - name: Run tests
       run: pytest .
