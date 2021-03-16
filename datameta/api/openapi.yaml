@@ -24,7 +24,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.3.0
+  version: 0.4.0
   title: DataMeta
 
 servers:
@@ -204,6 +204,25 @@ paths:
         "500":
           description: Internal Server Error
 
+  /metadata:
+    get:
+      summary: Get metadata definitions
+      description: >-
+        Get the metadata definitions that are configured for this site.
+      tags:
+        - Metadata
+      operationId: GetMetaData
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaDataResponse'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
 
   /metadatasets:
     post:
@@ -831,6 +850,49 @@ components:
           type: boolean
         enabled:
           type: boolean
+    MetaDataResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            $ref: "#/components/schemas/Identifier"
+          name:
+            type: string
+          shortDescription:
+            type: string
+            nullable: true
+          longDescription:
+            type: string
+            nullable: true
+          regExp:
+            type: string
+            nullable: true
+          dateTimeFmt:
+            type: string
+            nullable: true
+          isMandatory:
+            type: boolean
+          order:
+            type: integer
+          isFile:
+            type: boolean
+          isSubmissionUnique:
+            type: boolean
+          isSiteUnique:
+            type: boolean
+        required:
+          - id
+          - name
+          - shortDescription
+          - longDescription
+          - regExp
+          - dateTimeFmt
+          - isMandatory
+          - order
+          - isFile
+          - isSubmissionUnique
+          - isSiteUnique
       additionalProperties: false
 
     Identifier:
