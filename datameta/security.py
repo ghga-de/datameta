@@ -23,6 +23,8 @@
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from datetime import datetime
 from typing import Optional
+from random import choice
+from string import ascii_letters, digits
 
 from .models import User, ApiKey
 
@@ -30,6 +32,9 @@ import bcrypt
 import hashlib
 import logging
 log = logging.getLogger(__name__)
+
+def generate_token():
+    return "".join(choice(ascii_letters+digits) for _ in range(64) )
 
 def check_expiration(expiration_datetime:Optional[datetime]):
     """
