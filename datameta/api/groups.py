@@ -76,7 +76,7 @@ def get(request: Request) -> ChangeGroupName:
     """Change the name of the group"""
 
     group_id = request.matchdict["id"]
-    newGroupName = request.openapi_validated.body["newGroupName"]
+    newGroupName = request.openapi_validated.body["name"]
     db = request.dbsession
 
     # Authenticate the user

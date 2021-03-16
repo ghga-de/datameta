@@ -512,7 +512,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GroupNameChange"
+              $ref: "#/components/schemas/GroupUpdateRequest"
       responses:
         "204":
           description: OK
@@ -523,7 +523,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
-          $ref: '#/components/responses/ValidationError'
+          description: Internal Server Error
 
 security:
   - bearerAuth: []
@@ -768,13 +768,13 @@ components:
       items:
         $ref: "#/components/schemas/SubmissionResponse"
 
-    GroupNameChange:
+    GroupUpdateRequest:
       type: object
       properties:
-        newGroupName:
+        name:
           type: string
       required:
-        - newGroupName
+        - name
       additionalProperties: false
 
     Identifier:
