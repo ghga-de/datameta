@@ -23,7 +23,14 @@
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict, List
+from dataclasses import dataclass
+from . import DataHolderBase
 from .. import models
+from ..models import Group
+from .. import security, errors
+from ..resource import resource_by_id
+
+from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
 
 
 class GroupSubmissions:
