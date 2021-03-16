@@ -1,6 +1,7 @@
 # Copyright (c) 2021 Universität Tübingen, Germany
 # Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>,
 #          Kersten Breuer <k.breuer@dkfz.de>
+#          Moritz Hahn <moritz.hahn@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +46,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("apikeys_id", base_url + "/keys/{id}")
     config.add_route("user_id_keys", base_url + "/users/{id}/keys")
     config.add_route("SetUserPassword", base_url + "/users/{id}/password")
+    config.add_route("user_id", base_url + "/users/{id}")
     config.add_route("metadatasets", base_url + "/metadatasets")
     config.add_route("metadatasets_id", base_url + "/metadatasets/{id}")
     config.add_route("files", base_url + "/files")
