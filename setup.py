@@ -44,7 +44,7 @@ requires = [
     'alembic',
     'pyramid_retry',
     'pyramid_tm',
-    'SQLAlchemy',
+    'SQLAlchemy == 1.3.*',
     'transaction',
     'zope.sqlalchemy',
     'pyramid_openapi3',
