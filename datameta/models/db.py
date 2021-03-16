@@ -125,6 +125,7 @@ class File(Base):
     site_id          = Column(String(50), unique=True, nullable=False, index=True)
     name             = Column(Text, nullable=False)
     storage_uri      = Column(String(2048), unique=True, nullable=True)
+    access_token     = Column(String(64), nullable=True)
     content_uploaded = Column(Boolean(create_constraint=False), nullable=False)
     checksum         = Column(Text, nullable=False)
     filesize         = Column(BigInteger, nullable=True)
@@ -142,6 +143,7 @@ class Submission(Base):
     site_id          = Column(String(50), unique=True, nullable=False, index=True)
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     date             = Column(DateTime)
+    label            = Column(String(100), nullable=True)
     # Relationships
     metadatasets     = relationship('MetaDataSet', back_populates='submission')
 
@@ -155,6 +157,7 @@ class MetaDatum(Base):
     datetimefmt        = Column(Text, nullable=True)
     datetimemode       = Column(Enum(DateTimeMode), nullable=True)
     mandatory          = Column(Boolean(create_constraint=False), nullable=False)
+    example            = Column(Text, nullable=False)
     order              = Column(Integer, nullable=False)
     isfile             = Column(Boolean(create_constraint=False), nullable=False)
     submission_unique  = Column(Boolean(create_constraint=False), nullable=False)
