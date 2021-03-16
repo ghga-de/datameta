@@ -28,15 +28,13 @@
                     </div>
                     <div class="card-body tab-pane fade" id="nav-users" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 class="card-title">User Management</h5>
-                        <div class="alert alert-warning" role="alert">
-                            This feature is not yet implemented.
-                        </div>
+                        <table id="table_users" class="table table-sm table-hover" style="width:100%">
+                        </table>
                     </div>
                     <div class="card-body tab-pane fade" id="nav-groups" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 class="card-title">Group Management</h5>
-                        <div class="alert alert-warning" role="alert">
-                            This feature is not yet implemented.
-                        </div>
+                        <table id="table_groups" class="table table-sm table-hover" style="width:100%">
+                        </table>
                     </div>
                     <div class="card-body tab-pane fade show active" id="nav-requests" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 id="req_title" class="card-title"></h5>
@@ -110,7 +108,10 @@
     </div>
 
     <metal:block fill-slot="body">
-    <script src="${request.static_url('datameta:static/js/admin.js')}"></script>
+        <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/node_modules/jquery/dist/jquery.js')}"></script>
+        <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/jquery.dataTables.min.js')}"></script>
+        <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/dataTables.bootstrap5.min.js')}"></script>
+        <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/admin.js')}"></script>
     </metal:block>
 
 </div>

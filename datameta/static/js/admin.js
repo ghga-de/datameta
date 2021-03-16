@@ -1,6 +1,7 @@
 /*
 # Copyright (c) 2021 Universität Tübingen, Germany
 # Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+#          Moritz Hahn <moritz.hahn@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -184,10 +185,201 @@ DataMeta.admin.reload = function() {
             .then(function (json) {
                 DataMeta.admin.reload_requests(json.reg_requests, json.groups);
                 DataMeta.admin.subnav();
+                DataMeta.admin.rebuildUserTable(json.users);
+                DataMeta.admin.rebuildGroupTable(json.groups);
             })
             .catch((error) => {
                 console.log(error);
             });
+}
+
+DataMeta.admin.rebuildUserTable = function(users) {
+    $('#table_users').DataTable({
+        data: users,
+        rowId: 'uuid',
+        order: [[1, "asc"]],
+        paging : true,
+        searching: false,
+        columns: [
+            { title: "User ID", data: "id"},
+            { title: "Name", data: "fullname"},
+            { title: "eMail Adress", data: "email" },
+            { title: "Group ID", data: "group_id"},
+            { title: "Group Name", data: "group_name"},
+            { orderable:false, title: "Enabled", data: "enabled", render:function(data) {
+                if(data) {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleUserEnabled(event);"><i class="bi bi-check2"></i></button>'
+                } else {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleUserEnabled(event)";><i class="bi bi-x"></i></button>'
+                }
+            }},
+            { orderable:false, title: "Is Group Admin", data: "group_admin", render:function(data) {
+                if(data) {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleGroupAdmin(event)"><i class="bi bi-check2"></i></button>'
+                } else {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleGroupAdmin(event)"><i class="bi bi-x"></i></button>'
+                }
+            }},
+            { orderable:false, title: "Is Site Admin", data: "site_admin", render:function(data) {
+                if(data) {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleSiteAdmin(event)"><i class="bi bi-check2"></i></button>'
+                } else {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleSiteAdmin(event)"><i class="bi bi-x"></i></button>'
+                }
+            }}
+        ]
+    });
+}
+
+DataMeta.admin.rebuildGroupTable = function(groups) {
+    $('#table_groups').DataTable({
+        data: groups,
+        rowId: 'uuid',
+        order: [[1, "asc"]],
+        paging : true,
+        searching: false,
+        columns: [
+            { title: "Group ID", data: "site_id"},
+            { title: "Group Name", data: "name"},
+        ]
+    });
+}
+
+function toggleGroupAdmin(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode;
+    var name = row.children[1].innerHTML;
+    var group = row.children[4].innerHTML;
+
+    var enabled = button.classList.contains("enabled");
+
+    if(enabled) {
+        if(confirm("Do you want to remove the user " + name + " as admin of group " + group + "?")) {
+            button.classList.remove("enabled");
+            button.classList.remove("btn-outline-success");
+            button.classList.add("btn-outline-danger");
+            button.innerHTML = '<i class="bi bi-x"></i>';
+        }
+    } else {
+        if(confirm("Do you want to make the user " + name + " admin of group " + group + "?")) {
+            button.classList.add("enabled");
+            button.classList.add("btn-outline-success");
+            button.classList.remove("btn-outline-danger");
+            button.innerHTML = '<i class="bi bi-check2"></i>';
+        }
+    }
+
+    //TODO: Make API Call
+}
+
+function toggleSiteAdmin(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // Change the location to the button if the picture was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode;
+    var name = row.children[1].innerHTML;
+
+    var enabled = button.classList.contains("enabled");
+
+    if(enabled) {
+        if(confirm("Do you want to deactivate the user " + name + "?")) {
+            button.classList.remove("enabled");
+            button.classList.remove("btn-outline-success");
+            button.classList.add("btn-outline-danger");
+            button.innerHTML = '<i class="bi bi-x"></i>';
+        }
+    } else {
+        if(confirm("Do you want to activate the user " + name + "?")) {
+            button.classList.add("enabled");
+            button.classList.add("btn-outline-success");
+            button.classList.remove("btn-outline-danger");
+            button.innerHTML = '<i class="bi bi-check2"></i>';
+        }
+    }
+
+    //TODO: Make API Call
+}
+
+function toggleUserEnabled(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // Change the location to the button if the picture was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode;
+    var name = row.children[1].innerHTML;
+
+    var enabled = button.classList.contains("enabled");
+
+    if(enabled) {
+        if(confirm("Do you want to deactivate the user " + name + "?")) {
+            button.classList.remove("enabled");
+            button.classList.remove("btn-outline-success");
+            button.classList.add("btn-outline-danger");
+            button.innerHTML = '<i class="bi bi-x"></i>';
+        }
+    } else {
+        if(confirm("Do you want to activate the user " + name + "?")) {
+            button.classList.add("enabled");
+            button.classList.add("btn-outline-success");
+            button.classList.remove("btn-outline-danger");
+            button.innerHTML = '<i class="bi bi-check2"></i>';
+        }
+    }
+    //TODO: Make API Call
+}
+
+function switchGroup() {
+    // TODO
+}
+
+function changeName() {
+    // TODO
+}
+
+DataMeta.admin.changeGroupName = function (group_id) {
+    fetch('/api/v0/groups/' + group_id,
+    {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            newGroupName: "Test2"
+        })
+    })
+    .then(function (response) {
+        if(response.status == '204') {
+            //TODO: Visual confirmation
+            //TODO: Change name in Table
+            console.log("Request successfull")
+        } else {
+            //TODO Visual confirmation, catch other responses
+            console.log("Something went wrong")
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
 }
 
 window.addEventListener("load", function() {

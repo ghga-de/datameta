@@ -1,4 +1,6 @@
-# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright (c) 2021 Universität Tübingen, Germany
+# Authors: Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>,
+#          Moritz Hahn <moritz.hahn@uni-tuebingen.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -165,19 +167,26 @@ def v_admin_get(request):
     response = {}
 
     response["users"] = [ {
-        'id' : user.id,
-        'group_id' : user.group.id,
+        'uuid' : str(user.uuid),
+        'id' : user.site_id,
+        'group_id' : user.group.site_id,
         'group_name' : user.group.name,
         'fullname' : user.fullname,
-        'email' : user.email
+        'email' : user.email,
+        'enabled' : user.enabled,
+        'site_admin' : user.site_admin,
+        'group_admin' : user.group_admin
         } for user in query ]
 
-    # If the requesting user is a site admin, return ll groups, otherwise only theirs
+    # If the requesting user is a site admin, return all groups, otherwise only theirs
     if req_user.site_admin:
-        response['groups'] = [ { k : v for k,v in group.__dict__.items() if k in ['id','name'] } for group in db.query(Group) ]
+        response['groups'] = [ { 
+            'uuid': str(group.uuid),
+            'site_id' : group.site_id,
+            'name': group.name
+            } for group in db.query(Group) ]
     else:
-        response['groups'] = [ { k : v for k,v in group.__dict__.items() if k in ['id','name'] } for group in [ req_user.group ] ]
-
+        response['groups'] = [ { k : v for k,v in group.__dict__.items() if k in ['site_id','name'] } for group in [ req_user.group ] ]
     # Pending registration requests
     query = db.query(RegRequest)
     if not req_user.site_admin:
