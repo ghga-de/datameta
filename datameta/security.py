@@ -95,7 +95,6 @@ def revalidate_user(request):
         if apikey is not None:
             if check_expiration(apikey.expires):
                 raise HTTPUnauthorized()
-            log.info("APIKEY AUTH FROM '{apikey.user.email}'")
             return apikey.user
 
     # Check for session based auth
