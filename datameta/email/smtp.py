@@ -35,7 +35,8 @@ class SMTPClient:
             port = '587',
             user = None,
             password = None,
-            tls = False):
+            tls = False,
+            rec_header_only=False):
         self.hostname = hostname
         self.port     = port
         self.user     = user
@@ -48,7 +49,8 @@ class SMTPClient:
             subject,
             message_text,
             attachments = {},
-            bcc = None):
+            bcc = None,
+            rec_header_only=False):
 
         if not isinstance(recipients, list):
             recipients = [ recipients ]
@@ -61,12 +63,20 @@ class SMTPClient:
         message["To"] = ', '.join([formataddr(recipient) for recipient in recipients])
         message["Subject"] = subject
 
+        # Remove the recipients from the recipients if they are to be used only for the header
+        if rec_header_only:
+            recipients = []
+
         # Add BCC recipients after building the 'To' header
         if bcc:
             if isinstance(bcc, list):
                 recipients += [ (None, elem) for elem in bcc ]
             else:
                 recipients.append((None, bcc))
+
+        # If we have no recpients here, there is an error
+        if not recipients:
+            raise RuntimeError("No recipients specified.")
 
         message.attach(MIMEText(message_text, 'plain'))
         for fname, data in attachments.items():

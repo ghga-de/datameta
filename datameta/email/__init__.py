@@ -35,7 +35,7 @@ __smtp = SMTPClient(
 
 __smtp_from = parseaddr(threadlocal.get_current_registry().settings['datameta.smtp_from'])
 
-def send(recipients, subject, template, values, bcc=None):
+def send(recipients, subject, template, values, bcc=None, rec_header_only=False):
     """Sends an email message to the specified recipients using the provided template and values.
 
     Keyword arguments:
@@ -48,4 +48,4 @@ def send(recipients, subject, template, values, bcc=None):
     message = template.format(**values)
 
     # Send the message
-    __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc)
+    __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
