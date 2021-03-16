@@ -92,7 +92,7 @@ def lint_pending_msets(request, user, mset_ids = None):
                 linting_report[mdset_id].append({
                     'field' : metadatum.name,
                     'type' : 'custom',
-                    'error' : metadatum.lintmessage
+                    'error' : metadatum.short_description
                     })
             # Check if the datetime was correctly parsed or specified at all
             if metadatum.datetimefmt and value=="":
@@ -161,7 +161,7 @@ def validate_metadataset_record(
         # Check if the regexp pattern matches
         if mdat.regexp and re.match(mdat.regexp, value) is None:
             errors.append({
-                "message": mdat.lintmessage,
+                "message": mdat.short_description,
                 "field": name
             })
             continue
