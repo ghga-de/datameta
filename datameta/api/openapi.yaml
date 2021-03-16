@@ -23,7 +23,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.1.0
+  version: 0.2.0
   title: DataMeta
 
 servers:
@@ -421,7 +421,7 @@ paths:
         description: >-
           Provide a list of metadatasets and a list of files.
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
@@ -739,6 +739,9 @@ components:
           type: array
           items:
             type: string
+        label:
+          type: string
+          nullable: true
       required:
         - metadatasetIds
         - fileIds
@@ -749,6 +752,9 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/Identifier"
+        label:
+          type: string
+          nullable: true
         metadatasetIds:
           type: array
           items:

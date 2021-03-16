@@ -43,6 +43,7 @@ class SubmissionBase(DataHolderBase):
 class SubmissionResponse(SubmissionBase):
     """SubmissionResponse container for OpenApi communication"""
     id:dict
+    label:str
 
 def validate_submission_access(db, db_files, db_msets, auth_user):
     """Validates a submission with regard to
@@ -244,6 +245,9 @@ def post(request: Request) -> SubmissionResponse:
 
     db = request.dbsession
 
+    label = request.openapi_validated.body.get("label")
+    label = label if label else None # Convert empty strings to None
+
     # Raises 400 in case of any validation issues
     fnames, ref_fnames, db_files, db_msets = validate_submission(request, auth_user)
 
@@ -253,15 +257,17 @@ def post(request: Request) -> SubmissionResponse:
 
     # Add a submission
     submission = Submission(
+            site_id = siteid.generate(request, Submission),
+            label = label,
             date = datetime.datetime.now(),
-            metadatasets = list(db_msets.values()),
-            site_id = siteid.generate(request, Submission)
+            metadatasets = list(db_msets.values())
             )
     db.add(submission)
     db.flush()
 
     return SubmissionResponse(
             id = resource.get_identifier(submission),
+            label = label,
             metadataset_ids = [ resource.get_identifier(db_mset) for db_mset in db_msets.values() ],
             file_ids = [ resource.get_identifier(db_file) for db_file in db_files.values() ]
             )
