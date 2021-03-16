@@ -196,7 +196,9 @@ paths:
         "401":
           description: Unauthorized
         "403":
-          description: The specified user does not exist or this user does not have the rights to perform this action.
+          description: This user does not have the rights to perform this action.
+        "404":
+          description: The specified user or group does not exist.
         "400":
           $ref: '#/components/responses/ValidationError'
         "500":
