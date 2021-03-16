@@ -182,7 +182,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/UserUpdateRequest"
-        description: Old and new password
+        description: username, group, admin status and enabled status
       parameters:
         - name: id
           in: path
