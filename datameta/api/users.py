@@ -22,7 +22,7 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPBadRequest
 
 from dataclasses import dataclass
 from . import DataHolderBase
@@ -63,6 +63,9 @@ def get(request: Request) -> UserUpdateRequest:
     # Get the targeted user
     target_user = resource_by_id(db, User, user_id)
 
+    if(target_user == None):
+        raise HTTPForbidden() # 403 User ID not found
+
     # First, check, if the user has the rights to perform all the changes they want
 
     # The user has to be site admin to change another users group
@@ -94,6 +97,8 @@ def get(request: Request) -> UserUpdateRequest:
     # Now, make the corresponding changes
     if group_id != None:
         new_group = resource_by_id(db, Group, group_id)
+        if new_group == None:
+            raise HTTPForbidden() # 403 Group ID not found
         target_user.group.id = new_group.id
     if site_admin != None:
         target_user.site_admin = site_admin
