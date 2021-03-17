@@ -27,10 +27,9 @@ DataMeta.submit.unchecked = {};
 
 "use strict";
 
-DataMeta.submit.setlock = function(lock) {
+DataMeta.submit.setLock = function(lock, uploadForm) {
     if (lock) {
-        document.getElementById('form_data').classList.add('is-uploading');
-        document.getElementById('form_samplesheets').classList.add('is-uploading');
+        if (uploadForm) uploadForm.classList.add('is-uploading');
         document.getElementById("masterfset").disabled = true;
     } else {
         document.getElementById('form_data').classList.remove('is-uploading');
@@ -103,6 +102,7 @@ DataMeta.submit.deleteMset = function(uuid) {
 
 DataMeta.submit.deleteEntityEvent = function(event) {
     var btn = event.target.closest("button");
+    btn.disabled = true;
     if (btn.getAttribute("data-datameta-type")=="mset") {
         DataMeta.submit.deleteMset(btn.getAttribute("data-datameta-uuid"));
     } else if (btn.getAttribute("data-datameta-type")=="file") {
@@ -246,23 +246,9 @@ DataMeta.submit.rebuildFilesTable = function(files) {
     });
 }
 
-DataMeta.submit.rebuildMetadataTable = function(keys, fileKeys, metadata) {
-    columns = [
-        /* COLUMN 1: CHECKBOX */
-        { orderable:false, title: "", data: null, render:function(data, type, row) {
-                var checked = data.checked ? " checked" : "";
-                return '<input class="form-check-input datameta-entity-check" type="checkbox" data-datameta-type="meta"  data-datameta-uuid="'+data.id.uuid+'"'+checked+'>';
-        }},
-        /* COLUMN 2: STATUS */
-        { orderable:false, title:"", data:"id", render:function(data, type, row) {
-        return '<span data-datameta-class="entity-status" data-datameta-uuid="'+data.uuid+'">' +
-                '<i data-datameta-class="status-none" class="bi bi-question-circle-fill text-secondary" style="display:inline"></i>' + // Deselected
-                '<i data-datameta-class="status-ok" class="bi bi-check-circle-fill text-success" style="display:none"></i>' + // OK
-                '<a data-datameta-class="status-err" tabindex="0" role="button" data-bs-html="true" data-bs-toggle="popover" data-bs-trigger="focus" title="Validation Report" data-bs-content="" style="display:none"><i class="bi bi-exclamation-diamond-fill text-warning"></i></a>' + // ERROR
-                '</span>';
-        }}
-    ]
-    /* COLUMNS 3..N: MEDATATA */
+DataMeta.submit.buildKeyColunns = function(fileKeys, keys) {
+    var columns = [];
+
     keys.forEach(function(key) {
         if (fileKeys.includes(key)) {
             /* FILE VALUES */
@@ -279,6 +265,29 @@ DataMeta.submit.rebuildMetadataTable = function(keys, fileKeys, metadata) {
             columns.push({ title:key, data:"record", render:(record=>record[key]) });
         }
     });
+
+    return columns;
+}
+
+DataMeta.submit.statusColumn = { orderable:false, title:"", data:"id", render:function(data, type, row) {
+    return '<span data-datameta-class="entity-status" data-datameta-uuid="'+data.uuid+'">' +
+        '<i data-datameta-class="status-none" class="bi bi-question-circle-fill text-secondary" style="display:inline"></i>' + // Deselected
+        '<i data-datameta-class="status-ok" class="bi bi-check-circle-fill text-success" style="display:none"></i>' + // OK
+        '<a data-datameta-class="status-err" tabindex="0" role="button" data-bs-html="true" data-bs-toggle="popover" data-bs-trigger="focus" title="Validation Report" data-bs-content="" style="display:none"><i class="bi bi-exclamation-diamond-fill text-warning"></i></a>' + // ERROR
+        '</span>';
+}};
+
+DataMeta.submit.rebuildMetadataTable = function(keys, fileKeys, metadata) {
+    columns = [
+        /* COLUMN 1: CHECKBOX */
+        { orderable:false, title: "", data: null, render:function(data, type, row) {
+                var checked = data.checked ? " checked" : "";
+                return '<input class="form-check-input datameta-entity-check" type="checkbox" data-datameta-type="meta"  data-datameta-uuid="'+data.id.uuid+'"'+checked+'>';
+        }},
+        /* COLUMN 2: STATUS */
+        DataMeta.submit.statusColumn
+    ]
+    columns = columns.concat(DataMeta.submit.buildKeyColunns(fileKeys, keys));
     /* COLUMN N+1: DELETE */
     columns.push({ orderable:false, title: "", data: "id", render:function(data, type, row) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" data-datameta-class="btn-del-entity" data-datameta-type="mset" data-datameta-uuid="'+data.uuid+'"><i class="bi bi-trash-fill"></i></button>'
@@ -296,25 +305,59 @@ DataMeta.submit.rebuildMetadataTable = function(keys, fileKeys, metadata) {
     });
 }
 
-DataMeta.submit.visualizeErrors = function(errors, noselect) {
+DataMeta.submit.showMetaErrors = function(metadata, errors) {
+    if (!errors.length || !metadata.length) {
+        return;
+    }
+    fetch(
+        DataMeta.api("metadata"),
+        { method : "GET" }
+    ).then(function(response) {
+        if (response.ok) return response.json()
+        throw new Error();
+    }).then(function(json) {
+        var keys = json.map(metadatum => metadatum.name);
+        var columns = [ DataMeta.submit.statusColumn ].concat(DataMeta.submit.buildKeyColunns([], keys));
+        $("#table_errors").DataTable({
+            destroy: true,
+            scrollX: true,
+            data: metadata,
+            sDom: "<'row'<'span8'l><'span8'f>r>t", // Hide footer
+            order: [[1,"asc"]],
+            paging : false,
+            searching: false,
+            columns: columns
+        });
+        var card_failed = document.getElementById("card_failed");
+        DataMeta.submit.visualizeErrors(errors, false, card_failed);
+        card_failed.classList.remove("d-none");
+    }).catch(function(error) {
+        DataMeta.new_alert("<strong>ERROR</strong> An unknown error occurred when validating the submitted metadata. Please try again.", "danger")
+        console.log(error);
+    });
+}
+
+DataMeta.submit.visualizeErrors = function(errors, noselect, rootElement) {
+
+    rootElement = rootElement ? rootElement : document;
 
     // Clear all errors
-    Array.from(document.querySelectorAll("[data-datameta-class='status-err'],[data-datameta-class='status-ok']")).forEach(elem => elem.style.display='none');
-    Array.from(document.querySelectorAll("[data-datameta-class='status-none']")).forEach(elem => elem.style.display='inline');
-    Array.from(document.querySelectorAll("[data-datameta-class='status-err']")).forEach(elem => elem.setAttribute("data-bs-content", " "));
+    Array.from(rootElement.querySelectorAll("[data-datameta-class='status-err'],[data-datameta-class='status-ok']")).forEach(elem => elem.style.display='none');
+    Array.from(rootElement.querySelectorAll("[data-datameta-class='status-none']")).forEach(elem => elem.style.display='inline');
+    Array.from(rootElement.querySelectorAll("[data-datameta-class='status-err']")).forEach(elem => elem.setAttribute("data-bs-content", " "));
 
     // Green-light all checked entities
-    Array.from(document.querySelectorAll("[data-datameta-class='entity-status']")).forEach(function(entity_status) {
+    Array.from(rootElement.querySelectorAll("[data-datameta-class='entity-status']")).forEach(function(entity_status) {
         var uuid = entity_status.getAttribute("data-datameta-uuid");
-        if (document.querySelector("input[data-datameta-uuid='"+uuid+"']:checked")) {
+        if (rootElement.querySelector("input[data-datameta-uuid='"+uuid+"']:checked")) {
             entity_status.querySelector("[data-datameta-class='status-none']").style.display="none";
             entity_status.querySelector("[data-datameta-class='status-ok']").style.display="inline";
         }
     });
-    Array.from(document.querySelectorAll("[data-datameta-class='field-status']"))
+    Array.from(rootElement.querySelectorAll("[data-datameta-class='field-status']"))
         .forEach(elem => {
             var uuid = elem.getAttribute("data-datameta-uuid");
-            if (document.querySelector("input[data-datameta-uuid='"+uuid+"']:checked")) {
+            if (rootElement.querySelector("input[data-datameta-uuid='"+uuid+"']:checked")) {
                 elem.querySelector("[data-datameta-class='status-none']").style.display="none";
                 elem.querySelector("[data-datameta-class='status-ok']").style.display="inline";
             }
@@ -330,7 +373,7 @@ DataMeta.submit.visualizeErrors = function(errors, noselect) {
         var uuid = error.entity.uuid;
         // Find the corresponding entity-status element
         var selector = "span[data-datameta-class='entity-status'][data-datameta-uuid='"+uuid+"']"
-        var entity_status = document.querySelector(selector);
+        var entity_status = rootElement.querySelector(selector);
         // Deactivate none field
         entity_status.querySelector("[data-datameta-class='status-none']").style.display="none";
         entity_status.querySelector("[data-datameta-class='status-ok']").style.display="none";
@@ -345,7 +388,7 @@ DataMeta.submit.visualizeErrors = function(errors, noselect) {
 
         // If we have a field, try to toggle the corresponding field indicator
         if (error.field) {
-            Array.from(document.querySelectorAll("[data-datameta-class='field-status'][data-datameta-field='"+error.field+"'][data-datameta-uuid='"+uuid+"']"))
+            Array.from(rootElement.querySelectorAll("[data-datameta-class='field-status'][data-datameta-field='"+error.field+"'][data-datameta-uuid='"+uuid+"']"))
                 .forEach(elem => {
                     elem.querySelector("[data-datameta-class='status-none']").style.display="none";
                     elem.querySelector("[data-datameta-class='status-ok']").style.display="none";
@@ -373,7 +416,7 @@ DataMeta.submit.submit = function(validateOnly) {
 
 
     if (!file_uuids.length && !mset_uuids.length) {
-        DataMeta.submit.visualizeErrors([], true)
+        DataMeta.submit.visualizeErrors([], true, document.getElementById("masterfset"))
         return;
     }
 
@@ -394,7 +437,7 @@ DataMeta.submit.submit = function(validateOnly) {
     ).then(function(response) {
         if (response.ok) {
             if (validateOnly) {
-                return DataMeta.submit.visualizeErrors([]);
+                return DataMeta.submit.visualizeErrors([], false, documents.getElementById("masterfset"));
             } else {
                 return DataMeta.submit.refresh();
             }
@@ -405,7 +448,7 @@ DataMeta.submit.submit = function(validateOnly) {
         if (error instanceof DataMeta.AnnotatedError) {
             error.response.json().then(function(json){
                 if (validateOnly){
-                    DataMeta.submit.visualizeErrors(json);
+                    DataMeta.submit.visualizeErrors(json, false, document.getElementById("masterfset"));
                 } else {
                     DataMeta.new_alert("<strong>Creating a new submission failed</strong> Please verify that your submission is valid.", "danger")
                     DataMeta.submit.refresh();
@@ -431,7 +474,7 @@ DataMeta.submit.refresh = function() {
         json.metadatasets.forEach(mset => mset.checked = ! DataMeta.submit.unchecked[mset.id.uuid])
         // Reload files table
         DataMeta.submit.rebuildFilesTable(json.files);
-        // Reload metadarta table
+        // Reload metadata table
         DataMeta.submit.rebuildMetadataTable(json.metadataKeys, json.metadataKeysFiles, json.metadatasets);
         // Register listeners
         Array.from(document.querySelectorAll("input.datameta-entity-check"), elem => elem.addEventListener("change", DataMeta.submit.checkboxChange));
@@ -457,5 +500,7 @@ window.addEventListener("load", function() {
             event.target.disabled = true;
             DataMeta.delete_pending();
         });
+
+    document.getElementById("btn_close_card_failed").addEventListener("click", event => document.getElementById("card_failed").classList.add("d-none"));
 });
 

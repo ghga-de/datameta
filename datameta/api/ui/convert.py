@@ -31,7 +31,7 @@ import datetime
 
 import pandas as pd
 
-from ... import security, samplesheet
+from ... import security, samplesheet, errors
 from ...models import MetaDatum, MetaDataSet, MetaDatumRecord
 
 log = logging.getLogger(__name__)
@@ -90,8 +90,7 @@ def post(request: Request) -> HTTPOk:
 
     # Parse the request body
     if 'file' not in request.POST or not isinstance(request.POST['file'], webob.compat.cgi_FieldStorage):
-        raise HTTPBadRequest(json={ "error" : "Invalid request" })
-
+        raise errors.get_validation_error(messages = [ "Invalid request" ])
     # Extract the submitted file from request body
     input_file = request.POST['file']
     input_file.file.seek(0)
@@ -100,5 +99,5 @@ def post(request: Request) -> HTTPOk:
         return convert_samplesheet(db, input_file.file, input_file.filename, auth_user)
     except samplesheet.SampleSheetReadError as e:
         log.warning(f"Sample sheet '{input_file.filename}' could not be read: {e}")
-        raise HTTPBadRequest(json={ "error" : "Unable to parse samplesheet" })
+        raise errors.get_validation_error(messages = [ str(e) ])
 

@@ -31,43 +31,58 @@
 </div>
 <div id="div_alerts" class="row mt-2">
 </div>
-<fieldset id="masterfset">
-<div id="row_annotated" class="row">
-    <div class="card col-12">
+<div class="row">
+    <div id="card_failed" class="card col-12 mb-2 alert-dismissible d-none" style="background-color:#f7dddd">
         <div class="card-body">
             <div class="row mb-3">
-                <div class="col-10">
-                    <h5 class="card-title">Pending annotated submissions</h5>
-                    <p class="card-text">The following metadata and files have
-                    been uploaded. Records shown in green are ready to
-                    commit!</p>
-                </div>
-                <div class="col-2">
-                    <a id="commit_btn" class="btn btn-success w-100" href="#" style="display:none">Commit</a>
+                <div class="col-12">
+                    <h5 class="card-title">Failed metadata uploads</h5>
+                    <p class="card-text">The following metadata records have been uploaded but were rejected due to verification failures:</p>
                 </div>
             </div>
-            <table id="table_metadata" class="table table-sm table-hover text-nowrap" style="width:100%">
+            <table id="table_errors" class="table table-sm table-hover text-nowrap" style="width:100%">
             </table>
-            <span class="me-2"><i class="bi bi-check-circle-fill text-success"></i> Ready to commit</span>
-            <span class="me-2"><i class="bi bi-exclamation-diamond-fill text-warning"></i> Faulty record</span>
-            <span class="me-2"><i class="bi bi-hdd-rack-fill text-danger"></i> Waiting for file</span>
-            <span class="me-2"><i class="bi bi-hdd-rack-fill text-success"></i> File received or not mandatory</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" id="btn_close_card_failed"></button>
         </div>
     </div>
 </div>
-<div id="row_unannotated" class="row mt-2">
-    <div class="card col-12">
-        <div class="card-body">
-            <h5 class="card-title">Pending un-annotated submissions</h5>
-            <p class="card-text">The following files have been uploaded but not yet annotated:</p>
-            <table id="table_unannotated" class="table table-sm table-hover" style="width:100%">
-            </table>
+<fieldset id="masterfset">
+    <div id="row_annotated" class="row">
+        <div class="card col-12">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-10">
+                        <h5 class="card-title">Pending metadata submissions</h5>
+                        <p class="card-text">The following metadata and files have been uploaded. Records shown in green are ready to commit!</p>
+                    </div>
+                    <div class="col-2">
+                        <a id="commit_btn" class="btn btn-success w-100" href="#" style="display:none">Commit</a>
+                    </div>
+                </div>
+                <table id="table_metadata" class="table table-sm table-hover text-nowrap" style="width:100%">
+                </table>
+                <div class="mt-3">
+                <span class="me-2"><i class="bi bi-check-circle-fill text-success"></i> Ready to commit</span>
+                <span class="me-2"><i class="bi bi-exclamation-diamond-fill text-warning"></i> Blocking commit</span>
+                <span class="me-2"><i class="bi bi-hdd-rack-fill text-danger"></i> Waiting for file</span>
+                <span class="me-2"><i class="bi bi-hdd-rack-fill text-success"></i> File received or not mandatory</span>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<div id="row_delete_pending" class="row mt-2" style="display:none">
-    <a id="del_pending_btn" class="btn btn-outline-danger w-100" href="#">Delete all pending data</a>
-</div>
+    <div id="row_unannotated" class="row mt-2">
+        <div class="card col-12">
+            <div class="card-body">
+                <h5 class="card-title">Pending file submissions</h5>
+                <p class="card-text">The following files have been uploaded but not yet annotated:</p>
+                <table id="table_unannotated" class="table table-sm table-hover" style="width:100%">
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="row_delete_pending" class="row mt-2" style="display:none">
+        <a id="del_pending_btn" class="btn btn-outline-danger w-100" href="#">Delete all pending data</a>
+    </div>
 
 </metal:block>
 

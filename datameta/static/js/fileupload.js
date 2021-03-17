@@ -77,8 +77,7 @@ function process_result_data(json) {
                         // preventing the duplicate submissions if the current one is in progress
                         if( form.classList.contains( 'is-uploading' ) ) return false;
 
-                        form.classList.add( 'is-uploading' );
-                        document.getElementById("masterfset").disabled = true;
+                        DataMeta.submit.setLock(true, form);
 
                         if( isAdvancedUpload ) // ajax file upload for modern browsers
                         {
@@ -96,8 +95,7 @@ function process_result_data(json) {
                                 var nextupload = new CustomEvent("nextupload_data", { detail : { files : fileList, form : form} });
                                 document.dispatchEvent(nextupload);
                             } else {
-                                form.classList.remove( 'is-uploading' );
-                                document.getElementById("masterfset").disabled = false;
+                                DataMeta.submit.setLock(false);
                                 console.log("Unknown drop target. Not uploading.");
                             }
                         }
@@ -239,6 +237,7 @@ function process_result_data(json) {
                 event.detail.form.classList.remove( 'is-uploading' );
                 document.getElementById("masterfset").disabled = false;
                 DataMeta.submit.refresh();
+                DataMeta.submit.showMetaErrors(event.detail.failed_msets, event.detail.errors);
                 return;
             }
 
@@ -259,8 +258,15 @@ function process_result_data(json) {
                 if (response.status==400) throw new DataMeta.AnnotatedError(response);
             }).catch(function(error) {
                 if (error instanceof DataMeta.AnnotatedError) {
-                    error.response.json().then(function(json) {
-                        console.log('AnnotatedError', json);
+                    error.response.json().then(function(error_json) {
+                        var fail_id = 'FAIL-' + event.detail.failed_msets.length;
+                        metadata = { id : { uuid : fail_id }, record : metadata };
+                        event.detail.failed_msets.push(metadata);
+                        error_json = error_json.map(function(error) {
+                            error.entity = metadata.id;
+                            return error;
+                        });
+                        event.detail.errors = event.detail.errors.concat(error_json);
                     });
                 } else {
                     console.log("Unknown error");
@@ -286,19 +292,19 @@ function process_result_data(json) {
             }).then(function(response) {
                 if (response.status==200) return response.json();
                 if (response.status==400) throw new DataMeta.AnnotatedError(response);
-                throw new Error("Unknown error");
+                throw new Error();
             }).then(function(json) {
-                console.log(json);
-                var mdata_upload = new CustomEvent("mdata_upload", { detail : { msets : json , form : form} });
+                var mdata_upload = new CustomEvent("mdata_upload", { detail : { msets : json , form : form, failed_msets : [], errors : []} });
                 document.dispatchEvent(mdata_upload);
             }).catch(function(error) {
                 if (error instanceof DataMeta.AnnotatedError) {
                     error.response.json().then(function(json) {
-                        console.log('AnnotatedError', json);
+                        DataMeta.new_alert("<strong>Sample sheet upload failed:</strong> " + json[0].message, "danger")
                     });
                 } else {
-                    console.log("unknown error:", error);
+                    DataMeta.new_alert("<strong>Sample sheet upload failed:</strong> Unknown error.", "danger")
                 }
+                DataMeta.submit.setLock(false);
             });
         });
     }( document, window, 0 ));
