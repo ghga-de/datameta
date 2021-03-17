@@ -286,6 +286,7 @@ DataMeta.submit.rebuildMetadataTable = function(keys, fileKeys, metadata) {
     $("#table_metadata").DataTable({
         drawCallback: function(settings) { DataMeta.submit.registerDynamicEvents(); },
         destroy: true,
+        scrollX: true,
         data: metadata,
         sDom: "<'row'<'span8'l><'span8'f>r>t", // Hide footer
         order: [[2,"asc"]],
