@@ -551,6 +551,16 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
     });
 }
 
+function clearAlerts () {
+    document.getElementById("group_alert").classList.remove("show");
+    document.getElementById("user_alert").classList.remove("show");
+}
+
 window.addEventListener("load", function() {
     DataMeta.admin.reload();
+    document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
+    document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);
+    document.getElementById("nav-users-tab").addEventListener("click", clearAlerts);
+    document.getElementById("nav-requests-tab").addEventListener("click", clearAlerts);
 });
+

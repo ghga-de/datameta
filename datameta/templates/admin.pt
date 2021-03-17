@@ -6,16 +6,16 @@
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs">
                         <li class="nav-item">
-                            <a class="nav-link" aria-current="true" href="#" data-bs-toggle="tab" data-bs-target="#nav-site">Site</a>
+                            <a id="nav-site-tab" class="nav-link" aria-current="true" href="#" data-bs-toggle="tab" data-bs-target="#nav-site">Site</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-users">Users</a>
+                            <a id="nav-users-tab" class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-users">Users</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-groups">Groups</a>
+                            <a id="nav-groups-tab" class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-groups">Groups</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#nav-requests">Account Requests</a>
+                            <a id="nav-requests-tab" class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#nav-requests">Account Requests</a>
                         </li>
                     </ul>
                 </div>
