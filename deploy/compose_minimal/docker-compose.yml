@@ -1,0 +1,77 @@
+version: '3.2'
+services:
+
+  sessionserver:
+    image: "memcached:1.6.3"
+    command: ['memcached', '-v', '-m', '3072', '-I', '50m']
+
+  dbserver:
+    image: "postgres:13-alpine"
+    volumes:
+      - datameta-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: datameta
+      POSTGRES_PASSWORD: datameta
+    command: ['postgres', '-c', 'work_mem=512MB'] # Adjust if needed
+
+  appserver:
+    image: "datameta/datameta:dev"
+    restart: "always"
+    environment:
+      SQLALCHEMY_URL: postgresql://datameta:datameta@dbserver/datameta
+      SESSION_URL: sessionserver:11211
+      SESSION_KEY: datameta
+      SESSION_SECRET: dummy # TODO: Insert 64 character random string here
+      DATAMETA_STORAGE_PATH: /var/datameta/storage
+
+      # The initial values can be changed once the DataMeta instance was
+      # deployed.
+      DATAMETA_INITIAL_FULLNAME: Joe user # TODO: Insert initial user fullname here
+      DATAMETA_INITIAL_EMAIL: joe@user # TODO: Insert initial user email address here
+      DATAMETA_INITIAL_PASS: j03us3r # TODO: Insert initial user password here
+      DATAMETA_INITIAL_GROUPNAME: Joe's lab # TODO: Insert intial user group name here
+
+      # In Demo Mode DataMeta will discard all uploaded files after checksum
+      # comparison. They are recorded in the database as if their contents had
+      # been written to the storage backend, but no storage is actually used.
+      DATAMETA_DEMO_MODE: "false"
+
+      # DataMeta sends out emails for password forgot tokens, registration
+      # confirmations and to notify admins about new registrations. Configure
+      # an SMTP server for outgoing email below.
+      DATAMETA_SMTP_HOST: # TODO: Insert SMTP server address here
+      DATAMETA_SMTP_PORT: 587 # Adjust if needed
+      DATAMETA_SMTP_USER: # TODO: Insert SMTP user here
+      DATAMETA_SMTP_PASS: # TODO: Insert SMTP password here
+      DATAMETA_SMTP_TLS: "true"
+      DATAMETA_SMTP_FROM: # TODO: Specify SMTP FROM header here, format 'Example Support <support@example.com>'
+
+      # Site ID prefixes and lengths
+      # The entites 'user', 'group', 'submission', 'metadataset' and 'file' are
+      # annotated with more human readable IDs in addition to their UUIDs. The
+      # human readable IDs (aka site IDs) are built based on a random sequence
+      # of N digits and an arbitrary prefix. You can adjust these to your
+      # likings below. They should be specific to the site running datameta.
+      DATAMETA_SITE_ID_DIGITS_USERS: 8
+      DATAMETA_SITE_ID_DIGITS_GROUPS: 8
+      DATAMETA_SITE_ID_DIGITS_SUBMISSIONS: 8
+      DATAMETA_SITE_ID_DIGITS_METADATASETS: 8
+      DATAMETA_SITE_ID_DIGITS_FILES: 8
+      DATAMETA_SITE_ID_PREFIX_USERS: "DMU-"
+      DATAMETA_SITE_ID_PREFIX_GROUPS: "DMG-"
+      DATAMETA_SITE_ID_PREFIX_SUBMISSIONS: "DMS-"
+      DATAMETA_SITE_ID_PREFIX_METADATASETS: "DMR-"
+      DATAMETA_SITE_ID_PREFIX_FILES: "DMF-"
+
+      GUNICORN_WORKERS: 4 # Adjust to your needs. 2-4x #CPUs
+      GUNICORN_PROC_NAME: datameta
+      GUNICORN_FORWARDED_ALLOW_IPS: "*"
+    depends_on:
+      - dbserver
+      - sessionserver
+    ports:
+      - "8080:80"
+
+volumes: # TODO: Create external volumes before first launch
+  datameta-db:
+    external: false
