@@ -8,7 +8,7 @@
         <div class="box" id="form_samplesheets">
             <div class="box__input">
                 <i class="bi bi-file-earmark-spreadsheet box__icon" style="font-size:60px;"></i>
-                <label for="file"><span class="box__dragndrop">Drag sample sheets here</span>.</label>
+                <label for="file"><span class="box__dragndrop">Drag sample sheets here <a href="#" id="show_meta_help"><i class="bi bi-question-circle-fill"></i></a></span></label>
                 <button type="submit" class="box__button">Upload</button>
             </div>
             <div class="box__uploading">Uploading&hellip;</div>
@@ -22,7 +22,7 @@
                     <i class="bi bi-file-binary"></i>
                     <i class="bi bi-file-binary"></i>...
                 </div>
-                <label for="file"><span class="box__dragndrop">Drag data files here</span>.</label>
+                <label for="file"><span class="box__dragndrop">Drag data files here</span></label>
                 <button type="submit" class="box__button">Upload</button>
             </div>
             <div class="box__uploading">Uploading&hellip;</div>
@@ -30,6 +30,21 @@
     </div>
 </div>
 <div id="div_alerts" class="row mt-2">
+</div>
+<div id="row_explain_meta" class="row" style="display:none">
+    <div class="card col-12 mb-2 alert-dismissible" style="background-color:#efefef">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h5 class="card-title">Metadata Description</h5>
+                    <p class="card-text">The following metadata columns are required when uploading a sample sheet:</p>
+                </div>
+            </div>
+            <ul id="ul_metadata" class="list-group">
+            </ul>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" id="dismiss_meta_help"></button>
+    </div>
 </div>
 <div class="row">
     <div id="card_failed" class="card col-12 mb-2 alert-dismissible d-none" style="background-color:#f7dddd">

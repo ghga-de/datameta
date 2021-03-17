@@ -24,7 +24,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.4.0
+  version: 0.5.0
   title: DataMeta
 
 servers:
@@ -859,7 +859,7 @@ components:
             $ref: "#/components/schemas/Identifier"
           name:
             type: string
-          shortDescription:
+          regexDescription:
             type: string
             nullable: true
           longDescription:
@@ -884,7 +884,7 @@ components:
         required:
           - id
           - name
-          - shortDescription
+          - regexDescription
           - longDescription
           - regExp
           - dateTimeFmt
