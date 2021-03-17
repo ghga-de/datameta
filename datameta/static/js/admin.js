@@ -187,20 +187,17 @@ DataMeta.admin.reload = function() {
                 DataMeta.admin.subnav();
                 DataMeta.admin.rebuildUserTable(json.users);
                 DataMeta.admin.rebuildGroupTable(json.groups);
+                DataMeta.admin.groups = json.groups;
             })
             .catch((error) => {
                 console.log(error);
             });
 }
 
+//Rebuilds the user table, based on the Data fetched from the API
 DataMeta.admin.rebuildUserTable = function(users) {
-    // Destroy the table, if it already exists
-    //if ($.fn.DataTable.isDataTable( '#table_users' ) ) {
-    //    $("#table_users").DataTable().destroy()
-    //}
-
     $('#table_users').DataTable({
-        destroy: true,
+        destroy: true, //Destroys the table, in case it already exist
         data: users,
         rowId: 'uuid',
         order: [[1, "asc"]],
@@ -208,10 +205,14 @@ DataMeta.admin.rebuildUserTable = function(users) {
         searching: false,
         columns: [
             { title: "User ID", data: "id"},
-            { title: "Name", data: "fullname"},
+            { title: "Name", data: "fullname", render:function(data) {
+                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeUserName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
+            }},
             { title: "eMail Adress", data: "email" },
+            { title: "Group", data: "group_name", render:function(data) {
+                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="switchGroup(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
+            }},
             { title: "Group ID", data: "group_id"},
-            { title: "Group Name", data: "group_name"},
             { orderable:false, title: "Enabled", data: "enabled", render:function(data) {
                 if(data) {
                     return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleUserEnabled(event);"><i class="bi bi-check2"></i></button>'
@@ -237,10 +238,10 @@ DataMeta.admin.rebuildUserTable = function(users) {
     });
 }
 
+//Rebuilds the group table, based on the Data fetched
 DataMeta.admin.rebuildGroupTable = function(groups) {
-    // Destroy the table, if it already exists
     $('#table_groups').DataTable({
-        destroy: true,
+        destroy: true,  //Destroys the table, in case it already exists
         data: groups,
         rowId: 'uuid',
         order: [[1, "asc"]],
@@ -248,24 +249,29 @@ DataMeta.admin.rebuildGroupTable = function(groups) {
         searching: false,
         columns: [
             { title: "Group ID", data: "site_id"},
-            { title: "Group Name", data: "name"},
+            { title: "Group Name", data: "name", render:function(data) {
+                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeGroupName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
+            }},
         ]
     });
 }
 
+/**
+ * Toggles the group_admin setting for a user
+ */
 function toggleGroupAdmin(event) {
 
     // The button that triggered the function call
     var button = event.srcElement;
 
-    // If the picture in the button was triggered, change to the button element
+    // If the picture in the button was triggered instead of the button itself, change to the button element
     if(button.localName != "button") {
         button = button.parentNode;
     }
 
     var row = button.parentNode.parentNode;
-    var name = row.children[1].innerHTML;
-    var group = row.children[4].innerHTML;
+    var name = row.children[1].children[0].getAttribute('data');
+    var group = row.children[3].children[0].getAttribute('data');
 
     var enabled = button.classList.contains("enabled");
 
@@ -280,6 +286,9 @@ function toggleGroupAdmin(event) {
     }
 }
 
+/**
+ * Toggles the site_admin setting for a user
+ */
 function toggleSiteAdmin(event) {
 
     // The button that triggered the function call
@@ -291,7 +300,7 @@ function toggleSiteAdmin(event) {
     }
 
     var row = button.parentNode.parentNode;
-    var name = row.children[1].innerHTML;
+    var name = row.children[1].children[0].getAttribute('data');
 
     var enabled = button.classList.contains("enabled");
 
@@ -306,6 +315,9 @@ function toggleSiteAdmin(event) {
     }
 }
 
+/**
+ * Toggles the enabled setting for a user
+ */
 function toggleUserEnabled(event) {
 
     // The button that triggered the function call
@@ -317,7 +329,7 @@ function toggleUserEnabled(event) {
     }
 
     var row = button.parentNode.parentNode;
-    var name = row.children[1].innerHTML;
+    var name = row.children[1].children[0].getAttribute('data');
 
     var enabled = button.classList.contains("enabled");
 
@@ -332,16 +344,127 @@ function toggleUserEnabled(event) {
     }
 }
 
-function switchGroup() {
-    // TODO
+/**
+ * Switch the Group 
+ */
+function switchGroup(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+      // Change the location to the button if an element inside the button was clicked
+      if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var cell = button.parentNode
+    var row = cell.parentNode;
+    var uuid = row.id;
+
+    cell.innerHTML =    '<div class="dropdown" style="width:200px">' +
+                        '<button class="btn btn-secondary-outline dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">' +
+                        'Choose the new Group:' +
+                        '</button>' +
+                        '<ul class="dropdown-menu">' +
+                        '</ul></div>'
+
+    var dropdownMenu = cell.querySelector(".dropdown-menu");
+    var groups = DataMeta.admin.groups;
+
+    for (var i = 0; i < DataMeta.admin.groups.length; i++) {
+        var li = document.createElement("li")
+        dropdownMenu.appendChild(li);
+        var btn = document.createElement("button")
+        btn.classList.add("dropdown-item");
+        btn.setAttribute("type", "button");
+        btn.setAttribute("onClick", " DataMeta.admin.updateUser('"+ uuid +"', undefined, '"+ groups[i].uuid +"', undefined, undefined, undefined);")
+        btn.innerHTML = groups[i].name;
+        li.appendChild(btn);
+    }
 }
 
-function changeName() {
-    // TODO
+/**
+ * Change the name of an user 
+ */
+function changeUserName(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // Change the location to the button if an element inside the button was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var cell = button.parentNode
+    var row = cell.parentNode;
+    var name = button.getAttribute('data');
+    var uuid = row.id;
+
+    cell.innerHTML =      '<div class="input-group" style="width:200px"><span class="input-group-text">' + 
+                            '<i class="bi bi-person-circle"></i>' +
+                        '</span>' +
+                        '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
+                        '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmUserNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
+
+}
+
+//Confirms the UserNameChange and performs the api call
+function confirmUserNameChange(event, uuid) {
+    var button = event.srcElement;
+
+    // Change the location to the button if an element inside the button was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var newName = button.parentNode.querySelector("input[name='fullname']").value;
+
+    DataMeta.admin.updateUser(uuid, newName, undefined, undefined, undefined, undefined);
+}
+
+/**
+ * Change the name of a group 
+ */
+ function changeGroupName(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // Change the location to the button if an element inside the button was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var cell = button.parentNode
+    var row = cell.parentNode;
+    var name = button.getAttribute('data');
+    var uuid = row.id;
+
+    cell.innerHTML =      '<div class="input-group" style="width:200px"><span class="input-group-text">' + 
+                            '<i class="bi bi-person-circle"></i>' +
+                        '</span>' +
+                        '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
+                        '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmGroupNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
+
+}
+
+//Confirms the GroupNameChange and performs the api call
+function confirmGroupNameChange(event, uuid) {
+    var button = event.srcElement;
+
+    // Change the location to the button if an element inside the button was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var newName = button.parentNode.querySelector("input[name='fullname']").value;
+
+    DataMeta.admin.updateGroup(uuid, newName);
 }
 
 // API call to change the group name
-DataMeta.admin.changeGroupName = function (group_id, name) {
+DataMeta.admin.updateGroup = function (group_id, name) {
     fetch('/api/v0/groups/' + group_id,
     {
         method: 'PUT',
@@ -377,7 +500,6 @@ DataMeta.admin.changeGroupName = function (group_id, name) {
 function show_user_alert(text) {
     var al = document.getElementById("user_alert");
     al.classList.remove("show");
-    al.classList.remove("collapse");
     al.innerHTML = text;
     new bootstrap.Collapse(al, { show: true });
 }
@@ -386,7 +508,6 @@ function show_user_alert(text) {
 function show_group_alert(text) {
     var al = document.getElementById("group_alert");
     al.classList.remove("show");
-    al.classList.remove("collapse");
     al.innerHTML = text;
     new bootstrap.Collapse(al, { show: true });
 }
@@ -411,7 +532,7 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
     .then(function (response) {
         if(response.status == '204') {
             DataMeta.admin.reload();
-        } else  if (response.status == "400") {
+        } else if (response.status == "400") {
             response.json().then((json) => {
                 show_user_alert(json[0].message);
             });

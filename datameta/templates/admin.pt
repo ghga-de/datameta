@@ -28,11 +28,15 @@
                     </div>
                     <div class="card-body tab-pane fade" id="nav-users" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 class="card-title">User Management</h5>
+                        <div id="user_alert" class="alert alert-danger collapse" role="alert">
+                        </div>
                         <table id="table_users" class="table table-sm table-hover" style="width:100%">
                         </table>
                     </div>
                     <div class="card-body tab-pane fade" id="nav-groups" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 class="card-title">Group Management</h5>
+                        <div id="group_alert" class="alert alert-danger collapse" role="alert">
+                        </div>
                         <table id="table_groups" class="table table-sm table-hover" style="width:100%">
                         </table>
                     </div>
