@@ -196,9 +196,16 @@ DataMeta.admin.reload = function() {
 
 //Rebuilds the user table, based on the Data fetched from the API
 DataMeta.admin.rebuildUserTable = function(users) {
+    var t = $('#table_users').DataTable()
+    t.clear();
+    t.rows.add(users);
+    t.draw();   
+}
+
+//Initializes the user table
+DataMeta.admin.initUserTable = function() {
     $('#table_users').DataTable({
         destroy: true, //Destroys the table, in case it already exist
-        data: users,
         rowId: 'uuid',
         order: [[1, "asc"]],
         paging : true,
@@ -208,7 +215,7 @@ DataMeta.admin.rebuildUserTable = function(users) {
             { title: "Name", data: "fullname", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeUserName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
-            { title: "eMail Adress", data: "email" },
+            { title: "Email Adress", data: "email" },
             { title: "Group", data: "group_name", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="switchGroup(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
@@ -238,11 +245,18 @@ DataMeta.admin.rebuildUserTable = function(users) {
     });
 }
 
-//Rebuilds the group table, based on the Data fetched
+//Rebuilds the group table, based on the Data fetched from the API
 DataMeta.admin.rebuildGroupTable = function(groups) {
+    var t = $('#table_groups').DataTable()
+    t.clear();
+    t.rows.add(groups);
+    t.draw();   
+}
+
+//Initializes the group table
+DataMeta.admin.initGroupTable = function() {
     $('#table_groups').DataTable({
         destroy: true,  //Destroys the table, in case it already exists
-        data: groups,
         rowId: 'uuid',
         order: [[1, "asc"]],
         paging : true,
@@ -557,6 +571,8 @@ function clearAlerts () {
 }
 
 window.addEventListener("load", function() {
+    DataMeta.admin.initUserTable();
+    DataMeta.admin.initGroupTable();
     DataMeta.admin.reload();
     document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);
