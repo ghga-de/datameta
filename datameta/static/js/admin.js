@@ -194,7 +194,13 @@ DataMeta.admin.reload = function() {
 }
 
 DataMeta.admin.rebuildUserTable = function(users) {
+    // Destroy the table, if it already exists
+    //if ($.fn.DataTable.isDataTable( '#table_users' ) ) {
+    //    $("#table_users").DataTable().destroy()
+    //}
+
     $('#table_users').DataTable({
+        destroy: true,
         data: users,
         rowId: 'uuid',
         order: [[1, "asc"]],
@@ -232,7 +238,9 @@ DataMeta.admin.rebuildUserTable = function(users) {
 }
 
 DataMeta.admin.rebuildGroupTable = function(groups) {
+    // Destroy the table, if it already exists
     $('#table_groups').DataTable({
+        destroy: true,
         data: groups,
         rowId: 'uuid',
         order: [[1, "asc"]],
@@ -264,12 +272,10 @@ function toggleGroupAdmin(event) {
     if(enabled) {
         if(confirm("Do you want to remove the user " + name + " as admin of " + group + "?")) {
             DataMeta.admin.updateUser(row.id, undefined, undefined, false, undefined, undefined);
-            toggleButton(button, enabled);
         }
     } else {
         if(confirm("Do you want to make the user " + name + " admin of " + group + "?")) {
             DataMeta.admin.updateUser(row.id, undefined, undefined, true, undefined, undefined);
-            toggleButton(button, enabled);
         }
     }
 }
@@ -292,12 +298,10 @@ function toggleSiteAdmin(event) {
     if(enabled) {
         if(confirm("Do you want to remove the user " + name + " as site admin?")) {
             DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, false, undefined);
-            toggleButton(button, enabled);
         }
     } else {
         if(confirm("Do you want to make the user " + name + " site admin?")) {
             DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, true, undefined);
-            toggleButton(button, enabled);
         }
     }
 }
@@ -320,27 +324,11 @@ function toggleUserEnabled(event) {
     if(enabled) {
         if(confirm("Do you want to deactivate the user " + name + "?")) {
             DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, false);
-            toggleButton(button, enabled);
         }
     } else {
         if(confirm("Do you want to activate the user " + name + "?")) {
             DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, true);
-            toggleButton(button, enabled);
         }
-    }
-}
-
-function toggleButton(button, enabled) {
-    if(enabled) {
-        button.classList.remove("enabled");
-        button.classList.remove("btn-outline-success");
-        button.classList.add("btn-outline-danger");
-        button.innerHTML = '<i class="bi bi-x"></i>';
-    } else {
-        button.classList.add("enabled");
-        button.classList.add("btn-outline-success");
-        button.classList.remove("btn-outline-danger");
-        button.innerHTML = '<i class="bi bi-check2"></i>';
     }
 }
 
@@ -367,17 +355,40 @@ DataMeta.admin.changeGroupName = function (group_id, name) {
     })
     .then(function (response) {
         if(response.status == '204') {
-            //TODO: Visual confirmation
-            //TODO: Change name in Table
-            console.log("Request successfull")
+            DataMeta.admin.reload();
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_group_alert(json[0].message);
+            });
+        } else if (response.status == "401") {
+            show_group_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_group_alert("You don't have the rights to perform this action.");
         } else {
-            //TODO Visual confirmation, catch other responses
-            console.log("Something went wrong")
+            show_group_alert("An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
         console.log(error);
     });
+}
+
+// Alert in the user Tab for 4** - HTTP Responses
+function show_user_alert(text) {
+    var al = document.getElementById("user_alert");
+    al.classList.remove("show");
+    al.classList.remove("collapse");
+    al.innerHTML = text;
+    new bootstrap.Collapse(al, { show: true });
+}
+
+// Alert in the user Tab for 4** - HTTP Responses
+function show_group_alert(text) {
+    var al = document.getElementById("group_alert");
+    al.classList.remove("show");
+    al.classList.remove("collapse");
+    al.innerHTML = text;
+    new bootstrap.Collapse(al, { show: true });
 }
 
 // API call to change user name, group, admin and enabled settings
@@ -399,10 +410,19 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
     })
     .then(function (response) {
         if(response.status == '204') {
-            // TODO Successfull
+            DataMeta.admin.reload();
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_user_alert(json[0].message);
+            });
+        } else if (response.status == "401") {
+            show_user_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_user_alert("You don't have the rights to perform this action.");
+        } else if (response.status == "404") {
+            show_user_alert("The user or group you are referring to does not exist.");
         } else {
-            //TODO Visual confirmation, catch other responses
-            console.log("Something went wrong")
+            show_user_alert("An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
