@@ -489,7 +489,45 @@ DataMeta.submit.refresh = function() {
     });
 }
 
+DataMeta.submit.renderMetadataHelp = function() {
+    fetch(
+        DataMeta.api("metadata"),
+        {method:"GET"}
+    ).then(function(response) {
+        if (response.ok) return response.json();
+        throw new Error();
+    }).then(function(json) {
+        html_chunks = json.map(function(metadatum) {
+            var html='<li href="#" class="list-group-item list-group-item-action" aria-current="true" style="background-color:transparent"><div class="d-flex w-100 justify-content-between"><h6 class="mb-1 text-success"><strong>'
+            html += metadatum.name
+            html += '</strong></h6>';
+            html += metadatum.isMandatory ? '<span>mandatory <i class="bi bi-exclamation-circle-fill"></i></span>' : '<span>optional <i class="bi bi-question-circle"></i></span>';
+            html += '</div><div>';
+            if (metadatum.longDescription) html += "<p>" + metadatum.longDescription + "</p>";
+            html += "<h6>Value constraints:</h6>";
+            var constraints = [];
+            if (metadatum.regexDescription) constraints.push(metadatum.regexDescription);
+            if (metadatum.dateTimeFmt) constraints.push('<i class="bi bi-clock"></i> This is a date / time field. In plain text sources it has to be specified as <tt>' + metadatum.dateTimeFmt + '</tt>.');
+            if (metadatum.isSiteUnique) {
+                constraints.push("The value has to be unique across the database.")
+            } else if (metadatum.isSubmissionUnique) {
+                constraints.push("The value has to be unique within a submission.")
+            }
+            if (metadatum.isFile) constraints.push('<i class="bi bi-hdd-rack-fill"></i> This value corresponds to a file. Specify a filename here and upload a file with the same file name.');
+
+            if (!constraints.length) constraints = [ "<em>This is a free text field with no constraints</em>" ];
+            html += "<small>" + constraints.join("<br/>") + "</small>";
+            html += '</div></li>';
+            return html;
+        });
+        document.getElementById('ul_metadata').innerHTML = html_chunks.join('\n');
+    }).catch(function(error) {
+        console.log("Failed to render metadata help");
+    });
+}
+
 window.addEventListener("load", function() {
+    DataMeta.submit.renderMetadataHelp();
     DataMeta.submit.refresh();
 
     document.getElementById("commit_btn").addEventListener("click", function(event) {
@@ -502,5 +540,7 @@ window.addEventListener("load", function() {
         });
 
     document.getElementById("btn_close_card_failed").addEventListener("click", event => document.getElementById("card_failed").classList.add("d-none"));
+    document.getElementById("dismiss_meta_help").addEventListener("click", event => $("#row_explain_meta").slideUp())
+    document.getElementById("show_meta_help").addEventListener("click", event => $("#row_explain_meta").slideToggle())
 });
 

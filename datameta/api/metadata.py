@@ -38,7 +38,7 @@ class MetaDataResponseElement(DataHolderBase):
     is_file                 :  bool
     is_submission_unique    :  bool
     is_site_unique          :  bool
-    short_description       :  Optional[str] = None
+    regex_description       :  Optional[str] = None
     long_description        :  Optional[str] = None
     reg_exp                 :  Optional[str] = None
     date_time_fmt           :  Optional[str] = None
@@ -59,7 +59,7 @@ def get(request:Request) -> List[MetaDataResponseElement]:
             MetaDataResponseElement(
                 id                    =  resource.get_identifier(metadatum),
                 name                  =  metadatum.name,
-                short_description     =  metadatum.short_description,
+                regex_description     =  metadatum.short_description,
                 long_description      =  metadatum.long_description,
                 reg_exp               =  metadatum.regexp,
                 date_time_fmt         =  metadatum.datetimefmt,
