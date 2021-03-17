@@ -1,0 +1,20 @@
+name: Test OpenAPI generator CLI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-api-gen:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+    - name: Install openapi-generator-cli
+      run: |
+        npm install @openapitools/openapi-generator-cli
+    - name: Run openapi-generator-cli
+      run: |
+        ./node_modules/.bin/openapi-generator-cli generate -i datameta/api/openapi.yaml -g python --package-name datameta_client_lib -o .
