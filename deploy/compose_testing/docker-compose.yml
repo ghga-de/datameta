@@ -21,18 +21,18 @@ services:
       SQLALCHEMY_URL: postgresql://datameta:datameta@dbserver/datameta
       SESSION_URL: sessionserver:11211
       SESSION_KEY: datameta
-      SESSION_SECRET: # TODO: Insert 64 character random string here
+      SESSION_SECRET: dummy # TODO: Insert 64 character random string here
       DATAMETA_STORAGE_PATH: /var/datameta/storage
 
       # The initial values can be changed once the DataMeta instance was
       # deployed.
-      DATAMETA_INITIAL_FULLNAME: # TODO: Insert initial user fullname here
-      DATAMETA_INITIAL_EMAIL: # TODO: Insert initial user email address here
-      DATAMETA_INITIAL_PASS: # TODO: Insert initial user password here
-      DATAMETA_INITIAL_GROUPNAME: # TODO: Insert intial user group name here
+      DATAMETA_INITIAL_FULLNAME: Joe user # TODO: Insert initial user fullname here
+      DATAMETA_INITIAL_EMAIL: joe@user # TODO: Insert initial user email address here
+      DATAMETA_INITIAL_PASS: j03us3r # TODO: Insert initial user password here
+      DATAMETA_INITIAL_GROUPNAME: Joe's lab # TODO: Insert intial user group name here
 
       # Do not use this unless in testing environments
-      # DATAMETA_INITIAL_API_KEY: testingkey
+      DATAMETA_INITIAL_API_KEY: testingkey
 
       # In Demo Mode DataMeta will discard all uploaded files after checksum
       # comparison. They are recorded in the database as if their contents had
@@ -66,40 +66,15 @@ services:
       DATAMETA_SITE_ID_PREFIX_METADATASETS: "DMR-"
       DATAMETA_SITE_ID_PREFIX_FILES: "DMF-"
 
-      GUNICORN_WORKERS: 75 # Adjust to your needs. 2-4x #CPUs
+      GUNICORN_WORKERS: 4 # Adjust to your needs. 2-4x #CPUs
       GUNICORN_PROC_NAME: datameta
       GUNICORN_FORWARDED_ALLOW_IPS: "*"
     depends_on:
       - dbserver
       - sessionserver
-
-  reverse-proxy:
-    image: "datameta/nginx-ssl-proxy:v1.0.0"
-    volumes:
-      - etc-le:/etc/letsencrypt
-      - www-certbot:/var/www/certbot
     ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      NGINX_PROXY_PASS: "http://appserver/"
-      NGINX_HOSTNAME: # TODO: Insert hostname under which the application is served here
-      NGINX_CLIENT_MAX_BODY_SIZE: 4g # Adjust if necessary
-    depends_on:
-      - appserver
-
-  certbot:
-    image: "datameta/certbot-proxy:v1.0.0"
-    volumes:
-      - etc-le:/etc/letsencrypt
-      - www-certbot:/var/www/certbot
-    environment:
-      CERTBOT_ARGS: --agree-tos -m {email} -d {domain name, typically same as NGINX_HOSTNAME} # TODO: Replace email and domain name
+      - "8080:80"
 
 volumes: # TODO: Create external volumes before first launch
-  etc-le:
-    external: true
   datameta-db:
-    external: true
-  www-certbot:
     external: false

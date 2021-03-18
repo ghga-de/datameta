@@ -6,8 +6,8 @@ import uuid
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
-from ..security import hash_password
-from ..models import User, Group, MetaDatum, DateTimeMode, ApplicationSettings
+from ..security import hash_password, hash_token
+from ..models import User, Group, MetaDatum, DateTimeMode, ApplicationSettings, ApiKey
 
 def parse_args(argv):
     parser = argparse.ArgumentParser()
@@ -16,7 +16,21 @@ def parse_args(argv):
     parser.add_argument('-ue', '--initial-user-email', required=True, type=str, help='Email address of the initial user')
     parser.add_argument('-up', '--initial-user-pass', required=True, type=str, help='Password of the initial user')
     parser.add_argument('-g', '--initial-group', required=True, type=str, help='Name of the initial group')
+    parser.add_argument('-ak', '--initial-api-key', required=False, type=str, help='Initial API key for testing purposes')
     return parser.parse_args(argv[1:])
+
+def create_api_key(request, key):
+    db = request.dbsession
+    user = db.query(User).one_or_none();
+    assert user, "No or multiple users found in database, cannot create API key"
+
+    api_key = ApiKey(
+            user = user,
+            value = hash_token(key),
+            label = "Created by init script",
+            expires = None
+            )
+    db.add(api_key)
 
 def create_initial_user(request, email, fullname, password, groupname):
     from .. import siteid
@@ -202,6 +216,10 @@ def main(argv=sys.argv):
 
             # Create the initial admin user
             create_initial_user(env['request'], args.initial_user_email, args.initial_user_fullname, args.initial_user_pass, args.initial_group)
+
+            # Create API key for testing if specified
+            if args.initial_api_key:
+                create_api_key(env['request'], args.initial_api_key)
 
             # Create example sample sheet columns
             create_example_metadata(dbsession)

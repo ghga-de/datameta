@@ -32,7 +32,12 @@ psql -c '\dt' "$SQLALCHEMY_URL"
 # Check if the database has been initialized and if not initialize it
 cd /tmp/datameta.src/
 alembic -c /tmp/config.ini upgrade head
-initialize_datameta_db -c /tmp/config.ini --initial-user-fullname "$DATAMETA_INITIAL_FULLNAME" --initial-user-email "$DATAMETA_INITIAL_EMAIL" --initial-user-pass "$DATAMETA_INITIAL_PASS" --initial-group "$DATAMETA_INITIAL_GROUPNAME"
+initialize_datameta_db -c /tmp/config.ini \
+	--initial-user-fullname "$DATAMETA_INITIAL_FULLNAME" \
+	--initial-user-email "$DATAMETA_INITIAL_EMAIL" \
+	--initial-user-pass "$DATAMETA_INITIAL_PASS" \
+	--initial-group "$DATAMETA_INITIAL_GROUPNAME" \
+	--initial-api-key $DATAMETA_INITIAL_API_KEY
 cd /
 
 # Launch the application

@@ -31,6 +31,9 @@ services:
       DATAMETA_INITIAL_PASS: j03us3r # TODO: Insert initial user password here
       DATAMETA_INITIAL_GROUPNAME: Joe's lab # TODO: Insert intial user group name here
 
+      # Do not use this unless in testing environments
+      # DATAMETA_INITIAL_API_KEY: testingkey
+
       # In Demo Mode DataMeta will discard all uploaded files after checksum
       # comparison. They are recorded in the database as if their contents had
       # been written to the storage backend, but no storage is actually used.
