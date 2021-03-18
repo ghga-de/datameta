@@ -1,0 +1,33 @@
+name: Run docker-compose test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Deploy Application Stack
+      run: |
+        docker-compose -f deploy/compose_minimal/docker-compose.yml up -d
+    - name: Wait for Server...
+      run: |
+        for i in $(seq 10); do
+          echo $i
+          curl http://localhost:8080/login &>/dev/null && break
+          sleep 5s
+        done
+        if curl http://localhost:8080/login &>/dev/null; then
+          echo "OK"
+        else
+          echo "ERR"
+          exit 1
+        fi
+    - name: Check login page
+      run: |
+        curl http://localhost:8080/login
