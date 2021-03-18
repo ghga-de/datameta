@@ -42,6 +42,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("metadata", base_url + "/metadata")
     config.add_route("metadatasets", base_url + "/metadatasets")
     config.add_route("metadatasets_id", base_url + "/metadatasets/{id}")
+    config.add_route("appsettings", base_url + "/appsettings")
     config.add_route("files", base_url + "/files")
     config.add_route("files_id", base_url + "/files/{id}")
     config.add_route("submissions", base_url + "/submissions")

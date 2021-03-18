@@ -26,36 +26,64 @@ from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 
 from dataclasses import dataclass
 from . import DataHolderBase
-from ..models import User, Group
+from typing import List, Dict
+from ..models import ApplicationSettings
 from .. import security, errors
 from ..resource import resource_by_id
 
-# @dataclass
-# class SiteRequestResponse(DataHolderBase):
-#     """Class for Site Request Response from OpenApi"""
-#     settings: List[dict]
+@dataclass
+class AppSettingsResponseElement(DataHolderBase):
+    """Class for Site Request Response from OpenApi"""
+    uuid:       str
+    key:        str
+    value_type: str
+    value:      str
 
-# @view_config(
-#     route_name="site", 
-#     renderer='json', 
-#     request_method="GET", 
-#     openapi=True
-# )
-# def get(request: Request) -> SiteRequestResponse:
-#     """Return all Site Settings"""
+@view_config(
+    route_name="appsettings", 
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get(request: Request) -> List[AppSettingsResponseElement]:
+    """Return all Site Settings"""
+    db = request.dbsession
 
-#     #settings = new List[dict]
+    # Authenticate the user
+    auth_user = security.revalidate_user(request)
 
-#     db = request.dbsession
+    appsettings = db.query(ApplicationSettings)
 
-#     # Authenticate the user
-#     auth_user = security.revalidate_user(request)
+    # User has to be site admin to access these settings
+    if not auth_user.site_admin:
+        raise HTTPForbidden()
 
-#     # User has to be site admin to access these settings
-#     if not auth_user.site_admin:
-#         raise HTTPForbidden()
+    settings = []
 
-    
-#     #return SiteRequestResponse(
-#     #    settings: settings
-#     #)
+    for setting in appsettings:
+        if setting.int_value != None:
+            value = setting.int_value
+            value_type = "int"
+        elif setting.str_value != None:
+            value = setting.str_value
+            value_type = "string"
+        elif setting.float_value != None:
+            value = float_value
+            value_type = "float"
+        elif setting.date_value != None:
+            value = date_value
+            value_type = "date"
+        elif setting.time_value != None:
+            value = time_value
+            value_type = "time"
+
+        settings.append(
+            AppSettingsResponseElement(
+                uuid                  =  str(setting.uuid),
+                key                   =  setting.key,
+                value_type             =  value_type,
+                value                 =  value
+            )
+        )
+
+    return settings

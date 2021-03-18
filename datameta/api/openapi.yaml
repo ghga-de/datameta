@@ -560,7 +560,33 @@ paths:
               $ref: "#/components/schemas/GroupUpdateRequest"
       responses:
         "204":
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          description: Internal Server Error
+
+  /appsettings:
+    get:
+      summary: GET all AppSettings
+      description: >-
+        GET all AppSettings
+      tags:
+        - Settings
+      operationId: AppSettings
+      responses:
+        "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AppSettingsResponse"
         '401':
           description: Unauthorized
         '403':
@@ -884,6 +910,24 @@ components:
           - isFile
           - isSubmissionUnique
           - isSiteUnique
+      additionalProperties: false
+
+    AppSettingsResponse:
+      type: object
+      properties:
+        uuid:
+          type: string
+        key:
+          type: string
+        valueType:
+          type: string
+        value:
+          type: string
+      required:
+        - uuid
+        - key
+        - valueType
+        - value
       additionalProperties: false
 
     Identifier:
