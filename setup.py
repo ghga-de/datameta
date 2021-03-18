@@ -1,22 +1,16 @@
-# Copyright (c) 2021 Leon Kuchenbecker <leon.kuchenbecker@uni-tuebingen.de>
+# Copyright 2021 Universität Tübingen
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 
@@ -61,27 +55,29 @@ tests_require = [
 ]
 
 setup(
-    name='datameta',
-    version='0.9.0alpha1',
-    description='DataMeta - submission server for data and associated metadata',
-    long_description=README + '\n\n' + CHANGES,
+    name                   = 'datameta',
+    version                = '0.9.0alpha1',
+    description            = 'DataMeta - submission server for data and associated metadata',
+    long_description       = README + '\n\n' + CHANGES,
+    author                 = 'Leon Kuchenbecker',
+    author_email           = 'leon.kuchenbecker@uni-tuebingen.de',
+    url                    = '',
+    keywords               = 'web pyramid pylons',
+    packages               = find_packages(),
+    license                = 'Apache 2.0',
+    include_package_data   = True,
+    zip_safe               = False,
+    install_requires       = requires,
+    extras_require={
+        'testing': tests_require,
+    },
     classifiers=[
         'Programming Language :: Python',
+        'License :: OSI Approved :: Apache Software License',
         'Framework :: Pyramid',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
     ],
-    author='Leon Kuchenbecker',
-    author_email='leon.kuchenbecker@uni-tuebingen.de',
-    url='',
-    keywords='web pyramid pylons',
-    packages=find_packages(),
-    include_package_data=True,
-    zip_safe=False,
-    extras_require={
-        'testing': tests_require,
-    },
-    install_requires=requires,
     entry_points={
         'paste.app_factory': [
             'main = datameta:main',
