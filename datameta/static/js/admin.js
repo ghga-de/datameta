@@ -215,7 +215,7 @@ DataMeta.admin.initUserTable = function() {
             { title: "Name", data: "fullname", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeUserName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
-            { title: "Email Adress", data: "email" },
+            { title: "Email Address", data: "email" },
             { title: "Group", data: "group_name", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="switchGroup(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
@@ -579,4 +579,3 @@ window.addEventListener("load", function() {
     document.getElementById("nav-users-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-requests-tab").addEventListener("click", clearAlerts);
 });
-
