@@ -40,7 +40,7 @@ def check_expiration(expiration_datetime:Optional[datetime]):
     """
     Checks if an expiration date was exceeded. Returns true if expired.
     """
-    return datetime.now() >= expiration_datetime
+    return expiration_datetime is not None and datetime.now() >= expiration_datetime
 
 def verify_password(s):
     if len(s)<10:
