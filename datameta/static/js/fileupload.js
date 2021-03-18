@@ -267,11 +267,15 @@ function process_result_data(json) {
                             return error;
                         });
                         event.detail.errors = event.detail.errors.concat(error_json);
+                        document.dispatchEvent(event);
+                    }).catch(function(error) {
+                        console.log("json parsing error", error);
+                        document.dispatchEvent(event);
                     });
                 } else {
                     console.log("Unknown error");
+                    document.dispatchEvent(event);
                 }
-                document.dispatchEvent(event);
             });
         });
 
