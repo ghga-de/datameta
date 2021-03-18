@@ -31,6 +31,9 @@ services:
       DATAMETA_INITIAL_PASS: # TODO: Insert initial user password here
       DATAMETA_INITIAL_GROUPNAME: # TODO: Insert intial user group name here
 
+      # The maximum number of days an API key can be valid
+      DATAMETA_API_KEYS_MAX_EXPIRE_DAYS: 365
+
       # Do not use this unless in testing environments
       # DATAMETA_INITIAL_API_KEY: testingkey
 
