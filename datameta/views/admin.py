@@ -178,7 +178,11 @@ def v_admin_get(request):
             'name': group.name
             } for group in db.query(Group) ]
     else:
-        response['groups'] = [ { k : v for k,v in group.__dict__.items() if k in ['site_id','name'] } for group in [ req_user.group ] ]
+        response['groups'] = [ { 
+            'uuid': str(group.uuid),
+            'site_id' : group.site_id,
+            'name': group.name
+            } for group in [ req_user.group ] ]
     # Pending registration requests
     query = db.query(RegRequest)
     if not req_user.site_admin:

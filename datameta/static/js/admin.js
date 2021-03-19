@@ -98,8 +98,8 @@ DataMeta.admin.reload_requests = function(requests, groups) {
         var select = clone.querySelector("select.select_org")
         groups.forEach(function(group) {
             var option = document.createElement("option");
-            option.setAttribute("value", group.id);
-            if (group.id === request.group_id) {
+            option.setAttribute("value", group.uuid);
+            if (group.uuid === request.group_id) {
                 option.selected=true;
             }
             option.innerHTML = group.name;
