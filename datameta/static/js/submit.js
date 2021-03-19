@@ -429,7 +429,7 @@ DataMeta.submit.submit = function(validateOnly) {
     ).then(function(response) {
         if (response.ok) {
             if (validateOnly) {
-                return DataMeta.submit.visualizeErrors([], false, documents.getElementById("masterfset"));
+                return DataMeta.submit.visualizeErrors([], false, document.getElementById("masterfset"));
             } else {
                 return DataMeta.submit.refresh();
             }
