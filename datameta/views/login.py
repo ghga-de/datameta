@@ -31,6 +31,7 @@ def my_view(request):
         try:
             # Obtain submitted data
             in_email = request.POST['input_email']
+            in_email = in_email.lower() # Convert separately to maintain KeyError
             in_pwd   = request.POST['input_password']
 
             auth_user = security.get_user_by_credentials(request, in_email, in_pwd)

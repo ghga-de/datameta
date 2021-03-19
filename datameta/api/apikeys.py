@@ -134,7 +134,7 @@ def post(request:Request) -> UserSession:
         ):
             raise HTTPUnauthorized()
 
-        email = request.openapi_validated.body["email"]
+        email = request.openapi_validated.body["email"].lower()
         password = request.openapi_validated.body["password"]
 
         auth_user = security.get_user_by_credentials(request, email, password)
