@@ -207,7 +207,7 @@ DataMeta.admin.initUserTable = function() {
         rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
-        lengthMenu: [ 25, 50, 75, 100 ],
+        lengthMenu: [ 10, 25, 50, 100 ],
         pageLength: 25,
         searching: false,
         columns: [
@@ -260,7 +260,7 @@ DataMeta.admin.initGroupTable = function() {
         rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
-        lengthMenu: [ 25, 50, 75, 100 ],
+        lengthMenu: [ 10, 25, 50, 100 ],
         pageLength: 25,
         searching: false,
         columns: [

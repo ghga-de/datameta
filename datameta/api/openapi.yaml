@@ -247,7 +247,6 @@ paths:
           $ref: '#/components/responses/ValidationError'
         "500":
           description: Internal Server Error
-
     post:
       summary: Create a New MetaDatum
       description: >-
@@ -255,6 +254,13 @@ paths:
       tags:
         - Metadata
       operationId: CreateMetaDatum
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -273,6 +279,7 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           description: Internal Server Error
+
 
   /metadatasets:
     post:
