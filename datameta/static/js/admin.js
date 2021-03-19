@@ -287,6 +287,7 @@ DataMeta.admin.initSiteTable = function() {
         rowId: 'uuid',
         order: [[1, "asc"]],
         paging : true,
+        pageLength: 25,
         searching: false,
         columns: [
             { title: "Key", data: "key"},
@@ -314,6 +315,7 @@ DataMeta.admin.initMetadataTable = function() {
         rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
+        pageLength: 25,
         searching: false,
         columns: [
             { title: "Name", data: "name"},

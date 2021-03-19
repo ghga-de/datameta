@@ -18,7 +18,7 @@ from pyramid.request import Request
 from pyramid.view import view_config
 from . import DataHolderBase
 from ..models import MetaDatum
-from .. import resource, security
+from .. import resource, security, siteid
 
 @dataclass
 class MetaDataResponseElement(DataHolderBase):
@@ -63,3 +63,70 @@ def get(request:Request) -> List[MetaDataResponseElement]:
                 )
             for metadatum in metadata
             ]
+
+@view_config(
+    route_name="metadata_id",
+    renderer='json',
+    request_method="PUT",
+    openapi=True
+)
+def put(request:Request):
+    """Change a metadataset"""
+    auth_user = security.revalidate_user(request)
+    metadata_id = request.matchdict["id"]
+
+    # Only site admins can change metadatasets
+    if not auth_user.site_admin:
+         raise HTTPForbidden()
+
+    target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
+
+    target_metadatum = MetaDatum(
+        id = target_metadatum.id,
+        uuid = target_metadatum.uuid,
+        name = request.openapi_validated.body["name"],
+        regex_description = request.openapi_validated.body["regex_description"],
+        long_description = request.openapi_validated.body["long_description"],
+        reg_exp = request.openapi_validated.body["reg_exp"],
+        date_time_fmt = request.openapi_validated.body["date_time_fmt"],
+        is_mandatory = request.openapi_validated.body["is_mandatory"],
+        order = request.openapi_validated.body["order"],
+        is_file = request.openapi_validated.body["is_file"],
+        is_submission_unique = request.openapi_validated.body["is_submission_unique"],
+        is_site_unique = request.openapi_validated.body["is_site_unique"]
+    )
+
+    raise HTTPNoContent
+
+
+@view_config(
+    route_name="metadata_id",
+    renderer='json',
+    request_method="POST",
+    openapi=True
+)
+def post(request:Request):
+    """POST a new metadataset"""
+    auth_user = security.revalidate_user(request)
+
+    # Only site admins can post new metadatasets
+    if not auth_user.site_admin:
+         raise HTTPForbidden()
+
+    metadata = MetaDatum(
+        name = request.openapi_validated.body["name"],
+        regex_description = request.openapi_validated.body["regex_description"],
+        long_description = request.openapi_validated.body["long_description"],
+        reg_exp = request.openapi_validated.body["reg_exp"],
+        date_time_fmt = request.openapi_validated.body["date_time_fmt"],
+        is_mandatory = request.openapi_validated.body["is_mandatory"],
+        order = request.openapi_validated.body["order"],
+        is_file = request.openapi_validated.body["is_file"],
+        is_submission_unique = request.openapi_validated.body["is_submission_unique"],
+        is_site_unique = request.openapi_validated.body["is_site_unique"]
+    )
+
+    db.add(metadata)
+    db.flush()
+
+    raise HTTPNoContent
