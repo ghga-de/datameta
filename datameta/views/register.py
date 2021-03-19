@@ -43,6 +43,7 @@ def v_register_submit(request):
     try:
         name = request.POST['name']
         req_email = request.POST['email']
+        req_email = req_email.lower() # Convert separately to maintain KeyError
         org_select = int(request.POST['org_select'])
         org_create = request.POST.get('org_create') is not None
         org_new_name = request.POST.get('org_new_name')

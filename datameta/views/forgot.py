@@ -55,6 +55,7 @@ def v_forgot_api(request):
     # Extract email from body
     try:
         req_email = request.json_body['email']
+        req_email = req_email.lower() # Convert separately to maintain KeyError
     except KeyError:
         return { 'success' : False, 'error' : 'INVALID_REQUEST' }
 
