@@ -50,11 +50,11 @@ def v_admin_put_request(request):
     # Parse request
     accept = False
     try:
-        reg_req_id             = int(request.json_body['id'])
+        reg_req_id             = str(request.json_body['id'])
         response               = request.json_body['response']
         newuser_make_admin     = bool(request.json_body.get("group_admin"))
         newuser_fullname       = request.json_body['fullname'] # Admin can edit upon confirm
-        newuser_group_id       = int(request.json_body['group_id']) if request.json_body['group_id'] is not None else None # Admin can edit upon confirm
+        newuser_group_id       = str(request.json_body['group_id']) if request.json_body['group_id'] is not None else None # Admin can edit upon confirm
         newuser_group_newname  = request.json_body['group_newname'] # Admin can edit upon confirm
         if response.lower() == 'accept':
             accept = True
@@ -67,17 +67,17 @@ def v_admin_put_request(request):
         raise HTTPBadRequest()
 
     # Check if the request exists
-    reg_req = db.query(RegRequest).filter(RegRequest.id==reg_req_id).one_or_none()
+    reg_req = db.query(RegRequest).filter(RegRequest.uuid==reg_req_id).one_or_none()
     if reg_req is None:
         return HTTPNotFound('Registration request not found')
 
     # Check if the requesting user is authorized. Both the request group as well as the
     # administratively selected group have to be the requesting user's group
-    if not req_user.site_admin and (reg_req.group_id!=req_user.group_id or newuser_group_id!=req_user.group_id):
+    if not req_user.site_admin and (reg_req.group_id!=req_user.group_id.uuid or newuser_group_id!=req_user.group_id.uuid):
         return HTTPUnauthorized()
 
     # Check if the specified group id is valid
-    db_group = db.query(Group).filter(Group.id==newuser_group_id).one_or_none() if newuser_group_id is not None else None
+    db_group = db.query(Group).filter(Group.uuid==newuser_group_id).one_or_none() if newuser_group_id is not None else None
     if newuser_group_id is not None and not db_group:
         return HTTPNoContent('Group not found')
 
@@ -154,14 +154,13 @@ def v_admin_get(request):
     # If the requesting user is only a group admin, return only those users
     # that are in the same group
     if not req_user.site_admin:
-        query = query.filter(User.group_id==req_user.group_id)
+        query = query.filter(User.group.uuid==req_user.group_id)
 
     response = {}
 
     response["users"] = [ {
-        'uuid' : str(user.uuid),
-        'id' : user.site_id,
-        'group_id' : user.group.site_id,
+        'id' : {'uuid' : str(user.uuid), 'site_id' : user.site_id},
+        'group_id' : {'uuid' : str(user.group.uuid), 'site_id' : user.group.site_id},
         'group_name' : user.group.name,
         'fullname' : user.fullname,
         'email' : user.email,
@@ -173,14 +172,12 @@ def v_admin_get(request):
     # If the requesting user is a site admin, return all groups, otherwise only theirs
     if req_user.site_admin:
         response['groups'] = [ { 
-            'uuid': str(group.uuid),
-            'site_id' : group.site_id,
+            'id' : {'uuid': str(group.uuid), 'site_id' : group.site_id },
             'name': group.name
             } for group in db.query(Group) ]
     else:
         response['groups'] = [ { 
-            'uuid': str(group.uuid),
-            'site_id' : group.site_id,
+            'id' : {'uuid': str(group.uuid), 'site_id' : group.site_id },
             'name': group.name
             } for group in [ req_user.group ] ]
     # Pending registration requests
@@ -188,10 +185,12 @@ def v_admin_get(request):
     if not req_user.site_admin:
         query = query.filter(RegRequest.group_id==req_user.group_id)
 
-    response['reg_requests'] = [ { key : getattr(row, key) for key in
-        [ 'id','fullname', 'email', 'group_id', 'new_group_name' ] } for row in query ]
-
-
+    response['reg_requests'] = [ { 
+        'id' : str(reg_request.uuid),
+        'fullname' : reg_request.fullname, 
+        'email' : reg_request.email, 
+        'group_id': ( str(reg_request.group.uuid) if reg_request.group else None),
+        'new_group_name' : reg_request.new_group_name
+        } for reg_request in query ] 
 
     return response
-

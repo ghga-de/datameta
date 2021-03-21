@@ -98,8 +98,8 @@ DataMeta.admin.reload_requests = function(requests, groups) {
         var select = clone.querySelector("select.select_org")
         groups.forEach(function(group) {
             var option = document.createElement("option");
-            option.setAttribute("value", group.uuid);
-            if (group.uuid === request.group_id) {
+            option.setAttribute("value", group.id.uuid);
+            if (group.id.uuid === request.group_id) {
                 option.selected=true;
             }
             option.innerHTML = group.name;
@@ -198,14 +198,14 @@ DataMeta.admin.rebuildUserTable = function(users) {
 DataMeta.admin.initUserTable = function() {
     $('#table_users').DataTable({
         destroy: true, //Destroys the table, in case it already exist
-        rowId: 'uuid',
+        rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
         lengthMenu: [ 25, 50, 75, 100 ],
         pageLength: 25,
         searching: false,
         columns: [
-            { title: "User ID", data: "id"},
+            { title: "User ID", data: "id.site_id"},
             { title: "Name", data: "fullname", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeUserName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
@@ -213,7 +213,7 @@ DataMeta.admin.initUserTable = function() {
             { title: "Group", data: "group_name", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="switchGroup(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
-            { title: "Group ID", data: "group_id"},
+            { title: "Group ID", data: "group_id.site_id"},
             { orderable:false, title: "Enabled", data: "enabled", render:function(data) {
                 if(data) {
                     return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleUserEnabled(event);"><i class="bi bi-check2"></i></button>'
@@ -251,14 +251,14 @@ DataMeta.admin.rebuildGroupTable = function(groups) {
 DataMeta.admin.initGroupTable = function() {
     $('#table_groups').DataTable({
         destroy: true,  //Destroys the table, in case it already exists
-        rowId: 'uuid',
+        rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
         lengthMenu: [ 25, 50, 75, 100 ],
         pageLength: 25,
         searching: false,
         columns: [
-            { title: "Group ID", data: "site_id"},
+            { title: "Group ID", data: "id.site_id"},
             { title: "Group Name", data: "name", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeGroupName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
@@ -371,7 +371,7 @@ function switchGroup(event) {
     var row = cell.parentNode;
     var uuid = row.id;
 
-    cell.innerHTML =    '<div class="dropdown" style="width:200px">' +
+    cell.innerHTML =    '<div class="dropdown" style="width:100%">' +
                         '<button class="btn btn-secondary-outline dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">' +
                         'Choose the new Group:' +
                         '</button>' +
@@ -387,7 +387,7 @@ function switchGroup(event) {
         var btn = document.createElement("button")
         btn.classList.add("dropdown-item");
         btn.setAttribute("type", "button");
-        btn.setAttribute("onClick", " DataMeta.admin.updateUser('"+ uuid +"', undefined, '"+ groups[i].uuid +"', undefined, undefined, undefined);")
+        btn.setAttribute("onClick", " DataMeta.admin.updateUser('"+ uuid +"', undefined, '"+ groups[i].id.uuid +"', undefined, undefined, undefined);")
         btn.innerHTML = groups[i].name;
         li.appendChild(btn);
     }
@@ -411,7 +411,7 @@ function changeUserName(event) {
     var name = button.getAttribute('data');
     var uuid = row.id;
 
-    cell.innerHTML =      '<div class="input-group" style="width:200px"><span class="input-group-text">' + 
+    cell.innerHTML =      '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
                             '<i class="bi bi-person-circle"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
@@ -451,7 +451,7 @@ function confirmUserNameChange(event, uuid) {
     var name = button.getAttribute('data');
     var uuid = row.id;
 
-    cell.innerHTML =      '<div class="input-group" style="width:200px"><span class="input-group-text">' + 
+    cell.innerHTML =      '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
                             '<i class="bi bi-person-circle"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
