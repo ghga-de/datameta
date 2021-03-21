@@ -29,7 +29,7 @@ def v_admin(request):
     security.revalidate_admin(request)
     showreq='null'
     try:
-        showreq=int(request.GET.get("showreq"))
+        showreq=str(request.GET.get("showreq"))
     except:
         pass
     return {

@@ -100,7 +100,7 @@ def v_register_submit(request):
                 'req_fullname' : reg_req.fullname,
                 'req_email' : reg_req.email,
                 'req_group' : reg_req.new_group_name if org_create else group.name,
-                'req_url' : request.route_url('admin') + f"?showreq={reg_req.id}"
+                'req_url' : request.route_url('admin') + f"?showreq={reg_req.uuid}"
                 },
             bcc = [ admin.email for admin in admins ],
             rec_header_only=True # We're not actually sending this to the from address, just using it in the "To" header

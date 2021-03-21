@@ -1,6 +1,6 @@
 <div metal:use-macro="load: layout.pt">
     <div metal:fill-slot="content" class="row">
-    <script>DataMeta.uilocal['showreq'] = ${showreq};</script>
+    <script>DataMeta.uilocal['showreq'] = '${showreq}';</script>
         <div class="col-12 ">
             <div id="admintabs" class="card">
                 <div class="card-header">
