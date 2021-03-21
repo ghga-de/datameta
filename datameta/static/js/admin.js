@@ -158,9 +158,14 @@ DataMeta.admin.subnav = function() {
         admintabs.querySelector("a[data-bs-target='#nav-requests']").classList.add("active");
         admintabs.querySelector("#nav-requests").classList.add("active", "show");
         // open the accordeon
-        document.getElementById("acc_toggle_"+showreq).classList.remove("collapsed");
-        document.getElementById("acc_collapse_"+showreq).classList.add("show");
-        document.getElementById("acc_collapse_"+showreq).scrollIntoView({behavior: "smooth", block: "end"});
+        if(document.getElementById("acc_toggle_"+showreq)) {
+            document.getElementById("acc_toggle_"+showreq).classList.remove("collapsed");
+            document.getElementById("acc_collapse_"+showreq).classList.add("show");
+            document.getElementById("acc_collapse_"+showreq).scrollIntoView({behavior: "smooth", block: "end"});
+        } else {
+            show_request_alert("The request you are looking for does not exist or was already answered.");
+        }
+
     }
 }
 
@@ -522,6 +527,14 @@ function show_group_alert(text) {
     new bootstrap.Collapse(al, { show: true });
 }
 
+// Alert in the request Tab
+function show_request_alert(text) {
+    var al = document.getElementById("request_alert");
+    al.classList.remove("show");
+    al.innerHTML = text;
+    new bootstrap.Collapse(al, { show: true });
+}
+
 // API call to change user name, group, admin and enabled settings
 DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, enabled) {
     fetch('/api/v0/users/' + id,
@@ -564,6 +577,7 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
 function clearAlerts () {
     document.getElementById("group_alert").classList.remove("show");
     document.getElementById("user_alert").classList.remove("show");
+    document.getElementById("request_alert").classList.remove("show");
 }
 
 window.addEventListener("load", function() {
