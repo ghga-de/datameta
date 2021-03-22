@@ -150,7 +150,7 @@ def v_admin_get(request):
     # If the requesting user is only a group admin, return only those users
     # that are in the same group
     if not req_user.site_admin:
-        query = query.filter(User.group.uuid==req_user.group_id)
+        query = query.filter(User.group_id==req_user.group_id)
 
     response = {}
 
