@@ -1,44 +1,116 @@
 # Local Installation
 
-- Change directory into your newly created project if not already there. Your
-  current directory should be the same as this README.txt file and setup.py.
+Install dependencies, e.g. via [brew](https://brew.sh/).
 
-    cd datameta
+```
+brew install postgresql memcached libmemcached npm
+```
 
-- Create a Python virtual environment, if not already created.
+Register postgresql as a service
 
-    python3 -m venv env
+```
+brew services start postgresql
+```
 
-- Upgrade packaging tools, if necessary.
 
-    env/bin/pip install --upgrade pip setuptools
+Clone this repository:
+```
+git clone https://github.com/ghga-de/datameta.git
+```
 
-- Install NPM dependencies
+Change directory into your newly created project if not already there. Your
+  current directory should be the same as this README.md file and setup.py.
 
-    npm install --prefix datameta/static/
+```
+cd datameta
+```
 
-- Install the project in editable mode with its testing requirements.
+Create a Python virtual environment, if not already created.
 
-    env/bin/pip install -e ".[testing]"
+This can be done via `venv`:
 
-- Initialize the database using Alembic.
+```
+python3 -m venv <environment_name>
+```
 
-    env/bin/alembic -c development.ini upgrade head
+or `conda`:
 
-- Load default data into the database using a script. Change the initial user and group information to your requirements.
+```
+conda create -y -n <environment_name> 'python>3'
+```
 
-    env/bin/initialize_datameta_db \
-        -c development.ini \
+Activate the environment
+
+With `venv` ([docs](https://docs.python.org/3/tutorial/venv.html)):
+
+```
+source <path/to/environment>/bin/activate
+```
+
+With conda
+
+```
+conda activate <environment_name>
+```
+
+Upgrade packaging tools, if necessary.
+
+```
+pip install --upgrade pip setuptools
+```
+
+Install NPM dependencies
+
+```
+npm install --prefix datameta/static/
+```
+
+Install the project in editable mode with its testing requirements.
+
+```
+pip install -e ".[testing]"
+```
+
+Create a postgresql database, then add the path to the database to the `development.ini` found in `datameta/config`, 
+e.g. `sqlalchemy.url = postgresql://localhost/<dbname>`. A copy of the `development.ini` can be placed at an arbitrary location 
+named `/path/to/config/` in the following.
+
+```
+createdb <dbname>
+```
+
+Initialize the database using Alembic.
+
+```
+<path/to/environment>/bin/alembic -c <path/to/config>/development.ini upgrade head
+```
+
+Load default data into the database using a script. Change the initial user and group information to your requirements.
+
+```
+<path/to/environment>/bin/initialize_datameta_db \
+        -c <path/to/config>/development.ini \
         --initial-user-fullname "First User Fullname" \
         --initial-user-email "first@user.email" \
         --initial-user-pass "initialPassword" \
         --initial-group "My Organization"
+```
 
-- Run your project's tests.
+Run your project's tests.
 
-    env/bin/pytest
+```
+<path/to/environment>/bin/pytest
+```
 
-- Run your project.
+Start the `memcached` process.
 
-    env/bin/pserve development.ini
+```
+nohup memcached &
+```
+
+Run your project.
+
+```
+<path/to/environment>/bin/pserve /path/to/config/development.ini
+```
 
