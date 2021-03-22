@@ -1,21 +1,22 @@
-# VS Code Docker Installation
+# Visual Studio Code / Docker Installation
 
-Install instruction when using the remote container feature of vscode
+Installation instructions for using the remote container feature of Visual Studio Code (vscode)
 
-The remote container feature allows to run the editors backend insight a docker container which is all setup for development.  
+The remote container feature allows to run the editor's backend inside a docker container, which is readily set up for development.
 
 ## Quickstart
-Clone this repository:  
+
+Clone this repository:
 ```
 git clone https://github.com/ghga-de/datameta.git
 ```
 
-And open the created directory in vscode, for instance like that:  
+And open the created directory in vscode, for instance like that:
 ```
 code ./datameta
 ```
 
-Install the remote develoment extension:
+Install the remote development extension:
 - click on the extensions symbol in the side bar
 - search for `Remote Development` and install it
 
@@ -26,23 +27,23 @@ To reopen vscode inside the dev container:
 If you are executing this for the first time, the containers will be set up via docker-compose. This might take some time.
 
 ## Using the container
-Once the build succeeded, you will be able to use vscode as usual.
+Once the build is successful, you will be able to use vscode as usual.
 The workspace will be mounted at `/workspace`.
 
-However, before you start, you have to first install datameta in edit mode. Just type in the terminal:  
+However, before you start, you have to first install datameta in edit mode. Just type in the terminal:
 ```
 dev_install
-```  
-(this will execute the script at `/workspace/docker/dev_install`)  
+```
+(this will execute the script at `/workspace/docker/dev_install`)
 You only have to run this once (unless you re-build the container or want to re-install datameta).
 
-Every time you would like to deploy datameta, just type:  
+Every time you would like to deploy datameta, just type:
 ```
 dev_launcher
-```   
-(this will execute the script at `/workspace/docker/dev_launcher`)  
+```
+(this will execute the script at `/workspace/docker/dev_launcher`)
 
-The frontend should be available at http://localhost:8080/ in your browser.
+The frontend should be available at `http://localhost:8080/` in your browser.
 
 ## Configuration
 Any configuration regarding the dev container environment can be found at `/.devcontainer`.
