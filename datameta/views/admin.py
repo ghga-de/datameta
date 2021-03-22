@@ -46,7 +46,7 @@ def v_admin_put_request(request):
     # Parse request
     accept = False
     try:
-        reg_req_id             = str(request.json_body['id'])
+        reg_req_id             = request.json_body['id']
         response               = request.json_body['response']
         newuser_make_admin     = bool(request.json_body.get("group_admin"))
         newuser_fullname       = request.json_body['fullname'] # Admin can edit upon confirm
