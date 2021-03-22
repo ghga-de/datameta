@@ -19,6 +19,8 @@ from pyramid.view import view_config
 from . import DataHolderBase
 from ..models import MetaDatum
 from .. import resource, security, siteid
+from ..resource import resource_by_id
+
 
 @dataclass
 class MetaDataResponseElement(DataHolderBase):

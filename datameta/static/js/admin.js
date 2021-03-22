@@ -452,7 +452,7 @@ function saveMetadata(event) {
     var reg_exp = row.children[3].querySelector('input').value;
     var date_time_fmt = row.children[4].querySelector('input').value;
     var is_mandatory = row.children[5].querySelector('input').checked;
-    var order = row.children[6].querySelector('input').value;
+    var order = parseInt(row.children[6].querySelector('input').value);
     var is_file = row.children[7].querySelector('input').checked;
     var is_submission_unique = row.children[8].querySelector('input').checked;
     var is_site_unique = row.children[9].querySelector('input').checked;
