@@ -155,8 +155,8 @@ def v_admin_get(request):
     response = {}
 
     response["users"] = [ {
-        'id' : {'uuid' : str(user.uuid), 'site_id' : user.site_id},
-        'group_id' : {'uuid' : str(user.group.uuid), 'site_id' : user.group.site_id},
+        'id' : {'uuid' : str(user.uuid), 'site' : user.site_id},
+        'group_id' : {'uuid' : str(user.group.uuid), 'site' : user.group.site_id},
         'group_name' : user.group.name,
         'fullname' : user.fullname,
         'email' : user.email,
