@@ -20,6 +20,7 @@ import bcrypt
 from ..models import User, Group, RegRequest
 from ..settings import get_setting
 from .. import email, passtokens, security, siteid
+from ..resource import resource_by_id, get_identifier
 
 import logging
 log = logging.getLogger(__name__)
@@ -63,7 +64,8 @@ def v_admin_put_request(request):
         raise HTTPBadRequest()
 
     # Check if the request exists
-    reg_req = db.query(RegRequest).filter(RegRequest.uuid==reg_req_id).one_or_none()
+    reg_req = resource_by_id(db ,RegRequest, reg_req_id)
+    
     if reg_req is None:
         return HTTPNotFound('Registration request not found')
 
@@ -73,7 +75,7 @@ def v_admin_put_request(request):
         return HTTPUnauthorized()
 
     # Check if the specified group id is valid
-    db_group = db.query(Group).filter(Group.uuid==newuser_group_id).one_or_none() if newuser_group_id is not None else None
+    db_group = resource_by_id(db, Group, newuser_group_id) if newuser_group_id is not None else None
     if newuser_group_id is not None and not db_group:
         return HTTPNoContent('Group not found')
 
@@ -155,8 +157,8 @@ def v_admin_get(request):
     response = {}
 
     response["users"] = [ {
-        'id' : {'uuid' : str(user.uuid), 'site' : user.site_id},
-        'group_id' : {'uuid' : str(user.group.uuid), 'site' : user.group.site_id},
+        'id' :  get_identifier(user),
+        'group_id' :  get_identifier(user.group),
         'group_name' : user.group.name,
         'fullname' : user.fullname,
         'email' : user.email,
@@ -168,12 +170,12 @@ def v_admin_get(request):
     # If the requesting user is a site admin, return all groups, otherwise only theirs
     if req_user.site_admin:
         response['groups'] = [ { 
-            'id' : {'uuid': str(group.uuid), 'site' : group.site_id },
+            'id' : get_identifier(group),
             'name': group.name
             } for group in db.query(Group) ]
     else:
         response['groups'] = [ { 
-            'id' : {'uuid': str(group.uuid), 'site' : group.site_id },
+            'id' :  get_identifier(group),
             'name': group.name
             } for group in [ req_user.group ] ]
     # Pending registration requests
@@ -182,7 +184,7 @@ def v_admin_get(request):
         query = query.filter(RegRequest.group_id==req_user.group_id)
 
     response['reg_requests'] = [ { 
-        'id' : str(reg_request.uuid),
+        'id' :  get_identifier(reg_request),
         'fullname' : reg_request.fullname, 
         'email' : reg_request.email, 
         'group_id': ( str(reg_request.group.uuid) if reg_request.group else None),

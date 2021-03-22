@@ -76,17 +76,17 @@ DataMeta.admin.reload_requests = function(requests, groups) {
         var button = clone.querySelector("#acc_toggle");
 
         // Button unfolding the accordion element
-        button.id = "acc_toggle_" + request.id
+        button.id = "acc_toggle_" + request.id.uuid
         button.innerHTML = request.fullname + " (" + request.email + ")";
-        button.setAttribute("data-bs-target", "#acc_collapse_" + request.id);
-        button.setAttribute("aria-controls", "acc_collapse_" + request.id);
+        button.setAttribute("data-bs-target", "#acc_collapse_" + request.id.uuid);
+        button.setAttribute("aria-controls", "acc_collapse_" + request.id.uuid);
 
         // The accordion element itself
         var div = clone.querySelector("#acc_collapse");
-        div.id = "acc_collapse_" + request.id;
+        div.id = "acc_collapse_" + request.id.uuid;
 
         // Request id
-        clone.querySelector("input.input_id").setAttribute("value", request.id);
+        clone.querySelector("input.input_id").setAttribute("value", request.id.uuid);
 
         // Email input
         clone.querySelector("input.input_email").setAttribute("value", request.email);
@@ -149,7 +149,6 @@ DataMeta.admin.subnav = function() {
     // Handle registration request preselection
     var showreq = DataMeta.uilocal.showreq;
     DataMeta.uilocal.showreq = null;
-    console.log(showreq);
     if (!(showreq == '')){
         var admintabs = document.getElementById('admintabs');
         // de-select all tabs
@@ -211,7 +210,7 @@ DataMeta.admin.initUserTable = function() {
         pageLength: 25,
         searching: false,
         columns: [
-            { title: "User ID", data: "id.site_id"},
+            { title: "User ID", data: "id.site"},
             { title: "Name", data: "fullname", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeUserName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
@@ -219,7 +218,7 @@ DataMeta.admin.initUserTable = function() {
             { title: "Group", data: "group_name", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="switchGroup(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
-            { title: "Group ID", data: "group_id.site_id"},
+            { title: "Group ID", data: "group_id.site"},
             { orderable:false, title: "Enabled", data: "enabled", render:function(data) {
                 if(data) {
                     return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleUserEnabled(event);"><i class="bi bi-check2"></i></button>'
@@ -264,7 +263,7 @@ DataMeta.admin.initGroupTable = function() {
         pageLength: 25,
         searching: false,
         columns: [
-            { title: "Group ID", data: "id.site_id"},
+            { title: "Group ID", data: "id.site"},
             { title: "Group Name", data: "name", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeGroupName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
