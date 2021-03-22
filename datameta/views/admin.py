@@ -168,7 +168,7 @@ def v_admin_get(request):
     # If the requesting user is a site admin, return all groups, otherwise only theirs
     if req_user.site_admin:
         response['groups'] = [ { 
-            'id' : {'uuid': str(group.uuid), 'site_id' : group.site_id },
+            'id' : {'uuid': str(group.uuid), 'site' : group.site_id },
             'name': group.name
             } for group in db.query(Group) ]
     else:
