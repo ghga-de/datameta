@@ -217,8 +217,8 @@ paths:
 
   /metadata/{id}:
     put:
-      summary: Update a user's credentials and status
-      description: Update a user's name, group, admin status and enabled status.
+      summary: Update a MetaDatum
+      description: Update a MetaDatum
       tags:
         - Metadata
       operationId: UpdateMetaDatum
@@ -241,8 +241,6 @@ paths:
           description: Unauthorized
         "403":
           description: This user does not have the rights to perform this action.
-        "404":
-          description: The specified user or group does not exist.
         "400":
           $ref: '#/components/responses/ValidationError'
         "500":

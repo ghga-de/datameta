@@ -81,7 +81,7 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
             AppSettingsResponseElement(
                 uuid                  =  str(setting.uuid),
                 key                   =  setting.key,
-                value_type             =  value_type,
+                value_type            =  value_type,
                 value                 =  value
             )
         )

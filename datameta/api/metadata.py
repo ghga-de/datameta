@@ -82,8 +82,6 @@ def put(request:Request):
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
 
     target_metadatum = MetaDatum(
-        id = target_metadatum.id,
-        uuid = target_metadatum.uuid,
         name = request.openapi_validated.body["name"],
         regex_description = request.openapi_validated.body["regex_description"],
         long_description = request.openapi_validated.body["long_description"],

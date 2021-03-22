@@ -194,7 +194,7 @@ DataMeta.admin.reload = function() {
 
 //Rebuilds the user table, based on the Data fetched from the API
 DataMeta.admin.rebuildUserTable = function(users) {
-    var t = $('#table_users').DataTable()
+    var t = $('#table_users').DataTable();
     t.clear();
     t.rows.add(users);
     t.draw();   
@@ -247,7 +247,7 @@ DataMeta.admin.initUserTable = function() {
 
 //Rebuilds the group table, based on the Data fetched from the API
 DataMeta.admin.rebuildGroupTable = function(groups) {
-    var t = $('#table_groups').DataTable()
+    var t = $('#table_groups').DataTable();
     t.clear();
     t.rows.add(groups);
     t.draw();   
@@ -366,14 +366,14 @@ function enableSettingsEditMode(event) {
     row.children[2].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control">' + innerHTML + '</textarea></div>';
     
     row.children[3].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveSettings(event);"><i class="bi bi-check2"></i></button>' +
-                                '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
+                                '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getAppSettings();"><i class="bi bi-x"></i></button></div>'
 
-    $('#table_site').columns.adjust().draw();
+    $('#table_site').DataTable().columns.adjust().draw();
 }
 
 // Saves the editing done for Site Settings
 function saveSettings(event) {
-    // TODO
+    
 }
 
 // Enables the edit mode for Metadata Settings
@@ -406,32 +406,96 @@ function enableMetadataEditMode(event) {
     
     innerHTML = row.children[5].innerHTML;
     var checked = ((innerHTML == "true") ? "checked": "")
-    row.children[5].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" '+ checked +'></div'
+    row.children[5].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div'
     
     innerHTML = row.children[6].innerHTML;
     row.children[6].innerHTML = '<div class="input-group"><input type="number" class="form-control" value="' + innerHTML +'"></div>';
     
     innerHTML = row.children[7].innerHTML;
     checked = ((innerHTML == "true") ? "checked": "")
-    row.children[7].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" '+ checked +'></div'
+    row.children[7].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div'
 
     innerHTML = row.children[8].innerHTML;
     checked = ((innerHTML == "true") ? "checked": "")
-    row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" '+ checked +'></div'
+    row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div'
 
     innerHTML = row.children[9].innerHTML;
     checked = ((innerHTML == "true") ? "checked": "")
-    row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" '+ checked +'></div'
+    row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div'
 
     row.children[10].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetadata(event);"><i class="bi bi-check2"></i></button>' +
                                  '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
 
-    $('#table_metadata').columns.adjust().draw();
+    $('#table_metadata').DataTable().columns.adjust().draw();
 }
 
 // Saves the editing done for Metadata Settings
 function saveMetadata(event) {
-    //TODO
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered instead of the button itself, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    console.log(button);
+
+    var row = button.parentNode.parentNode.parentNode;
+    DataMeta.admin.row = row;
+    
+    var metadata_id = row.id; 
+    var name = row.children[0].querySelector('input').value;
+    var regex_description = row.children[1].querySelector('textarea').innerHTML;
+    var long_description = row.children[2].querySelector('textarea').innerHTML;
+    var reg_exp = row.children[3].querySelector('input').value;
+    var date_time_fmt = row.children[4].querySelector('input').value;
+    var is_mandatory = row.children[5].querySelector('input').checked;
+    var order = row.children[6].querySelector('input').value;
+    var is_file = row.children[7].querySelector('input').checked;
+    var is_submission_unique = row.children[8].querySelector('input').checked;
+    var is_site_unique = row.children[9].querySelector('input').checked;
+
+    fetch(DataMeta.api('metadata/' + metadata_id),
+    {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name,
+            regex_description,
+            long_description,
+            reg_exp,
+            date_time_fmt,
+            is_mandatory,
+            order,
+            is_file,
+            is_submission_unique,
+            is_site_unique
+        })
+    })
+    .then(function (response) {
+        if(response.status == '204') {
+            // Reload Group, User & Request Tables
+            DataMeta.admin.getAppSettings();
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_metadata_alert(json[0].message);
+            });
+        } else if (response.status == "401") {
+            show_metadata_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_metadata_alert("You don't have the rights to perform this action.");
+        } else {
+            show_metadata_alert("An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
 }
 
 /**
@@ -770,6 +834,14 @@ function show_group_alert(text) {
 // Alert in the request Tab
 function show_request_alert(text) {
     var al = document.getElementById("request_alert");
+    al.classList.remove("show");
+    al.innerHTML = text;
+    new bootstrap.Collapse(al, { show: true });
+}
+
+// Alert in the metadata Tab
+function show_metadata_alert(text) {
+    var al = document.getElementById("metadata_alert");
     al.classList.remove("show");
     al.innerHTML = text;
     new bootstrap.Collapse(al, { show: true });
