@@ -27,14 +27,10 @@ log = logging.getLogger(__name__)
 @view_config(route_name='admin', renderer='../templates/admin.pt')
 def v_admin(request):
     security.revalidate_admin(request)
-    showreq='null'
     try:
-        showreq=str(request.GET.get("showreq"))
-    except:
-        pass
-    return {
-            'showreq' : showreq
-            }
+	    return { 'showreq' : request.GET['showreq'] }
+    except KeyError:
+	    return { 'showreq' : '' }
 
 @view_config(route_name='admin_put_request', renderer='json', request_method='PUT')
 def v_admin_put_request(request):
