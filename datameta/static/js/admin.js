@@ -440,10 +440,7 @@ function saveMetadata(event) {
         button = button.parentNode;
     }
 
-    console.log(button);
-
     var row = button.parentNode.parentNode.parentNode;
-    DataMeta.admin.row = row;
     
     var metadata_id = row.id; 
     var name = row.children[0].querySelector('input').value;
@@ -480,7 +477,7 @@ function saveMetadata(event) {
     .then(function (response) {
         if(response.status == '204') {
             // Reload Group, User & Request Tables
-            DataMeta.admin.getAppSettings();
+            DataMeta.admin.getMetadata();
         } else  if (response.status == "400") {
             response.json().then((json) => {
                 show_metadata_alert(json[0].message);

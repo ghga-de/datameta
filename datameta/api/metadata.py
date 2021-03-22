@@ -20,6 +20,8 @@ from . import DataHolderBase
 from ..models import MetaDatum
 from .. import resource, security, siteid
 from ..resource import resource_by_id
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
+
 
 
 @dataclass
@@ -75,6 +77,7 @@ def get(request:Request) -> List[MetaDataResponseElement]:
 def put(request:Request):
     """Change a metadataset"""
     auth_user = security.revalidate_user(request)
+    db = request.dbsession
     metadata_id = request.matchdict["id"]
 
     # Only site admins can change metadatasets
@@ -85,18 +88,20 @@ def put(request:Request):
 
     target_metadatum = MetaDatum(
         name = request.openapi_validated.body["name"],
-        regex_description = request.openapi_validated.body["regex_description"],
+        short_description = request.openapi_validated.body["regex_description"],
         long_description = request.openapi_validated.body["long_description"],
-        reg_exp = request.openapi_validated.body["reg_exp"],
-        date_time_fmt = request.openapi_validated.body["date_time_fmt"],
-        is_mandatory = request.openapi_validated.body["is_mandatory"],
+        regexp = request.openapi_validated.body["reg_exp"],
+        datetimefmt = request.openapi_validated.body["date_time_fmt"],
+        mandatory = request.openapi_validated.body["is_mandatory"],
         order = request.openapi_validated.body["order"],
-        is_file = request.openapi_validated.body["is_file"],
-        is_submission_unique = request.openapi_validated.body["is_submission_unique"],
-        is_site_unique = request.openapi_validated.body["is_site_unique"]
+        isfile = request.openapi_validated.body["is_file"],
+        submission_unique = request.openapi_validated.body["is_submission_unique"],
+        site_unique = request.openapi_validated.body["is_site_unique"]
     )
 
-    raise HTTPNoContent
+    target_metadatum.name = "name"
+
+    return HTTPNoContent()
 
 
 @view_config(
@@ -115,15 +120,15 @@ def post(request:Request):
 
     metadata = MetaDatum(
         name = request.openapi_validated.body["name"],
-        regex_description = request.openapi_validated.body["regex_description"],
+        short_description = request.openapi_validated.body["regex_description"],
         long_description = request.openapi_validated.body["long_description"],
-        reg_exp = request.openapi_validated.body["reg_exp"],
-        date_time_fmt = request.openapi_validated.body["date_time_fmt"],
-        is_mandatory = request.openapi_validated.body["is_mandatory"],
+        regexp = request.openapi_validated.body["reg_exp"],
+        datetimefmt = request.openapi_validated.body["date_time_fmt"],
+        mandatory = request.openapi_validated.body["is_mandatory"],
         order = request.openapi_validated.body["order"],
-        is_file = request.openapi_validated.body["is_file"],
-        is_submission_unique = request.openapi_validated.body["is_submission_unique"],
-        is_site_unique = request.openapi_validated.body["is_site_unique"]
+        isfile = request.openapi_validated.body["is_file"],
+        submission_unique = request.openapi_validated.body["is_submission_unique"],
+        site_unique = request.openapi_validated.body["is_site_unique"]
     )
 
     db.add(metadata)
