@@ -173,7 +173,7 @@ def v_admin_get(request):
             } for group in db.query(Group) ]
     else:
         response['groups'] = [ { 
-            'id' : {'uuid': str(group.uuid), 'site_id' : group.site_id },
+            'id' : {'uuid': str(group.uuid), 'site' : group.site_id },
             'name': group.name
             } for group in [ req_user.group ] ]
     # Pending registration requests
