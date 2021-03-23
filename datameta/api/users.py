@@ -72,12 +72,12 @@ def get(request: Request) -> UserUpdateRequest:
 
     # The user has to be site admin or group admin of the users group to make another user group admin
     if group_admin != None:
-        if not (auth_user.site_admin or auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid):
+        if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
             raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to enable or disable a user
     if enabled != None:
-        if not (auth_user.site_admin or auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid):
+        if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
             raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user
@@ -91,7 +91,7 @@ def get(request: Request) -> UserUpdateRequest:
         new_group = resource_by_id(db, Group, group_id)
         if new_group == None:
             raise HTTPNotFound() # 404 Group ID not found
-        target_user.group.id = new_group.id
+        target_user.group_id = new_group.id
     if site_admin != None:
         target_user.site_admin = site_admin
     if group_admin != None:

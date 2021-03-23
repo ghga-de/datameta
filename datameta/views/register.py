@@ -15,7 +15,7 @@
 from sqlalchemy import or_, and_
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from pyramid.view import view_config
-
+from ..resource import resource_by_id
 from ..models import User, Group, RegRequest
 from .. import email
 from ..settings import get_setting
@@ -33,18 +33,19 @@ def get_authorative_admins(db, reg_request):
     else:
         return db.query(User).filter(or_(
             User.site_admin==True,
-            and_(User.group_admin==True, User.group_id==reg_request.group_id)
+            and_(User.group_admin==True, User.group_id == reg_request.group_id)
             )).all()
 
 @view_config(route_name='register_submit', renderer='json')
 def v_register_submit(request):
+
     db = request.dbsession
     errors = {}
     try:
         name = request.POST['name']
         req_email = request.POST['email']
         req_email = req_email.lower() # Convert separately to maintain KeyError
-        org_select = int(request.POST['org_select'])
+        org_select = request.POST['org_select']
         org_create = request.POST.get('org_create') is not None
         org_new_name = request.POST.get('org_new_name')
     except (KeyError, ValueError) as e:
@@ -67,7 +68,7 @@ def v_register_submit(request):
         if not org_new_name:
             errors["org_new_name"] = True
     else:
-        group = db.query(Group).filter(Group.id==org_select).one_or_none()
+        group = resource_by_id(db, Group, org_select)
         if group is None:
             errors['org_select'] = True
 
@@ -99,7 +100,7 @@ def v_register_submit(request):
                 'req_fullname' : reg_req.fullname,
                 'req_email' : reg_req.email,
                 'req_group' : reg_req.new_group_name if org_create else group.name,
-                'req_url' : request.route_url('admin') + f"?showreq={reg_req.id}"
+                'req_url' : request.route_url('admin') + f"?showreq={reg_req.uuid}"
                 },
             bcc = [ admin.email for admin in admins ],
             rec_header_only=True # We're not actually sending this to the from address, just using it in the "To" header
@@ -117,5 +118,5 @@ def v_register(request):
     groups = request.dbsession.query(Group).all()
     return {
             'pagetitle' : 'DataMeta - Registration',
-            'groups' : [ {'id' : g.id, 'name' : g.name} for g in groups ]
+            'groups' : [ {'id' : g.uuid, 'name' : g.name} for g in groups ]
             }

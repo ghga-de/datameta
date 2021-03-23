@@ -1,6 +1,6 @@
 <div metal:use-macro="load: layout.pt">
     <div metal:fill-slot="content" class="row">
-    <script>DataMeta.uilocal['showreq'] = ${showreq};</script>
+    <script>DataMeta.uilocal['showreq'] = '${showreq}';</script>
         <div class="col-12 ">
             <div id="admintabs" class="card">
                 <div class="card-header">
@@ -42,6 +42,8 @@
                     </div>
                     <div class="card-body tab-pane fade show active" id="nav-requests" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 id="req_title" class="card-title"></h5>
+                        <div id="request_alert" class="alert alert-danger collapse" role="alert">
+                        </div>
                         <div class="accordion" id="requests">
                             <template id="template_request">
                                 <div class="accordion-item">
