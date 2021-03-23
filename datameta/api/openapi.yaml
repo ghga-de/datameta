@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.5.0
+  version: 0.6.0
   title: DataMeta
 
 servers:
@@ -337,6 +337,8 @@ paths:
                 $ref: "#/components/schemas/FileUploadResponse"
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
 
