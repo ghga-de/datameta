@@ -22,14 +22,15 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPBadRequest
 
 from dataclasses import dataclass
 from . import DataHolderBase
 from typing import List, Dict
 from ..models import ApplicationSettings
-from .. import security, errors
+from .. import resource, security, errors
 from ..resource import resource_by_id
+import datetime
 
 @dataclass
 class AppSettingsResponseElement(DataHolderBase):
@@ -87,3 +88,120 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
         )
 
     return settings
+
+@view_config(
+    route_name="appsettings_id",
+    renderer='json',
+    request_method="PUT",
+    openapi=True
+)
+def put(request:Request):
+    """Change a metadataset"""
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+    settings_id = request.matchdict["id"]
+
+    # Only site admins can change site settings
+    if not auth_user.site_admin:
+         raise HTTPForbidden()
+
+    target_settings = resource_by_id(db, ApplicationSettings, settings_id)
+
+    key = request.openapi_validated.body["key"]
+    value_type = request.openapi_validated.body["value_type"]
+    value = request.openapi_validated.body["value"]
+
+    if value_type == 'int':
+        try:
+            value_int = int(value)
+        except ValueError:
+            err = {
+                "exception": "ValidationError",
+            }   
+            response_body = []
+            err["message"] = "You have to provide a float."
+            response_body.append(err)
+            return HTTPBadRequest(json=response_body)
+            
+        target_settings.key = key
+        target_settings.int_value = value_int
+        target_settings.str_value = None
+        target_settings.float_value = None
+        target_settings.date_value = None
+        target_settings.time_value = None
+
+    elif value_type == 'string':
+        target_settings.key = key
+        target_settings.str_value = value
+        target_settings.int_value = None
+        target_settings.float_value = None
+        target_settings.date_value = None
+        target_settings.time_value = None
+
+    elif value_type == 'float':
+        try:
+            value_float_float = float(value)
+        except ValueError:
+            err = {
+                "exception": "ValidationError",
+            }   
+            response_body = []
+            err["message"] = "You have to provide a float."
+            response_body.append(err)
+            return HTTPBadRequest(json=response_body)
+            
+        target_settings.key = key
+        target_settings.float_value = value_float
+        target_settings.int_value = None
+        target_settings.str_value = None
+        target_settings.date_value = None
+        target_settings.time_value = None
+
+    elif value_type == 'date':
+        try: 
+            datetime.datetime.strptime(value,"%Y-%m-%d")
+        except ValueError:
+            err = {
+                "exception": "ValidationError",
+            }   
+            response_body = []
+            err["message"] = "The date type has to specified in the form '%Y-%m-%d'."
+            response_body.append(err)
+            return HTTPBadRequest(json=response_body)
+
+        target_settings.key = key
+        target_settings.date_value = value
+        target_settings.int_value = None
+        target_settings.str_value = None
+        target_settings.float_value = None
+        target_settings.time_value = None
+
+    elif value_type == 'time':
+        try: 
+            datetime.datetime.strptime(value,"%H:%M:%S")
+        except ValueError:
+            err = {
+                "exception": "ValidationError",
+            }   
+            response_body = []
+            err["message"] = "The time type has to specified in the form '%H:%M:%S'."
+            response_body.append(err)
+            return HTTPBadRequest(json=response_body)
+
+        target_settings.key = key
+        target_settings.date_value = value
+        target_settings.int_value = None
+        target_settings.str_value = None
+        target_settings.float_value = None
+        target_settings.date_value = None
+
+    else: 
+        err = {
+            "exception": "ValidationError",
+        }   
+        response_body = []
+        err["message"] = "The value type has to be one of 'int, string, float, date, time'."
+        response_body.append(err)
+        return HTTPBadRequest(json=response_body)
+
+    return HTTPNoContent()

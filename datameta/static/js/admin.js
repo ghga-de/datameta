@@ -335,7 +335,6 @@ DataMeta.admin.initMetadataTable = function() {
     });
 }
 
-
 // Enables the edit mode for Site Settings
 function enableSettingsEditMode(event) {
 
@@ -353,8 +352,7 @@ function enableSettingsEditMode(event) {
     row.children[0].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
 
     var innerHTML = row.children[1].innerHTML;
-    row.children[1].innerHTML = '<select class="form-select form-select mb-3" aria-label=".form-select-lg example">' +
-                                '<option selected>' + innerHTML + '</option>' +
+    row.children[1].innerHTML = '<select class="form-select form-select mb-3" aria-label=".form-select-lg">' +
                                 '<option value="int">int</option>' +
                                 '<option value="string">string</option>' +
                                 '<option value="float">float</option>' +
@@ -374,6 +372,56 @@ function enableSettingsEditMode(event) {
 // Saves the editing done for Site Settings
 function saveSettings(event) {
     
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered instead of the button itself, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode.parentNode;
+
+    var appsetting_id = row.id;
+    var key = row.children[0].querySelector('input').value;
+    var value_type = row.children[1].querySelector('select').value;
+    var value = row.children[2].querySelector('textarea').value;
+
+    fetch(DataMeta.api('appsettings/' + appsetting_id),
+    {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            key,
+            value_type,
+            value
+        })
+    })
+    .then(function (response) {
+        if(response.status == '204') {
+            // Reload Metadata Table
+            DataMeta.admin.getAppSettings();
+
+            // Remove any alerts there still are
+            document.getElementById("metadata_alert").classList.remove("show");
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_settings_alert(json[0].message);
+            });
+        } else if (response.status == "401") {
+            show_settings_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_settings_alert("You don't have the rights to perform this action.");
+        } else {
+            show_settings_alert("An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
 }
 
 // Enables the edit mode for Metadata Settings
@@ -444,8 +492,8 @@ function saveMetadata(event) {
     
     var metadata_id = row.id; 
     var name = row.children[0].querySelector('input').value;
-    var regex_description = row.children[1].querySelector('textarea').innerHTML;
-    var long_description = row.children[2].querySelector('textarea').innerHTML;
+    var regex_description = row.children[1].querySelector('textarea').value;
+    var long_description = row.children[2].querySelector('textarea').value;
     var reg_exp = row.children[3].querySelector('input').value;
     var date_time_fmt = row.children[4].querySelector('input').value;
     var is_mandatory = row.children[5].querySelector('input').checked;
@@ -476,11 +524,18 @@ function saveMetadata(event) {
     })
     .then(function (response) {
         if(response.status == '204') {
-            // Reload Group, User & Request Tables
+            // Reload Metadata Table
             DataMeta.admin.getMetadata();
+
+            // Remove any alerts there still are
+            document.getElementById("metadata_alert").classList.remove("show");
         } else  if (response.status == "400") {
             response.json().then((json) => {
-                show_metadata_alert(json[0].message);
+                if (json[0].field == "order") {
+                    show_metadata_alert("The field 'order' has to contain an int value.");
+                } else {
+                    show_metadata_alert(json[0].message);
+                }
             });
         } else if (response.status == "401") {
             show_metadata_alert("You have to be logged in to perform this action.");
@@ -839,6 +894,14 @@ function show_request_alert(text) {
 // Alert in the metadata Tab
 function show_metadata_alert(text) {
     var al = document.getElementById("metadata_alert");
+    al.classList.remove("show");
+    al.innerHTML = text;
+    new bootstrap.Collapse(al, { show: true });
+}
+
+// Alert in the metadata Tab
+function show_settings_alert(text) {
+    var al = document.getElementById("site_alert");
     al.classList.remove("show");
     al.innerHTML = text;
     new bootstrap.Collapse(al, { show: true });

@@ -22,8 +22,6 @@ from .. import resource, security, siteid
 from ..resource import resource_by_id
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 
-
-
 @dataclass
 class MetaDataResponseElement(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
@@ -52,21 +50,21 @@ def get(request:Request) -> List[MetaDataResponseElement]:
     metadata = request.dbsession.query(MetaDatum)
 
     return [
-            MetaDataResponseElement(
-                id                    =  resource.get_identifier(metadatum),
-                name                  =  metadatum.name,
-                regex_description     =  metadatum.short_description,
-                long_description      =  metadatum.long_description,
-                reg_exp               =  metadatum.regexp,
-                date_time_fmt         =  metadatum.datetimefmt,
-                is_mandatory          =  metadatum.mandatory,
-                order                 =  metadatum.order,
-                is_file               =  metadatum.isfile,
-                is_submission_unique  =  metadatum.submission_unique,
-                is_site_unique        =  metadatum.site_unique
-                )
-            for metadatum in metadata
-            ]
+        MetaDataResponseElement(
+            id                    =  resource.get_identifier(metadatum),
+            name                  =  metadatum.name,
+            regex_description     =  metadatum.short_description,
+            long_description      =  metadatum.long_description,
+            reg_exp               =  metadatum.regexp,
+            date_time_fmt         =  metadatum.datetimefmt,
+            is_mandatory          =  metadatum.mandatory,
+            order                 =  metadatum.order,
+            is_file               =  metadatum.isfile,
+            is_submission_unique  =  metadatum.submission_unique,
+            is_site_unique        =  metadatum.site_unique
+            )
+        for metadatum in metadata
+        ]
 
 @view_config(
     route_name="metadata_id",
@@ -86,23 +84,18 @@ def put(request:Request):
 
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
 
-    target_metadatum = MetaDatum(
-        name = request.openapi_validated.body["name"],
-        short_description = request.openapi_validated.body["regex_description"],
-        long_description = request.openapi_validated.body["long_description"],
-        regexp = request.openapi_validated.body["reg_exp"],
-        datetimefmt = request.openapi_validated.body["date_time_fmt"],
-        mandatory = request.openapi_validated.body["is_mandatory"],
-        order = request.openapi_validated.body["order"],
-        isfile = request.openapi_validated.body["is_file"],
-        submission_unique = request.openapi_validated.body["is_submission_unique"],
-        site_unique = request.openapi_validated.body["is_site_unique"]
-    )
-
-    target_metadatum.name = "name"
-
+    target_metadatum.name = request.openapi_validated.body["name"]
+    target_metadatum.short_description = request.openapi_validated.body["regex_description"]
+    target_metadatum.long_description = request.openapi_validated.body["long_description"]
+    target_metadatum.regexp = request.openapi_validated.body["reg_exp"]
+    target_metadatum.datetimefmt = request.openapi_validated.body["date_time_fmt"]
+    target_metadatum.mandatory = request.openapi_validated.body["is_mandatory"]
+    target_metadatum.order = request.openapi_validated.body["order"]
+    target_metadatum.isfile = request.openapi_validated.body["is_file"]
+    target_metadatum.submission_unique = request.openapi_validated.body["is_submission_unique"]
+    target_metadatum.site_unique = request.openapi_validated.body["is_site_unique"]
+    
     return HTTPNoContent()
-
 
 @view_config(
     route_name="metadata_id",
