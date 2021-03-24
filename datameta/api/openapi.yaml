@@ -214,37 +214,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
-  /metadata/{id}:
-    put:
-      summary: Update a MetaDatum
-      description: Update a MetaDatum
-      tags:
-        - Metadata
-      operationId: UpdateMetaDatum
-      parameters:
-        - name: id
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MetaDatum"
-      responses:
-        "204":
-          description: Metadatum updated successful
-        "401":
-          description: Unauthorized
-        "403":
-          description: This user does not have the rights to perform this action.
-        "400":
-          $ref: '#/components/responses/ValidationError'
-        "500":
-          description: Internal Server Error
     post:
       summary: Create a New MetaDatum
       description: >-
@@ -276,6 +245,37 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
+          description: Internal Server Error
+
+  /metadata/{id}:
+    put:
+      summary: Update a MetaDatum
+      description: Update a MetaDatum
+      tags:
+        - Metadata
+      operationId: UpdateMetaDatum
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetaDatum"
+      responses:
+        "204":
+          description: Metadatum updated successful
+        "401":
+          description: Unauthorized
+        "403":
+          description: This user does not have the rights to perform this action.
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "500":
           description: Internal Server Error
 
   /metadatasets:
@@ -660,9 +660,9 @@ paths:
 
   /appsettings/{id}:
     put:
-      summary:  all AppSettings
+      summary: Update a specific appsetting
       description: >-
-        GET all AppSettings
+        Update a specific appsetting
       tags:
         - Settings
       operationId: UpdateAppSettings

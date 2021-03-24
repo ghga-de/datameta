@@ -329,7 +329,7 @@ DataMeta.admin.initMetadataTable = function() {
             { orderable:false, title: "isSubmissionUnique", data: "isSubmissionUnique"},
             { orderable:false, title: "isSiteUnique", data: "isSiteUnique"},
             { orderable:false, title: "Edit", render:function() {
-                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableMetadataEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
+                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableMetaDatumEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
             }}
         ]
     });
@@ -425,7 +425,7 @@ function saveSettings(event) {
 }
 
 // Enables the edit mode for Metadata Settings
-function enableMetadataEditMode(event) {
+function enableMetaDatumEditMode(event) {
 
     // The button that triggered the function call
     var button = event.srcElement;
@@ -454,31 +454,58 @@ function enableMetadataEditMode(event) {
     
     innerHTML = row.children[5].innerHTML;
     var checked = ((innerHTML == "true") ? "checked": "")
-    row.children[5].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div'
+    row.children[5].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
     
     innerHTML = row.children[6].innerHTML;
     row.children[6].innerHTML = '<div class="input-group"><input type="number" class="form-control" value="' + innerHTML +'"></div>';
     
     innerHTML = row.children[7].innerHTML;
     checked = ((innerHTML == "true") ? "checked": "")
-    row.children[7].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div'
+    row.children[7].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
 
     innerHTML = row.children[8].innerHTML;
     checked = ((innerHTML == "true") ? "checked": "")
-    row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div'
+    row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
 
     innerHTML = row.children[9].innerHTML;
     checked = ((innerHTML == "true") ? "checked": "")
-    row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div'
+    row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
 
-    row.children[10].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetadata(event);"><i class="bi bi-check2"></i></button>' +
+    row.children[10].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
                                  '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
 
     $('#table_metadata').DataTable().columns.adjust().draw();
 }
 
+// Enables the edit mode for a new Metadatum
+DataMeta.admin.newMetaDatumRow = function() {
+
+    var table = $('#table_metadata').DataTable();
+    var rows = table.rows();
+
+    // Check, if there is already a new row
+    for (row in rows) {
+        if (row.id == "-1") {
+            show_metadata_alert("You can only create one new metadatum at a time.")
+            return;
+        }
+    }
+
+    // create a new row
+    var row = [{id: {uuid: "-1"}, name: "", regexDescription: "", longDescription: "", regExp: "", dateTimeFmt: "", isMandatory: "", order: "", isFile: "", isSubmissionUnique: "", isSiteUnique: ""}];
+
+    // add the new row to the table
+    table.rows.add(row);
+    table.columns.adjust().draw();
+
+    // Alter the success link
+    var btn = document.getElementById("-1").querySelector("button.btn-outline-success");
+    btn.onclick="addMetaDatum(event)";
+
+}
+
 // Saves the editing done for Metadata Settings
-function saveMetadata(event) {
+function saveMetaDatum(event) {
 
     // The button that triggered the function call
     var button = event.srcElement;
@@ -501,6 +528,11 @@ function saveMetadata(event) {
     var is_file = row.children[7].querySelector('input').checked;
     var is_submission_unique = row.children[8].querySelector('input').checked;
     var is_site_unique = row.children[9].querySelector('input').checked;
+
+    if(isNaN(order)) {
+        show_metadata_alert("Please specify an int in the 'order' field.");
+        return;
+    }
 
     fetch(DataMeta.api('metadata/' + metadata_id),
     {
@@ -531,11 +563,79 @@ function saveMetadata(event) {
             document.getElementById("metadata_alert").classList.remove("show");
         } else  if (response.status == "400") {
             response.json().then((json) => {
-                if (json[0].field == "order") {
-                    show_metadata_alert("The field 'order' has to contain an int value.");
-                } else {
-                    show_metadata_alert(json[0].message);
-                }
+                show_metadata_alert(json[0].message);
+            });
+        } else if (response.status == "401") {
+            show_metadata_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_metadata_alert("You don't have the rights to perform this action.");
+        } else {
+            show_metadata_alert("An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+function addMetaDatum(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered instead of the button itself, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode.parentNode;
+    
+    var name = row.children[0].querySelector('input').value;
+    var regex_description = row.children[1].querySelector('textarea').value;
+    var long_description = row.children[2].querySelector('textarea').value;
+    var reg_exp = row.children[3].querySelector('input').value;
+    var date_time_fmt = row.children[4].querySelector('input').value;
+    var is_mandatory = row.children[5].querySelector('input').checked;
+    var order = parseInt(row.children[6].querySelector('input').value);
+    var is_file = row.children[7].querySelector('input').checked;
+    var is_submission_unique = row.children[8].querySelector('input').checked;
+    var is_site_unique = row.children[9].querySelector('input').checked;
+
+    if(isNaN(order)) {
+        show_metadata_alert("Please specify an int in the 'order' field.");
+        return;
+    }
+
+    fetch(DataMeta.api('metadata'),
+    {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name,
+            regex_description,
+            long_description,
+            reg_exp,
+            date_time_fmt,
+            is_mandatory,
+            order,
+            is_file,
+            is_submission_unique,
+            is_site_unique
+        })
+    })
+    .then(function (response) {
+        if(response.status == '204') {
+            // Reload Metadata Table
+            DataMeta.admin.getMetadata();
+
+            // Remove any alerts there still are
+            document.getElementById("metadata_alert").classList.remove("show");
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_metadata_alert(json[0].message);
             });
         } else if (response.status == "401") {
             show_metadata_alert("You have to be logged in to perform this action.");

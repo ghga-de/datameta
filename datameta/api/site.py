@@ -119,7 +119,7 @@ def put(request:Request):
                 "exception": "ValidationError",
             }   
             response_body = []
-            err["message"] = "You have to provide a float."
+            err["message"] = "You have to provide an int."
             response_body.append(err)
             return HTTPBadRequest(json=response_body)
             
