@@ -105,10 +105,7 @@ def put(request:Request):
             err = {
                 "exception": "ValidationError",
             }   
-            response_body = []
-            err["message"] = "You have to provide an integer."
-            response_body.append(err)
-            return HTTPBadRequest(json=response_body)
+            raise errors.get_validation_error(["You have to provide an integer."])
             
         target_setting.key = key
         target_setting.int_value = value_int
