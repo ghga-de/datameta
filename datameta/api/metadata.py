@@ -27,16 +27,16 @@ class MetaDataResponseElement(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
     id                      :  dict
     name                    :  str
-    is_mandatory            :  bool
+    isMandatory            :  bool
     order                   :  int
-    is_file                 :  bool
-    is_submission_unique    :  bool
-    is_site_unique          :  bool
-    regex_description       :  Optional[str] = None
-    long_description        :  Optional[str] = None
+    isFile                 :  bool
+    isSubmissionUnique    :  bool
+    isSiteUnique          :  bool
+    regexDescription       :  Optional[str] = None
+    longDescription        :  Optional[str] = None
     example                 :  Optional[str] = None
-    reg_exp                 :  Optional[str] = None
-    date_time_fmt           :  Optional[str] = None
+    regExp                 :  Optional[str] = None
+    dateTimeFmt           :  Optional[str] = None
 
 @view_config(
     route_name="metadata",
@@ -54,16 +54,16 @@ def get(request:Request) -> List[MetaDataResponseElement]:
         MetaDataResponseElement(
             id                    =  resource.get_identifier(metadatum),
             name                  =  metadatum.name,
-            regex_description     =  metadatum.short_description,
-            long_description      =  metadatum.long_description,
+            regexDescription     =  metadatum.short_description,
+            longDescription      =  metadatum.long_description,
             example               =  metadatum.example,
-            reg_exp               =  metadatum.regexp,
-            date_time_fmt         =  metadatum.datetimefmt,
-            is_mandatory          =  metadatum.mandatory,
+            regExp               =  metadatum.regexp,
+            dateTimeFmt         =  metadatum.datetimefmt,
+            isMandatory          =  metadatum.mandatory,
             order                 =  metadatum.order,
-            is_file               =  metadatum.isfile,
-            is_submission_unique  =  metadatum.submission_unique,
-            is_site_unique        =  metadatum.site_unique
+            isFile               =  metadatum.isfile,
+            isSubmissionUnique  =  metadatum.submission_unique,
+            isSiteUnique        =  metadatum.site_unique
             )
         for metadatum in metadata
         ]
@@ -87,16 +87,16 @@ def put(request:Request):
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
 
     target_metadatum.name = request.openapi_validated.body["name"]
-    target_metadatum.short_description = request.openapi_validated.body["regex_description"]
-    target_metadatum.long_description = request.openapi_validated.body["long_description"]
+    target_metadatum.short_description = request.openapi_validated.body["regexDescription"]
+    target_metadatum.long_description = request.openapi_validated.body["longDescription"]
     target_metadatum.example = request.openapi_validated.body["example"]
-    target_metadatum.regexp = request.openapi_validated.body["reg_exp"]
-    target_metadatum.datetimefmt = request.openapi_validated.body["date_time_fmt"]
-    target_metadatum.mandatory = request.openapi_validated.body["is_mandatory"]
+    target_metadatum.regexp = request.openapi_validated.body["regExp"]
+    target_metadatum.datetimefmt = request.openapi_validated.body["dateTimeFmt"]
+    target_metadatum.mandatory = request.openapi_validated.body["isMandatory"]
     target_metadatum.order = request.openapi_validated.body["order"]
-    target_metadatum.isfile = request.openapi_validated.body["is_file"]
-    target_metadatum.submission_unique = request.openapi_validated.body["is_submission_unique"]
-    target_metadatum.site_unique = request.openapi_validated.body["is_site_unique"]
+    target_metadatum.isfile = request.openapi_validated.body["isFile"]
+    target_metadatum.submission_unique = request.openapi_validated.body["isSubmissionUnique"]
+    target_metadatum.site_unique = request.openapi_validated.body["isSiteUnique"]
     
     return HTTPNoContent()
 
@@ -116,16 +116,16 @@ def post(request:Request):
 
     metadatum = MetaDatum(
         name = request.openapi_validated.body["name"],
-        short_description = request.openapi_validated.body["regex_description"],
-        long_description = request.openapi_validated.body["long_description"],
+        short_description = request.openapi_validated.body["regexDescription"],
+        long_description = request.openapi_validated.body["longDescription"],
         example = request.openapi_validated.body["example"],
-        regexp = request.openapi_validated.body["reg_exp"],
-        datetimefmt = request.openapi_validated.body["date_time_fmt"],
-        mandatory = request.openapi_validated.body["is_mandatory"],
+        regexp = request.openapi_validated.body["regExp"],
+        datetimefmt = request.openapi_validated.body["dateTimeFmt"],
+        mandatory = request.openapi_validated.body["isMandatory"],
         order = request.openapi_validated.body["order"],
-        isfile = request.openapi_validated.body["is_file"],
-        submission_unique = request.openapi_validated.body["is_submission_unique"],
-        site_unique = request.openapi_validated.body["is_site_unique"],
+        isfile = request.openapi_validated.body["isFile"],
+        submission_unique = request.openapi_validated.body["isSubmissionUnique"],
+        site_unique = request.openapi_validated.body["isSiteUnique"],
     )
 
     db = request.dbsession

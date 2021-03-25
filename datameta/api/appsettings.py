@@ -30,14 +30,15 @@ from typing import List, Dict
 from ..models import ApplicationSettings
 from .. import resource, security, errors
 from ..resource import resource_by_id
+from ..settings import get_setting_value_type
 import datetime
 
 @dataclass
 class AppSettingsResponseElement(DataHolderBase):
-    """Class for Site Request Response from OpenApi"""
-    uuid:       str
+    """Class for Appsettings Request Response from OpenApi"""
+    id:         dict
     key:        str
-    value_type: str
+    valueType:  str
     value:      str
 
 @view_config(
@@ -62,27 +63,13 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
     settings = []
 
     for setting in appsettings:
-        if setting.int_value != None:
-            value = setting.int_value
-            value_type = "int"
-        elif setting.str_value != None:
-            value = setting.str_value
-            value_type = "string"
-        elif setting.float_value != None:
-            value = float_value
-            value_type = "float"
-        elif setting.date_value != None:
-            value = date_value
-            value_type = "date"
-        elif setting.time_value != None:
-            value = time_value
-            value_type = "time"
+        value, value_type = get_setting_value_type(setting)
 
         settings.append(
             AppSettingsResponseElement(
-                uuid                  =  str(setting.uuid),
+                id                    =  resource.get_identifier(setting),
                 key                   =  setting.key,
-                value_type            =  value_type,
+                valueType             =  value_type,
                 value                 =  value
             )
         )
@@ -105,10 +92,10 @@ def put(request:Request):
     if not auth_user.site_admin:
          raise HTTPForbidden()
 
-    target_settings = resource_by_id(db, ApplicationSettings, settings_id)
+    target_setting = resource_by_id(db, ApplicationSettings, settings_id)
 
     key = request.openapi_validated.body["key"]
-    value_type = request.openapi_validated.body["value_type"]
+    temp, value_type = get_setting_value_type(target_setting)
     value = request.openapi_validated.body["value"]
 
     if value_type == 'int':
@@ -119,24 +106,16 @@ def put(request:Request):
                 "exception": "ValidationError",
             }   
             response_body = []
-            err["message"] = "You have to provide an int."
+            err["message"] = "You have to provide an integer."
             response_body.append(err)
             return HTTPBadRequest(json=response_body)
             
-        target_settings.key = key
-        target_settings.int_value = value_int
-        target_settings.str_value = None
-        target_settings.float_value = None
-        target_settings.date_value = None
-        target_settings.time_value = None
+        target_setting.key = key
+        target_setting.int_value = value_int
 
     elif value_type == 'string':
-        target_settings.key = key
-        target_settings.str_value = value
-        target_settings.int_value = None
-        target_settings.float_value = None
-        target_settings.date_value = None
-        target_settings.time_value = None
+        target_setting.key = key
+        target_setting.str_value = value
 
     elif value_type == 'float':
         try:
@@ -150,12 +129,8 @@ def put(request:Request):
             response_body.append(err)
             return HTTPBadRequest(json=response_body)
             
-        target_settings.key = key
-        target_settings.float_value = value_float
-        target_settings.int_value = None
-        target_settings.str_value = None
-        target_settings.date_value = None
-        target_settings.time_value = None
+        target_setting.key = key
+        target_setting.float_value = value_float
 
     elif value_type == 'date':
         try: 
@@ -169,12 +144,8 @@ def put(request:Request):
             response_body.append(err)
             return HTTPBadRequest(json=response_body)
 
-        target_settings.key = key
-        target_settings.date_value = value
-        target_settings.int_value = None
-        target_settings.str_value = None
-        target_settings.float_value = None
-        target_settings.time_value = None
+        target_setting.key = key
+        target_setting.date_value = value
 
     elif value_type == 'time':
         try: 
@@ -188,19 +159,15 @@ def put(request:Request):
             response_body.append(err)
             return HTTPBadRequest(json=response_body)
 
-        target_settings.key = key
-        target_settings.date_value = value
-        target_settings.int_value = None
-        target_settings.str_value = None
-        target_settings.float_value = None
-        target_settings.date_value = None
+        target_setting.key = key
+        target_setting.date_value = value
 
     else: 
         err = {
             "exception": "ValidationError",
         }   
         response_body = []
-        err["message"] = "The value type has to be one of 'int, string, float, date, time'."
+        err["message"] = "The value type of this setting is not defined."
         response_body.append(err)
         return HTTPBadRequest(json=response_body)
 

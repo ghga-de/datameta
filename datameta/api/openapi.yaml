@@ -776,38 +776,38 @@ components:
       properties:
         name:
           type: string
-        regex_description:
+        regexDescription:
           type: string
-        long_description:
+        longDescription:
           type: string
         example:
           type: string
-        reg_exp:
+        regExp:
           type: string
-        date_time_fmt:
+        dateTimeFmt:
           type: string
-        is_mandatory:
+        isMandatory:
           type: boolean
         order:
           type: integer
-        is_file:
+        isFile:
           type: boolean
-        is_submission_unique:
+        isSubmissionUnique:
           type: boolean
-        is_site_unique:
+        isSiteUnique:
           type: boolean
       required:
         - name
-        - regex_description
-        - long_description
+        - regexDescription
+        - longDescription
         - example
-        - reg_exp
-        - date_time_fmt
-        - is_mandatory
+        - regExp
+        - dateTimeFmt
+        - isMandatory
         - order
-        - is_file
-        - is_submission_unique
-        - is_site_unique
+        - isFile
+        - isSubmissionUnique
+        - isSiteUnique
       additionalProperties: false
 
     MetaDataSet:
@@ -1044,8 +1044,8 @@ components:
     AppSettingsResponse:
       type: object
       properties:
-        uuid:
-          type: string
+        id:
+          $ref: "#/components/schemas/Identifier"
         key:
           type: string
         valueType:
@@ -1053,7 +1053,7 @@ components:
         value:
           type: string
       required:
-        - uuid
+        - id
         - key
         - valueType
         - value
@@ -1064,13 +1064,10 @@ components:
       properties:
         key:
           type: string
-        value_type:
-          type: string
         value:
           type: string
       required:
         - key
-        - value_type
         - value
       additionalProperties: false
 

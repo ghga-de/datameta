@@ -202,7 +202,6 @@ DataMeta.admin.rebuildUserTable = function(users) {
 //Initializes the user table
 DataMeta.admin.initUserTable = function() {
     $('#table_users').DataTable({
-        destroy: true, //Destroys the table, in case it already exist
         rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
@@ -255,7 +254,6 @@ DataMeta.admin.rebuildGroupTable = function(groups) {
 //Initializes the group table
 DataMeta.admin.initGroupTable = function() {
     $('#table_groups').DataTable({
-        destroy: true,  //Destroys the table, in case it already exists
         rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
@@ -282,8 +280,7 @@ DataMeta.admin.rebuildSiteTable = function(settings) {
 //Initializes the site settings table
 DataMeta.admin.initSiteTable = function() {
     $('#table_site').DataTable({
-        destroy: true,  //Destroys the table, in case it already exists
-        rowId: 'uuid',
+        rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
         pageLength: 25,
@@ -310,7 +307,6 @@ DataMeta.admin.rebuildMetadataTable = function(metadata) {
 //Initializes the metadata table
 DataMeta.admin.initMetadataTable = function() {
     $('#table_metadata').DataTable({
-        destroy: true,  //Destroys the table, in case it already exists
         rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
@@ -351,15 +347,6 @@ function enableSettingsEditMode(event) {
     var innerHTML = row.children[0].innerHTML;
     row.children[0].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
 
-    var innerHTML = row.children[1].innerHTML;
-    row.children[1].innerHTML = '<select class="form-select form-select mb-3" aria-label=".form-select-lg">' +
-                                '<option value="int">int</option>' +
-                                '<option value="string">string</option>' +
-                                '<option value="float">float</option>' +
-                                '<option value="date">date</option>' +
-                                '<option value="time">time</option>' +
-                                '</select>'
-
     innerHTML = row.children[2].innerHTML;
     row.children[2].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control">' + innerHTML + '</textarea></div>';
     
@@ -384,7 +371,6 @@ function saveSettings(event) {
 
     var appsetting_id = row.id;
     var key = row.children[0].querySelector('input').value;
-    var value_type = row.children[1].querySelector('select').value;
     var value = row.children[2].querySelector('textarea').value;
 
     fetch(DataMeta.api('appsettings/' + appsetting_id),
@@ -396,7 +382,6 @@ function saveSettings(event) {
         },
         body: JSON.stringify({
             key,
-            value_type,
             value
         })
     })
@@ -414,7 +399,7 @@ function saveSettings(event) {
         } else if (response.status == "401") {
             show_settings_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_settings_alert("You don't have the rights to perform this action.");
+            show_settings_alert("You do not have the rights to perform this action.");
         } else {
             show_settings_alert("An unknown error occurred. Please try again later.");
         }
@@ -546,16 +531,16 @@ function saveMetaDatum(event) {
     
     var metadata_id = row.id; 
     var name = row.children[0].querySelector('input').value;
-    var regex_description = row.children[1].querySelector('textarea').value;
-    var long_description = row.children[2].querySelector('textarea').value;
+    var regexDescription = row.children[1].querySelector('textarea').value;
+    var longDescription = row.children[2].querySelector('textarea').value;
     var example = row.children[3].querySelector('input').value;
-    var reg_exp = row.children[4].querySelector('input').value;
-    var date_time_fmt = row.children[5].querySelector('input').value;
-    var is_mandatory = row.children[6].querySelector('input').checked;
+    var regExp = row.children[4].querySelector('input').value;
+    var dateTimeFmt = row.children[5].querySelector('input').value;
+    var isMandatory = row.children[6].querySelector('input').checked;
     var order = parseInt(row.children[7].querySelector('input').value);
-    var is_file = row.children[8].querySelector('input').checked;
-    var is_submission_unique = row.children[9].querySelector('input').checked;
-    var is_site_unique = row.children[10].querySelector('input').checked;
+    var isFile = row.children[8].querySelector('input').checked;
+    var isSubmissionUnique = row.children[9].querySelector('input').checked;
+    var isSiteUnique = row.children[10].querySelector('input').checked;
 
     if(isNaN(order)) {
         show_metadata_alert("Please specify an int in the 'order' field.");
@@ -571,16 +556,16 @@ function saveMetaDatum(event) {
         },
         body: JSON.stringify({
             name,
-            regex_description,
-            long_description,
+            regexDescription,
+            longDescription,
             example,
-            reg_exp,
-            date_time_fmt,
-            is_mandatory,
+            regExp,
+            dateTimeFmt,
+            isMandatory,
             order,
-            is_file,
-            is_submission_unique,
-            is_site_unique
+            isFile,
+            isSubmissionUnique,
+            isSiteUnique
         })
     })
     .then(function (response) {
@@ -597,7 +582,7 @@ function saveMetaDatum(event) {
         } else if (response.status == "401") {
             show_metadata_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_metadata_alert("You don't have the rights to perform this action.");
+            show_metadata_alert("You do not have the rights to perform this action.");
         } else {
             show_metadata_alert("An unknown error occurred. Please try again later.");
         }
@@ -620,16 +605,16 @@ function addMetaDatum(event) {
     var row = button.parentNode.parentNode.parentNode;
     
     var name = row.children[0].querySelector('input').value;
-    var regex_description = row.children[1].querySelector('textarea').value;
-    var long_description = row.children[2].querySelector('textarea').value;
+    var regexDescription = row.children[1].querySelector('textarea').value;
+    var longDescription = row.children[2].querySelector('textarea').value;
     var example = row.children[3].querySelector('input').value;
-    var reg_exp = row.children[4].querySelector('input').value;
-    var date_time_fmt = row.children[5].querySelector('input').value;
-    var is_mandatory = row.children[6].querySelector('input').checked;
+    var regExp = row.children[4].querySelector('input').value;
+    var dateTimeFmt = row.children[5].querySelector('input').value;
+    var isMandatory = row.children[6].querySelector('input').checked;
     var order = parseInt(row.children[7].querySelector('input').value);
-    var is_file = row.children[8].querySelector('input').checked;
-    var is_submission_unique = row.children[9].querySelector('input').checked;
-    var is_site_unique = row.children[10].querySelector('input').checked;
+    var isFile = row.children[8].querySelector('input').checked;
+    var isSubmissionUnique = row.children[9].querySelector('input').checked;
+    var isSiteUnique = row.children[10].querySelector('input').checked;
 
     if(isNaN(order)) {
         show_metadata_alert("Please specify an int in the 'order' field.");
@@ -645,16 +630,16 @@ function addMetaDatum(event) {
         },
         body: JSON.stringify({
             name,
-            regex_description,
-            long_description,
+            regexDescription,
+            longDescription,
             example,
-            reg_exp,
-            date_time_fmt,
-            is_mandatory,
+            regExp,
+            dateTimeFmt,
+            isMandatory,
             order,
-            is_file,
-            is_submission_unique,
-            is_site_unique
+            isFile,
+            isSubmissionUnique,
+            isSiteUnique
         })
     })
     .then(function (response) {
@@ -671,7 +656,7 @@ function addMetaDatum(event) {
         } else if (response.status == "401") {
             show_metadata_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_metadata_alert("You don't have the rights to perform this action.");
+            show_metadata_alert("You do not have the rights to perform this action.");
         } else {
             show_metadata_alert("An unknown error occurred. Please try again later.");
         }
@@ -826,7 +811,7 @@ function changeUserName(event) {
     var name = button.getAttribute('data');
     var uuid = row.id;
 
-    cell.innerHTML =    '<div class="input-group" style="width:200px"><span class="input-group-text">' + 
+    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
                         '<i class="bi bi-person-circle"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
@@ -867,7 +852,7 @@ function confirmUserNameChange(event, uuid) {
     var name = button.getAttribute('data');
     var uuid = row.id;
 
-    cell.innerHTML =    '<div class="input-group" style="width:200px"><span class="input-group-text">' + 
+    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
                         '<i class="bi bi-person-circle"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
@@ -892,7 +877,7 @@ function confirmGroupNameChange(event, uuid) {
 
 // API call to change the group name
 DataMeta.admin.updateGroup = function (group_id, name) {
-    fetch('/api/v0/groups/' + group_id,
+    fetch(DataMeta.api('groups/' + group_id),
     {
         method: 'PUT',
         headers: {
@@ -914,7 +899,7 @@ DataMeta.admin.updateGroup = function (group_id, name) {
         } else if (response.status == "401") {
             show_group_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_group_alert("You don't have the rights to perform this action.");
+            show_group_alert("You do not have the rights to perform this action.");
         } else {
             show_group_alert("An unknown error occurred. Please try again later.");
         }
@@ -926,7 +911,7 @@ DataMeta.admin.updateGroup = function (group_id, name) {
 
 // API call to get the AppSettings
 DataMeta.admin.getAppSettings = function () {
-    fetch('/api/v0/appsettings',
+    fetch(DataMeta.api('appsettings'),
     {
         method: 'GET',
         headers: {
@@ -950,7 +935,7 @@ DataMeta.admin.getAppSettings = function () {
         } else if (response.status == "401") {
             show_group_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_group_alert("You don't have the rights to perform this action.");
+            show_group_alert("You do not have the rights to perform this action.");
         } else {
             show_group_alert("An unknown error occurred. Please try again later.");
         }
@@ -962,7 +947,7 @@ DataMeta.admin.getAppSettings = function () {
 
 // API call get the Metadata definitions
 DataMeta.admin.getMetadata = function () {
-    fetch('/api/v0/metadata',
+    fetch(DataMeta.api('metadata'),
     {
         method: 'GET',
         headers: {
@@ -987,7 +972,7 @@ DataMeta.admin.getMetadata = function () {
         } else if (response.status == "401") {
             show_group_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_group_alert("You don't have the rights to perform this action.");
+            show_group_alert("You do not have the rights to perform this action.");
         } else {
             show_group_alert("An unknown error occurred. Please try again later.");
         }
@@ -1040,7 +1025,7 @@ function show_settings_alert(text) {
 
 // API call to change user name, group, admin and enabled settings
 DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, enabled) {
-    fetch('/api/v0/users/' + id,
+    fetch(DataMeta.api('users/' + id),
     {
         method: 'PUT',
         headers: {
@@ -1066,7 +1051,7 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
         } else if (response.status == "401") {
             show_user_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_user_alert("You don't have the rights to perform this action.");
+            show_user_alert("You do not have the rights to perform this action.");
         } else if (response.status == "404") {
             show_user_alert("The user or group you are referring to does not exist.");
         } else {
