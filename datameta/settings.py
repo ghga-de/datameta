@@ -21,19 +21,19 @@ def get_setting(db, key):
 def get_setting_value_type(setting):
     value_type = None
 
-    if setting.int_value != None:
+    if setting.int_value:
         value = setting.int_value
         value_type = "int"
-    elif setting.str_value != None:
+    elif setting.str_value:
         value = setting.str_value
         value_type = "string"
-    elif setting.float_value != None:
+    elif setting.float_value:
         value = float_value
         value_type = "float"
-    elif setting.date_value != None:
+    elif setting.date_value:
         value = date_value
         value_type = "date"
-    elif setting.time_value != None:
+    elif setting.time_value:
         value = time_value
         value_type = "time"
 
