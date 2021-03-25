@@ -27,16 +27,16 @@ class MetaDataResponseElement(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
     id                      :  dict
     name                    :  str
-    isMandatory            :  bool
+    is_mandatory            :  bool
     order                   :  int
-    isFile                 :  bool
-    isSubmissionUnique    :  bool
-    isSiteUnique          :  bool
-    regexDescription       :  Optional[str] = None
-    longDescription        :  Optional[str] = None
+    is_file                 :  bool
+    is_submission_unique    :  bool
+    is_site_unique          :  bool
+    regex_description       :  Optional[str] = None
+    long_description        :  Optional[str] = None
     example                 :  Optional[str] = None
-    regExp                 :  Optional[str] = None
-    dateTimeFmt           :  Optional[str] = None
+    reg_exp                 :  Optional[str] = None
+    date_time_fmt           :  Optional[str] = None
 
 @view_config(
     route_name="metadata",
@@ -54,16 +54,16 @@ def get(request:Request) -> List[MetaDataResponseElement]:
         MetaDataResponseElement(
             id                    =  resource.get_identifier(metadatum),
             name                  =  metadatum.name,
-            regexDescription     =  metadatum.short_description,
-            longDescription      =  metadatum.long_description,
+            regex_description     =  metadatum.short_description,
+            long_description      =  metadatum.long_description,
             example               =  metadatum.example,
-            regExp               =  metadatum.regexp,
-            dateTimeFmt         =  metadatum.datetimefmt,
-            isMandatory          =  metadatum.mandatory,
+            reg_exp               =  metadatum.regexp,
+            date_time_fmt         =  metadatum.datetimefmt,
+            is_mandatory          =  metadatum.mandatory,
             order                 =  metadatum.order,
-            isFile               =  metadatum.isfile,
-            isSubmissionUnique  =  metadatum.submission_unique,
-            isSiteUnique        =  metadatum.site_unique
+            is_file               =  metadatum.isfile,
+            is_submission_unique  =  metadatum.submission_unique,
+            is_site_unique        =  metadatum.site_unique
             )
         for metadatum in metadata
         ]

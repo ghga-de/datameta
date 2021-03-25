@@ -38,7 +38,7 @@ class AppSettingsResponseElement(DataHolderBase):
     """Class for Appsettings Request Response from OpenApi"""
     id:         dict
     key:        str
-    valueType:  str
+    value_type:  str
     value:      str
 
 @view_config(
@@ -69,7 +69,7 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
             AppSettingsResponseElement(
                 id                    =  resource.get_identifier(setting),
                 key                   =  setting.key,
-                valueType             =  value_type,
+                value_type             =  value_type,
                 value                 =  value
             )
         )
