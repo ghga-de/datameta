@@ -243,7 +243,7 @@ paths:
   /metadata/{id}:
     put:
       summary: Update a MetaDatum
-      description: Update a MetaDatum
+      description: Update a MetaDatum. This is an administrative Endpoint that is not accessible for regular users.
       tags:
         - Metadata
       operationId: UpdateMetaDatum
