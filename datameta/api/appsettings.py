@@ -121,10 +121,7 @@ def put(request:Request):
             err = {
                 "exception": "ValidationError",
             }   
-            response_body = []
-            err["message"] = "You have to provide a float."
-            response_body.append(err)
-            return HTTPBadRequest(json=response_body)
+            raise errors.get_validation_error(["You have to provide a float."])
             
         target_setting.key = key
         target_setting.float_value = value_float
