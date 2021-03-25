@@ -118,7 +118,7 @@ def put(request: Request):
     """Change the name of the group"""
 
     group_id = request.matchdict["id"]
-    newGroupName = request.openapi_validated.body["name"]
+    new_group_name = request.openapi_validated.body["name"]
     db = request.dbsession
 
     # Authenticate the user
@@ -129,9 +129,21 @@ def put(request: Request):
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
-    # Change the group name only if the user is site admin
-    if auth_user.site_admin:
-        target_group.name = newGroupName
+    # Change the group name only if the user is site admin or the admin for the specific group
+    if auth_user.site_admin or auth_user.group_admin and auth_user.group.uuid == group_id:
+
+        same_name_group = db.query(Group).filter(Group.name==new_group_name).one_or_none()
+
+        if (same_name_group != None):
+            err = {
+                "exception": "ValidationError",
+            }   
+            response_body = []
+            err["message"] = "This group name does already exist."
+            response_body.append(err)
+            raise HTTPBadRequest(json=response_body)
+
+        target_group.name = new_group_name
         return HTTPNoContent()
     
     raise HTTPForbidden() # 403 Not authorized to change this group name
