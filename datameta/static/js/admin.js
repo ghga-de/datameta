@@ -208,6 +208,7 @@ DataMeta.admin.initUserTable = function() {
         lengthMenu: [ 10, 25, 50, 100 ],
         pageLength: 25,
         searching: false,
+        scrollX: true,
         columns: [
             { title: "User ID", data: "id.site"},
             { title: "Name", data: "fullname", render:function(data) {
@@ -260,6 +261,7 @@ DataMeta.admin.initGroupTable = function() {
         lengthMenu: [ 10, 25, 50, 100 ],
         pageLength: 25,
         searching: false,
+        scrollX: true,
         columns: [
             { title: "Group ID", data: "id.site"},
             { title: "Group Name", data: "name", render:function(data) {
@@ -285,6 +287,7 @@ DataMeta.admin.initSiteTable = function() {
         paging : true,
         pageLength: 25,
         searching: false,
+        scrollX: true,
         columns: [
             { title: "Key", data: "key"},
             { title: "Value Type", data: "valueType"},
@@ -312,6 +315,7 @@ DataMeta.admin.initMetadataTable = function() {
         paging : true,
         pageLength: 25,
         searching: false,
+        scrollX: true,
         columns: [
             { title: "Name", data: "name"},
             { title: "Short Description", data: "regexDescription"},
