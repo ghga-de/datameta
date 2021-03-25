@@ -217,7 +217,7 @@ paths:
     post:
       summary: Create a New MetaDatum
       description: >-
-        Create a new MetaDatum
+        Create a new MetaDatum. This is an administrative Endpoint that is not accessible for regular users.
       tags:
         - Metadata
       operationId: CreateMetaDatum
