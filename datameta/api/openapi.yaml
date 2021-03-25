@@ -629,7 +629,7 @@ paths:
     get:
       summary: GET all AppSettings
       description: >-
-        GET all AppSettings
+        GET all AppSettings. This is an administrative Endpoint that is not accessible for regular users.
       tags:
         - Settings
       operationId: AppSettings
