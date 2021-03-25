@@ -147,8 +147,8 @@ DataMeta.admin.reload_requests = function(requests, groups) {
 DataMeta.admin.subnav = function() {
     // Handle registration request preselection
     var showreq = DataMeta.uilocal.showreq;
-    DataMeta.uilocal.showreq = '';
-    if (!(showreq == '')){
+    DataMeta.uilocal.showreq = null;
+    if (!(showreq == '' || showreq == null)){
         var admintabs = document.getElementById('admintabs');
         // de-select all tabs
         admintabs.querySelectorAll(".nav-link").forEach(elem => elem.classList.remove("active"))
