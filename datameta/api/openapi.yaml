@@ -221,13 +221,6 @@ paths:
       tags:
         - Metadata
       operationId: CreateMetaDatum
-      parameters:
-        - name: id
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -787,6 +780,8 @@ components:
           type: string
         long_description:
           type: string
+        example:
+          type: string
         reg_exp:
           type: string
         date_time_fmt:
@@ -805,6 +800,7 @@ components:
         - name
         - regex_description
         - long_description
+        - example
         - reg_exp
         - date_time_fmt
         - is_mandatory
@@ -1011,6 +1007,9 @@ components:
           longDescription:
             type: string
             nullable: true
+          example:
+            type: string
+            nullable: true
           regExp:
             type: string
             nullable: true
@@ -1032,6 +1031,7 @@ components:
           - name
           - regexDescription
           - longDescription
+          - example
           - regExp
           - dateTimeFmt
           - isMandatory

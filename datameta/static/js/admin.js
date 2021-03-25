@@ -321,6 +321,7 @@ DataMeta.admin.initMetadataTable = function() {
             { title: "Name", data: "name"},
             { title: "Short Description", data: "regexDescription"},
             { title: "Long Description", data: "longDescription"},
+            { title: "Example", data: "example"},
             { title: "Regular Expression", data: "regExp"},
             { title: "Date/Time Format", data: "dateTimeFmt"},
             { orderable:false, title: "isMandatory", data: "isMandatory"},
@@ -451,18 +452,17 @@ function enableMetaDatumEditMode(event) {
 
     innerHTML = row.children[4].innerHTML;
     row.children[4].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
-    
+
     innerHTML = row.children[5].innerHTML;
-    var checked = ((innerHTML == "true") ? "checked": "")
-    row.children[5].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
+    row.children[5].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
     
     innerHTML = row.children[6].innerHTML;
-    row.children[6].innerHTML = '<div class="input-group"><input type="number" class="form-control" value="' + innerHTML +'"></div>';
+    var checked = ((innerHTML == "true") ? "checked": "")
+    row.children[6].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
     
     innerHTML = row.children[7].innerHTML;
-    checked = ((innerHTML == "true") ? "checked": "")
-    row.children[7].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
-
+    row.children[7].innerHTML = '<div class="input-group" style="width:70px"><input type="number" class="form-control" value="' + innerHTML +'"></div>';
+    
     innerHTML = row.children[8].innerHTML;
     checked = ((innerHTML == "true") ? "checked": "")
     row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
@@ -471,7 +471,11 @@ function enableMetaDatumEditMode(event) {
     checked = ((innerHTML == "true") ? "checked": "")
     row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
 
-    row.children[10].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
+    innerHTML = row.children[10].innerHTML;
+    checked = ((innerHTML == "true") ? "checked": "")
+    row.children[10].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
+
+    row.children[11].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
                                  '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
 
     $('#table_metadata').DataTable().columns.adjust().draw();
@@ -492,16 +496,40 @@ DataMeta.admin.newMetaDatumRow = function() {
     }
 
     // create a new row
-    var row = [{id: {uuid: "-1"}, name: "", regexDescription: "", longDescription: "", regExp: "", dateTimeFmt: "", isMandatory: "", order: "", isFile: "", isSubmissionUnique: "", isSiteUnique: ""}];
+    var row = [{
+        id: {uuid: "-1"}, 
+        name: "", 
+        regexDescription: "", 
+        longDescription: "", 
+        example: "",
+        regExp: "", 
+        dateTimeFmt: "", 
+        isMandatory: "", 
+        order: "0", 
+        isFile: "", 
+        isSubmissionUnique: "", 
+        isSiteUnique: ""}];
 
     // add the new row to the table
     table.rows.add(row);
-    table.columns.adjust().draw();
+    table.order([7, "desc"]).columns.adjust().draw();
 
-    // Alter the success link
-    var btn = document.getElementById("-1").querySelector("button.btn-outline-success");
-    btn.onclick="addMetaDatum(event)";
+    var row = document.getElementById("-1");
 
+    //Immediately make the row editable
+    row.children[0].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[1].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control"></textarea></div>';
+    row.children[2].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control"></textarea></div>';
+    row.children[3].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[4].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[5].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[6].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
+    row.children[7].innerHTML = '<div class="input-group" style="width:70px"><input type="number" class="form-control" value="0"></div>';
+    row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
+    row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
+    row.children[10].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
+    row.children[11].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="addMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
+                                 '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
 }
 
 // Saves the editing done for Metadata Settings
@@ -521,13 +549,14 @@ function saveMetaDatum(event) {
     var name = row.children[0].querySelector('input').value;
     var regex_description = row.children[1].querySelector('textarea').value;
     var long_description = row.children[2].querySelector('textarea').value;
-    var reg_exp = row.children[3].querySelector('input').value;
-    var date_time_fmt = row.children[4].querySelector('input').value;
-    var is_mandatory = row.children[5].querySelector('input').checked;
-    var order = parseInt(row.children[6].querySelector('input').value);
-    var is_file = row.children[7].querySelector('input').checked;
-    var is_submission_unique = row.children[8].querySelector('input').checked;
-    var is_site_unique = row.children[9].querySelector('input').checked;
+    var example = row.children[3].querySelector('input').value;
+    var reg_exp = row.children[4].querySelector('input').value;
+    var date_time_fmt = row.children[5].querySelector('input').value;
+    var is_mandatory = row.children[6].querySelector('input').checked;
+    var order = parseInt(row.children[7].querySelector('input').value);
+    var is_file = row.children[8].querySelector('input').checked;
+    var is_submission_unique = row.children[9].querySelector('input').checked;
+    var is_site_unique = row.children[10].querySelector('input').checked;
 
     if(isNaN(order)) {
         show_metadata_alert("Please specify an int in the 'order' field.");
@@ -545,6 +574,7 @@ function saveMetaDatum(event) {
             name,
             regex_description,
             long_description,
+            example,
             reg_exp,
             date_time_fmt,
             is_mandatory,
@@ -593,13 +623,14 @@ function addMetaDatum(event) {
     var name = row.children[0].querySelector('input').value;
     var regex_description = row.children[1].querySelector('textarea').value;
     var long_description = row.children[2].querySelector('textarea').value;
-    var reg_exp = row.children[3].querySelector('input').value;
-    var date_time_fmt = row.children[4].querySelector('input').value;
-    var is_mandatory = row.children[5].querySelector('input').checked;
-    var order = parseInt(row.children[6].querySelector('input').value);
-    var is_file = row.children[7].querySelector('input').checked;
-    var is_submission_unique = row.children[8].querySelector('input').checked;
-    var is_site_unique = row.children[9].querySelector('input').checked;
+    var example = row.children[3].querySelector('input').value;
+    var reg_exp = row.children[4].querySelector('input').value;
+    var date_time_fmt = row.children[5].querySelector('input').value;
+    var is_mandatory = row.children[6].querySelector('input').checked;
+    var order = parseInt(row.children[7].querySelector('input').value);
+    var is_file = row.children[8].querySelector('input').checked;
+    var is_submission_unique = row.children[9].querySelector('input').checked;
+    var is_site_unique = row.children[10].querySelector('input').checked;
 
     if(isNaN(order)) {
         show_metadata_alert("Please specify an int in the 'order' field.");
@@ -617,6 +648,7 @@ function addMetaDatum(event) {
             name,
             regex_description,
             long_description,
+            example,
             reg_exp,
             date_time_fmt,
             is_mandatory,

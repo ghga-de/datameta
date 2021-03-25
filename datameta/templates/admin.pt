@@ -36,6 +36,9 @@
                         </div>
                         <table id="table_metadata" class="table table-sm table-hover" style="width:100%">
                         </table>
+                        <div>
+                            <button class="btn btn-outline-success enabled" type="button" onclick="DataMeta.admin.newMetaDatumRow()">Create new metadatum</button>
+                        </div>
                     </div>
                     <div class="card-body tab-pane fade" id="nav-users" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 class="card-title">User Management</h5>

@@ -19,7 +19,7 @@ from pyramid.view import view_config
 from . import DataHolderBase
 from ..models import MetaDatum
 from .. import resource, security, siteid
-from ..resource import resource_by_id
+from ..resource import resource_by_id, get_identifier
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 
 @dataclass
@@ -34,6 +34,7 @@ class MetaDataResponseElement(DataHolderBase):
     is_site_unique          :  bool
     regex_description       :  Optional[str] = None
     long_description        :  Optional[str] = None
+    example                 :  Optional[str] = None
     reg_exp                 :  Optional[str] = None
     date_time_fmt           :  Optional[str] = None
 
@@ -55,6 +56,7 @@ def get(request:Request) -> List[MetaDataResponseElement]:
             name                  =  metadatum.name,
             regex_description     =  metadatum.short_description,
             long_description      =  metadatum.long_description,
+            example               =  metadatum.example,
             reg_exp               =  metadatum.regexp,
             date_time_fmt         =  metadatum.datetimefmt,
             is_mandatory          =  metadatum.mandatory,
@@ -87,6 +89,7 @@ def put(request:Request):
     target_metadatum.name = request.openapi_validated.body["name"]
     target_metadatum.short_description = request.openapi_validated.body["regex_description"]
     target_metadatum.long_description = request.openapi_validated.body["long_description"]
+    target_metadatum.example = request.openapi_validated.body["example"]
     target_metadatum.regexp = request.openapi_validated.body["reg_exp"]
     target_metadatum.datetimefmt = request.openapi_validated.body["date_time_fmt"]
     target_metadatum.mandatory = request.openapi_validated.body["is_mandatory"]
@@ -98,7 +101,7 @@ def put(request:Request):
     return HTTPNoContent()
 
 @view_config(
-    route_name="metadata_id",
+    route_name="metadata",
     renderer='json',
     request_method="POST",
     openapi=True
@@ -111,20 +114,21 @@ def post(request:Request):
     if not auth_user.site_admin:
          raise HTTPForbidden()
 
-    metadata = MetaDatum(
+    metadatum = MetaDatum(
         name = request.openapi_validated.body["name"],
         short_description = request.openapi_validated.body["regex_description"],
         long_description = request.openapi_validated.body["long_description"],
+        example = request.openapi_validated.body["example"],
         regexp = request.openapi_validated.body["reg_exp"],
         datetimefmt = request.openapi_validated.body["date_time_fmt"],
         mandatory = request.openapi_validated.body["is_mandatory"],
         order = request.openapi_validated.body["order"],
         isfile = request.openapi_validated.body["is_file"],
         submission_unique = request.openapi_validated.body["is_submission_unique"],
-        site_unique = request.openapi_validated.body["is_site_unique"]
+        site_unique = request.openapi_validated.body["is_site_unique"],
     )
 
-    db.add(metadata)
-    db.flush()
+    db = request.dbsession
+    db.add(metadatum)
 
-    raise HTTPNoContent
+    return HTTPNoContent()
