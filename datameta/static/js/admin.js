@@ -144,11 +144,10 @@ DataMeta.admin.reload_requests = function(requests, groups) {
     });
 }
 
-
 DataMeta.admin.subnav = function() {
     // Handle registration request preselection
     var showreq = DataMeta.uilocal.showreq;
-    DataMeta.uilocal.showreq = null;
+    DataMeta.uilocal.showreq = '';
     if (!(showreq == '')){
         var admintabs = document.getElementById('admintabs');
         // de-select all tabs
@@ -833,7 +832,7 @@ function changeUserName(event) {
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
                         '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmUserNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
                         
-    $('#table_users').columns.adjust().draw();
+    $('#table_users').DataTable().columns.adjust().draw();
 }
 
 //Confirms the UserNameChange and performs the api call
