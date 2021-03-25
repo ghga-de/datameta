@@ -133,10 +133,7 @@ def put(request:Request):
             err = {
                 "exception": "ValidationError",
             }   
-            response_body = []
-            err["message"] = "The date type has to specified in the form '%Y-%m-%d'."
-            response_body.append(err)
-            return HTTPBadRequest(json=response_body)
+            raise errors.get_validation_error(["The date value has to specified in the form '%Y-%m-%d'."])
 
         target_setting.key = key
         target_setting.date_value = value
