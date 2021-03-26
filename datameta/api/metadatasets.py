@@ -136,9 +136,9 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     return MetaDataSetResponse(
         id=get_identifier(mdata_set),
         record=get_record_from_metadataset(mdata_set),
-        group_id=mdata_set.group.site_id,
-        user_id=mdata_set.user.site_id,
-        submission_id=mdata_set.submission_id,
+        group_id=get_identifier(mdata_set.group),
+        user_id=get_identifier(mdata_set.user),
+        submission_id=get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
 
 @view_config(
@@ -147,7 +147,7 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     request_method="DELETE",
     openapi=True
 )
-def get_metadataset(request:Request) -> HTTPNoContent:
+def delete_metadataset(request:Request) -> HTTPNoContent:
     # Check authentication or raise 401
     auth_user = security.revalidate_user(request)
 
