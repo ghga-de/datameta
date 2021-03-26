@@ -5,7 +5,7 @@ from typing import Optional
 from dataclasses import dataclass
 import transaction
 from copy import deepcopy
-from .fixtures import UserFixture
+from .fixtures import UserFixture, MetaDatumFixture
 
 from datameta import models, security
 from datameta.models import get_tm_session
@@ -46,6 +46,38 @@ def create_user(
         user_updated = deepcopy(user)
         user_updated.uuid = str(user_obj.uuid)
         return user_updated
+
+
+def create_metadatum(
+    session_factory,
+    metadatum:MetaDatumFixture
+):
+    """Add a metadatum to the database"""
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        
+        # create metadatum:
+        metadatum_obj = models.MetaDatum(
+            name = metadatum.name,
+            mandatory = metadatum.mandatory,
+            order = metadatum.order,
+            isfile = metadatum.isfile,
+            site_unique = metadatum.site_unique,
+            submission_unique = metadatum.submission_unique,
+            datetimefmt = metadatum.datetimefmt,
+            datetimemode = metadatum.datetimemode,
+            regexp = metadatum.regexp,
+            example = metadatum.example,
+            short_description = metadatum.short_description, 
+            long_description = metadatum.long_description
+        )
+        session.add(metadatum_obj)
+        session.flush()
+
+        # return user updated with uuid:
+        metadatum_updated = deepcopy(metadatum_obj)
+        metadatum_updated.uuid = str(metadatum_updated.uuid)
+        return metadatum_updated
 
 
 def get_auth_headers(token:str):

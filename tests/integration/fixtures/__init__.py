@@ -2,7 +2,9 @@ import os
 import json
 from dataclasses import dataclass
 import hashlib
-from typing import Optional
+from typing import Optional, Union
+
+from datameta.models.db import DateTimeMode
 
 # get URL to test db from environment variable:
 db_url = os.getenv("SQLALCHEMY_TEST_URL")
@@ -37,6 +39,36 @@ with open(default_users_json, "r") as json_:
     default_users = {
         name: UserFixture(**user)
         for name, user in json.load(json_).items()
+    }
+
+# read default metadatum.json:
+@dataclass
+class MetaDatumFixture():
+    """A container for metadatum information"""
+    name: str
+    mandatory: bool
+    order: int
+    isfile: bool
+    site_unique: bool
+    submission_unique: bool
+    datetimefmt: Optional[str] = None
+    _datetimemode: Optional[str] = None
+    datetimemode: Optional[DateTimeMode] = None
+    regexp: Optional[str] = None
+    example: Optional[str] = None
+    short_description: Optional[str] = None
+    long_description: Optional[str] = None
+    uuid: Optional[str] = None
+
+    def __post_init(self):
+        if self._datetimemode:
+            self.datetimemode = getattr(DateTimeMode, self._datetimemode)
+
+default_metadata_json = os.path.join(base_dir, "default_metadata.json")
+with open(default_metadata_json, "r") as json_:
+    default_metadata = {
+        mdatum["name"]: MetaDatumFixture(**mdatum)
+        for mdatum in json.load(json_)
     }
 
 # read metadata_records.json:

@@ -20,12 +20,13 @@ from datameta.models import (
 )
 from datameta.models.meta import Base
 
-from .utils import create_user 
+from .utils import create_user, create_metadatum
 from .fixtures import (
     db_url, 
     memcached_url, 
     default_settings,
     default_users,
+    default_metadata,
     metadata_records,
     test_files
 )
@@ -57,6 +58,12 @@ class BaseIntegrationTest(unittest.TestCase):
         self.users = {
             name: create_user(self.session_factory, user)
             for name, user in default_users.items()
+        }
+
+        # create default metadata:
+        self.metadata = {
+            name: create_metadatum(self.session_factory, mdatum)
+            for name, mdatum in default_metadata.items()
         }
 
     def setUp(self):
