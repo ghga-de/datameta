@@ -12,12 +12,12 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
     Tests ApiKey creation, usage, and deletion.
     """
 
-    def step_1(self, status:int=200):
+    def step_1_post_key(self, status:int=200, apikey_label:str="test_key"):
         """Request ApiKey"""
         request_body = {
             "email": self.state["user"].email,
             "password": self.state["user"].password,
-            "label": self.state["apikey_label"]
+            "label": apikey_label
         }
 
         response = self.testapp.post_json(
@@ -76,7 +76,6 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         # set initial state:
         self.state = {
             "user": self.users["user_a"],
-            "apikey_label": "test_key",
             "apikey_response": None # slot to store the apikey response
         }
 
