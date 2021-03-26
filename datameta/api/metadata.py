@@ -18,7 +18,9 @@ from pyramid.request import Request
 from pyramid.view import view_config
 from . import DataHolderBase
 from ..models import MetaDatum
-from .. import resource, security
+from .. import resource, security, siteid
+from ..resource import resource_by_id, get_identifier
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 
 @dataclass
 class MetaDataResponseElement(DataHolderBase):
@@ -32,6 +34,7 @@ class MetaDataResponseElement(DataHolderBase):
     is_site_unique          :  bool
     regex_description       :  Optional[str] = None
     long_description        :  Optional[str] = None
+    example                 :  Optional[str] = None
     reg_exp                 :  Optional[str] = None
     date_time_fmt           :  Optional[str] = None
 
@@ -48,18 +51,84 @@ def get(request:Request) -> List[MetaDataResponseElement]:
     metadata = request.dbsession.query(MetaDatum)
 
     return [
-            MetaDataResponseElement(
-                id                    =  resource.get_identifier(metadatum),
-                name                  =  metadatum.name,
-                regex_description     =  metadatum.short_description,
-                long_description      =  metadatum.long_description,
-                reg_exp               =  metadatum.regexp,
-                date_time_fmt         =  metadatum.datetimefmt,
-                is_mandatory          =  metadatum.mandatory,
-                order                 =  metadatum.order,
-                is_file               =  metadatum.isfile,
-                is_submission_unique  =  metadatum.submission_unique,
-                is_site_unique        =  metadatum.site_unique
-                )
-            for metadatum in metadata
-            ]
+        MetaDataResponseElement(
+            id                    =  resource.get_identifier(metadatum),
+            name                  =  metadatum.name,
+            regex_description     =  metadatum.short_description,
+            long_description      =  metadatum.long_description,
+            example               =  metadatum.example,
+            reg_exp               =  metadatum.regexp,
+            date_time_fmt         =  metadatum.datetimefmt,
+            is_mandatory          =  metadatum.mandatory,
+            order                 =  metadatum.order,
+            is_file               =  metadatum.isfile,
+            is_submission_unique  =  metadatum.submission_unique,
+            is_site_unique        =  metadatum.site_unique
+            )
+        for metadatum in metadata
+        ]
+
+@view_config(
+    route_name="metadata_id",
+    renderer='json',
+    request_method="PUT",
+    openapi=True
+)
+def put(request:Request):
+    """Change a metadataset"""
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+    metadata_id = request.matchdict["id"]
+
+    # Only site admins can change metadatasets
+    if not auth_user.site_admin:
+         raise HTTPForbidden()
+
+    target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
+
+    target_metadatum.name = request.openapi_validated.body["name"]
+    target_metadatum.short_description = request.openapi_validated.body["regexDescription"]
+    target_metadatum.long_description = request.openapi_validated.body["longDescription"]
+    target_metadatum.example = request.openapi_validated.body["example"]
+    target_metadatum.regexp = request.openapi_validated.body["regExp"]
+    target_metadatum.datetimefmt = request.openapi_validated.body["dateTimeFmt"]
+    target_metadatum.mandatory = request.openapi_validated.body["isMandatory"]
+    target_metadatum.order = request.openapi_validated.body["order"]
+    target_metadatum.isfile = request.openapi_validated.body["isFile"]
+    target_metadatum.submission_unique = request.openapi_validated.body["isSubmissionUnique"]
+    target_metadatum.site_unique = request.openapi_validated.body["isSiteUnique"]
+    
+    return HTTPNoContent()
+
+@view_config(
+    route_name="metadata",
+    renderer='json',
+    request_method="POST",
+    openapi=True
+)
+def post(request:Request):
+    """POST a new metadataset"""
+    auth_user = security.revalidate_user(request)
+
+    # Only site admins can post new metadatasets
+    if not auth_user.site_admin:
+         raise HTTPForbidden()
+
+    metadatum = MetaDatum(
+        name = request.openapi_validated.body["name"],
+        short_description = request.openapi_validated.body["regexDescription"],
+        long_description = request.openapi_validated.body["longDescription"],
+        example = request.openapi_validated.body["example"],
+        regexp = request.openapi_validated.body["regExp"],
+        datetimefmt = request.openapi_validated.body["dateTimeFmt"],
+        mandatory = request.openapi_validated.body["isMandatory"],
+        order = request.openapi_validated.body["order"],
+        isfile = request.openapi_validated.body["isFile"],
+        submission_unique = request.openapi_validated.body["isSubmissionUnique"],
+        site_unique = request.openapi_validated.body["isSiteUnique"],
+    )
+
+    db = request.dbsession
+    db.add(metadatum)
+
+    return HTTPNoContent()

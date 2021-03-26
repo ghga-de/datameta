@@ -16,3 +16,25 @@ from .models import ApplicationSettings
 
 def get_setting(db, key):
     return db.query(ApplicationSettings).filter(ApplicationSettings.key==key).one_or_none()
+
+# Returns the type of the setting as the first value field that contains a value
+def get_setting_value_type(setting):
+    value_type = None
+
+    if setting.int_value is not None:
+        value = setting.int_value
+        value_type = "int"
+    elif setting.str_value is not None:
+        value = setting.str_value
+        value_type = "string"
+    elif setting.float_value is not None:
+        value = float_value
+        value_type = "float"
+    elif setting.date_value is not None:
+        value = date_value
+        value_type = "date"
+    elif setting.time_value is not None:
+        value = time_value
+        value_type = "time"
+
+    return value, value_type

@@ -64,7 +64,7 @@ class ChangeGroupName(DataHolderBase):
     request_method="PUT", 
     openapi=True
 )
-def get(request: Request) -> ChangeGroupName:
+def put(request: Request):
     """Change the name of the group"""
 
     group_id = request.matchdict["id"]
