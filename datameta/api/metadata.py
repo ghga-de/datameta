@@ -48,7 +48,7 @@ def get(request:Request) -> List[MetaDataResponseElement]:
     """Obtain information for all metadata that are currently configured."""
     auth_user = security.revalidate_user(request)
 
-    metadata = request.dbsession.query(MetaDatum)
+    metadata = request.dbsession.query(MetaDatum).order_by(MetaDatum.order)
 
     return [
         MetaDataResponseElement(
