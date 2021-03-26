@@ -86,7 +86,6 @@ def put(request:Request):
 
     target_setting = resource_by_id(db, ApplicationSettings, settings_id)
 
-    key = request.openapi_validated.body["key"]
     temp, value_type = get_setting_value_type(target_setting)
     value = request.openapi_validated.body["value"]
 
@@ -99,11 +98,9 @@ def put(request:Request):
             }   
             raise errors.get_validation_error(["You have to provide an integer."])
             
-        target_setting.key = key
         target_setting.int_value = value_int
 
     elif value_type == 'string':
-        target_setting.key = key
         target_setting.str_value = value
 
     elif value_type == 'float':
@@ -115,7 +112,6 @@ def put(request:Request):
             }   
             raise errors.get_validation_error(["You have to provide a float."])
             
-        target_setting.key = key
         target_setting.float_value = value_float
 
     elif value_type == 'date':
@@ -127,7 +123,6 @@ def put(request:Request):
             }   
             raise errors.get_validation_error(["The date value has to specified in the form '%Y-%m-%d'."])
 
-        target_setting.key = key
         target_setting.date_value = value
 
     elif value_type == 'time':
@@ -139,7 +134,6 @@ def put(request:Request):
             }   
             raise errors.get_validation_error(["The time value has to specified in the form '%H:%M:%S'."])
 
-        target_setting.key = key
         target_setting.date_value = value
 
     else: 

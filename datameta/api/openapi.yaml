@@ -1062,12 +1062,9 @@ components:
     AppSettingsUpdateRequest:
       type: object
       properties:
-        key:
-          type: string
         value:
           type: string
       required:
-        - key
         - value
       additionalProperties: false
 

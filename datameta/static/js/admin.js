@@ -348,15 +348,13 @@ function enableSettingsEditMode(event) {
 
     var row = button.parentNode.parentNode;
 
-    var innerHTML = row.children[0].innerHTML;
-    row.children[0].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
-
-    innerHTML = row.children[2].innerHTML;
-    row.children[2].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control">' + innerHTML + '</textarea></div>';
-    
-    row.children[3].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveSettings(event);"><i class="bi bi-check2"></i></button>' +
-                                '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getAppSettings();"><i class="bi bi-x"></i></button></div>'
-
+    var innerHTML = row.children[2].innerHTML;
+    row.children[2].innerHTML = '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
+                                '<i class="bi bi-pencil"></i>' +
+                                '</span>' +
+                                '<textarea type="text" class="form-control">' + innerHTML + '</textarea>' +
+                                '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="saveSettings(event);"><i class="bi bi-check2"></i></button></div>';
+                        
     $('#table_site').DataTable().columns.adjust().draw();
 }
 
@@ -374,7 +372,6 @@ function saveSettings(event) {
     var row = button.parentNode.parentNode.parentNode;
 
     var appsetting_id = row.id;
-    var key = row.children[0].querySelector('input').value;
     var value = row.children[2].querySelector('textarea').value;
 
     fetch(DataMeta.api('appsettings/' + appsetting_id),
@@ -385,7 +382,6 @@ function saveSettings(event) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            key,
             value
         })
     })
@@ -857,12 +853,12 @@ function confirmUserNameChange(event, uuid) {
     var uuid = row.id;
 
     cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
-                        '<i class="bi bi-person-circle"></i>' +
+                        '<i class="bi bi-building"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
                         '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmGroupNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
 
-    $('#table_groups').columns.adjust().draw();
+    $('#table_groups').DataTable().columns.adjust().draw();
 }
 
 //Confirms the GroupNameChange and performs the api call
