@@ -5,23 +5,10 @@ from typing import Optional
 from dataclasses import dataclass
 import transaction
 from copy import deepcopy
+from .fixtures import UserFixture
 
 from datameta import models, security
 from datameta.models import get_tm_session
-
-@dataclass
-class UserFixture():
-    """A container for user information"""
-    email:str
-    password:str 
-    fullname:str
-    site_id:str
-    groupname:str
-    group_admin:bool
-    site_admin:bool
-    uuid:Optional[str] = None # will be set once
-                              # added to the DB
-
 
 def create_user(
     session_factory,

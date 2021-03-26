@@ -1,0 +1,17 @@
+
+[
+    {
+        "#ID": "MD01", 
+        "Date": "2021-03-04", 
+        "ZIP Code": "123", 
+        "FileR1": "test_file_1.txt", 
+        "FileR2": "test_file_2.txt"    
+    },
+    {
+        "#ID": "MD02", 
+        "Date": "2021-03-04", 
+        "ZIP Code": "123", 
+        "FileR1": "test_file_1.txt", 
+        "FileR2": "test_file_2.txt"    
+    }
+]
