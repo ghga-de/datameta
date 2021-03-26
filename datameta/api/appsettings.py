@@ -136,13 +136,4 @@ def put(request:Request):
 
         target_setting.date_value = value
 
-    else: 
-        err = {
-            "exception": "ValidationError",
-        }   
-        response_body = []
-        err["message"] = "The value type of this setting is not defined."
-        response_body.append(err)
-        return HTTPBadRequest(json=response_body)
-
     return HTTPNoContent()
