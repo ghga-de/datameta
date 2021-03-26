@@ -80,6 +80,22 @@ def create_metadatum(
         return metadatum_updated
 
 
+def set_application_settings(
+    session_factory
+):
+    """Set application settings in the db."""
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        
+        # creat logo_html:
+        logo_html = models.ApplicationSettings(
+            key='logo_html',
+            str_value = '<p></p>'
+        )
+        session.add(logo_html)
+        session.flush()
+
+
 def get_auth_headers(token:str):
     """Generate header with Bearer authentication from token"""
     return {

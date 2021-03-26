@@ -20,7 +20,7 @@ from datameta.models import (
 )
 from datameta.models.meta import Base
 
-from .utils import create_user, create_metadatum
+from .utils import create_user, create_metadatum, set_application_settings
 from .fixtures import (
     db_url, 
     memcached_url, 
@@ -65,6 +65,9 @@ class BaseIntegrationTest(unittest.TestCase):
             name: create_metadatum(self.session_factory, mdatum)
             for name, mdatum in default_metadata.items()
         }
+
+        # add application settings:
+        set_application_settings(self.session_factory)
 
     def setUp(self):
         """Setup Test Server"""
