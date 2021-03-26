@@ -3,6 +3,7 @@ metadatasets and files.
 """
 
 from . import BaseIntegrationTest, default_users
+from .fixtures import UserFixture
 from .utils import get_auth_headers
 from typing import Optional
 
@@ -14,11 +15,16 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
     Tests ApiKey creation, metadata staging, file staging, 
     """
 
-    def step_1_post_key(self, status:int=200, apikey_label:str="test_key"):
+    def post_key(
+        self, 
+        user:UserFixture,
+        apikey_label:str="test_key", 
+        status:int=200
+    ):
         """Request ApiKey"""
         request_body = {
-            "email": self.state["user"].email,
-            "password": self.state["user"].password,
+            "email": user.email,
+            "password": user.password,
             "label": apikey_label
         }
 
@@ -28,20 +34,17 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             status=status
         )
 
-        if status==200:
-            self.state["apikey_token"] = response.json["token"]
+        return response.json
 
-    def step_2_post_metadata(
-        self, 
-        status:int=200, 
-        metadata_record:Optional[dict]=None
-    ):
+    def post_metadata(
+        self,  
+        token:str,
+        metadata_record:dict,
+        status:int=200,
+):
         """Post metadataset"""
-        if not metadata_record:
-            metadata_record = self.metadata_records[0]
-
         # request params:
-        request_headers = get_auth_headers(self.state["apikey_token"])
+        request_headers = get_auth_headers(token)
         request_body = {
             "record": metadata_record
         }
@@ -58,19 +61,60 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             # as request record (values might have changed
             # due to backend side processing):
             assert metadata_record.keys() == response.json["record"].keys()
-            # store response in state:
-            self.state["metadata_id"] = response.json["id"]["site"]
+
+        return response.json
+
+    
+    def get_metadata(
+        self,
+        token:str,
+        metadataset_id:str,
+        expected_record:Optional[dict]=None,
+        status:int=200
+    ):
+        # request params:
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.get(
+            base_url + f"/metadatasets/{metadataset_id}",
+            headers=request_headers,
+            status=status
+        )
+
+        if status==200:
+            # check if response record contains same keys
+            # as expected record (values might have changed
+            # due to backend side processing):
+            assert expected_record.keys() == response.json["record"].keys()
+        
+        return response.json
+
 
     def test_steps(self):
-        # set initial state:
-        self.state = {
-            "user": self.users["user_a"],
-            "apikey_token": None, # slot to store the apikey
-            "metadata_ids": [], # slot to store metadata ids
-            "file_ids": [], # slot to store file ids
-        }
+        # get fixtures:
+        user = self.users["user_a"]
+        metadata_records = self.metadata_records
 
-        # execute all test steps:
-        # - create apikey
-        # - post metadata record
-        self._test_all_steps()
+        # get token
+        user_session = self.post_key(user=user)
+        token = user_session["token"]
+
+        # post metadata:
+        metadataset_ids = [
+            self.post_metadata(
+                token=token, 
+                metadata_record=rec
+            )["id"]["uuid"]
+            for rec in metadata_records
+        ]
+        
+
+        # get metadatasets and compare to original records:
+        _ = [
+            self.get_metadata(
+                token=token, 
+                metadataset_id=m_id,
+                expected_record=metadata_records[idx]
+            )
+            for idx, m_id in enumerate(metadataset_ids)
+        ]
