@@ -62,6 +62,19 @@ class BaseIntegrationTest(unittest.TestCase):
                # should be defined here at the beginning
                # of each test
 
+    def get_api_key(self, user_id, base_url, expires=None):
+        user = self.users[user_id]
+        request_body = {
+            "email": user.email, "password": user.password, "label": "test_key"
+        }
+        if expires:
+            request_body["expires"] = expires
+
+        response = self.testapp.post_json(
+            base_url + "/keys", params=request_body, status=200
+        )
+        return response.json["token"]
+
     def initDb(self):
         # create database from scratch:
         if database_exists(db_url):
