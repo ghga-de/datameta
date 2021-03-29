@@ -17,6 +17,25 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
     Tests ApiKey creation, metadata staging, file staging, 
     """
 
+    def _file_exists_in_storage(
+        self, 
+        file_uuid:str, 
+        file_checksum:str,
+        compare_checksum:bool=True
+    ):
+        expected_file_path = os.path.join(
+            self.storage_path.name,
+            f"{file_uuid}__{file_checksum}"
+        )
+
+        return os.path.exists(expected_file_path)
+
+        if file_exists and compare_checksum:
+            return file_checksum == calc_checksum(expected_file_path)
+
+        return file_exists
+
+
     def post_metadata(
         self,  
         auth:AuthFixture,
@@ -138,17 +157,37 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
 
         if status == 204:
             # check if file exists in temporary storage:
-            expected_file_path = os.path.join(
-                self.storage_path.name,
-                f"{file_uuid}__{file_checksum}"
-            )
-            assert os.path.exists(expected_file_path), (
-                "Could not find file in storage."
+            assert self._file_exists_in_storage(
+                file_uuid=file_uuid, 
+                file_checksum=file_checksum
+            ), (
+                "Could not find file in storage or " +
+                "checksum after upload did not meet the expectations."
             )
 
-            # check if file has expected checksum:
-            assert file_checksum == calc_checksum(expected_file_path), (
-                "Checksum after upload does not meet expectation."
+
+    def delete_file(
+        self,
+        auth:AuthFixture,
+        file_id:str,
+        file_uuid:str,
+        file_checksum:str,
+        status:int=204
+    ):
+        response = self.testapp.delete(
+            base_url + f"/files/{file_id}",
+            headers=auth.header,
+            status=status
+        )
+
+        if status == 204:
+            # check that file does not exist in storage anymore:
+            assert not self._file_exists_in_storage(
+                file_uuid=file_uuid, 
+                file_checksum=file_checksum,
+                compare_checksum=False
+            ), (
+                "File is still present in storage."
             )
 
         
@@ -204,7 +243,6 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             for rec in self.metadata_records
         ]
         
-
         # get metadatasets and compare to original records:
         _ = [
             self.get_metadata(
@@ -215,7 +253,6 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             for idx, m_id in enumerate(metadataset_ids)
         ]
 
-
         # announce files:
         file_upload_responses = [
             self.post_file(
@@ -225,7 +262,6 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             )
             for file_ in self.test_files
         ]
-
 
         # check that announced files have contentUploaded set to False:
         for upload in file_upload_responses:
@@ -239,7 +275,6 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
                 "the file has only been announced."
             )
 
-
         # upload files to provided url:
         [
             self.upload_file(
@@ -252,9 +287,8 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             for idx, upload in enumerate(file_upload_responses)
         ]
 
-
         # notify server that files have been uploaded:
-        file_upload_responses = [
+        _ = [
             self.put_file(
                 auth=user.auth,
                 file_id=upload["id"]["site"],
@@ -289,3 +323,56 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             expected_record=metadata_record,
             status=404
         )
+
+
+    def test_announce_and_delete_file(self):
+        """Test whether staged metadatasets can be deleted
+        after staging"""
+        test_file = self.test_files[0]
+        user = self.users["user_a"]
+
+        # announce file:
+        file_upload_response = self.post_file(
+            auth=user.auth, 
+            name=test_file.name, 
+            checksum=test_file.checksum
+        )
+
+        # upload file to provided url:
+        _ = self.upload_file(
+            url_to_upload=file_upload_response["urlToUpload"], 
+            headers=file_upload_response["requestHeaders"], 
+            file_path=test_file.path,
+            file_uuid=file_upload_response["id"]["uuid"], 
+            file_checksum=test_file.checksum,
+        )
+
+        # delete file:
+        _ = self.delete_file(
+            auth=user.auth,
+            file_id=file_upload_response["id"]["site"],
+            file_uuid=file_upload_response["id"]["uuid"],
+            file_checksum=test_file.checksum
+        )
+
+        # confirm that file info cannot be obtained anymore:
+        _ = self.get_file(
+            auth=user.auth,
+            file_id=file_upload_response["id"]["site"],
+            status=404
+        )
+
+        # confirm that upload to original URL fails:
+        try:
+            _ = self.upload_file(
+                url_to_upload=file_upload_response["urlToUpload"], 
+                headers=file_upload_response["requestHeaders"], 
+                file_path=test_file.path,
+                file_uuid=file_upload_response["id"]["uuid"], 
+                file_checksum=test_file.checksum
+            )
+            raise AssertionError(
+                "Upload succeeded after deleting the file."
+            )
+        except:
+            pass
