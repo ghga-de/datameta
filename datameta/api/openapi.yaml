@@ -334,6 +334,8 @@ paths:
           description: Forbidden
         '400':
           $ref: '#/components/responses/ValidationError'
+        "404":
+          description: The specified metadataset does not exist.
         '500':
           description: Internal Server Error
     delete:
@@ -690,6 +692,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: Setting does not exist
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
