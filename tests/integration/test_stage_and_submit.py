@@ -4,7 +4,7 @@ metadatasets and files.
 
 from . import BaseIntegrationTest, default_users
 from .fixtures import UserFixture, AuthFixture, calc_checksum
-from typing import Optional
+from typing import Optional, List
 import transaction
 import os
 
@@ -148,7 +148,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         status:int=204
     ):
         # with open(file_path, 'rb') as file_to_upload:
-        response_upload = self.testapp.post(
+        response = self.testapp.post(
             url_to_upload,
             headers=headers,
             upload_files=[("file", file_path)],
@@ -229,6 +229,82 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             
             return response.json
 
+
+    def post_presubvalidation(
+        self,
+        auth:AuthFixture,
+        metadataset_ids: List[str],
+        file_ids: List[str],
+        label:str="test_submission",
+        status:int=204
+    ):
+        # request params:
+        request_body = {
+            "metadatasetIds": metadataset_ids,
+            "fileIds": file_ids,
+            "label": label
+        }
+
+        response = self.testapp.post_json(
+            base_url + f"/presubvalidation",
+            headers=auth.header,
+            params=request_body,
+            status=status
+        )
+
+
+    def post_submission(
+        self,
+        auth:AuthFixture,
+        metadataset_ids: List[str],
+        file_ids: List[str],
+        label:str="test_submission",
+        status:int=200
+    ):
+        # request params:
+        request_body = {
+            "metadatasetIds": metadataset_ids,
+            "fileIds": file_ids,
+            "label": label
+        }
+
+        response = self.testapp.post_json(
+            base_url + f"/submissions",
+            headers=auth.header,
+            params=request_body,
+            status=status
+        )
+
+        if status==200:
+            return response.json
+
+
+    def get_all_submissions(
+        self,
+        auth:AuthFixture,
+        group_id:str,
+        expected_submission_uuid:Optional[str]=None,
+        status:int=200
+    ):
+        # with open(file_path, 'rb') as file_to_upload:
+        response = self.testapp.get(
+            base_url + f"/groups/{group_id}/submissions",
+            headers=auth.header,
+            status=status
+        )
+
+        if status == 200:
+            if expected_submission_uuid:
+                submission_uuids = [
+                    sub["id"]["uuid"]
+                    for sub in response.json
+                ]
+                assert expected_submission_uuid in submission_uuids, (
+                    "Expected submission was not contained in response."
+                )
+            return response.json
+
+
     def test_main_submission_senario(self):
         """Tests the standard usage senario for staging and 
         submitting files and metadata."""
@@ -239,7 +315,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             self.post_metadata(
                 auth=user.auth, 
                 metadata_record=rec
-            )["id"]["uuid"]
+            )["id"]["site"]
             for rec in self.metadata_records
         ]
         
@@ -296,6 +372,29 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             )
             for upload in file_upload_responses
         ]
+
+        # check if pre-submission validation passes:
+        file_ids = [file_["id"]["site"] for file_ in file_upload_responses]
+        self.post_presubvalidation(
+            auth=user.auth, 
+            metadataset_ids=metadataset_ids, 
+            file_ids=file_ids
+        )
+
+        # post submission:
+        submission_response = self.post_submission(
+            auth=user.auth, 
+            metadataset_ids=metadataset_ids, 
+            file_ids=file_ids
+        )
+
+        # get all submission and check if posted submission
+        # is contained in the response:
+        self.get_all_submissions(
+            auth=user.auth,
+            group_id=user.group_site_id,
+            expected_submission_uuid=submission_response["id"]["uuid"]
+        )
 
 
     def test_stage_and_delete_metadata(self):

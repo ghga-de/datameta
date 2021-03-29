@@ -48,6 +48,8 @@ class UserFixture():
     auth: Optional[AuthFixture] = None
     expired_auth: Optional[AuthFixture] = None
     uuid:Optional[str] = None 
+    group_site_id:Optional[str] = None 
+    group_uuid_id:Optional[str] = None 
 
 default_users_json = os.path.join(base_dir, "default_users.json")
 with open(default_users_json, "r") as json_:

@@ -73,6 +73,8 @@ def create_user(
         # return user updated with uuid and tokens:
         user_updated = deepcopy(user)
         user_updated.uuid = str(user_obj.uuid)
+        user_updated.group_site_id = group_obj.site_id
+        user_updated.group_uuid = str(group_obj.uuid)
         user_updated.auth = AuthFixture(token, token_obj.uuid)
         user_updated.expired_auth = AuthFixture(expired_token, expired_token_obj.uuid)
         return user_updated
