@@ -5,7 +5,7 @@ from typing import Optional
 from dataclasses import dataclass
 import transaction
 from copy import deepcopy
-from .fixtures import UserFixture, MetaDatumFixture
+from .fixtures import UserFixture, MetaDatumFixture, AuthFixture
 from datetime import datetime, timedelta
 
 from datameta import models, security
@@ -73,8 +73,8 @@ def create_user(
         # return user updated with uuid and tokens:
         user_updated = deepcopy(user)
         user_updated.uuid = str(user_obj.uuid)
-        user_updated.token = token
-        user_updated.expired_token = expired_token
+        user_updated.auth = AuthFixture(token, token_obj.uuid)
+        user_updated.expired_auth = AuthFixture(expired_token, expired_token_obj.uuid)
         return user_updated
 
 
@@ -124,10 +124,3 @@ def set_application_settings(
         )
         session.add(logo_html)
         session.flush()
-
-
-def get_auth_headers(token:str):
-    """Generate header with Bearer authentication from token"""
-    return {
-        "Authorization": f"Bearer {token}"
-    }

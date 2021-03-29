@@ -3,8 +3,7 @@ metadatasets and files.
 """
 
 from . import BaseIntegrationTest, default_users
-from .fixtures import UserFixture
-from .utils import get_auth_headers
+from .fixtures import UserFixture, AuthFixture
 from typing import Optional
 
 from datameta import models
@@ -17,20 +16,18 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
 
     def post_metadata(
         self,  
-        token:str,
+        auth:AuthFixture,
         metadata_record:dict,
         status:int=200,
-):
-        """Post metadataset"""
+    ):
         # request params:
-        request_headers = get_auth_headers(token)
         request_body = {
             "record": metadata_record
         }
 
         response = self.testapp.post_json(
             base_url + f"/metadatasets",
-            headers=request_headers,
+            headers=auth.header,
             params=request_body,
             status=status
         )
@@ -46,17 +43,14 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
     
     def get_metadata(
         self,
-        token:str,
+        auth:AuthFixture,
         metadataset_id:str,
         expected_record:Optional[dict]=None,
         status:int=200
     ):
-        # request params:
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             base_url + f"/metadatasets/{metadataset_id}",
-            headers=request_headers,
+            headers=auth.header,
             status=status
         )
 
@@ -68,30 +62,52 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
 
             return response.json
 
+
     def delete_metadata(
         self,
-        token:str,
+        auth:AuthFixture,
         metadataset_id:str,
         status:int=204
     ):
-        # request params:
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.delete(
             base_url + f"/metadatasets/{metadataset_id}",
-            headers=request_headers,
+            headers=auth.header,
             status=status
         )
+
+    
+    def announce_file(
+        self,
+        auth:AuthFixture,
+        name: str,
+        checksum: str,
+        status:int=200
+    ):
+        # request params:
+        request_body = {
+            "record": metadata_record
+        }
+
+        response = self.testapp.post_json(
+            base_url + f"/files",
+            headers=auth.header,
+            params=request_body,
+            status=status
+        )
+
+        if status==200:
+            return response.json
+
 
     def test_main_submission_senario(self):
         """Tests the standard usage senario for staging and 
         submitting files and metadata."""
-        token = self.users["user_a"].token
+        user = self.users["user_a"]
         
         # post metadataset:
         metadataset_ids = [
             self.post_metadata(
-                token=token, 
+                auth=user.auth, 
                 metadata_record=rec
             )["id"]["uuid"]
             for rec in self.metadata_records
@@ -101,7 +117,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         # get metadatasets and compare to original records:
         _ = [
             self.get_metadata(
-                token=token, 
+                auth=user.auth, 
                 metadataset_id=m_id,
                 expected_record=self.metadata_records[idx]
             )
@@ -113,23 +129,23 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         """Test whether staged metadatasets can be deleted
         after staging"""
         metadata_record = self.metadata_records[0]
-        token = self.users["user_a"].token
+        user = self.users["user_a"]
 
         # post metadataset:
         metadataset_id = self.post_metadata(
-            token=token, 
+            auth=user.auth, 
             metadata_record=metadata_record
         )["id"]["uuid"]
         
         # delete metdataset:
         _ = self.delete_metadata(
-            token, 
-            metadataset_id
+            auth=user.auth,
+            metadataset_id=metadataset_id
         )
 
         # expect get for deleted metadataset to fail:
         _ = self.get_metadata(
-            token=token, 
+            auth=user.auth, 
             metadataset_id=metadataset_id,
             expected_record=metadata_record,
             status=404

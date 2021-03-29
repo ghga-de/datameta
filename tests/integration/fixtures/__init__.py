@@ -1,6 +1,6 @@
 import os
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 from typing import Optional, Union
 
@@ -22,6 +22,19 @@ default_settings["session.url"] = memcached_url
 
 # read default user.json:
 @dataclass
+class AuthFixture():
+    """A container for token auth information"""
+    apikey:str
+    apikey_id:Optional[str] = None
+    header:dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        self.header = {
+            "Authorization": f"Bearer {self.apikey}"
+        }
+
+
+@dataclass
 class UserFixture():
     """A container for user information"""
     email:str
@@ -32,8 +45,8 @@ class UserFixture():
     group_admin:bool
     site_admin:bool
     # will be set once added to db:
-    token: Optional[str] = None
-    expired_token: Optional[str] = None
+    auth: Optional[AuthFixture] = None
+    expired_auth: Optional[AuthFixture] = None
     uuid:Optional[str] = None 
 
 default_users_json = os.path.join(base_dir, "default_users.json")
