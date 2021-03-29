@@ -20,7 +20,7 @@ from . import DataHolderBase
 from .. import models
 from ..models import Group
 from .. import security, errors
-from ..resource import resource_by_id
+from ..resource import resource_by_id, get_identifier
 
 from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
 
@@ -31,14 +31,38 @@ class GroupSubmissions:
 
     def __init__(self, request:Request, group_id:str):
         db = request.dbsession
-        # To Developer:
-        # Please insert code that queries the db
-        # for all submissions for the given group_id
-        # and store that list in self.submissions
+        group = resource_by_id(db, models.Group, group_id)
+
+        self.submissions = [
+            {
+                "id": get_identifier(sub),
+                "label": sub.label,
+                "metadatasetIds": [
+                    get_identifier(mset)
+                    for mset in sub.metadatasets
+                ],
+                "fileIds": self._get_file_ids_of_submission(sub)
+            }
+            for sub in group.submissions
+        ]
+        print(self.submissions)
+
+    def _get_file_ids_of_submission(self, submission:models.Submission):
+        file_ids = []
+        for mset in submission.metadatasets:
+            file_records = [
+                rec 
+                for rec in mset.metadatumrecords 
+                if rec.metadatum.isfile
+            ]
+            file_ids.extend(
+                [get_identifier(rec.file) for rec in file_records]
+            )
+        return file_ids
 
 
-    def __json__(self) -> List[dict]:
-        return self(submissions)
+    def __json__(self, requests:Request) -> List[dict]:
+        return self.submissions
 
 
 @view_config(
@@ -47,10 +71,26 @@ class GroupSubmissions:
     request_method="GET",
     openapi=True
 )
-def get(request: Request) -> GroupSubmissions:
+def get_all_submissions(request: Request) -> GroupSubmissions:
     """Get all submissions of a given group."""
-    pass
-    return {}
+    auth_user = security.revalidate_user(request)
+    group_id = request.matchdict["id"]
+
+    db = request.dbsession
+    target_group = resource_by_id(db, Group, group_id)
+
+    if target_group is None:
+        raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
+
+    # check if user is part of the target group:
+    if not group_id in [auth_user.group.uuid, auth_user.group.site_id]:
+        raise HTTPForbidden()
+
+    return GroupSubmissions(
+        request=request,
+        group_id=group_id
+    )
+
 
 @dataclass
 class ChangeGroupName(DataHolderBase):
@@ -80,7 +120,11 @@ def put(request: Request):
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
     # Change the group name only if the user is site admin or the admin for the specific group
-    if auth_user.site_admin or auth_user.group_admin and auth_user.group.uuid == group_id:
+    if (
+        auth_user.site_admin or 
+        auth_user.group_admin and 
+        group_id in [auth_user.group.uuid, auth_user.group.site_id]
+    ):
         target_group.name = newGroupName
         return HTTPNoContent()
     

@@ -58,6 +58,7 @@ class Group(Base):
     user             = relationship('User', back_populates='group')
     metadatasets     = relationship('MetaDataSet', back_populates='group')
     files            = relationship('File', back_populates='group')
+    submissions      = relationship('Submission', back_populates='group')
     regrequests      = relationship('RegRequest', back_populates='group')
 
 class User(Base):
@@ -137,8 +138,10 @@ class Submission(Base):
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     date             = Column(DateTime)
     label            = Column(String(100), nullable=True)
+    group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
     # Relationships
     metadatasets     = relationship('MetaDataSet', back_populates='submission')
+    group            = relationship('Group', back_populates='submissions')
 
 class MetaDatum(Base):
     __tablename__      = 'metadata'

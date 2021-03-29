@@ -252,7 +252,8 @@ def post(request: Request) -> SubmissionResponse:
             site_id = siteid.generate(request, Submission),
             label = label,
             date = datetime.datetime.now(),
-            metadatasets = list(db_msets.values())
+            metadatasets = list(db_msets.values()),
+            group_id = auth_user.group.id
             )
     db.add(submission)
     db.flush()
