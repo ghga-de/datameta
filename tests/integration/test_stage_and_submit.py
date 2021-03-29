@@ -153,7 +153,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             metadataset_id
         )
 
-        # get metadatasets and compare to original records:
+        # expect get for deleted metadataset to fail:
         _ = self.get_metadata(
             token=token, 
             metadataset_id=metadataset_id,
