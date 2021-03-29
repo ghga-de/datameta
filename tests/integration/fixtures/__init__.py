@@ -92,6 +92,13 @@ with open(metadata_records_json, "r") as json_:
     metadata_records = json.load(json_)
 
 # read test files:
+def calc_checksum(file_path:str):
+    with open(file_path, "rb") as file_:
+        byte_content = file_.read()
+        return hashlib.md5(byte_content).hexdigest()
+
+
+
 class FileFixture():
     """Container for File fixtures"""
     def __init__(self, name):
@@ -105,9 +112,7 @@ class FileFixture():
             self.content = test_file.read()
         
         # set md5 sum
-        with open(self.path, "rb") as test_file:
-            byte_content = test_file.read()
-            self.checksum = hashlib.md5(byte_content).hexdigest()
+        self.checksum = calc_checksum(self.path)
 
 
 test_files = [
