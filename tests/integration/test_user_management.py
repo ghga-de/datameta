@@ -61,44 +61,87 @@ from datameta.api import base_url
 
 class TestUserManagement(BaseIntegrationTest):
 
-    def step_1(self, status:int=200):
-        """user_a: change name of user_a"""
+    def step_0(self, status:int=200):
+        """Request ApiKey"""
         request_body = {
             "email": self.state["user_a"].email,
             "password": self.state["user_a"].password,
-            "name": "changed_by_user_a"
+            "label": self.state["apikey_label"]
         }
 
-        response = self.testapp.put_json(
-            base_url + "/user",
+        response = self.testapp.post_json(
+            base_url + "/keys",
             params=request_body,
             status=status
         )
+
+        if status==200:
+            self.state["apikey_response"] = response.json
+
+    def step_1(self, status:int=204):
+        """user_a: change name of user_a"""
+        request_body = {
+            "name": "changed_by_user_a"
+        }
+
+        token = self.state["apikey_response"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_a"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    # def step_1a(self, status:int=200):
+    #     """user_a: change name of user_a"""
+    #     request_body = {
+    #         "email": self.state["user_a"].email,
+    #         "password": self.state["user_a"].password,
+    #         "name": "changed_by_user_a"
+    #     }
+
+    #     token = self.state["apikey_response"]["token"] # previously created apikey
+    #     request_headers = get_auth_headers(token)
+
+    #     response = self.testapp.put_json(
+    #         base_url + "/users/" + self.state["user_a"].uuid,
+    #         headers=request_headers,
+    #         params=request_body,
+    #         status=status
+    #     )
+
+    #     if status==200
 
     def step_2(self, status:int=403):
         """user_a: change name of user_c"""
         request_body = {
-            "email": self.state["user_a"].email,
-            "password": self.state["user_a"].password,
             "name": "changed_by_user_a"
         }
 
+        token = self.state["apikey_response"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
         response = self.testapp.put_json(
-            base_url + "/user/" + self.state["user_c"].uuid,
+            base_url + "/users/" + self.state["user_c"].uuid,
+            headers=request_headers,
             params=request_body,
             status=status
         )
 
-    def step_3(self, status:int=200):
+    def step_3(self, status:int=204):
         """group_x_admin: change name of user_a"""
         request_body = {
-            "email": self.state["group_x_admin"].email,
-            "password": self.state["group_x_admin"].password,
             "name": "changed_by_group_x_admin"
         }
 
+        token = self.state["apikey_response"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
         response = self.testapp.put_json(
-            base_url + "/user/" + self.state["user_a"].uuid,
+            base_url + "/users/" + self.state["user_a"].uuid,
+            headers=request_headers,
             params=request_body,
             status=status
         )
@@ -106,27 +149,31 @@ class TestUserManagement(BaseIntegrationTest):
     def step_4(self, status:int=403):
         """group_x_admin: change name of user_c"""
         request_body = {
-            "email": self.state["group_x_admin"].email,
-            "password": self.state["group_x_admin"].password,
             "name": "changed_by_group_x_admin"
         }
 
+        token = self.state["apikey_response"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
         response = self.testapp.put_json(
-            base_url + "/user/" + self.state["user_c"].uuid,
+            base_url + "/users/" + self.state["user_c"].uuid,
+            headers=request_headers,
             params=request_body,
             status=status
         )
 
-    def step_5(self, status:int=200):
+    def step_5(self, status:int=204):
         """admin: change name of user_a"""
         request_body = {
-            "email": self.state["admin"].email,
-            "password": self.state["admin"].password,
             "name": "changed_by_admin"
         }
 
+        token = self.state["apikey_response"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
         response = self.testapp.put_json(
-            base_url + "/user/" + self.state["user_a"].uuid,
+            base_url + "/users/" + self.state["user_a"].uuid,
+            headers=request_headers,
             params=request_body,
             status=status
         )
@@ -140,6 +187,8 @@ class TestUserManagement(BaseIntegrationTest):
             "group_x_admin": self.users["group_x_admin"],
             "group_y_admin": self.users["group_y_admin"],
             "admin": self.users["admin"],
+            "apikey_label": "test_key",
+            "apikey_response": None # slot to store the apikey response
         }
 
         # execute all test steps
