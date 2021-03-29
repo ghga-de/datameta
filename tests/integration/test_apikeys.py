@@ -2,7 +2,8 @@
 """
 
 from . import BaseIntegrationTest, default_users
-from .utils import get_auth_headers
+from .fixtures import AuthFixture
+from typing import Optional
 
 from datameta import models
 from datameta.api import base_url
@@ -12,12 +13,18 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
     Tests ApiKey creation, usage, and deletion.
     """
 
-    def step_1_post_key(self, status:int=200, apikey_label:str="test_key"):
+    def post_key(
+        self, 
+        email:str,
+        password:str,
+        label:str="test_key",
+        status:int=200, 
+    ):
         """Request ApiKey"""
         request_body = {
-            "email": self.state["user"].email,
-            "password": self.state["user"].password,
-            "label": apikey_label
+            "email": email,
+            "password": password,
+            "label": label
         }
 
         response = self.testapp.post_json(
@@ -27,65 +34,73 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         )
 
         if status==200:
-            self.state["apikey_response"] = response.json
+            return response.json
 
-    def step_2(self, status:int=200):
+
+    def get_all_keys(
+        self, 
+        user_id: str,
+        token: str,
+        expected_key_id:Optional[dict] = None,
+        status:int=200
+    ):
         """Get a list of all ApiKeys"""
-        # request params:
-        user_id = self.state["user"].uuid
-        token = self.state["apikey_response"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             base_url + f"/users/{user_id}/keys",
-            headers=request_headers,
+            headers=AuthFixture(apikey=token).header,
             status=status
         )
 
         if status==200:
-            # check whether current response is consistent with the previous responce
-            # obtained when creating the api keys
-            keys_to_compare = ["id", "label", "expires"]
-            curr_response = {
-                key: value
-                for key, value in response.json[0].items()
-                if key in keys_to_compare
-            }
-            prev_response = {
-                key: value
-                for key, value in self.state["apikey_response"].items()
-                if key in keys_to_compare
-            }
-            assert curr_response == prev_response, (
-                "List of ApiKeys didn't contain the previously created apikey."
-            )
+            # check if prev token is in list of tokens:
+            if expected_key_id:
+                curr_ids = [key["id"]["uuid"] for key in response.json]
+                assert expected_key_id in curr_ids, (
+                    "List of APIKeys does not contain the previously created one."
+                )
 
-    def step_3(self, status=200):
+            return response.json
+
+
+    def delete_key(
+        self,
+        apikey_id:str,
+        token:str,
+        status:int=200
+    ):
         """Delete ApiKey"""
-        apikey_id = self.state["apikey_response"]["id"]["uuid"] # previously created apikey
-        token = self.state["apikey_response"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.delete(
             base_url + f"/keys/{apikey_id}",
-            headers=request_headers,
+            headers=AuthFixture(apikey=token).header,
             status=status
         )
 
-    def test_steps(self):
+    def test_create_get_delete_apikey(self):
         # set initial state:
-        self.state = {
-            "user": self.users["user_a"],
-            "apikey_response": None # slot to store the apikey response
-        }
+        user = self.users["user_a"]
 
-        # execute all test steps:
-        # - create apikey
-        # - use it to fetch all tokens of that user
-        # - delete the apikey
-        self._test_all_steps()
+        # create apikey:
+        user_session = self.post_key(user.email, user.password)
+        token = user_session["token"]
+        token_id = user_session["id"]["uuid"]
+
+        # use apikey to authenticate for getting all apikeys
+        # and check if previously created key is contained:
+        _ = self.get_all_keys(
+            user_id=user.site_id,
+            token=token,
+            expected_key_id=token_id
+        )
+
+        # delete apikey:
+        self.delete_key(apikey_id=token_id, token=token)
 
         # run one more step to confirm that
         # after deleting the ApiKey
         # using it for authenication fails:
-        self.step_2(status=401)
+        _ = self.get_all_keys(
+            user_id=user.site_id,
+            token=token,
+            expected_key_id=token_id,
+            status=401
+        )
