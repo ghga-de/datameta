@@ -76,7 +76,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         )
 
     
-    def announce_file(
+    def post_file(
         self,
         auth:AuthFixture,
         name: str,
@@ -85,7 +85,8 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
     ):
         # request params:
         request_body = {
-            "record": metadata_record
+            "name": name,
+            "checksum": checksum
         }
 
         response = self.testapp.post_json(
@@ -122,6 +123,17 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
                 expected_record=self.metadata_records[idx]
             )
             for idx, m_id in enumerate(metadataset_ids)
+        ]
+
+
+        # announce files:
+        file_upload_responses = [
+            self.post_file(
+                auth=user.auth, 
+                name=file.name, 
+                checksum=file.checksum
+            )
+            for file in self.test_files
         ]
 
 

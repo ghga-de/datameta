@@ -107,7 +107,7 @@ class FileFixture():
         # set md5 sum
         with open(self.path, "rb") as test_file:
             byte_content = test_file.read()
-            self.md5 = hashlib.md5(byte_content).hexdigest()
+            self.checksum = hashlib.md5(byte_content).hexdigest()
 
 
 test_files = [

@@ -6,7 +6,7 @@ import json
 
 import unittest
 from webtest import TestApp
-import pytest
+import tempfile
 
 from pyramid import testing
 from pyramid.httpexceptions import HTTPFound
@@ -73,6 +73,10 @@ class BaseIntegrationTest(unittest.TestCase):
         """Setup Test Server"""
         self.settings = default_settings
         
+        # setup temporary storage location:
+        self.storage_path = tempfile.TemporaryDirectory()
+        self.settings["datameta.storage_path"] = self.storage_path.name
+
         # initialize DB and provide metadata and file fixtures
         self.initDb()
         self.metadata_records = metadata_records
@@ -87,6 +91,7 @@ class BaseIntegrationTest(unittest.TestCase):
         transaction.abort()
         Base.metadata.drop_all(self.engine)
         del self.testapp
+        self.storage_path.cleanup()
 
     def _steps(self):
         """
