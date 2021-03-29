@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import transaction
 from copy import deepcopy
 from .fixtures import UserFixture, MetaDatumFixture
+from datetime import datetime, timedelta
 
 from datameta import models, security
 from datameta.models import get_tm_session
@@ -42,9 +43,38 @@ def create_user(
         session.add(user_obj)
         session.flush()
 
-        # return user updated with uuid:
+        # add token:
+        now = datetime.now()
+        future = now + timedelta(hours=100)
+        token = security.generate_token()
+        token_obj = models.ApiKey(
+            user_id = user_obj.id,
+            value = security.hash_token(token),
+            label = "valid_token",
+            expires = future
+        )
+        session.add(token_obj)
+        session.flush()
+
+        # add expired token:
+        now = datetime.now()
+        past = now - timedelta(hours=100)
+        expired_token = security.generate_token()
+        expired_token_obj = models.ApiKey(
+            user_id = user_obj.id,
+            value = security.hash_token(expired_token),
+            label = "expired_token",
+            expires = past
+        )
+        session.add(expired_token_obj)
+        session.flush()
+
+
+        # return user updated with uuid and tokens:
         user_updated = deepcopy(user)
         user_updated.uuid = str(user_obj.uuid)
+        user_updated.token = token
+        user_updated.expired_token = expired_token
         return user_updated
 
 

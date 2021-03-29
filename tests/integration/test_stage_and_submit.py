@@ -15,27 +15,6 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
     Tests ApiKey creation, metadata staging, file staging, 
     """
 
-    def post_key(
-        self, 
-        user:UserFixture,
-        apikey_label:str="test_key", 
-        status:int=200
-    ):
-        """Request ApiKey"""
-        request_body = {
-            "email": user.email,
-            "password": user.password,
-            "label": apikey_label
-        }
-
-        response = self.testapp.post_json(
-            base_url + "/keys",
-            params=request_body,
-            status=status
-        )
-
-        return response.json
-
     def post_metadata(
         self,  
         token:str,
@@ -107,10 +86,8 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
     def test_main_submission_senario(self):
         """Tests the standard usage senario for staging and 
         submitting files and metadata."""
-        # get token
-        user_session = self.post_key(user=self.users["user_a"])
-        token = user_session["token"]
-
+        token = self.users["user_a"].token
+        
         # post metadataset:
         metadataset_ids = [
             self.post_metadata(
@@ -136,10 +113,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         """Test whether staged metadatasets can be deleted
         after staging"""
         metadata_record = self.metadata_records[0]
-
-        # get token
-        user_session = self.post_key(user=self.users["user_a"])
-        token = user_session["token"]
+        token = self.users["user_a"].token
 
         # post metadataset:
         metadataset_id = self.post_metadata(

@@ -31,8 +31,10 @@ class UserFixture():
     groupname:str
     group_admin:bool
     site_admin:bool
-    uuid:Optional[str] = None # will be set once
-                              # added to the DB
+    # will be set once added to db:
+    token: Optional[str] = None
+    expired_token: Optional[str] = None
+    uuid:Optional[str] = None 
 
 default_users_json = os.path.join(base_dir, "default_users.json")
 with open(default_users_json, "r") as json_:
