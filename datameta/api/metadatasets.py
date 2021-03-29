@@ -22,6 +22,7 @@ from .. import security, siteid, models
 import datetime
 from ..resource import resource_by_id, get_identifier
 from . import DataHolderBase
+from .. import errors
 
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
@@ -166,7 +167,7 @@ def delete_metadataset(request:Request) -> HTTPNoContent:
 
     # Check if the metadataset was already submitted
     if mdata_set.submission:
-        raise errors.get_validation_error(messages=["The resource cannot be modified"])
+        raise errors.get_not_modifiable_error()
 
     # Delete the records
     request.dbsession.query(models.MetaDatumRecord).filter(models.MetaDatumRecord.metadataset_id==mdata_set.id).delete()

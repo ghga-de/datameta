@@ -160,7 +160,7 @@ def update_file(request: Request) -> HTTPOk:
 
     # We only allow any kind of modification until the file declared uploaded
     if db_file.content_uploaded:
-        raise errors.get_validation_error(["Resource can no longer be modified."]) # 400
+        raise errors.get_not_modifiable_error() # 403
 
     # Update properties
     if 'checksum' in request.openapi_validated.body:
@@ -177,7 +177,7 @@ def update_file(request: Request) -> HTTPOk:
             raise errors.get_validation_error(["No data has been uploaded for this file."]) # 400
         except storage.NotWritableError:
             # File was frozen already
-            raise errors.get_validation_error(["Resource can no longer be modified."]) # 400
+            raise errors.get_not_modifiable_error() # 403
         except storage.ChecksumMismatchError:
             # Checksum of uploaded data does not match announcement
             raise HTTPConflict(json=None) # 409
@@ -246,7 +246,7 @@ def delete_file(request: Request) -> HTTPNoContent:
     try:
         storage_uri = delete_files_db(db, [db_file])[0]
     except FileDeleteError as e:
-        raise errors.get_validation_error(messages=["The resource cannot be modified"], fields=[str(e)])
+        raise errors.get_not_modifiable_error()
 
     user_uuid = db_file.user.uuid
     file_uuid = db_file.uuid

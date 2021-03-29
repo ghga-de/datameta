@@ -170,8 +170,8 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         self,
         auth:AuthFixture,
         file_id:str,
-        file_uuid:str,
-        file_checksum:str,
+        file_uuid:Optional[str]=None,
+        file_checksum:Optional[str]=None,
         status:int=204
     ):
         response = self.testapp.delete(
@@ -180,7 +180,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             status=status
         )
 
-        if status == 204:
+        if status == 204 and file_uuid and file_checksum:
             # check that file does not exist in storage anymore:
             assert not self._file_exists_in_storage(
                 file_uuid=file_uuid, 
@@ -396,6 +396,43 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             expected_submission_uuid=submission_response["id"]["uuid"]
         )
 
+        # try to delete/modify submitted files and metadata,
+        # expect all of that to fail:
+        for metadataset_id in metadataset_ids:
+            self.delete_metadata(
+                auth=user.auth, 
+                metadataset_id=metadataset_id,
+                status=403
+            )
+
+        for idx, upload in enumerate(file_upload_responses):
+            file_id = upload["id"]["site"]
+            self.delete_file(
+                auth=user.auth, 
+                file_id=file_id,
+                status=403
+            )
+
+            self.put_file(
+                auth=user.auth, 
+                file_id=file_id,
+                status=403
+            )
+
+            try:
+                self.upload_file(
+                    url_to_upload=upload["urlToUpload"], 
+                    headers=upload["requestHeaders"], 
+                    file_path=self.test_files[idx].path,
+                    file_uuid=file_id, 
+                    file_checksum=self.test_files[idx].checksum,
+                )
+                raise AssertionError(
+                    "Upload succeeded after submitting the file."
+                )
+            except:
+                pass
+            
 
     def test_stage_and_delete_metadata(self):
         """Test whether staged metadatasets can be deleted

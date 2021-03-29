@@ -358,7 +358,7 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
+          $ref: '#/components/responses/ResourceNotModifiableError'
         "404":
           description: The specified metadataset does not exist.
         '400':
@@ -426,7 +426,7 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
+          $ref: '#/components/responses/ResourceNotModifiableError'
         '404':
           description: File not found
         '400':
@@ -472,7 +472,7 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
+          $ref: '#/components/responses/ResourceNotModifiableError'
         '404':
           description: File not found
         '409':
@@ -1108,7 +1108,7 @@ components:
         - message
       additionalProperties: false
 
-    ValidationErrorModel:
+    ErrorModel:
       type: array
       items:
         $ref: "#/components/schemas/Error"
@@ -1119,4 +1119,11 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ValidationErrorModel"
+            $ref: "#/components/schemas/ErrorModel"
+
+    ResourceNotModifiableError:
+      description: Either forbidden or the resource is not modifiable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorModel"

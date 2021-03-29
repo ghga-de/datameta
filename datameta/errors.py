@@ -14,16 +14,17 @@
 
 import enum
 from typing import List, Optional
-from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPBadRequest, HTTPForbidden
 
 from . import resource, models
 
-def get_validation_error(
+def get_error(
+    base_error,
     messages:List[str],
     fields:Optional[List[Optional[str]]]=None,
-    entities:Optional[List[Optional[str]]]=None
-) -> HTTPBadRequest:
-    """Generate a Validation Error (400) with custom messages
+    entities:Optional[List[Optional[str]]]=None,
+):
+    """Generate an Error based on the base_error with a custom messages
     """
     assert len(messages)>0, "messages cannot be empty"
     assert fields is None or len(fields)==len(messages), (
@@ -53,4 +54,29 @@ def get_validation_error(
         err["message"] = msg
         response_body.append(err)
 
-    return HTTPBadRequest(json=response_body)
+    return base_error(json=response_body)
+
+
+def get_validation_error(
+    messages:List[str],
+    fields:Optional[List[Optional[str]]]=None,
+    entities:Optional[List[Optional[str]]]=None
+) -> HTTPBadRequest:
+    """Generate a Validation Error (400) with custom messages
+    """
+    return get_error(
+        base_error=HTTPBadRequest,
+        messages=messages,
+        fields=fields,
+        entities=entities
+    )
+
+
+def get_not_modifiable_error() -> HTTPForbidden:
+    """Generate a HTTPForbidden (403) error informing 
+    that the resource cannot be modified
+    """
+    return get_error(
+        base_error=HTTPForbidden,
+        messages=["The resource cannot be modified"],
+    )
