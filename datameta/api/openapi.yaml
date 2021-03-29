@@ -80,6 +80,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: The specified key does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -116,6 +118,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: The specified user does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -189,7 +193,7 @@ paths:
         "403":
           description: This user does not have the rights to perform this action.
         "404":
-          description: The specified user or group does not exist.
+          description: The specified user does not exist.
         "400":
           $ref: '#/components/responses/ValidationError'
         "500":
@@ -235,6 +239,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified metadataset does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -353,8 +359,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
-        '404':
-          description: File not found
+        "404":
+          description: The specified metadataset does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -467,6 +473,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: File not found
         '409':
           description: Mismatch between uploaded data checksum and announced checksum
         '400':
@@ -590,6 +598,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified group does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -622,6 +632,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified group does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
