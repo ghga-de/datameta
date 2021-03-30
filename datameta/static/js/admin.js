@@ -182,7 +182,9 @@ DataMeta.admin.reload = function() {
             DataMeta.admin.reload_requests(json.reg_requests, json.groups);
             DataMeta.admin.subnav();
             DataMeta.admin.rebuildUserTable(json.users);
-            DataMeta.admin.rebuildGroupTable(json.groups);            })
+            DataMeta.admin.rebuildGroupTable(json.groups);   
+            DataMeta.admin.groups = json.groups       
+        })
         .catch((error) => {
             console.log(error);
         });
