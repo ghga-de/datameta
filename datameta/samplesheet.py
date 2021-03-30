@@ -14,41 +14,10 @@
 
 import pandas as pd
 import pandas.api.types as pdtypes
-#is_string_dtype, is_numeric_dtype, is_datetime64_dtype
-
-from sqlalchemy import and_
-from datameta.models import MetaDatum, MetaDatumRecord, MetaDataSet
 import datetime
-
-from . import siteid
 
 class SampleSheetReadError(RuntimeError):
     pass
-
-def get_metadata_definitions(dbsession):
-    """Queries the metadata keys (column names) that are currently configured
-    """
-    return [datum for datum in dbsession.query(MetaDatum).order_by(MetaDatum.order).all() ]
-
-def query_pending_annotated(dbsession, user):
-    """Queries all metadata sets that are pending for the currently logged in user
-    """
-    return dbsession.query(MetaDataSet).filter(and_(
-        MetaDataSet.user==user,
-        MetaDataSet.submission==None)
-        ).all()
-
-def dataframe_from_mdsets(mdsets):
-    """Creates a data frame from a list of MetaDataSets
-    """
-    return pd.DataFrame(
-            [
-                {
-                    mdrec.metadatum.name : str(mdrec.value) for mdrec in mdset.metadatumrecords
-                    }
-                for mdset in mdsets
-                ]
-            )
 
 # HANDLING OF DATES, TIMES AND DATEIMTES
 #
@@ -97,69 +66,3 @@ def string_conversion(data, metadata):
             data[mdat.name] = string_conversion_dates(data[mdat.name], mdat.datetimefmt).fillna("")
         else:
             data[mdat.name] = data[mdat.name].map(to_str)
-
-def import_samplesheet(request, file_like_obj, user):
-    """Import a sample sheet into the database. Extracts the metadata from the
-    sample sheet, handles date and time conversions if necessary and adds the
-    metadata to the database. The metadata will be pending, i.e. not associated
-    with a submission.
-    """
-    dbsession = request.dbsession
-    # Try to read the sample sheet
-    try:
-        submitted_metadata = pd.read_excel(file_like_obj, dtype="object")
-    except Exception as e:
-        log.info(f"submitted sample sheet '{file_like_obj.filename}' triggered exception {e}")
-        raise SampleSheetReadError("Unable to parse the sample sheet.")
-
-    # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
-    metadata         = get_metadata_definitions(dbsession)
-    metadata_names   = [ datum.name for datum in metadata ]
-
-    missing_columns  = [ metadata_name for metadata_name in metadata_names if metadata_name not in submitted_metadata.columns ]
-    if missing_columns:
-        raise SampleSheetReadError(f"Missing columns: {', '.join(missing_columns)}.")
-
-    # Limit the sample sheet to the columns of interest and drop duplicates
-    submitted_metadata = submitted_metadata[metadata_names].drop_duplicates()
-
-    # Convert all data to strings
-    string_conversion(submitted_metadata, metadata)
-
-    # Obtain the currently pending annotations
-    cur_pending = dataframe_from_mdsets(query_pending_annotated(dbsession, user))
-
-    # Concatenate data frames and drop annotations that were already submitted before (cross submission duplicates)
-    submitted_metadata['__cur_pending__']         = 0
-    submitted_metadata.reset_index(inplace=True) # Adds an 'index' column with the submission order
-
-    cur_pending['__cur_pending__'] = 1
-    cur_pending['index']  = -1
-    new = pd.concat([submitted_metadata, cur_pending]).groupby(metadata_names).agg({
-        '__cur_pending__' : 'sum',
-        'index' : 'max'
-        }).reset_index()
-    new = new[new.__cur_pending__==0].sort_values(by='index')
-
-    # Import the provided data
-    sets = [
-            # Create one MetaDataSet per row of the sample sheet
-            MetaDataSet(
-                user_id = user.id,
-                site_id = siteid.generate(request, MetaDataSet),
-                metadatumrecords = [
-                    # Create one MetaDatumRecord for each value in the row
-                    MetaDatumRecord(
-                        metadatum = metadatum,
-                        value = str(row[metadatum.name])
-                        )
-                    for metadatum in metadata
-                    ]
-                )
-            for _, row in new.iterrows()
-            ]
-
-    dbsession.add_all(sets)
-
-    # Return the number of records that were added
-    return len(sets)
