@@ -20,6 +20,7 @@ from . import resource, models
 
 def get_error(
     base_error,
+    exception_label:str,
     messages:List[str],
     fields:Optional[List[Optional[str]]]=None,
     entities:Optional[List[Optional[str]]]=None,
@@ -37,7 +38,7 @@ def get_error(
     response_body = []
     for idx, msg in enumerate(messages):
         err = {
-            "exception": "ValidationError",
+            "exception": exception_label,
         }
         if entities is not None and entities[idx] is not None:
             err.update(
@@ -66,6 +67,7 @@ def get_validation_error(
     """
     return get_error(
         base_error=HTTPBadRequest,
+        exception_label="ValidationError",
         messages=messages,
         fields=fields,
         entities=entities
@@ -78,5 +80,6 @@ def get_not_modifiable_error() -> HTTPForbidden:
     """
     return get_error(
         base_error=HTTPForbidden,
+        exception_label="ResourceNotModifiableError",
         messages=["The resource cannot be modified"],
     )
