@@ -508,6 +508,7 @@ class TestUserManagement(BaseIntegrationTest):
             status=status
         )
 
+
     def step_3a(self, status:int=403):
         """user_a: make user_a site_admin"""
 
@@ -698,7 +699,7 @@ class TestUserManagement(BaseIntegrationTest):
         )
 
         if status==200: # check, if the admin status change worked
-            
+
             for user in response.json["users"]:
                 if user["id"]["uuid"] == self.state["user_a"].uuid:
                     assert user["group_admin"] == True, (
@@ -739,7 +740,7 @@ class TestUserManagement(BaseIntegrationTest):
         )
 
         if status==200: # check, if the admin status change worked
-            
+
             for user in response.json["users"]:
                 if user["id"]["uuid"] == self.state["user_a"].uuid:
                     assert user["group_admin"] == False, (
@@ -749,6 +750,208 @@ class TestUserManagement(BaseIntegrationTest):
                         "The site_admin status removal of user_a did not work."
                     )
                     
+
+    def step_4a(self, status:int=403):
+        """user_a: disable user_a"""
+
+        request_body = {
+            "enabled": False
+        }
+
+        token = self.state["apikey_response_a"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_a"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    def step_4b(self, status:int=403):
+        """user_a: enable user_a"""
+
+        request_body = {
+            "enabled": False
+        }
+
+        token = self.state["apikey_response_a"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_a"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    def step_4c(self, status:int=204):
+        """group_x_admin: disable user_a"""
+
+        request_body = {
+            "enabled": False
+        }
+
+        token = self.state["apikey_response_x"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_a"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    def step_4d(self, status:int=200):
+        """Check if the previous enable status change worked"""
+
+        token = self.state["apikey_response_admin"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.get(
+            "/api/admin",
+            headers=request_headers,
+            status=status
+        )
+
+        if status==200: # check, if the enabled status change worked
+
+            for user in response.json["users"]:
+                if user["id"]["uuid"] == self.state["user_a"].uuid:
+                    assert user["enabled"] == False, (
+                        "The enable status change did not work."
+                    )
+
+    def step_4e(self, status:int=204):
+        """group_x_admin: enable user_a"""
+
+        request_body = {
+            "enabled": True
+        }
+
+        token = self.state["apikey_response_x"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_a"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    def step_4f(self, status:int=200):
+        """Check if the previous enable status change worked"""
+
+        token = self.state["apikey_response_admin"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.get(
+            "/api/admin",
+            headers=request_headers,
+            status=status
+        )
+
+        if status==200: # check, if the enabled status change worked
+
+            for user in response.json["users"]:
+                if user["id"]["uuid"] == self.state["user_a"].uuid:
+                    assert user["enabled"] == True, (
+                        "The enable status change did not work."
+                    )
+
+    def step_4g(self, status:int=204):
+        """admin: make user_b a site_admin"""
+
+        request_body = {
+            "siteAdmin": False
+        }
+
+        token = self.state["apikey_response_admin"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_b"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    #ToDo: This should not be possible. Change, once it has been changed in code
+    def step_4h(self, status:int=204):
+        """group_x_admin: disable user_b which is a site_admin"""
+
+        request_body = {
+            "enabled": False
+        }
+
+        token = self.state["apikey_response_x"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_b"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    #ToDo: This should not be possible. Change, once it has been changed in code
+    def step_4i(self, status:int=200):
+        """Check if the previous enable status change worked"""
+
+        token = self.state["apikey_response_admin"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.get(
+            "/api/admin",
+            headers=request_headers,
+            status=status
+        )
+
+        if status==200: # check, if the enabled status change worked
+
+            for user in response.json["users"]:
+                if user["id"]["uuid"] == self.state["user_b"].uuid:
+                    assert user["enabled"] == False, (
+                        "The enable status change did not work."
+                    )
+
+    def step_4j(self, status:int=204):
+        """admin: re-enable user_b which is a site_admin"""
+
+        request_body = {
+            "enabled": True
+        }
+
+        token = self.state["apikey_response_admin"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_b"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    def step_4k(self, status:int=200):
+        """Check if the previous enable status change worked"""
+
+        token = self.state["apikey_response_admin"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.get(
+            "/api/admin",
+            headers=request_headers,
+            status=status
+        )
+
+        if status==200: # check, if the enabled status change worked
+
+            for user in response.json["users"]:
+                if user["id"]["uuid"] == self.state["user_b"].uuid:
+                    assert user["enabled"] == True, (
+                        "The enable status change did not work."
+                    )
+
 
     def test_steps(self):
         # set initial state:
