@@ -301,10 +301,9 @@ DataMeta.admin.initSiteTable = function() {
             columns: [
                 { title: "Key", data: "key"},
                 { title: "Value Type", data: "valueType"},
-                { title: "Value", data: "value"},
-                { orderable:false, title: "Edit", render:function() {
-                    return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
-                }}
+                { title: "Value", data: "value", render:function(data) {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
+                }},
             ]
         });
     }
@@ -361,11 +360,10 @@ function enableSettingsEditMode(event) {
 
     var row = button.parentNode.parentNode;
 
-    var innerHTML = row.children[2].innerHTML;
     row.children[2].innerHTML = '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
                                 '<i class="bi bi-pencil"></i>' +
                                 '</span>' +
-                                '<textarea type="text" class="form-control">' + innerHTML + '</textarea>' +
+                                '<textarea type="text" class="form-control">' + button.getAttribute('data') + '</textarea>' +
                                 '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="saveSettings(event);"><i class="bi bi-check2"></i></button></div>';
                         
     $('#table_site').DataTable().columns.adjust().draw();
