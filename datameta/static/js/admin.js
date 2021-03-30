@@ -302,7 +302,7 @@ DataMeta.admin.initSiteTable = function() {
                 { title: "Key", data: "key"},
                 { title: "Value Type", data: "valueType"},
                 { title: "Value", data: "value", render:function(data) {
-                    return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
+                    return '<div id="settings_data">' + data +'</div><button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
                 }},
             ]
         });
@@ -360,10 +360,12 @@ function enableSettingsEditMode(event) {
 
     var row = button.parentNode.parentNode;
 
+    var data = button.parentNode.querySelector("#settings_data").innerHTML;
+
     row.children[2].innerHTML = '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
                                 '<i class="bi bi-pencil"></i>' +
                                 '</span>' +
-                                '<textarea type="text" class="form-control">' + button.getAttribute('data') + '</textarea>' +
+                                '<textarea type="text" class="form-control">' + data + '</textarea>' +
                                 '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="saveSettings(event);"><i class="bi bi-check2"></i></button></div>';
                         
     $('#table_site').DataTable().columns.adjust().draw();
