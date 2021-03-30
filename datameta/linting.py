@@ -35,14 +35,12 @@ def lint_pending_msets(request, user, mset_ids = None):
     if mset_ids is None:
         mdatasets = db.query(MetaDataSet).filter(and_(
             MetaDataSet.submission_id==None,
-            MetaDataSet.user_id==user.id,
-            MetaDataSet.group_id==user.group_id))
+            MetaDataSet.user_id==user.id))
     # Or obtain all pending metadatasets that match the specified mset ids
     else:
         mdatasets = db.query(MetaDataSet).filter(and_(
             MetaDataSet.submission_id==None,
             MetaDataSet.user_id==user.id,
-            MetaDataSet.group_id==user.group_id,
             MetaDataSet.id.in_(mset_ids)))
 
     # Create result structure
@@ -55,7 +53,7 @@ def lint_pending_msets(request, user, mset_ids = None):
     file_names        = [ mdatrec.value for mdatrec in mdatrecs if mdatrec.metadatum.isfile ]
     file_names_red    = [ file_name for file_name, count in Counter(file_names).items() if count > 1 ]
     # Keep track of already uploaded files...
-    uploaded_files = db.query(File).filter(and_(File.user_id==user.id, File.group_id==user.group_id, File.metadatumrecord == None))
+    uploaded_files = db.query(File).filter(and_(File.user_id==user.id, File.metadatumrecord == None))
     uploaded_files = { file.name : file for file in uploaded_files }
     # ... and their association with file names
     file_pairs = []

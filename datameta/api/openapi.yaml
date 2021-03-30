@@ -848,11 +848,8 @@ components:
           # any property is allowed
         id:
           $ref: "#/components/schemas/Identifier"
-        submissionId:
-          type: string
-          nullable: true
-        groupId:
-          $ref: "#/components/schemas/Identifier"
+        submissionId:   
+          $ref: "#/components/schemas/NullableIdentifier"
         userId:
           $ref: "#/components/schemas/Identifier"
       required:
@@ -885,8 +882,6 @@ components:
           additionalProperties: true
         userId:
           $ref: "#/components/schemas/Identifier"
-        groupId:
-          $ref: "#/components/schemas/Identifier"
         expires:
           type: string
       required:
@@ -894,7 +889,6 @@ components:
         - id
         - urlToUpload
         - userId
-        - groupId
         - expires
       additionalProperties: false
 
@@ -915,8 +909,6 @@ components:
           nullable: true
         userId:
           $ref: "#/components/schemas/Identifier"
-        groupId:
-          $ref: "#/components/schemas/Identifier"
         expires:
           type: string
       required:
@@ -925,7 +917,6 @@ components:
         - contentUploaded
         - checksum
         - userId
-        - groupId
         - expires
       additionalProperties: false
 
@@ -1086,6 +1077,18 @@ components:
 
     Identifier:
       type: object
+      properties:
+        uuid:
+          type: string
+        site:
+          type: string
+      required:
+        - uuid
+      additionalProperties: false
+
+    NullableIdentifier:
+      type: object
+      nullable: true
       properties:
         uuid:
           type: string

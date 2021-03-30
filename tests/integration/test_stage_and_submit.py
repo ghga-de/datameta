@@ -372,7 +372,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             )
             for upload in file_upload_responses
         ]
-
+        
         # check if pre-submission validation passes:
         file_ids = [file_["id"]["site"] for file_ in file_upload_responses]
         self.post_presubvalidation(
@@ -395,6 +395,25 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             group_id=user.group_site_id,
             expected_submission_uuid=submission_response["id"]["uuid"]
         )
+
+        # check if files and metadatasets can still be accessed
+        # after submission:
+        _ = [
+            self.get_metadata(
+                auth=user.auth, 
+                metadataset_id=m_id,
+                expected_record=self.metadata_records[idx]
+            )
+            for idx, m_id in enumerate(metadataset_ids)
+        ]
+        
+        _ = [
+            self.get_file(
+                auth=user.auth,
+                file_id=upload["id"]["site"]
+            )
+            for upload in file_upload_responses
+        ]
 
         # try to delete/modify submitted files and metadata,
         # expect all of that to fail:

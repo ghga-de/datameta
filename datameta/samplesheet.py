@@ -35,7 +35,6 @@ def query_pending_annotated(dbsession, user):
     """
     return dbsession.query(MetaDataSet).filter(and_(
         MetaDataSet.user==user,
-        MetaDataSet.group==user.group,
         MetaDataSet.submission==None)
         ).all()
 
@@ -147,7 +146,6 @@ def import_samplesheet(request, file_like_obj, user):
             # Create one MetaDataSet per row of the sample sheet
             MetaDataSet(
                 user_id = user.id,
-                group_id = user.group_id,
                 site_id = siteid.generate(request, MetaDataSet),
                 metadatumrecords = [
                     # Create one MetaDatumRecord for each value in the row

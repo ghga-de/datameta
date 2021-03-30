@@ -20,7 +20,8 @@ from . import DataHolderBase
 from .. import models
 from ..models import Group
 from .. import security, errors
-from ..resource import resource_by_id, get_identifier
+from ..resource import resource_by_id, resource_query_by_id, get_identifier
+from sqlalchemy.orm import joinedload
 
 from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
 
@@ -32,8 +33,16 @@ class GroupSubmissions:
     def __init__(self, request:Request, group_id:str):
         db = request.dbsession
         group = resource_query_by_id(db, models.Group, group_id).options(
-                joinedload(Group.submissions).joinedload(Submission.metadatasets).joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)
-                ).one_or_none()
+            joinedload(
+                Group.submissions
+            ).joinedload(
+                models.Submission.metadatasets
+            ).joinedload(
+                models.MetaDataSet.metadatumrecords
+            ).joinedload(
+                models.MetaDatumRecord.metadatum
+            )
+        ).one_or_none()
 
         self.submissions = [
             {

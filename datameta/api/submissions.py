@@ -49,12 +49,12 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
     # Collect missing files
     val_errors = [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Not found") for file_id, db_file in db_files.items() if db_file is None ]
     # Collect authorization issues
-    val_errors += [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Access denied") for file_id, db_file in db_files.items() if db_file is not None and (db_file.user_id!=auth_user.id or db_file.group_id!=auth_user.group_id) ]
+    val_errors += [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Access denied") for file_id, db_file in db_files.items() if db_file is not None and (db_file.user_id!=auth_user.id) ]
 
     # Collect missing metadatasets
     val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Not found") for mset_id, db_mset in db_msets.items() if db_mset is None ]
     # Collect authorization issues
-    val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Access denied") for mset_id, db_mset in db_msets.items() if db_mset is not None and (db_mset.user_id!=auth_user.id or db_mset.group_id!=auth_user.group_id) ]
+    val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Access denied") for mset_id, db_mset in db_msets.items() if db_mset is not None and (db_mset.user_id!=auth_user.id) ]
 
     # If we collected any val_errors so far, raise 400 to avoid exposing internals
     # about data the user should not be able to access
