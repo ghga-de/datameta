@@ -31,7 +31,9 @@ class GroupSubmissions:
 
     def __init__(self, request:Request, group_id:str):
         db = request.dbsession
-        group = resource_by_id(db, models.Group, group_id)
+        group = resource_query_by_id(db, models.Group, group_id).options(
+                joinedload(Group.submissions).joinedload(Submission.metadatasets).joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)
+                ).one_or_none()
 
         self.submissions = [
             {
