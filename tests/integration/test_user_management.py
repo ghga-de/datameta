@@ -915,7 +915,24 @@ class TestUserManagement(BaseIntegrationTest):
                         "The enable status change did not work."
                     )
 
-    def step_4j(self, status:int=204):
+    def step_4j(self, status:int=403):
+        """group_x_admin: disable user_c which is not in group_x"""
+
+        request_body = {
+            "enabled": False
+        }
+
+        token = self.state["apikey_response_x"]["token"] # previously created apikey
+        request_headers = get_auth_headers(token)
+
+        response = self.testapp.put_json(
+            base_url + "/users/" + self.state["user_c"].uuid,
+            headers=request_headers,
+            params=request_body,
+            status=status
+        )
+
+    def step_4k(self, status:int=204):
         """admin: re-enable user_b which is a site_admin"""
 
         request_body = {
@@ -932,7 +949,7 @@ class TestUserManagement(BaseIntegrationTest):
             status=status
         )
 
-    def step_4k(self, status:int=200):
+    def step_4l(self, status:int=200):
         """Check if the previous enable status change worked"""
 
         token = self.state["apikey_response_admin"]["token"] # previously created apikey
