@@ -26,5 +26,6 @@
         <script>0</script>
 	<div metal:define-slot="content">No content</div>
         <script src="${request.static_url('datameta:static/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js')}"></script>
+        <script src="${request.static_url('datameta:static/js/datameta.js')}"></script>
     </body>
 </html>

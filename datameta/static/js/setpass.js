@@ -46,35 +46,47 @@ window.addEventListener("load", function() {
         }
 
         // Talk to the API
-        fetch('/api/setpass',
+        fetch(DataMeta.api("users/0/password"),
             {
-                method: 'post',
+                method: 'PUT',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    token: form.getAttribute("data-datameta-setpass"),
-                    new_password: data.get("new_password")
+                    passwordChangeCredential: form.getAttribute("data-datameta-setpass"),
+                    newPassword: data.get("new_password")
                 })
             })
-            .then(response => response.json())
-            .then(function (json) {
-                if (json.success) {
+            .then(function(response) {
+                console.log("response", response);
+                if (response.status==404) { // HTTPNotFound - Unknown token
+                    window.location.replace("/login");
+                } else if (response.status==400) {
+                    throw new DataMeta.AnnotatedError(response);
+                } else if (response.status==410) { // HTTPGone - Expired
+                    // Reload the page so that a new token is trigged. This
+                    // covers only the case where the token expires while the
+                    // user enters a new password. If the token was already
+                    // expired when the user entered the page, the backend
+                    // handles generating and sending a new token.
+                    window.location.replace("/setpass/" + form.getAttribute("data-datameta-setpass"))
+                } else if (response.ok) {
                     view_success();
                     return;
-                } else if (json.error == "TOKEN_NOT_FOUND") {
-                    window.location.replace("/login");
-                } else if (json.error == "TOKEN_EXPIRED") {
-                    // Refresh page so that a new token is triggered
-                    window.location.replace("/setpass/" + form.getAttribute("data-datameta-setpass"))
-                } else if (json.error == "CUSTOM") {
-                    show_alert(json.error_msg);
+                } else {
+                    console.log("unknown response status from /users/0/password", response);
+                    throw new Error();
                 }
-            })
-            .catch((error) => {
-                show_alert("An unknown error occurred. Please try again later.");
-                console.log(error);
+            }).catch((error) => {
+                if (error instanceof DataMeta.AnnotatedError) {
+                    error.response.json().then(function(json){
+                        show_alert(json[0].message);
+                    });
+                } else {
+                    show_alert("An unknown error occurred. Please try again.");
+                    console.log(error);
+                }
             });
     });
 });

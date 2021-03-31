@@ -16,8 +16,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from ..models import User, PasswordToken
-from ..security import hash_password
-from .. import passtokens, email
+from .. import email, security
 from ..settings import get_setting
 
 import logging
@@ -25,29 +24,19 @@ log = logging.getLogger(__name__)
 
 import re
 
-def send_forgot_token(request, user):
-    """Generates a new set-pass token for the specified user and sends out an
-    email to the user with the password recovery URL. The email templatet
-    assumes a 'forgotten password' scenario."""
+def send_forgot_token(request, token):
+    """Sends a password reset token email to the corresponding user"""
     db = request.dbsession
 
-    # Obtain a new token
-    token = passtokens.new_token(db, user.id)
-
-    # Generate the token url
-    token_url = request.route_url('setpass', token = token)
-
-    #Send the token to the user
     email.send(
-        recipients = (user.fullname, user.email),
+        recipients = (token.user.fullname, token.user.email),
         subject = get_setting(db, "subject_forgot_token").str_value,
         template = get_setting(db, "template_forgot_token").str_value,
         values={
-           'fullname' : user.fullname,
-           'token_url' : token_url
+           'fullname' : token.user.fullname,
+           'token_url' : request.route_url('setpass', token = token.value)
            }
         )
-    return token
 
 @view_config(route_name='forgot_api', renderer='json')
 def v_forgot_api(request):
@@ -62,17 +51,12 @@ def v_forgot_api(request):
     if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
         return { 'success' : False, 'error' : 'MALFORMED_EMAIL' }
 
-    # Try to find user
-    user = db.query(User).filter(User.email==req_email).one_or_none()
-
-    if user is None:
-        # Not returning an error on this one intentionally
-        return { 'success' : True }
+    token = security.get_new_password_reset_token_from_email(db, req_email)
 
     # Generate a new forgot token and send it to the user
-    token = send_forgot_token(request, user)
-
-    log.debug(f"USER REQUESTED RECOVERY TOKEN: {token}")
+    if token:
+        send_forgot_token(request, token)
+        log.debug(f"USER REQUESTED RECOVERY TOKEN: {token.value}")
 
     return { 'success' : True }
 
