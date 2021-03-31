@@ -44,15 +44,25 @@ def get_new_password_reset_token(db:Session, user:User):
     # Create new token value
     value = secrets.token_urlsafe(40)
 
-    # Insert token
-    pass_token = PasswordToken(
+    # Set expiration time
+    expires = datetime.now() + timedelta(minutes=10)
+
+    # Add hashed token to db
+    db_token = PasswordToken(
+            user=user,
+            value=hash_token(value),
+            expires=expires
+    )
+    db.add(db_token)
+
+    # Return cleartext token to user
+    user_token = PasswordToken(
             user=user,
             value=value,
-            expires=datetime.now() + timedelta(minutes=10)
-            )
-    db.add(pass_token)
+            expires=expires
+    )
 
-    return pass_token
+    return user_token
 
 def get_new_password_reset_token_from_email(db:Session, email:str):
     """Clears all password recovery tokens for user identified by the supplied
@@ -122,7 +132,7 @@ def get_password_reset_token(db:Session, token:str):
     enabled, otherwise no checking is performed, most importantly expiration
     checks are not performed"""
     return db.query(PasswordToken).join(User).filter(and_(
-        PasswordToken.value == token,
+        PasswordToken.value == hash_token(token),
         User.enabled == True
         )).one_or_none()
 
