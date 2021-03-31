@@ -5,23 +5,11 @@ from typing import Optional
 from dataclasses import dataclass
 import transaction
 from copy import deepcopy
+from .fixtures import UserFixture, MetaDatumFixture, AuthFixture
+from datetime import datetime, timedelta
 
 from datameta import models, security
 from datameta.models import get_tm_session
-
-@dataclass
-class UserFixture():
-    """A container for user information"""
-    email:str
-    password:str 
-    fullname:str
-    site_id:str
-    groupname:str
-    group_admin:bool
-    site_admin:bool
-    uuid:Optional[str] = None # will be set once
-                              # added to the DB
-
 
 def create_user(
     session_factory,
@@ -55,14 +43,86 @@ def create_user(
         session.add(user_obj)
         session.flush()
 
-        # return user updated with uuid:
+        # add token:
+        now = datetime.now()
+        future = now + timedelta(hours=100)
+        token = security.generate_token()
+        token_obj = models.ApiKey(
+            user_id = user_obj.id,
+            value = security.hash_token(token),
+            label = "valid_token",
+            expires = future
+        )
+        session.add(token_obj)
+        session.flush()
+
+        # add expired token:
+        now = datetime.now()
+        past = now - timedelta(hours=100)
+        expired_token = security.generate_token()
+        expired_token_obj = models.ApiKey(
+            user_id = user_obj.id,
+            value = security.hash_token(expired_token),
+            label = "expired_token",
+            expires = past
+        )
+        session.add(expired_token_obj)
+        session.flush()
+
+
+        # return user updated with uuid and tokens:
         user_updated = deepcopy(user)
         user_updated.uuid = str(user_obj.uuid)
+        user_updated.group_site_id = group_obj.site_id
+        user_updated.group_uuid = str(group_obj.uuid)
+        user_updated.auth = AuthFixture(token, token_obj.uuid)
+        user_updated.expired_auth = AuthFixture(expired_token, expired_token_obj.uuid)
         return user_updated
 
 
-def get_auth_headers(token:str):
-    """Generate header with Bearer authentication from token"""
-    return {
-        "Authorization": f"Bearer {token}"
-    }
+def create_metadatum(
+    session_factory,
+    metadatum:MetaDatumFixture
+):
+    """Add a metadatum to the database"""
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        
+        # create metadatum:
+        metadatum_obj = models.MetaDatum(
+            name = metadatum.name,
+            mandatory = metadatum.mandatory,
+            order = metadatum.order,
+            isfile = metadatum.isfile,
+            site_unique = metadatum.site_unique,
+            submission_unique = metadatum.submission_unique,
+            datetimefmt = metadatum.datetimefmt,
+            datetimemode = metadatum.datetimemode,
+            regexp = metadatum.regexp,
+            example = metadatum.example,
+            short_description = metadatum.short_description, 
+            long_description = metadatum.long_description
+        )
+        session.add(metadatum_obj)
+        session.flush()
+
+        # return user updated with uuid:
+        metadatum_updated = deepcopy(metadatum_obj)
+        metadatum_updated.uuid = str(metadatum_updated.uuid)
+        return metadatum_updated
+
+
+def set_application_settings(
+    session_factory
+):
+    """Set application settings in the db."""
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        
+        # creat logo_html:
+        logo_html = models.ApplicationSettings(
+            key='logo_html',
+            str_value = '<p></p>'
+        )
+        session.add(logo_html)
+        session.flush()

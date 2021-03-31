@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.9.0
+  version: 0.10.0
   title: DataMeta
 
 servers:
@@ -50,7 +50,11 @@ paths:
         '403':
           description: Forbidden
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
       security:
@@ -80,8 +84,14 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: The specified key does not exist.
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -116,8 +126,14 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: The specified user does not exist.
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -157,7 +173,11 @@ paths:
         "410":
           description: Password reset token expired
         "400":
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         "500":
           description: Internal Server Error
 
@@ -189,9 +209,13 @@ paths:
         "403":
           description: This user does not have the rights to perform this action.
         "404":
-          description: The specified user or group does not exist.
+          description: The specified user does not exist.
         "400":
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         "500":
           description: Internal Server Error
 
@@ -235,8 +259,14 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified metadataset does not exist.
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -267,7 +297,11 @@ paths:
         "403":
           description: This user does not have the rights to perform this action.
         "400":
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         "500":
           description: Internal Server Error
 
@@ -296,7 +330,11 @@ paths:
         '401':
           description: Unauthorized
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -327,7 +365,13 @@ paths:
         '403':
           description: Forbidden
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        "404":
+          description: The specified metadataset does not exist.
         '500':
           description: Internal Server Error
     delete:
@@ -352,11 +396,19 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
-        '404':
-          description: File not found
+          description: Either forbidden or the resource is not modifiable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        "404":
+          description: The specified metadataset does not exist.
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -389,7 +441,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/FileUploadResponse"
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '401':
           description: Unauthorized
         '500':
@@ -420,11 +476,19 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
+          description: Either forbidden or the resource is not modifiable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '404':
           description: File not found
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
     put:
@@ -466,11 +530,21 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
+          description: Either forbidden or the resource is not modifiable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '404':
+          description: File not found
         '409':
           description: Mismatch between uploaded data checksum and announced checksum
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
     delete:
@@ -499,7 +573,11 @@ paths:
         '404':
           description: File not found
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -528,7 +606,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/SubmissionResponse"
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '401':
           description: Unauthorized
         '500':
@@ -555,7 +637,11 @@ paths:
         '204':
           description: OK
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '401':
           description: Unauthorized
         '500':
@@ -583,15 +669,19 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GroupSubmissions"
+                $ref: "#/components/schemas/GroupSubmissions"
         '401':
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified group does not exist.
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -622,8 +712,14 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified group does not exist.
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -649,7 +745,11 @@ paths:
         '403':
           description: Forbidden
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -680,8 +780,14 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: Setting does not exist
         '400':
-          $ref: '#/components/responses/ValidationError'
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
@@ -834,11 +940,8 @@ components:
           # any property is allowed
         id:
           $ref: "#/components/schemas/Identifier"
-        submissionId:
-          type: string
-          nullable: true
-        groupId:
-          $ref: "#/components/schemas/Identifier"
+        submissionId:   
+          $ref: "#/components/schemas/NullableIdentifier"
         userId:
           $ref: "#/components/schemas/Identifier"
       required:
@@ -871,8 +974,6 @@ components:
           additionalProperties: true
         userId:
           $ref: "#/components/schemas/Identifier"
-        groupId:
-          $ref: "#/components/schemas/Identifier"
         expires:
           type: string
       required:
@@ -880,7 +981,6 @@ components:
         - id
         - urlToUpload
         - userId
-        - groupId
         - expires
       additionalProperties: false
 
@@ -901,8 +1001,6 @@ components:
           nullable: true
         userId:
           $ref: "#/components/schemas/Identifier"
-        groupId:
-          $ref: "#/components/schemas/Identifier"
         expires:
           type: string
       required:
@@ -911,7 +1009,6 @@ components:
         - contentUploaded
         - checksum
         - userId
-        - groupId
         - expires
       additionalProperties: false
 
@@ -1081,6 +1178,18 @@ components:
         - uuid
       additionalProperties: false
 
+    NullableIdentifier:
+      type: object
+      nullable: true
+      properties:
+        uuid:
+          type: string
+        site:
+          type: string
+      required:
+        - uuid
+      additionalProperties: false
+
     Error:
       type: object
       properties:
@@ -1098,15 +1207,7 @@ components:
         - message
       additionalProperties: false
 
-    ValidationErrorModel:
+    ErrorModel:
       type: array
       items:
         $ref: "#/components/schemas/Error"
-
-  responses:
-    ValidationError:
-      description: Validation Error
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ValidationErrorModel"

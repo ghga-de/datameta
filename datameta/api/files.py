@@ -33,7 +33,6 @@ class FileBase(DataHolderBase):
     id          : dict
     name        : str
     user_id     : str
-    group_id    : str
     expires  : Optional[str]
 
 @dataclass
@@ -72,7 +71,6 @@ def post(request: Request) -> FileUploadResponse:
             name              = req_name,
             checksum          = req_checksum,
             user_id           = auth_user.id,
-            group_id          = auth_user.group_id,
             content_uploaded  = False,
             upload_expires    = datetime.now() + timedelta(days=1) # TODO make this configurable
             )
@@ -89,11 +87,26 @@ def post(request: Request) -> FileUploadResponse:
             id                = resource.get_identifier(db_file),
             name              = db_file.name,
             user_id           = resource.get_identifier(db_file.user),
-            group_id          = resource.get_identifier(db_file.group),
             expires        = db_file.upload_expires.isoformat(),
             url_to_upload     = upload_url,
             request_headers   = request_headers,
             )
+
+
+def check_file_access(file_obj:models.File, user:models.User):
+    if (
+        file_obj.content_uploaded and 
+        file_obj.metadatumrecord and  
+        file_obj.metadatumrecord.metadataset.submission_id 
+    ):
+        # if file was already submitted, the group must match
+        return (
+            file_obj.metadatumrecord.metadataset.submission.group_id == user.group_id
+        )
+    else:
+        # if file was not yet submitted, the user must match
+        return file_obj.user_id == user.id
+
 
 @view_config(
     route_name="files_id",
@@ -122,8 +135,8 @@ def get_file(request: Request) -> FileResponse:
     if db_file is None:
         raise HTTPNotFound(json=None)
 
-    # Check if requesting user has access to the file. Group based!
-    if db_file.group_id != auth_user.group_id:
+    # Check if requesting user has access to the file
+    if not check_file_access(db_file, auth_user):
         raise HTTPForbidden(json=None)
 
     # Return details
@@ -134,7 +147,6 @@ def get_file(request: Request) -> FileResponse:
             checksum          = db_file.checksum,
             filesize          = db_file.filesize,
             user_id           = resource.get_identifier(db_file.user),
-            group_id          = resource.get_identifier(db_file.group),
             expires           = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 
@@ -155,12 +167,12 @@ def update_file(request: Request) -> HTTPOk:
     db_file = resource.resource_by_id(db, models.File, request.matchdict['id'])
     if db_file is None:
         raise HTTPNotFound(json=None) # 404
-    if db_file.user_id != auth_user.id or db_file.group_id != auth_user.group_id:
+    if db_file.user_id != auth_user.id:
         raise HTTPForbidden(json=None) # 403
 
-    # We only allow any kind of modification until the file declared uploaded
+    # We only allow modifications before the file is committed (uploaded)
     if db_file.content_uploaded:
-        raise errors.get_validation_error(["Resource can no longer be modified."]) # 400
+        raise errors.get_not_modifiable_error() # 403
 
     # Update properties
     if 'checksum' in request.openapi_validated.body:
@@ -177,7 +189,7 @@ def update_file(request: Request) -> HTTPOk:
             raise errors.get_validation_error(["No data has been uploaded for this file."]) # 400
         except storage.NotWritableError:
             # File was frozen already
-            raise errors.get_validation_error(["Resource can no longer be modified."]) # 400
+            raise errors.get_not_modifiable_error() # 403
         except storage.ChecksumMismatchError:
             # Checksum of uploaded data does not match announcement
             raise HTTPConflict(json=None) # 409
@@ -190,7 +202,6 @@ def update_file(request: Request) -> HTTPOk:
             checksum          = db_file.checksum,
             filesize          = db_file.filesize,
             user_id           = resource.get_identifier(db_file.user),
-            group_id          = resource.get_identifier(db_file.group),
             expires        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 
@@ -239,14 +250,14 @@ def delete_file(request: Request) -> HTTPNoContent:
         raise HTTPNotFound(json=None)
 
     # Check if requesting user has access to the file
-    if db_file.user_id != auth_user.id or db_file.group_id != auth_user.group_id:
+    if db_file.user_id != auth_user.id:
         raise HTTPForbidden(json=None)
 
     # Delete the database record
     try:
         storage_uri = delete_files_db(db, [db_file])[0]
     except FileDeleteError as e:
-        raise errors.get_validation_error(messages=["The resource cannot be modified"], fields=[str(e)])
+        raise errors.get_not_modifiable_error()
 
     user_uuid = db_file.user.uuid
     file_uuid = db_file.uuid
