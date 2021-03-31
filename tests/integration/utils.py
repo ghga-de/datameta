@@ -12,6 +12,8 @@ from datameta import models, security
 from datameta.models import get_tm_session
 import secrets
 
+from datameta.security import get_new_password_reset_token
+
 def create_pwtoken(
     session_factory,
     user,
@@ -28,12 +30,7 @@ def create_pwtoken(
         if not user_obj:
             assert False, f"I don't know this user: {str(user)}"
 
-        pwtoken_obj = models.PasswordToken(
-            user_id = user_obj.id,
-            value = secrets.token_urlsafe(40),
-            expires = expires
-        )
-        session.add(pwtoken_obj)
+        pwtoken_obj = get_new_password_reset_token(session, user=user_obj, expires=expires)
         session.flush()
 
         return pwtoken_obj.value
