@@ -170,7 +170,7 @@ def update_file(request: Request) -> HTTPOk:
     if db_file.user_id != auth_user.id:
         raise HTTPForbidden(json=None) # 403
 
-    # We only allow any kind of modification until the file declared uploaded
+    # We only allow modifications before the file is committed (uploaded)
     if db_file.content_uploaded:
         raise errors.get_not_modifiable_error() # 403
 
