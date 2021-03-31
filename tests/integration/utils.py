@@ -10,6 +10,33 @@ from datetime import datetime, timedelta
 
 from datameta import models, security
 from datameta.models import get_tm_session
+import secrets
+
+def create_pwtoken(
+    session_factory,
+    user,
+    expires=datetime.now() + timedelta(minutes=10)
+):
+    """ Add a valid (default) or expiring (set timedelta + sleep) password reset token to the database.
+    CAVEATS:
+     - 1 / user (unless database is reset between individual pw-reset tests)
+    """
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        user_obj = session.query(models.User).filter(models.User.uuid==user.uuid).one_or_none()
+
+        if not user_obj:
+            assert False, f"I don't know this user: {str(user)}"
+
+        pwtoken_obj = models.PasswordToken(
+            user_id = user_obj.id,
+            value = secrets.token_urlsafe(40),
+            expires = expires
+        )
+        session.add(pwtoken_obj)
+        session.flush()
+
+        return pwtoken_obj.value
 
 def create_user(
     session_factory,
