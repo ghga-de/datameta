@@ -86,17 +86,19 @@ def put(request:Request):
 
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
 
-    target_metadatum.name = request.openapi_validated.body["name"]
-    target_metadatum.short_description = request.openapi_validated.body["regexDescription"]
-    target_metadatum.long_description = request.openapi_validated.body["longDescription"]
-    target_metadatum.example = request.openapi_validated.body["example"]
-    target_metadatum.regexp = request.openapi_validated.body["regExp"]
-    target_metadatum.datetimefmt = request.openapi_validated.body["dateTimeFmt"]
-    target_metadatum.mandatory = request.openapi_validated.body["isMandatory"]
-    target_metadatum.order = request.openapi_validated.body["order"]
-    target_metadatum.isfile = request.openapi_validated.body["isFile"]
-    target_metadatum.submission_unique = request.openapi_validated.body["isSubmissionUnique"]
-    target_metadatum.site_unique = request.openapi_validated.body["isSiteUnique"]
+    body = request.openapi_validated.body
+
+    target_metadatum.name                = body["name"]
+    target_metadatum.short_description   = body["regexDescription"] if body["regexDescription"] else None
+    target_metadatum.long_description    = body["longDescription"] if body["longDescription"] else None
+    target_metadatum.example             = body["example"]
+    target_metadatum.regexp              = body["regExp"] if body["regExp"] else None
+    target_metadatum.datetimefmt         = body["dateTimeFmt"] if body["dateTimeFmt"] else None
+    target_metadatum.mandatory           = body["isMandatory"]
+    target_metadatum.order               = body["order"]
+    target_metadatum.isfile              = body["isFile"]
+    target_metadatum.submission_unique   = body["isSubmissionUnique"]
+    target_metadatum.site_unique         = body["isSiteUnique"]
     
     return HTTPNoContent()
 
@@ -114,18 +116,20 @@ def post(request:Request):
     if not auth_user.site_admin:
          raise HTTPForbidden()
 
+    body = request.openapi_validated.body
+
     metadatum = MetaDatum(
-        name = request.openapi_validated.body["name"],
-        short_description = request.openapi_validated.body["regexDescription"],
-        long_description = request.openapi_validated.body["longDescription"],
-        example = request.openapi_validated.body["example"],
-        regexp = request.openapi_validated.body["regExp"],
-        datetimefmt = request.openapi_validated.body["dateTimeFmt"],
-        mandatory = request.openapi_validated.body["isMandatory"],
-        order = request.openapi_validated.body["order"],
-        isfile = request.openapi_validated.body["isFile"],
-        submission_unique = request.openapi_validated.body["isSubmissionUnique"],
-        site_unique = request.openapi_validated.body["isSiteUnique"],
+        name                = body["name"],
+        short_description   = body["regexDescription"] if body["regexDescription"] else None,
+        long_description    = body["longDescription"] if body["longDescription"] else None,
+        example             = body["example"],
+        regexp              = body["regExp"] if body["regExp"] else None,
+        datetimefmt         = body["dateTimeFmt"] if body["dateTimeFmt"] else None,
+        mandatory           = body["isMandatory"],
+        order               = body["order"],
+        isfile              = body["isFile"],
+        submission_unique   = body["isSubmissionUnique"],
+        site_unique         = body["isSiteUnique"],
     )
 
     db = request.dbsession
