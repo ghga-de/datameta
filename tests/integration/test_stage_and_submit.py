@@ -147,7 +147,6 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         file_checksum:str,
         status:int=204
     ):
-        # with open(file_path, 'rb') as file_to_upload:
         response = self.testapp.post(
             url_to_upload,
             headers=headers,
