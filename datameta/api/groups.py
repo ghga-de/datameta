@@ -58,7 +58,6 @@ class GroupSubmissions:
             }
             for sub in group.submissions
         ]
-        print(self.submissions)
 
     def _get_file_ids_of_submission(self, submission:models.Submission):
         file_ids = []
