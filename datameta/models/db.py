@@ -56,8 +56,7 @@ class Group(Base):
     name             = Column(Text, nullable=False)
     # Relationships
     user             = relationship('User', back_populates='group')
-    metadatasets     = relationship('MetaDataSet', back_populates='group')
-    files            = relationship('File', back_populates='group')
+    submissions      = relationship('Submission', back_populates='group')
     regrequests      = relationship('RegRequest', back_populates='group')
 
 class User(Base):
@@ -123,11 +122,9 @@ class File(Base):
     checksum         = Column(Text, nullable=False)
     filesize         = Column(BigInteger, nullable=True)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
-    group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
     upload_expires   = Column(DateTime, nullable=True)
     # Relationships
     metadatumrecord  = relationship('MetaDatumRecord', back_populates='file', uselist=False)
-    group            = relationship('Group', back_populates='files')
     user             = relationship('User', back_populates='files')
 
 class Submission(Base):
@@ -137,8 +134,10 @@ class Submission(Base):
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     date             = Column(DateTime)
     label            = Column(String(100), nullable=True)
+    group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
     # Relationships
     metadatasets     = relationship('MetaDataSet', back_populates='submission')
+    group            = relationship('Group', back_populates='submissions')
 
 class MetaDatum(Base):
     __tablename__      = 'metadata'
@@ -179,10 +178,8 @@ class MetaDataSet(Base):
     site_id        = Column(String(50), unique=True, nullable=False, index=True)
     uuid           = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id        = Column(Integer, ForeignKey('users.id'), nullable=False)
-    group_id       = Column(Integer, ForeignKey('groups.id'), nullable=False)
     submission_id  = Column(Integer, ForeignKey('submissions.id'), nullable=True)
     # Relationships
-    group            = relationship('Group', back_populates='metadatasets')
     user             = relationship('User', back_populates='metadatasets')
     submission       = relationship('Submission', back_populates='metadatasets')
     metadatumrecords = relationship('MetaDatumRecord', back_populates='metadataset')

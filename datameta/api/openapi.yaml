@@ -80,6 +80,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: The specified key does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -116,6 +118,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: The specified user does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -189,7 +193,7 @@ paths:
         "403":
           description: This user does not have the rights to perform this action.
         "404":
-          description: The specified user or group does not exist.
+          description: The specified user does not exist.
         "400":
           $ref: '#/components/responses/ValidationError'
         "500":
@@ -235,6 +239,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified metadataset does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -328,6 +334,8 @@ paths:
           description: Forbidden
         '400':
           $ref: '#/components/responses/ValidationError'
+        "404":
+          description: The specified metadataset does not exist.
         '500':
           description: Internal Server Error
     delete:
@@ -352,9 +360,9 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
-        '404':
-          description: File not found
+          $ref: '#/components/responses/ResourceNotModifiableError'
+        "404":
+          description: The specified metadataset does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -420,7 +428,7 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
+          $ref: '#/components/responses/ResourceNotModifiableError'
         '404':
           description: File not found
         '400':
@@ -466,7 +474,9 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Forbidden
+          $ref: '#/components/responses/ResourceNotModifiableError'
+        '404':
+          description: File not found
         '409':
           description: Mismatch between uploaded data checksum and announced checksum
         '400':
@@ -583,13 +593,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GroupSubmissions"
+                $ref: "#/components/schemas/GroupSubmissions"
         '401':
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified group does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -622,6 +632,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        "404":
+          description: The specified group does not exist.
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -680,6 +692,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: Setting does not exist
         '400':
           $ref: '#/components/responses/ValidationError'
         '500':
@@ -834,11 +848,8 @@ components:
           # any property is allowed
         id:
           $ref: "#/components/schemas/Identifier"
-        submissionId:
-          type: string
-          nullable: true
-        groupId:
-          $ref: "#/components/schemas/Identifier"
+        submissionId:   
+          $ref: "#/components/schemas/NullableIdentifier"
         userId:
           $ref: "#/components/schemas/Identifier"
       required:
@@ -871,8 +882,6 @@ components:
           additionalProperties: true
         userId:
           $ref: "#/components/schemas/Identifier"
-        groupId:
-          $ref: "#/components/schemas/Identifier"
         expires:
           type: string
       required:
@@ -880,7 +889,6 @@ components:
         - id
         - urlToUpload
         - userId
-        - groupId
         - expires
       additionalProperties: false
 
@@ -901,8 +909,6 @@ components:
           nullable: true
         userId:
           $ref: "#/components/schemas/Identifier"
-        groupId:
-          $ref: "#/components/schemas/Identifier"
         expires:
           type: string
       required:
@@ -911,7 +917,6 @@ components:
         - contentUploaded
         - checksum
         - userId
-        - groupId
         - expires
       additionalProperties: false
 
@@ -1081,6 +1086,18 @@ components:
         - uuid
       additionalProperties: false
 
+    NullableIdentifier:
+      type: object
+      nullable: true
+      properties:
+        uuid:
+          type: string
+        site:
+          type: string
+      required:
+        - uuid
+      additionalProperties: false
+
     Error:
       type: object
       properties:
@@ -1098,7 +1115,7 @@ components:
         - message
       additionalProperties: false
 
-    ValidationErrorModel:
+    ErrorModel:
       type: array
       items:
         $ref: "#/components/schemas/Error"
@@ -1109,4 +1126,11 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ValidationErrorModel"
+            $ref: "#/components/schemas/ErrorModel"
+
+    ResourceNotModifiableError:
+      description: Either forbidden or the resource is not modifiable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorModel"

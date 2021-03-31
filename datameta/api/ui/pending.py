@@ -31,14 +31,12 @@ def get_pending_metadatasets(dbsession, user):
     # Query metadatasets that have been no associated submission
     m_sets = dbsession.query(MetaDataSet).filter(and_(
         MetaDataSet.user==user,
-        MetaDataSet.group==user.group,
         MetaDataSet.submission==None)
         ).options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)).all()
     return [
             MetaDataSetResponse(
                 id             = resource.get_identifier(m_set),
                 record         = get_record_from_metadataset(m_set),
-                group_id       = resource.get_identifier(m_set.group),
                 user_id        = resource.get_identifier(m_set.user),
                 submission_id  = resource.get_identifier(m_set.submission) if m_set.submission else None
                 )
@@ -49,7 +47,7 @@ def get_pending_metadatasets(dbsession, user):
 
 def get_pending_files(dbsession, user):
     # Find files that have not yet been associated with metadata
-    db_files = dbsession.query(File).filter(and_(File.user_id==user.id, File.group_id==user.group_id, File.metadatumrecord==None, File.content_uploaded==True)).order_by(File.id.desc())
+    db_files = dbsession.query(File).filter(and_(File.user_id==user.id, File.metadatumrecord==None, File.content_uploaded==True)).order_by(File.id.desc())
     return [
             FileResponse(
                 id                = resource.get_identifier(db_file),
@@ -58,7 +56,6 @@ def get_pending_files(dbsession, user):
                 checksum          = db_file.checksum,
                 filesize          = db_file.filesize,
                 user_id           = resource.get_identifier(db_file.user),
-                group_id          = resource.get_identifier(db_file.group),
                 expires           = db_file.upload_expires.isoformat() if db_file.upload_expires else None
                 ) for db_file in db_files
             ]

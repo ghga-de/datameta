@@ -22,13 +22,13 @@ from .. import security, siteid, models
 import datetime
 from ..resource import resource_by_id, get_identifier
 from . import DataHolderBase
+from .. import errors
 
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
     id: dict
     record: dict
-    group_id: str
     user_id: str
     submission_id: Optional[str] = None
 
@@ -89,7 +89,6 @@ def post(request:Request) -> MetaDataSetResponse:
     mdata_set = models.MetaDataSet(
         site_id = siteid.generate(request, models.MetaDataSet),
         user_id = auth_user.id,
-        group_id = auth_user.group.id,
         submission_id = None
     )
     db.add(mdata_set)
@@ -108,10 +107,18 @@ def post(request:Request) -> MetaDataSetResponse:
     return MetaDataSetResponse(
         id             = get_identifier(mdata_set),
         record         = record,
-        group_id       = get_identifier(mdata_set.group),
         user_id        = get_identifier(mdata_set.user),
         submission_id  = get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
+
+
+def check_metadata_access(metadataset_obj:models.MetaDataSet, user:models.User):
+    if metadataset_obj.submission_id:
+        # if metadataset was already submitted, the group must match
+        return metadataset_obj.submission.group_id == user.group_id
+    else:
+        # if metadataset was not yet submitted, the user must match
+        return metadataset_obj.user_id == user.id
 
 
 @view_config(
@@ -129,16 +136,14 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     if not mdata_set:
         raise HTTPNotFound()
 
-    # check if user is in the group of that metadataset:
-    if not auth_user.group.id == mdata_set.group.id:
+    if not check_metadata_access(mdata_set, auth_user):
         raise HTTPForbidden()
 
     return MetaDataSetResponse(
         id=get_identifier(mdata_set),
         record=get_record_from_metadataset(mdata_set),
-        group_id=mdata_set.group.site_id,
-        user_id=mdata_set.user.site_id,
-        submission_id=mdata_set.submission_id,
+        user_id=get_identifier(mdata_set.user),
+        submission_id=get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
 
 @view_config(
@@ -147,7 +152,7 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     request_method="DELETE",
     openapi=True
 )
-def get_metadataset(request:Request) -> HTTPNoContent:
+def delete_metadataset(request:Request) -> HTTPNoContent:
     # Check authentication or raise 401
     auth_user = security.revalidate_user(request)
 
@@ -161,12 +166,12 @@ def get_metadataset(request:Request) -> HTTPNoContent:
         raise HTTPNotFound()
 
     # Check if user owns this metadataset
-    if auth_user.group.id != mdata_set.group.id or auth_user.id != mdata_set.user_id:
+    if auth_user.id != mdata_set.user_id:
         raise HTTPForbidden()
 
     # Check if the metadataset was already submitted
     if mdata_set.submission:
-        raise errors.get_validation_error(messages=["The resource cannot be modified"])
+        raise errors.get_not_modifiable_error()
 
     # Delete the records
     request.dbsession.query(models.MetaDatumRecord).filter(models.MetaDatumRecord.metadataset_id==mdata_set.id).delete()

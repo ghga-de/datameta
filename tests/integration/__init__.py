@@ -6,7 +6,7 @@ import json
 
 import unittest
 from webtest import TestApp
-import pytest
+import tempfile
 
 from pyramid import testing
 from pyramid.httpexceptions import HTTPFound
@@ -20,37 +20,16 @@ from datameta.models import (
 )
 from datameta.models.meta import Base
 
-from .utils import UserFixture, create_user
-
-# get URL to test db from environment variable:
-db_url = os.getenv("SQLALCHEMY_TEST_URL")
-assert db_url, "Could not find environment variable \"SQLALCHEMY_TEST_URL\""
-memcached_url = os.getenv("SESSION_URL")
-assert memcached_url, "Could not find environment variable \"SESSION_URL\""
-
-# read settings.json
-default_settings_json = os.path.join(
-    os.path.dirname(__file__), 
-    "fixtures", 
-    "settings.json"
+from .utils import create_user, create_metadatum, set_application_settings
+from .fixtures import (
+    db_url, 
+    memcached_url, 
+    default_settings,
+    default_users,
+    default_metadata,
+    metadata_records,
+    test_files
 )
-with open(default_settings_json, "r") as json_:
-    default_settings = json.load(json_)
-default_settings["sqlalchemy.url"] = db_url
-default_settings["session.url"] = memcached_url
-
-# read default user.json:
-default_users_json = os.path.join(
-    os.path.dirname(__file__), 
-    "fixtures", 
-    "default_users.json"
-)
-with open(default_users_json, "r") as json_:
-    default_users = {
-        name: UserFixture(**user)
-        for name, user in json.load(json_).items()
-    }
-
 
 class BaseIntegrationTest(unittest.TestCase):
     """Base TestCase to inherit from"""
@@ -94,11 +73,27 @@ class BaseIntegrationTest(unittest.TestCase):
             for name, user in default_users.items()
         }
 
+        # create default metadata:
+        self.metadata = {
+            name: create_metadatum(self.session_factory, mdatum)
+            for name, mdatum in default_metadata.items()
+        }
+
+        # add application settings:
+        set_application_settings(self.session_factory)
+
     def setUp(self):
         """Setup Test Server"""
         self.settings = default_settings
         
+        # setup temporary storage location:
+        self.storage_path = tempfile.TemporaryDirectory()
+        self.settings["datameta.storage_path"] = self.storage_path.name
+
+        # initialize DB and provide metadata and file fixtures
         self.initDb()
+        self.metadata_records = metadata_records
+        self.test_files = test_files
 
         from datameta import main
         app = main({}, **self.settings)
@@ -109,6 +104,7 @@ class BaseIntegrationTest(unittest.TestCase):
         transaction.abort()
         Base.metadata.drop_all(self.engine)
         del self.testapp
+        self.storage_path.cleanup()
 
     def _steps(self):
         """
