@@ -41,6 +41,8 @@ class GroupSubmissions:
                 models.MetaDataSet.metadatumrecords
             ).joinedload(
                 models.MetaDatumRecord.metadatum
+            ).joinedload(
+                models.MetaDatumRecord.file
             )
         ).one_or_none()
 
