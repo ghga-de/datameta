@@ -13,6 +13,9 @@
 # limitations under the License.
 
 from pyramid.config import Configurator
+from pyramid.view import view_config
+from pyramid.request import Request
+from pyramid.httpexceptions import HTTPFound
 
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json, LetterCase
@@ -24,6 +27,7 @@ openapi_spec_path = os.path.join(os.path.dirname(__file__), "openapi.yaml")
 with open(openapi_spec_path, "r") as spec_file:
     openapi_spec = yaml.safe_load(spec_file)
 base_url = openapi_spec["servers"][0]["url"]
+api_version = openapi_spec["info"]["version"]
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
@@ -34,14 +38,18 @@ class DataHolderBase:
 
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
+    config.add_route("api", "/api")
     config.add_route("apikeys", base_url + "/keys")
     config.add_route("apikeys_id", base_url + "/keys/{id}")
     config.add_route("user_id_keys", base_url + "/users/{id}/keys")
     config.add_route("SetUserPassword", base_url + "/users/{id}/password")
     config.add_route("user_id", base_url + "/users/{id}")
     config.add_route("metadata", base_url + "/metadata")
+    config.add_route("metadata_id", base_url + "/metadata/{id}")
     config.add_route("metadatasets", base_url + "/metadatasets")
     config.add_route("metadatasets_id", base_url + "/metadatasets/{id}")
+    config.add_route("appsettings", base_url + "/appsettings")
+    config.add_route("appsettings_id", base_url + "/appsettings/{id}")
     config.add_route("files", base_url + "/files")
     config.add_route("files_id", base_url + "/files/{id}")
     config.add_route("submissions", base_url + "/submissions")
@@ -51,3 +59,12 @@ def includeme(config: Configurator) -> None:
 
     # Endpoint outside of openapi
     config.add_route("upload", base_url + "/upload/{id}")
+
+
+@view_config(
+    route_name="api",
+    renderer='json',
+    request_method="GET",
+)
+def get(request: Request):
+    return HTTPFound(base_url, json_body = {'version' : api_version})

@@ -82,21 +82,17 @@
     </head>
     <body class="d-flex flex-column h-100" onload=init_widescreen()>
 
-        <header class="sticky-top d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-body border-bottom border-warning">
+        <header class="sticky-top d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-0 bg-body border-bottom border-warning">
             <div tal:replace="structure logo_html"></div>
 
-            <p class="my-0 me-4 fst-italic">
-            ${request.session['user_fullname']} (${request.session['user_groupname']})
-            </p>
             <nav class="my-2 my-md-0 me-md-3">
-                <a class="p-2 text-dark" href="/submit">Submit New</a>
-                <a class="p-2 text-dark" href="/view">View Data</a>
-                <a class="p-2 text-dark" href="/account">Account</a>
+                <a class="col ms-2 btn btn-outline-dark" href="/submit"><i class="bi bi-file-earmark-plus"></i> Submit Data</a>
+                <a class="col ms-2 btn btn-outline-dark" href="/view"><i class="bi bi-search"></i> View Data</a>
+                <a class="col ms-2 btn btn-outline-dark" href="/account"><i class="bi bi-person"></i> Account</a>
+                <a class="col ms-2 btn btn-outline-dark" href="/api"><i class="bi bi-code"></i> API</a>
+                <a tal:condition="request.session['site_admin'] or request.session['group_admin']" class="col ms-2 btn btn-outline-danger" href="/admin"><i class="bi bi-gear"></i> Admin</a>
+                <a class="col ms-2 btn btn-outline-danger" href="/login"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </nav>
-            <div class="row">
-                <a tal:condition="request.session['site_admin'] or request.session['group_admin']" class="col ms-2 btn btn-outline-danger" href="/admin">Admin</a>
-                <a class="col ms-2 btn btn-outline-danger" href="/login">Logout</a>
-            </div>
         </header>
 
         <main class="flex-shrink-0">
@@ -108,6 +104,7 @@
         <footer class="fixed-bottom footer mt-auto py-3 bg-light">
             <div class="container position-relative">
                 <span class="text-muted">&copy; 2021 DataMeta</span><span tal:condition="request.registry.settings.get('datameta.demo_mode')"> (DEMO MODE)</span>
+                <span class="ms-2">Logged in as: ${request.session['user_fullname']} (${request.session['user_groupname']})</span>
                     <div class="form-check form-switch position-absolute top-50 end-0 translate-middle">
                       <input class="form-check-input" type="checkbox" name="flexSwitchWidescreen" id="flexSwitchWidescreen" onClick="toggle_widescreen()">
                       <label class="form-check-label" for="flexSwitchWidescreen">

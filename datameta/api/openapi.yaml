@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.7.0
+  version: 0.9.0
   title: DataMeta
 
 servers:
@@ -214,6 +214,62 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
+    post:
+      summary: Create a New MetaDatum
+      description: >-
+        Create a new MetaDatum. This is an administrative Endpoint that is not accessible for regular users.
+      tags:
+        - Metadata
+      operationId: CreateMetaDatum
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetaDatum"
+        description: >-
+          Provide all properties for one MetaDatum.
+      responses:
+        "204":
+          description: Metadatum added successfully
+        "401":
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          description: Internal Server Error
+
+  /metadata/{id}:
+    put:
+      summary: Update a MetaDatum
+      description: Update a MetaDatum. This is an administrative Endpoint that is not accessible for regular users.
+      tags:
+        - Metadata
+      operationId: UpdateMetaDatum
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetaDatum"
+      responses:
+        "204":
+          description: Metadatum updated successful
+        "401":
+          description: Unauthorized
+        "403":
+          description: This user does not have the rights to perform this action.
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "500":
+          description: Internal Server Error
 
   /metadatasets:
     post:
@@ -243,7 +299,6 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           description: Internal Server Error
-
 
   /metadatasets/{id}:
     get:
@@ -501,6 +556,8 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
 
@@ -560,7 +617,65 @@ paths:
               $ref: "#/components/schemas/GroupUpdateRequest"
       responses:
         "204":
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          description: Internal Server Error
+
+  /appsettings:
+    get:
+      summary: GET all AppSettings
+      description: >-
+        GET all AppSettings. This is an administrative Endpoint that is not accessible for regular users.
+      tags:
+        - Settings
+      operationId: AppSettings
+      responses:
+        "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AppSettingsResponse"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          description: Internal Server Error
+
+  /appsettings/{id}:
+    put:
+      summary: Update a specific appsetting. This is an administrative Endpoint that is not accessible for regular users.
+      description: >-
+        Update a specific appsetting
+      tags:
+        - Settings
+      operationId: UpdateAppSettings
+      parameters:
+        - name: id
+          in: path
+          description: ID of the group
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppSettingsUpdateRequest"
+      responses:
+        "204":
+          description: App Settings Updated
         '401':
           description: Unauthorized
         '403':
@@ -573,7 +688,6 @@ paths:
 security:
   - bearerAuth: []
   - cookieAuth: []
-
 
 components:
 
@@ -657,6 +771,45 @@ components:
       required:
         - newPassword
         - passwordChangeCredential
+      additionalProperties: false
+
+    MetaDatum:
+      type: object
+      properties:
+        name:
+          type: string
+        regexDescription:
+          type: string
+        longDescription:
+          type: string
+        example:
+          type: string
+        regExp:
+          type: string
+        dateTimeFmt:
+          type: string
+        isMandatory:
+          type: boolean
+        order:
+          type: integer
+        isFile:
+          type: boolean
+        isSubmissionUnique:
+          type: boolean
+        isSiteUnique:
+          type: boolean
+      required:
+        - name
+        - regexDescription
+        - longDescription
+        - example
+        - regExp
+        - dateTimeFmt
+        - isMandatory
+        - order
+        - isFile
+        - isSubmissionUnique
+        - isSiteUnique
       additionalProperties: false
 
     MetaDataSet:
@@ -856,6 +1009,9 @@ components:
           longDescription:
             type: string
             nullable: true
+          example:
+            type: string
+            nullable: true
           regExp:
             type: string
             nullable: true
@@ -877,6 +1033,7 @@ components:
           - name
           - regexDescription
           - longDescription
+          - example
           - regExp
           - dateTimeFmt
           - isMandatory
@@ -884,6 +1041,33 @@ components:
           - isFile
           - isSubmissionUnique
           - isSiteUnique
+      additionalProperties: false
+
+    AppSettingsResponse:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Identifier"
+        key:
+          type: string
+        valueType:
+          type: string
+        value:
+          type: string
+      required:
+        - id
+        - key
+        - valueType
+        - value
+      additionalProperties: false
+
+    AppSettingsUpdateRequest:
+      type: object
+      properties:
+        value:
+          type: string
+      required:
+        - value
       additionalProperties: false
 
     Identifier:

@@ -37,7 +37,7 @@ class UserUpdateRequest(DataHolderBase):
     request_method="PUT", 
     openapi=True
 )
-def get(request: Request) -> UserUpdateRequest:
+def put(request: Request):
     """Change the name of the group"""
 
     user_id = request.matchdict["id"]

@@ -144,12 +144,11 @@ DataMeta.admin.reload_requests = function(requests, groups) {
     });
 }
 
-
 DataMeta.admin.subnav = function() {
     // Handle registration request preselection
     var showreq = DataMeta.uilocal.showreq;
     DataMeta.uilocal.showreq = null;
-    if (!(showreq == '')){
+    if (!(showreq == '' || showreq == null)){
         var admintabs = document.getElementById('admintabs');
         // de-select all tabs
         admintabs.querySelectorAll(".nav-link").forEach(elem => elem.classList.remove("active"))
@@ -174,26 +173,27 @@ DataMeta.admin.subnav = function() {
  * update functions for the individual tabs
  */
 DataMeta.admin.reload = function() {
-        fetch('/api/admin',
-            {
-                method: 'GET'
-            })
-            .then(response => response.json())
-            .then(function (json) {
-                DataMeta.admin.reload_requests(json.reg_requests, json.groups);
-                DataMeta.admin.subnav();
-                DataMeta.admin.rebuildUserTable(json.users);
-                DataMeta.admin.rebuildGroupTable(json.groups);
-                DataMeta.admin.groups = json.groups;
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+    fetch('/api/admin',
+        {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(function (json) {
+            DataMeta.admin.reload_requests(json.reg_requests, json.groups);
+            DataMeta.admin.subnav();
+            DataMeta.admin.rebuildUserTable(json.users);
+            DataMeta.admin.rebuildGroupTable(json.groups);            })
+        .catch((error) => {
+            console.log(error);
+        });
+
+    DataMeta.admin.getAppSettings();
+    DataMeta.admin.getMetadata();
 }
 
 //Rebuilds the user table, based on the Data fetched from the API
 DataMeta.admin.rebuildUserTable = function(users) {
-    var t = $('#table_users').DataTable()
+    var t = $('#table_users').DataTable();
     t.clear();
     t.rows.add(users);
     t.draw();   
@@ -202,13 +202,13 @@ DataMeta.admin.rebuildUserTable = function(users) {
 //Initializes the user table
 DataMeta.admin.initUserTable = function() {
     $('#table_users').DataTable({
-        destroy: true, //Destroys the table, in case it already exist
         rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
-        lengthMenu: [ 25, 50, 75, 100 ],
+        lengthMenu: [ 10, 25, 50, 100 ],
         pageLength: 25,
         searching: false,
+        scrollX: true,
         columns: [
             { title: "User ID", data: "id.site"},
             { title: "Name", data: "fullname", render:function(data) {
@@ -246,7 +246,7 @@ DataMeta.admin.initUserTable = function() {
 
 //Rebuilds the group table, based on the Data fetched from the API
 DataMeta.admin.rebuildGroupTable = function(groups) {
-    var t = $('#table_groups').DataTable()
+    var t = $('#table_groups').DataTable();
     t.clear();
     t.rows.add(groups);
     t.draw();   
@@ -255,19 +255,414 @@ DataMeta.admin.rebuildGroupTable = function(groups) {
 //Initializes the group table
 DataMeta.admin.initGroupTable = function() {
     $('#table_groups').DataTable({
-        destroy: true,  //Destroys the table, in case it already exists
         rowId: 'id.uuid',
         order: [[1, "asc"]],
         paging : true,
-        lengthMenu: [ 25, 50, 75, 100 ],
+        lengthMenu: [ 10, 25, 50, 100 ],
         pageLength: 25,
         searching: false,
+        scrollX: true,
         columns: [
             { title: "Group ID", data: "id.site"},
             { title: "Group Name", data: "name", render:function(data) {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeGroupName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
         ]
+    });
+}
+
+//Rebuilds the group table, based on the Data fetched from the API
+DataMeta.admin.rebuildSiteTable = function(settings) {
+    var t = $('#table_site').DataTable()
+    t.clear();
+    t.rows.add(settings);
+    t.draw();   
+}
+
+//Initializes the site settings table
+DataMeta.admin.initSiteTable = function() {
+    $('#table_site').DataTable({
+        rowId: 'id.uuid',
+        order: [[1, "asc"]],
+        paging : true,
+        pageLength: 25,
+        searching: false,
+        scrollX: true,
+        columns: [
+            { title: "Key", data: "key"},
+            { title: "Value Type", data: "valueType"},
+            { title: "Value", data: "value"},
+            { orderable:false, title: "Edit", render:function() {
+                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
+            }}
+        ]
+    });
+}
+
+//Rebuilds the group table, based on the Data fetched from the API
+DataMeta.admin.rebuildMetadataTable = function(metadata) {
+    var t = $('#table_metadata').DataTable()
+    t.clear();
+    t.rows.add(metadata);
+    t.draw();   
+}
+
+//Initializes the metadata table
+DataMeta.admin.initMetadataTable = function() {
+    $('#table_metadata').DataTable({
+        rowId: 'id.uuid',
+        order: [[1, "asc"]],
+        paging : true,
+        pageLength: 25,
+        searching: false,
+        scrollX: true,
+        columns: [
+            { title: "Name", data: "name"},
+            { title: "Short Description", data: "regexDescription"},
+            { title: "Long Description", data: "longDescription"},
+            { title: "Example", data: "example"},
+            { title: "Regular Expression", data: "regExp"},
+            { title: "Date/Time Format", data: "dateTimeFmt"},
+            { orderable:false, title: "isMandatory", data: "isMandatory"},
+            { title: "Order", data: "order"},
+            { orderable:false, title: "isFile", data: "isFile"},
+            { orderable:false, title: "isSubmissionUnique", data: "isSubmissionUnique"},
+            { orderable:false, title: "isSiteUnique", data: "isSiteUnique"},
+            { orderable:false, title: "Edit", render:function() {
+                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableMetaDatumEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
+            }}
+        ]
+    });
+}
+
+// Enables the edit mode for Site Settings
+function enableSettingsEditMode(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered instead of the button itself, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode;
+
+    var innerHTML = row.children[2].innerHTML;
+    row.children[2].innerHTML = '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
+                                '<i class="bi bi-pencil"></i>' +
+                                '</span>' +
+                                '<textarea type="text" class="form-control">' + innerHTML + '</textarea>' +
+                                '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="saveSettings(event);"><i class="bi bi-check2"></i></button></div>';
+                        
+    $('#table_site').DataTable().columns.adjust().draw();
+}
+
+// Saves the editing done for Site Settings
+function saveSettings(event) {
+    
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered instead of the button itself, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode.parentNode;
+
+    var appsetting_id = row.id;
+    var value = row.children[2].querySelector('textarea').value;
+
+    fetch(DataMeta.api('appsettings/' + appsetting_id),
+    {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            value
+        })
+    })
+    .then(function (response) {
+        if(response.status == '204') {
+            // Reload Metadata Table
+            DataMeta.admin.getAppSettings();
+
+            // Remove any alerts there still are
+            document.getElementById("metadata_alert").classList.remove("show");
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_settings_alert(json[0].message);
+            });
+        } else if (response.status == "401") {
+            show_settings_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_settings_alert("You do not have the rights to perform this action.");
+        } else {
+            show_settings_alert("An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+// Enables the edit mode for Metadata Settings
+function enableMetaDatumEditMode(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered instead of the button itself, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode;
+
+    var innerHTML = row.children[0].innerHTML;
+    row.children[0].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
+
+    innerHTML = row.children[1].innerHTML;
+    row.children[1].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control">' + innerHTML + '</textarea></div>';
+
+    innerHTML = row.children[2].innerHTML;
+    row.children[2].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control">' + innerHTML + '</textarea></div>';
+
+    innerHTML = row.children[3].innerHTML;
+    row.children[3].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
+
+    innerHTML = row.children[4].innerHTML;
+    row.children[4].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
+
+    innerHTML = row.children[5].innerHTML;
+    row.children[5].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
+    
+    innerHTML = row.children[6].innerHTML;
+    var checked = ((innerHTML == "true") ? "checked": "")
+    row.children[6].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
+    
+    innerHTML = row.children[7].innerHTML;
+    row.children[7].innerHTML = '<div class="input-group" style="width:70px"><input type="number" class="form-control" value="' + innerHTML +'"></div>';
+    
+    innerHTML = row.children[8].innerHTML;
+    checked = ((innerHTML == "true") ? "checked": "")
+    row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
+
+    innerHTML = row.children[9].innerHTML;
+    checked = ((innerHTML == "true") ? "checked": "")
+    row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
+
+    innerHTML = row.children[10].innerHTML;
+    checked = ((innerHTML == "true") ? "checked": "")
+    row.children[10].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
+
+    row.children[11].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
+                                 '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
+
+    $('#table_metadata').DataTable().columns.adjust().draw();
+}
+
+// Enables the edit mode for a new Metadatum
+DataMeta.admin.newMetaDatumRow = function() {
+
+    var table = $('#table_metadata').DataTable();
+    var rows = table.rows();
+
+    // Check, if there is already a new row
+    for (row in rows) {
+        if (row.id == "-1") {
+            show_metadata_alert("You can only create one new metadatum at a time.")
+            return;
+        }
+    }
+
+    // create a new row
+    var row = [{
+        id: {uuid: "-1"}, 
+        name: "", 
+        regexDescription: "", 
+        longDescription: "", 
+        example: "",
+        regExp: "", 
+        dateTimeFmt: "", 
+        isMandatory: "", 
+        order: "0", 
+        isFile: "", 
+        isSubmissionUnique: "", 
+        isSiteUnique: ""}];
+
+    // add the new row to the table
+    table.rows.add(row);
+    table.order([7, "desc"]).columns.adjust().draw();
+
+    var row = document.getElementById("-1");
+
+    //Immediately make the row editable
+    row.children[0].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[1].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control"></textarea></div>';
+    row.children[2].innerHTML = '<div class="input-group-text"><textarea type="text" class="form-control"></textarea></div>';
+    row.children[3].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[4].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[5].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[6].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
+    row.children[7].innerHTML = '<div class="input-group" style="width:70px"><input type="number" class="form-control" value="0"></div>';
+    row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
+    row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
+    row.children[10].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
+    row.children[11].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="addMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
+                                 '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
+}
+
+// Saves the editing done for Metadata Settings
+function saveMetaDatum(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered instead of the button itself, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode.parentNode;
+    
+    var metadata_id = row.id; 
+    var name = row.children[0].querySelector('input').value;
+    var regexDescription = row.children[1].querySelector('textarea').value;
+    var longDescription = row.children[2].querySelector('textarea').value;
+    var example = row.children[3].querySelector('input').value;
+    var regExp = row.children[4].querySelector('input').value;
+    var dateTimeFmt = row.children[5].querySelector('input').value;
+    var isMandatory = row.children[6].querySelector('input').checked;
+    var order = parseInt(row.children[7].querySelector('input').value);
+    var isFile = row.children[8].querySelector('input').checked;
+    var isSubmissionUnique = row.children[9].querySelector('input').checked;
+    var isSiteUnique = row.children[10].querySelector('input').checked;
+
+    if(isNaN(order)) {
+        show_metadata_alert("Please specify an int in the 'order' field.");
+        return;
+    }
+
+    fetch(DataMeta.api('metadata/' + metadata_id),
+    {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name,
+            regexDescription,
+            longDescription,
+            example,
+            regExp,
+            dateTimeFmt,
+            isMandatory,
+            order,
+            isFile,
+            isSubmissionUnique,
+            isSiteUnique
+        })
+    })
+    .then(function (response) {
+        if(response.status == '204') {
+            // Reload Metadata Table
+            DataMeta.admin.getMetadata();
+
+            // Remove any alerts there still are
+            document.getElementById("metadata_alert").classList.remove("show");
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_metadata_alert(json[0].message);
+            });
+        } else if (response.status == "401") {
+            show_metadata_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_metadata_alert("You do not have the rights to perform this action.");
+        } else {
+            show_metadata_alert("An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+function addMetaDatum(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // If the picture in the button was triggered instead of the button itself, change to the button element
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode.parentNode;
+    
+    var name = row.children[0].querySelector('input').value;
+    var regexDescription = row.children[1].querySelector('textarea').value;
+    var longDescription = row.children[2].querySelector('textarea').value;
+    var example = row.children[3].querySelector('input').value;
+    var regExp = row.children[4].querySelector('input').value;
+    var dateTimeFmt = row.children[5].querySelector('input').value;
+    var isMandatory = row.children[6].querySelector('input').checked;
+    var order = parseInt(row.children[7].querySelector('input').value);
+    var isFile = row.children[8].querySelector('input').checked;
+    var isSubmissionUnique = row.children[9].querySelector('input').checked;
+    var isSiteUnique = row.children[10].querySelector('input').checked;
+
+    if(isNaN(order)) {
+        show_metadata_alert("Please specify an int in the 'order' field.");
+        return;
+    }
+
+    fetch(DataMeta.api('metadata'),
+    {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name,
+            regexDescription,
+            longDescription,
+            example,
+            regExp,
+            dateTimeFmt,
+            isMandatory,
+            order,
+            isFile,
+            isSubmissionUnique,
+            isSiteUnique
+        })
+    })
+    .then(function (response) {
+        if(response.status == '204') {
+            // Reload Metadata Table
+            DataMeta.admin.getMetadata();
+
+            // Remove any alerts there still are
+            document.getElementById("metadata_alert").classList.remove("show");
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_metadata_alert(json[0].message);
+            });
+        } else if (response.status == "401") {
+            show_metadata_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_metadata_alert("You do not have the rights to perform this action.");
+        } else {
+            show_metadata_alert("An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
     });
 }
 
@@ -416,12 +811,13 @@ function changeUserName(event) {
     var name = button.getAttribute('data');
     var uuid = row.id;
 
-    cell.innerHTML =      '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
-                            '<i class="bi bi-person-circle"></i>' +
+    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
+                        '<i class="bi bi-person-circle"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
                         '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmUserNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
-
+                        
+    $('#table_users').DataTable().columns.adjust().draw();
 }
 
 //Confirms the UserNameChange and performs the api call
@@ -456,12 +852,13 @@ function confirmUserNameChange(event, uuid) {
     var name = button.getAttribute('data');
     var uuid = row.id;
 
-    cell.innerHTML =      '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
-                            '<i class="bi bi-person-circle"></i>' +
+    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
+                        '<i class="bi bi-building"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
                         '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmGroupNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
 
+    $('#table_groups').DataTable().columns.adjust().draw();
 }
 
 //Confirms the GroupNameChange and performs the api call
@@ -480,7 +877,7 @@ function confirmGroupNameChange(event, uuid) {
 
 // API call to change the group name
 DataMeta.admin.updateGroup = function (group_id, name) {
-    fetch('/api/v0/groups/' + group_id,
+    fetch(DataMeta.api('groups/' + group_id),
     {
         method: 'PUT',
         headers: {
@@ -493,6 +890,7 @@ DataMeta.admin.updateGroup = function (group_id, name) {
     })
     .then(function (response) {
         if(response.status == '204') {
+            // Reload Group, User & Request Tables
             DataMeta.admin.reload();
         } else  if (response.status == "400") {
             response.json().then((json) => {
@@ -501,7 +899,7 @@ DataMeta.admin.updateGroup = function (group_id, name) {
         } else if (response.status == "401") {
             show_group_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_group_alert("You don't have the rights to perform this action.");
+            show_group_alert("You do not have the rights to perform this action.");
         } else {
             show_group_alert("An unknown error occurred. Please try again later.");
         }
@@ -511,6 +909,80 @@ DataMeta.admin.updateGroup = function (group_id, name) {
     });
 }
 
+// API call to get the AppSettings
+DataMeta.admin.getAppSettings = function () {
+    fetch(DataMeta.api('appsettings'),
+    {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(function (response) {
+        if(response.status == '200') {
+            response.json().then((json) => {
+                // Rebuild Table with the newly fetched Data
+                DataMeta.admin.rebuildSiteTable(json);
+
+                // Remove any alerts there still are
+                document.getElementById("site_alert").classList.remove("show");
+            });
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_group_alert(json.message);
+            });
+        } else if (response.status == "401") {
+            show_group_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_group_alert("You do not have the rights to perform this action.");
+        } else {
+            show_group_alert("An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+// API call get the Metadata definitions
+DataMeta.admin.getMetadata = function () {
+    fetch(DataMeta.api('metadata'),
+    {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(function (response) {
+        if(response.status == '200') {
+            response.json().then((json) => {
+
+                // Rebuild Table with the newly fetched Data
+                DataMeta.admin.rebuildMetadataTable(json);
+                
+                // Remove any alerts there still are
+                document.getElementById("metadata_alert").classList.remove("show");
+            });
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                show_group_alert(json.message);
+            });
+        } else if (response.status == "401") {
+            show_group_alert("You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            show_group_alert("You do not have the rights to perform this action.");
+        } else {
+            show_group_alert("An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+
 // Alert in the user Tab for 4** - HTTP Responses
 function show_user_alert(text) {
     var al = document.getElementById("user_alert");
@@ -519,7 +991,7 @@ function show_user_alert(text) {
     new bootstrap.Collapse(al, { show: true });
 }
 
-// Alert in the user Tab for 4** - HTTP Responses
+// Alert in the group Tab for 4** - HTTP Responses
 function show_group_alert(text) {
     var al = document.getElementById("group_alert");
     al.classList.remove("show");
@@ -535,9 +1007,25 @@ function show_request_alert(text) {
     new bootstrap.Collapse(al, { show: true });
 }
 
+// Alert in the metadata Tab
+function show_metadata_alert(text) {
+    var al = document.getElementById("metadata_alert");
+    al.classList.remove("show");
+    al.innerHTML = text;
+    new bootstrap.Collapse(al, { show: true });
+}
+
+// Alert in the metadata Tab
+function show_settings_alert(text) {
+    var al = document.getElementById("site_alert");
+    al.classList.remove("show");
+    al.innerHTML = text;
+    new bootstrap.Collapse(al, { show: true });
+}
+
 // API call to change user name, group, admin and enabled settings
 DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, enabled) {
-    fetch('/api/v0/users/' + id,
+    fetch(DataMeta.api('users/' + id),
     {
         method: 'PUT',
         headers: {
@@ -554,6 +1042,7 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
     })
     .then(function (response) {
         if(response.status == '204') {
+            // Reload Group, User & Request Tables
             DataMeta.admin.reload();
         } else if (response.status == "400") {
             response.json().then((json) => {
@@ -562,7 +1051,7 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
         } else if (response.status == "401") {
             show_user_alert("You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_user_alert("You don't have the rights to perform this action.");
+            show_user_alert("You do not have the rights to perform this action.");
         } else if (response.status == "404") {
             show_user_alert("The user or group you are referring to does not exist.");
         } else {
@@ -578,13 +1067,18 @@ function clearAlerts () {
     document.getElementById("group_alert").classList.remove("show");
     document.getElementById("user_alert").classList.remove("show");
     document.getElementById("request_alert").classList.remove("show");
+    document.getElementById("site_alert").classList.remove("show");
+    document.getElementById("metadata_alert").classList.remove("show");
 }
 
 window.addEventListener("load", function() {
+    DataMeta.admin.initSiteTable();
+    DataMeta.admin.initMetadataTable();
     DataMeta.admin.initUserTable();
     DataMeta.admin.initGroupTable();
     DataMeta.admin.reload();
     document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
+    document.getElementById("nav-metadata-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-users-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-requests-tab").addEventListener("click", clearAlerts);
