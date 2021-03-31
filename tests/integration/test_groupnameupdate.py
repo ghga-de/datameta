@@ -2,9 +2,7 @@
 """
 
 from . import BaseIntegrationTest
-#from .utils import get_auth_headers
 from datameta.api import base_url
-
 class GroupNameUpdate(BaseIntegrationTest):
 
     def test_successful_admin_group_name_update(self, status:int=204):
@@ -40,7 +38,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         )
 
     def test_failure_groupadmin_other_group_name_update(self, status:int=403):
-        """Testing failing other group name change by group admin user.
+        """Testing unsuccessful other group name change by group admin user.
 
         Expected Response:
             HTTP 403
@@ -56,7 +54,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         )
 
     def test_failure_admin_invalid_group_name(self, status:int=403):
-        """Testing failing group name update of invalid group.
+        """Testing unsuccessful group name update of invalid group.
 
         Expected Response:
             HTTP 403
@@ -73,7 +71,7 @@ class GroupNameUpdate(BaseIntegrationTest):
     
 
     def test_failure_own_group_name_update(self, status:int=403):
-        """Testing failing own group name change by normal user.
+        """Testing unsuccessful own group name change by normal user.
 
         Expected Response:
             HTTP 403
@@ -89,7 +87,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         )
 
     def test_failure_other_group_name_update(self, status:int=403):
-        """Testing failing other group name change by normal user.
+        """Testing unsuccessful other group name change by normal user.
 
         Expected Response:
             HTTP 403
@@ -105,7 +103,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         )
 
     def test_failure_group_name_update_not_authorised(self, status:int=401):
-        """Testing failing group name change by unidentified, unauthorized user.
+        """Testing unsuccessful group name change by unidentified, unauthorized user.
 
         Expected Response:
             HTTP 401
@@ -117,4 +115,19 @@ class GroupNameUpdate(BaseIntegrationTest):
             params = request_body,
             status = status
         )
-    
+
+    def test_failure_admin_group_name_update_expired_token(self, status:int=401):
+        """Testing unsuccessful group name change by admin user with expired token.
+
+        Expected Response:
+            HTTP 401
+        """
+        user = self.users["admin"]
+        request_body = {"name": "fancy_group_name"}
+
+        response = self.testapp.put_json(
+            base_url + f"/groups/group_x_id",
+            headers = user.expired_auth.header,
+            params = request_body,
+            status = status
+        )
