@@ -13,20 +13,61 @@
 # limitations under the License.
 
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from random import choice
 from string import ascii_letters, digits
+from sqlalchemy import and_
 
-from .models import User, ApiKey
+from .models import User, ApiKey, PasswordToken, Session
 
 import bcrypt
 import hashlib
 import logging
+import secrets
 log = logging.getLogger(__name__)
 
 def generate_token():
     return "".join(choice(ascii_letters+digits) for _ in range(64) )
+
+def get_new_password_reset_token(db:Session, user:User):
+    """Clears all password recovery tokens for user identified by the supplied
+    email address, generates a new one and returns it.
+
+    Returns:
+        None  - If the user is not found or disabled
+        token - otherwise"""
+
+    # Delete existing tokens
+    db.query(PasswordToken).filter(PasswordToken.user_id==user.id).delete()
+
+    # Create new token value
+    value = secrets.token_urlsafe(40)
+
+    # Insert token
+    pass_token = PasswordToken(
+            user=user,
+            value=value,
+            expires=datetime.now() + timedelta(minutes=10)
+            )
+    db.add(pass_token)
+
+    return pass_token
+
+def get_new_password_reset_token_from_email(db:Session, email:str):
+    """Clears all password recovery tokens for user identified by the supplied
+    email address, generates a new one and returns it.
+
+    Returns:
+        None  - If the user is not found or disabled
+        token - otherwise"""
+    user = db.query(User).filter(User.enabled == True, User.email == email).one_or_none()
+
+    # User not found or disabled
+    if not user:
+        return None
+
+    return get_new_password_reset_token(db, user)
 
 def check_expiration(expiration_datetime:Optional[datetime]):
     """
@@ -55,9 +96,9 @@ def hash_token(token):
     return hashed_token
 
 def get_user_by_credentials(request, email:str, password:str):
-    """Check a compination of email and password, returns a user object if valid"""
+    """Check a combination of email and password, returns a user object if valid"""
     db = request.dbsession
-    user = db.query(User).filter(User.email==email).one_or_none()
+    user = db.query(User).filter(and_(User.email==email, User.enabled==True)).one_or_none()
     if user and check_password_by_hash(password, user.pwhash):
         return user
     return None
@@ -75,6 +116,16 @@ def get_bearer_token(request):
             pass
     return None
 
+def get_password_reset_token(db:Session, token:str):
+    """Tries to find the corresponding password reset token in the database.
+    Returns the token only if it can be found and if the corresponding user is
+    enabled, otherwise no checking is performed, most importantly expiration
+    checks are not performed"""
+    return db.query(PasswordToken).join(User).filter(and_(
+        PasswordToken.value == token,
+        User.enabled == True
+        )).one_or_none()
+
 def revalidate_user(request):
     """Revalidate the currently logged in user and return the corresponding user object. On failure,
     raise a 401"""
@@ -83,17 +134,25 @@ def revalidate_user(request):
     token = get_bearer_token(request)
     if token is not None:
         token_hash = hash_token(token)
-        apikey = db.query(ApiKey).filter(ApiKey.value==token_hash).one_or_none()
+        apikey = db.query(ApiKey).join(User).filter(and_(
+            ApiKey.value == token_hash,
+            User.enabled == True
+            )).one_or_none()
         if apikey is not None:
             if check_expiration(apikey.expires):
                 raise HTTPUnauthorized()
             return apikey.user
+        else:
+            raise HTTPUnauthorized()
 
     # Check for session based auth
     if 'user_uid' not in request.session:
         request.session.invalidate()
         raise HTTPUnauthorized()
-    user = request.dbsession.query(User).filter(User.id==request.session['user_uid']).one_or_none()
+    user = request.dbsession.query(User).filter(and_(
+        User.id == request.session['user_uid'],
+        User.enabled == True
+        )).one_or_none()
     # Check if the user still exists and their group hasn't changed
     if user is None or user.group_id != request.session['user_gid']:
         request.session.invalidate()

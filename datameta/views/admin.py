@@ -19,7 +19,7 @@ import bcrypt
 
 from ..models import User, Group, RegRequest
 from ..settings import get_setting
-from .. import email, passtokens, security, siteid
+from .. import email, security, siteid
 from ..resource import resource_by_id, get_identifier
 
 import logging
@@ -101,10 +101,10 @@ def v_admin_put_request(request):
         db.delete(reg_req)
 
         # Obtain a new token
-        token = passtokens.new_token(db, new_user.id)
+        token = security.get_new_password_reset_token(db, new_user)
 
         # Generate the token url
-        token_url = request.route_url('setpass', token = token)
+        token_url = request.route_url('setpass', token = token.value)
 
         # Send the token to the user
         email.send(

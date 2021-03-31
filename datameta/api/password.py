@@ -14,6 +14,7 @@
 
 from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
 
+from sqlalchemy import and_
 from pyramid.view import view_config
 
 from .. import security, errors
@@ -40,7 +41,7 @@ def put(request):
     token = None
     if request_id=='0':
         # Try to find the token
-        token = db.query(PasswordToken).filter(PasswordToken.value==request_credential).one_or_none()
+        token = security.get_password_reset_token(db, request_credential)
         if token is None:
             raise HTTPNotFound() # 404 Token not found
 
