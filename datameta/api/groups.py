@@ -129,12 +129,8 @@ def put(request: Request):
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
-    # Change the group name only if the user is site admin or the admin for the specific group
-    if (
-        auth_user.site_admin or 
-        auth_user.group_admin and 
-        auth_user.group.uuid == group_id
-    ):
+    # Change the group name only if the user is site admin
+    if auth_user.site_admin:
         target_group.name = newGroupName
         return HTTPNoContent()
     
