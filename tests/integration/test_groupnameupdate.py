@@ -5,21 +5,6 @@ from . import BaseIntegrationTest
 #from .utils import get_auth_headers
 from datameta.api import base_url
 
-"""
-   def get_api_key(self, user_id, base_url, expires=None):
-        user = self.users[user_id]
-        request_body = {
-            "email": user.email, "password": user.password, "label": "test_key"
-        }
-        if expires:
-            request_body["expires"] = expires
-
-        response = self.testapp.post_json(
-            base_url + "/keys", params=request_body, status=200
-        )
-        return response.json["token"]
-"""
-
 class GroupNameUpdate(BaseIntegrationTest):
 
     def test_successful_admin_group_name_update(self, status:int=204):
@@ -35,14 +20,14 @@ class GroupNameUpdate(BaseIntegrationTest):
             base_url + f"/groups/group_x_id",
             headers = user.auth.header,
             params = request_body,
-            status=status
+            status = status
         )
 
-    def test_failure_groupadmin_own_group_name_update(self, status:int=403):
-        """Testing failing own group name change by group admin user.
+    def test_success_groupadmin_own_group_name_update(self, status:int=204):
+        """Testing successful own group name change by group admin user.
 
         Expected Response:
-            HTTP 403
+            HTTP 204
         """
         user = self.users["group_x_admin"]
         request_body = {"name": "fancy_group_name"}
@@ -51,7 +36,7 @@ class GroupNameUpdate(BaseIntegrationTest):
             base_url + f"/groups/group_x_id",
             headers = user.auth.header,
             params = request_body,
-            status=status
+            status = status
         )
 
     def test_failure_groupadmin_other_group_name_update(self, status:int=403):
@@ -67,7 +52,23 @@ class GroupNameUpdate(BaseIntegrationTest):
             base_url + f"/groups/group_y_id",
             headers = user.auth.header,
             params = request_body,
-            status=status
+            status = status
+        )
+
+    def test_failure_admin_invalid_group_name(self, status:int=403):
+        """Testing failing group name update of invalid group.
+
+        Expected Response:
+            HTTP 403
+        """
+        user = self.users["admin"]
+        request_body = {"name": "fancy_group_name"}
+
+        response = self.testapp.put_json(
+            base_url + f"/groups/duckburgh",
+            headers = user.auth.header,
+            params = request_body,
+            status = status
         )
     
 
@@ -84,7 +85,7 @@ class GroupNameUpdate(BaseIntegrationTest):
             base_url + f"/groups/group_x_id",
             headers = user.auth.header,
             params = request_body,
-            status=status
+            status = status
         )
 
     def test_failure_other_group_name_update(self, status:int=403):
@@ -114,6 +115,6 @@ class GroupNameUpdate(BaseIntegrationTest):
         response = self.testapp.put_json(
             base_url + f"/groups/group_y_id",
             params = request_body,
-            status=status
+            status = status
         )
     
