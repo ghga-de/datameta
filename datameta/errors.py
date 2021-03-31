@@ -25,7 +25,7 @@ def get_error(
     fields:Optional[List[Optional[str]]]=None,
     entities:Optional[List[Optional[str]]]=None,
 ):
-    """Generate an Error based on the base_error with a custom messages
+    """Generate an Error based on the base_error with a custom message
     """
     assert len(messages)>0, "messages cannot be empty"
     assert fields is None or len(fields)==len(messages), (
