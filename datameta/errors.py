@@ -63,7 +63,7 @@ def get_validation_error(
     fields:Optional[List[Optional[str]]]=None,
     entities:Optional[List[Optional[str]]]=None
 ) -> HTTPBadRequest:
-    """Generate a Validation Error (400) with custom messages
+    """Generate a Validation Error (400) with custom message
     """
     return get_error(
         base_error=HTTPBadRequest,
