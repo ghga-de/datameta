@@ -65,7 +65,7 @@ window.addEventListener("load", function() {
                 } else if (response.status==400) {
                     throw new DataMeta.AnnotatedError(response);
                 } else if (response.status==410) { // HTTPGone - Expired
-                    // Reload the page so that a new token is trigged. This
+                    // Reload the page so that a new token is triggered. This
                     // covers only the case where the token expires while the
                     // user enters a new password. If the token was already
                     // expired when the user entered the page, the backend
