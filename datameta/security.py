@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 def generate_token():
     return "".join(choice(ascii_letters+digits) for _ in range(64) )
 
-def get_new_password_reset_token(db:Session, user:User):
+def get_new_password_reset_token(db:Session, user:User, expires=datetime.now() + timedelta(minutes=10)):
     """Clears all password recovery tokens for user identified by the supplied
     email address, generates a new one and returns it.
 
@@ -43,9 +43,6 @@ def get_new_password_reset_token(db:Session, user:User):
 
     # Create new token value
     value = secrets.token_urlsafe(40)
-
-    # Set expiration time
-    expires = datetime.now() + timedelta(minutes=10)
 
     # Add hashed token to db
     db_token = PasswordToken(
