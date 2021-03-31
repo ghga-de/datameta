@@ -62,10 +62,14 @@ def convert_samplesheet(db, file_like_obj, filename, user):
     samplesheet.string_conversion(submitted_metadata, metadata)
 
     try:
-        return [ { mdname : formatted_mrec_value(row[mdname], metadata_datetimefmt[mdname]) for mdname in metadata_names } for _, row in submitted_metadata.iterrows() ]
+        # Datetimes are converted according to the format string. Empty strings
+        # are converted to None aka null, i.e. setting metadata to an empty
+        # string value is not possible through the convert API.
+        return [ { mdname : None if not row[mdname] else formatted_mrec_value(row[mdname], metadata_datetimefmt[mdname]) for mdname in metadata_names } for _, row in submitted_metadata.iterrows() ]
     except Exception as e:
         log.error(e)
         raise samplesheet.SampleSheetReadError("Unknown error")
+
 
 ####################################################################################################
 
