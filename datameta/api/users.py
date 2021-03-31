@@ -79,7 +79,7 @@ def put(request: Request):
     if enabled != None:
         if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
             raise HTTPForbidden()
-        if not auth_user.site_admin and target_user.group_admin:
+        if not auth_user.site_admin and target_user.site_admin:
             raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user

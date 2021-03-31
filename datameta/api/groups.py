@@ -133,7 +133,7 @@ def put(request: Request):
     if (
         auth_user.site_admin or 
         auth_user.group_admin and 
-        group_id in [auth_user.group.uuid, auth_user.group.site_id]
+        auth_user.group.uuid == group_id
     ):
         target_group.name = newGroupName
         return HTTPNoContent()
