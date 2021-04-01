@@ -84,21 +84,11 @@
         <script>
             // Takes name and organisation from API call and puts them in the footer, enables the admin interface button, if the user is a site_admin
             window.addEventListener("load", function() {
-                fetch(DataMeta.api('users/self'),
-                {
-                    method: 'GET'
-                })
-                .then(response => response.json())
-                .then(function (json) {
-                    var nameOrgString = "Logged in as: " + json.name + " ("+ json.group.name + ")";
-                    document.getElementById("name_org").innerHTML = nameOrgString;
-                    if(json.siteAdmin || json.groupAdmin) {
-                        document.getElementById("admin_view_button").style.display = "";
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+                var nameOrgString = "Logged in as: " + DataMeta.user.name + " ("+ DataMeta.user.group.name + ")";
+                document.getElementById("name_org").innerHTML = nameOrgString;
+                if(DataMeta.user.siteAdmin || DataMeta.user.groupAdmin) {
+                    document.getElementById("admin_view_button").style.display = "";
+                }
             });
         </script>
         <script src="${request.static_url('datameta:static/js/datameta.js')}"></script>

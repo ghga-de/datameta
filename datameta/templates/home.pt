@@ -2,18 +2,8 @@
     <script metal:fill-slot="head">
         // Takes name and organisation from API call and creates the welcome screen message.
         window.addEventListener("load", function() {
-            fetch(DataMeta.api('users/self'),
-            {
-                method: 'GET'
-            })
-            .then(response => response.json())
-            .then(function (json) {
-                var welcomeMessage = "Welcome back, " + json.name + ".<br><br> Your Organisation is "+ json.group.name + ".";
-                document.getElementById("welcome_message").innerHTML = welcomeMessage;
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+            var welcomeMessage = "Welcome back, " + DataMeta.user.name + ".<br><br> Your Organisation is "+ DataMeta.user.group.name + ".";
+            document.getElementById("welcome_message").innerHTML = welcomeMessage;
         });
     </script>
     <div metal:fill-slot="content" class="row">
