@@ -30,13 +30,19 @@ def validate_metadataset_record(
                         # already in isoformat) 
 ):
     """Validate single metadataset in isolation"""
-    errors = [] # list of error
+    errors = [] # list of errors
                 # empty means success
 
     # get all metadatum fields:
     db = request.dbsession
     mdats_query = db.query(MetaDatum).order_by(MetaDatum.order).all()
     mdats = { mdat.name: mdat for mdat in mdats_query }
+
+    if mdats.get("isFile") and not mdats.get("name"):
+        errors.append({
+            "message": "file names cannot be empty.",
+            "field": "name"
+        })
 
     for name, mdat in mdats.items():
 
@@ -111,7 +117,7 @@ def validate_metadataset_record(
     # or raise validation errors
     if return_err_message:
         return errors
-    elif len(errors) > 0:
+    elif errors:
         messages = [err["message"] for err in errors]
         fields = [
             err["field"] if "field" in err else None
