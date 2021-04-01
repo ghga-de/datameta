@@ -5,32 +5,32 @@
             <div id="admintabs" class="card">
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs">
-                        <li class="nav-item">
+                        <li id="nav-users-tab-li" class="nav-item">
                             <a id="nav-users-tab" class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#nav-users">Users</a>
                         </li>
-                        <li class="nav-item">
+                        <li id="nav-groupsli" class="nav-item" style="display: none">
                             <a id="nav-groups-tab" class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-groups">Groups</a>
                         </li>
-                        <li class="nav-item">
+                        <li id="nav-requests-tab-li" class="nav-item">
                             <a id="nav-requests-tab" class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-requests">Account Requests</a>
                         </li>
-                        <li class="nav-item">
+                        <li id="nav-metadata-tab-li" class="nav-item" style="display: none">
                             <a id="nav-metadata-tab" class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-metadata">Metadata</a>
                         </li>
-                        <li class="nav-item">
+                        <li id="nav-site-tab-li" class="nav-item" style="display: none">
                             <a id="nav-site-tab" class="nav-link" aria-current="true" href="#" data-bs-toggle="tab" data-bs-target="#nav-site">Site</a>
                         </li>
                     </ul>
                 </div>
                 <div class="tab-content">
-                    <div class="card-body tab-pane fade" id="nav-site" role="tabpanel" aria-labelledby="nav-home-tab">
+                    <div class="card-body tab-pane fade" id="nav-site" role="tabpanel" aria-labelledby="nav-home-tab" display="none">
                         <h5 class="card-title">Site Settings</h5>
                         <div id="site_alert" class="alert alert-danger collapse" role="alert">
                         </div>
                         <table id="table_site" class="table table-sm table-hover" style="width:100%">
                         </table>
                     </div>
-                    <div class="card-body tab-pane fade" id="nav-metadata" role="tabpanel" aria-labelledby="nav-home-tab">
+                    <div class="card-body tab-pane fade" id="nav-metadata" role="tabpanel" aria-labelledby="nav-home-tab" display="none">
                         <h5 class="card-title">Metadata</h5>
                         <div id="metadata_alert" class="alert alert-danger collapse" role="alert">
                         </div>
@@ -47,7 +47,7 @@
                         <table id="table_users" class="table table-sm table-hover" style="width:100%">
                         </table>
                     </div>
-                    <div class="card-body tab-pane fade" id="nav-groups" role="tabpanel" aria-labelledby="nav-home-tab">
+                    <div class="card-body tab-pane fade" id="nav-groups" role="tabpanel" aria-labelledby="nav-home-tab" display="none">
                         <h5 class="card-title">Group Management</h5>
                         <div id="group_alert" class="alert alert-danger collapse" role="alert">
                         </div>

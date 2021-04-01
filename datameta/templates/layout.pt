@@ -104,7 +104,7 @@
         <footer class="fixed-bottom footer mt-auto py-3 bg-light">
             <div class="container position-relative">
                 <span class="text-muted">&copy; 2021 DataMeta</span><span tal:condition="request.registry.settings.get('datameta.demo_mode')"> (DEMO MODE)</span>
-                <span id="user_group_mail" class="ms-2" email="${request.session['user_email']}">Logged in as: ${request.session['user_fullname']} (${request.session['user_groupname']})</span>
+                <span id="user_group_mail" class="ms-2">Logged in as: ${request.session['user_fullname']} (${request.session['user_groupname']})</span>
                     <div class="form-check form-switch position-absolute top-50 end-0 translate-middle">
                       <input class="form-check-input" type="checkbox" name="flexSwitchWidescreen" id="flexSwitchWidescreen" onClick="toggle_widescreen()">
                       <label class="form-check-label" for="flexSwitchWidescreen">

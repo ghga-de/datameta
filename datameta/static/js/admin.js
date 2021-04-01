@@ -179,25 +179,34 @@ DataMeta.admin.reload = function() {
         })
         .then(response => response.json())
         .then(function (json) {
-            var email = document.getElementById("user_group_mail").getAttribute('email');
-            for (var i = 0; i < json.users.length; i++) {
-                if (json.users[i].email == email) {
-                    DataMeta.admin.user = json.users[i];
-                }
-            }
+
             DataMeta.admin.reload_requests(json.reg_requests, json.groups);
             DataMeta.admin.subnav();
             DataMeta.admin.rebuildUserTable(json.users);
-            DataMeta.admin.rebuildGroupTable(json.groups);            
+            
+            fetch('/users/self',
+            {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(function (json) {
+                if(json.site_admin) {
+                    DataMeta.admin.getAppSettings();
+                    DataMeta.admin.getMetadata();
+                    DataMeta.admin.rebuildGroupTable(json.groups);  
+                }
+
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
             DataMeta.admin.groups = json.groups;
-            if(DataMeta.admin.user.site_admin) {
-                DataMeta.admin.getAppSettings();
-                DataMeta.admin.getMetadata();
-            }
         })
         .catch((error) => {
             console.log(error);
         });
+
 }
 
 //Rebuilds the user table, based on the Data fetched from the API
@@ -941,7 +950,7 @@ DataMeta.admin.getAppSettings = function () {
                 // Remove any alerts there still are
                 document.getElementById("site_alert").classList.remove("show");
             });
-        } else  if (response.status == "400") {
+        } else if (response.status == "400") {
             response.json().then((json) => {
                 show_group_alert(json.message);
             });
@@ -1080,10 +1089,8 @@ function clearAlerts () {
     document.getElementById("group_alert").classList.remove("show");
     document.getElementById("user_alert").classList.remove("show");
     document.getElementById("request_alert").classList.remove("show");
-    if(DataMeta.admin.user.site_admin) {
-        document.getElementById("site_alert").classList.remove("show");
-        document.getElementById("metadata_alert").classList.remove("show");
-    }
+    document.getElementById("site_alert").classList.remove("show");
+    document.getElementById("metadata_alert").classList.remove("show");
 }
 
 window.addEventListener("load", function() {
@@ -1092,12 +1099,9 @@ window.addEventListener("load", function() {
     DataMeta.admin.initUserTable();
     DataMeta.admin.initGroupTable();
     DataMeta.admin.reload();
-    if(document.getElementById("nav-site-tab")) {
-        document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
-    }
-    if(document.getElementById("nav-metadata-tab")) {
-        document.getElementById("nav-metadata-tab").addEventListener("click", clearAlerts);
-    }
+    
+    document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
+    document.getElementById("nav-metadata-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-users-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-requests-tab").addEventListener("click", clearAlerts);
