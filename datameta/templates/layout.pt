@@ -39,49 +39,47 @@
         <metal:macro metal:define-slot="head"/>
         <script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
         <script>
-        // Toggles the widescreen view according to the current setting of the
-        function toggle_widescreen() {
-
-            container = document.getElementById("container_main");
-            flexSwitch = document.getElementById("flexSwitchWidescreen");
-
-            // Cookie expires one day after it has last been set
-            d = new Date();
-            d.setTime(d.getTime() + 24*60*60*1000);
-            expires = d.toUTCString();
-            if (flexSwitch.checked) {
-                container.classList.add("container-fluid");
-                container.classList.remove("container");
-                container.classList.add("px-4");
-                document.cookie = "widescreen=true; expires=" + expires + "; path=/; SameSite=Lax";
-            } else {
-                container.classList.add("container");
-                container.classList.remove("container-fluid");
-                container.classList.remove("px-4");
-                document.cookie = "widescreen=false; expires=" + expires + "; path=/; SameSite=Lax";
-            }
-        }
-
-        function init_widescreen() {
-            if(document.cookie) {
-                widescreenCookie = document.cookie.split("; ").find(row=>row.startsWith("widescreen=")).split('=')[1];
-            } else {
-                widescreenCookie = "false";
-            }
-            if(widescreenCookie == "true") {
+            // Toggles the widescreen view according to the current setting of the
+            function toggle_widescreen() {
 
                 container = document.getElementById("container_main");
-                container.classList.add("container-fluid");
-                container.classList.remove("container");
-                container.classList.add("px-4");
-
                 flexSwitch = document.getElementById("flexSwitchWidescreen");
-                flexSwitch.checked = true;
-            }
-        }
 
-        </script>
-        <script>
+                // Cookie expires one day after it has last been set
+                d = new Date();
+                d.setTime(d.getTime() + 24*60*60*1000);
+                expires = d.toUTCString();
+                if (flexSwitch.checked) {
+                    container.classList.add("container-fluid");
+                    container.classList.remove("container");
+                    container.classList.add("px-4");
+                    document.cookie = "widescreen=true; expires=" + expires + "; path=/; SameSite=Lax";
+                } else {
+                    container.classList.add("container");
+                    container.classList.remove("container-fluid");
+                    container.classList.remove("px-4");
+                    document.cookie = "widescreen=false; expires=" + expires + "; path=/; SameSite=Lax";
+                }
+            }
+
+            function init_widescreen() {
+                if(document.cookie.split("; ").find(row=>row.startsWith("widescreen="))) {
+                    widescreenCookie = document.cookie.split("; ").find(row=>row.startsWith("widescreen=")).split('=')[1];
+                } else {
+                    widescreenCookie = "false";
+                }
+                if(widescreenCookie == "true") {
+
+                    container = document.getElementById("container_main");
+                    container.classList.add("container-fluid");
+                    container.classList.remove("container");
+                    container.classList.add("px-4");
+
+                    flexSwitch = document.getElementById("flexSwitchWidescreen");
+                    flexSwitch.checked = true;
+                }
+            }
+
             // Takes name and organisation from API call and puts them in the footer, enables the admin interface button, if the user is a site_admin
             window.addEventListener("dmready", function() {
                 var nameOrgString = "Logged in as: " + DataMeta.user.name + " ("+ DataMeta.user.group.name + ")";
