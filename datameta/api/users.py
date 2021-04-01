@@ -99,6 +99,8 @@ def put(request: Request):
     if site_admin != None:
         if not auth_user.site_admin:
             raise HTTPForbidden()
+        if auth_user.id.uuid == target_user.id.uuid:
+            raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
     if group_admin != None:
@@ -110,6 +112,8 @@ def put(request: Request):
         if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
             raise HTTPForbidden()
         if not auth_user.site_admin and target_user.site_admin:
+            raise HTTPForbidden()
+        if auth_user.id.uuid == target_user.id.uuid:
             raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user
