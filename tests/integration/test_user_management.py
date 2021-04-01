@@ -54,73 +54,18 @@ c) admin:
 """
 
 from . import BaseIntegrationTest, default_users
-from .utils import get_auth_headers
 
 from datameta import models
 from datameta.api import base_url
 
 class TestUserManagement(BaseIntegrationTest):
 
-    def step_0a(self, status:int=200):
-        """Setup: Request ApiKey for user_a"""
-        request_body = {
-            "email": self.state["user_a"].email,
-            "password": self.state["user_a"].password,
-            "label": self.state["apikey_label"]
-        }
-
-        response = self.testapp.post_json(
-            base_url + "/keys",
-            params=request_body,
-            status=status
-        )
-
-        if status==200:
-            self.state["apikey_response_a"] = response.json
-
-    def step_0b(self, status:int=200):
-        """Setup: Request ApiKey for group_x_admin"""
-        request_body = {
-            "email": self.state["group_x_admin"].email,
-            "password": self.state["group_x_admin"].password,
-            "label": self.state["apikey_label"]
-        }
-
-        response = self.testapp.post_json(
-            base_url + "/keys",
-            params=request_body,
-            status=status
-        )
-
-        if status==200:
-            self.state["apikey_response_x"] = response.json
-
-    def step_0c(self, status:int=200):
-        """Setup: Request ApiKey for admin"""
-        request_body = {
-            "email": self.state["admin"].email,
-            "password": self.state["admin"].password,
-            "label": self.state["apikey_label"]
-        }
-
-        response = self.testapp.post_json(
-            base_url + "/keys",
-            params=request_body,
-            status=status
-        )
-
-        if status==200:
-            self.state["apikey_response_admin"] = response.json
-
-    def step_0d(self, status:int=200):
+    def step_0(self, status:int=200):
         """Setup: Request list of all groups"""
-        
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
 
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -137,12 +82,9 @@ class TestUserManagement(BaseIntegrationTest):
             "name": self.state["user_name_change_to"]
         }
 
-        token = self.state["apikey_response_a"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["user_a"].auth.header,
             params=request_body,
             status=status
         )
@@ -150,12 +92,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_1b(self, status:int=200):
         """Check if the previous name change did happen"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -176,12 +115,9 @@ class TestUserManagement(BaseIntegrationTest):
             "name": self.state["user_name_change_to"]
         }
 
-        token = self.state["apikey_response_a"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_c"].uuid,
-            headers=request_headers,
+            headers=self.state["user_a"].auth.header,
             params=request_body,
             status=status
         )
@@ -195,12 +131,9 @@ class TestUserManagement(BaseIntegrationTest):
             "name": self.state["user_name_change_to"]
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -208,12 +141,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_1f(self, status:int=200):
         """Check if the previous name change did happen"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -234,12 +164,9 @@ class TestUserManagement(BaseIntegrationTest):
             "name": self.state["user_name_change_to"]
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_c"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -253,12 +180,9 @@ class TestUserManagement(BaseIntegrationTest):
             "name": self.state["user_name_change_to"]
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -266,12 +190,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_1i(self, status:int=200):
         """Check if the previous name change did happen"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -299,12 +220,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupId": new_group_id
         }
 
-        token = self.state["apikey_response_a"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["user_a"].auth.header,
             params=request_body,
             status=status
         )
@@ -324,12 +242,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupId": new_group_id
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["group_x_admin"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -349,12 +264,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupId": new_group_id
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -374,12 +286,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupId": new_group_id
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_c"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -399,12 +308,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupId": new_group_id
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -424,12 +330,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupId": new_group_id
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["admin"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -437,12 +340,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_2g(self, status:int=200):
         """Check if the previous group changes did happen"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -473,12 +373,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupId": new_group_id
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -498,12 +395,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupId": new_group_id
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["admin"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -516,12 +410,9 @@ class TestUserManagement(BaseIntegrationTest):
             "siteAdmin": True
         }
 
-        token = self.state["apikey_response_a"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["user_a"].auth.header,
             params=request_body,
             status=status
         )
@@ -533,12 +424,9 @@ class TestUserManagement(BaseIntegrationTest):
             "siteAdmin": False
         }
 
-        token = self.state["apikey_response_a"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["admin"].uuid,
-            headers=request_headers,
+            headers=self.state["user_a"].auth.header,
             params=request_body,
             status=status
         )
@@ -550,12 +438,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupAdmin": True
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -563,12 +448,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_3d(self, status:int=200):
         """Check if the previous admin status change worked"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -587,12 +469,10 @@ class TestUserManagement(BaseIntegrationTest):
             "groupAdmin": False
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
 
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -600,12 +480,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_3f(self, status:int=200):
         """Check if the previous admin status change worked"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -624,12 +501,9 @@ class TestUserManagement(BaseIntegrationTest):
             "siteAdmin": True
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["group_x_admin"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -641,12 +515,9 @@ class TestUserManagement(BaseIntegrationTest):
             "siteAdmin": True
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -658,12 +529,9 @@ class TestUserManagement(BaseIntegrationTest):
             "siteAdmin": False
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["admin"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -676,12 +544,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupAdmin": True
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -689,12 +554,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_3k(self, status:int=200):
         """Check if the previous admin status change worked"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -717,12 +579,9 @@ class TestUserManagement(BaseIntegrationTest):
             "groupAdmin": False
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -730,12 +589,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_3m(self, status:int=200):
         """Check if the previous admin status change worked"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -758,12 +614,9 @@ class TestUserManagement(BaseIntegrationTest):
             "enabled": False
         }
 
-        token = self.state["apikey_response_a"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["user_a"].auth.header,
             params=request_body,
             status=status
         )
@@ -775,12 +628,9 @@ class TestUserManagement(BaseIntegrationTest):
             "enabled": False
         }
 
-        token = self.state["apikey_response_a"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["user_a"].auth.header,
             params=request_body,
             status=status
         )
@@ -792,12 +642,9 @@ class TestUserManagement(BaseIntegrationTest):
             "enabled": False
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -805,12 +652,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_4d(self, status:int=200):
         """Check if the previous enable status change worked"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -829,12 +673,9 @@ class TestUserManagement(BaseIntegrationTest):
             "enabled": True
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_a"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -842,12 +683,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_4f(self, status:int=200):
         """Check if the previous enable status change worked"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -866,12 +704,9 @@ class TestUserManagement(BaseIntegrationTest):
             "siteAdmin": False
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_b"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -884,12 +719,9 @@ class TestUserManagement(BaseIntegrationTest):
             "enabled": False
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_b"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -898,12 +730,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_4i(self, status:int=200):
         """Check if the previous enable status change worked"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
@@ -922,12 +751,9 @@ class TestUserManagement(BaseIntegrationTest):
             "enabled": False
         }
 
-        token = self.state["apikey_response_x"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_c"].uuid,
-            headers=request_headers,
+            headers=self.state["group_x_admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -939,12 +765,9 @@ class TestUserManagement(BaseIntegrationTest):
             "enabled": True
         }
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.put_json(
             base_url + "/users/" + self.state["user_b"].uuid,
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             params=request_body,
             status=status
         )
@@ -952,12 +775,9 @@ class TestUserManagement(BaseIntegrationTest):
     def step_4l(self, status:int=200):
         """Check if the previous enable status change worked"""
 
-        token = self.state["apikey_response_admin"]["token"] # previously created apikey
-        request_headers = get_auth_headers(token)
-
         response = self.testapp.get(
             "/api/admin",
-            headers=request_headers,
+            headers=self.state["admin"].auth.header,
             status=status
         )
 
