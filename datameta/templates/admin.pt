@@ -8,7 +8,7 @@
                         <li id="nav-users-tab-li" class="nav-item">
                             <a id="nav-users-tab" class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#nav-users">Users</a>
                         </li>
-                        <li id="nav-groupsli" class="nav-item" style="display: none">
+                        <li id="nav-groups-tab-li" class="nav-item" style="display: none">
                             <a id="nav-groups-tab" class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#nav-groups">Groups</a>
                         </li>
                         <li id="nav-requests-tab-li" class="nav-item">

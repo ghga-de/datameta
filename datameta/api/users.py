@@ -19,8 +19,8 @@ from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 from dataclasses import dataclass
 from . import DataHolderBase
 from ..models import User, Group
-from .. import security, errors
-from ..resource import resource_by_id
+from .. import security, errors, resource
+from ..resource import resource_by_id, get_identifier
 
 @dataclass
 class UserUpdateRequest(DataHolderBase):
@@ -36,10 +36,10 @@ class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
     name: str
-    groupAdmin: bool
-    siteAdmin: bool
+    group_admin: bool
+    site_admin: bool
     email: str
-    groupName: str
+    group_name: str
 
 @view_config(
     route_name="user_self", 
@@ -48,8 +48,6 @@ class UserResponseElement(DataHolderBase):
     openapi=True
 )
 def get_self(request: Request) -> UserResponseElement:
-    import pdb
-    pdb.set_trace()
     
     auth_user = security.revalidate_user(request)
 
@@ -59,7 +57,7 @@ def get_self(request: Request) -> UserResponseElement:
         group_admin     =   auth_user.group_admin,
         site_admin      =   auth_user.site_admin,
         email           =   auth_user.email,
-        group_name      =   auth_user.group_name
+        group_name      =   auth_user.group.name
     )
 
 

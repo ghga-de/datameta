@@ -189,15 +189,15 @@ DataMeta.admin.reload = function() {
                 method: 'GET'
             })
             .then(response => response.json())
-            .then(function (json) {
-                if(json.site_admin) {
+            .then(function (self_json) {
+                if(self_json.siteAdmin) {
+                    document.getElementById("nav-groups-tab-li").style.display = "";
+                    document.getElementById("nav-metadata-tab-li").style.display = "";
+                    document.getElementById("nav-site-tab-li").style.display = "";
                     DataMeta.admin.getAppSettings();
                     DataMeta.admin.getMetadata();
                     DataMeta.admin.rebuildGroupTable(json.groups);  
                 }
-
-                console.log(json)
-
             })
             .catch((error) => {
                 console.log(error);
