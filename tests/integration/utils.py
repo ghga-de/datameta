@@ -30,10 +30,10 @@ def create_pwtoken(
         if not user_obj:
             assert False, f"I don't know this user: {str(user)}"
 
-        pwtoken_obj = get_new_password_reset_token(session, user=user_obj, expires=expires)
+        _, token = get_new_password_reset_token(session, user=user_obj, expires=expires)
         session.flush()
 
-        return pwtoken_obj.value
+        return token
 
 def create_user(
     session_factory,

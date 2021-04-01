@@ -24,17 +24,17 @@ log = logging.getLogger(__name__)
 
 import re
 
-def send_forgot_token(request, token):
+def send_forgot_token(request, db_token_obj, clear_token):
     """Sends a password reset token email to the corresponding user"""
     db = request.dbsession
 
     email.send(
-        recipients = (token.user.fullname, token.user.email),
+        recipients = (db_token_obj.user.fullname, db_token_obj.user.email),
         subject = get_setting(db, "subject_forgot_token").str_value,
         template = get_setting(db, "template_forgot_token").str_value,
         values={
-           'fullname' : token.user.fullname,
-           'token_url' : request.route_url('setpass', token = token.value)
+           'fullname' : db_token_obj.user.fullname,
+           'token_url' : request.route_url('setpass', token = clear_token)
            }
         )
 
@@ -51,12 +51,13 @@ def v_forgot_api(request):
     if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
         return { 'success' : False, 'error' : 'MALFORMED_EMAIL' }
 
-    token = security.get_new_password_reset_token_from_email(db, req_email)
+    reset_token = security.get_new_password_reset_token_from_email(db, req_email)
 
     # Generate a new forgot token and send it to the user
     if token:
-        send_forgot_token(request, token)
-        log.debug(f"USER REQUESTED RECOVERY TOKEN: {token.value}")
+        db_token_obj, clear_token = reset_token
+        send_forgot_token(request, db_token_obj, clear_token)
+        log.debug(f"USER REQUESTED RECOVERY TOKEN: {clear_token}")
 
     return { 'success' : True }
 
