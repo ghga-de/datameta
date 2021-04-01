@@ -39,7 +39,7 @@ class UserResponseElement(DataHolderBase):
     group_admin: bool
     site_admin: bool
     email: str
-    group_name: str
+    group: dict
 
 @view_config(
     route_name="user_self", 
@@ -57,7 +57,7 @@ def get_self(request: Request) -> UserResponseElement:
         group_admin     =   auth_user.group_admin,
         site_admin      =   auth_user.site_admin,
         email           =   auth_user.email,
-        group_name      =   auth_user.group.name
+        group           =   {"id": resource.get_identifier(auth_user.group), "name": auth_user.group.name}
     )
 
 

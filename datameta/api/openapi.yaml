@@ -1109,7 +1109,7 @@ components:
       type: object
       properties:
         id:
-            $ref: "#/components/schemas/Identifier"
+          $ref: "#/components/schemas/Identifier"
         name:
           type: string
         groupAdmin:
@@ -1118,15 +1118,20 @@ components:
           type: boolean
         email:
           type: string
-        groupName:
-          type: string
+        group:
+          type: object
+          properties:
+            id:
+              $ref: "#/components/schemas/Identifier"
+            name:
+              type: string
       required:
         - id
         - name
         - groupAdmin
         - siteAdmin
         - email
-        - groupName
+        - group
       additionalProperties: false
 
 
