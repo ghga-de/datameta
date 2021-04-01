@@ -181,10 +181,8 @@ window.addEventListener("dmready", function() {
         document.getElementById("api_success").classList.remove("show");
     }
 
-    var uuid = document.getElementById("uuid").value;
-
     //Gets all the API keys and adds them to the table
-    fetch('/api/v0/users/' + uuid + '/keys',
+    fetch('/api/v0/users/' + DataMeta.user.id.uuid + '/keys',
     {
         method: 'get',
         headers: {
