@@ -31,6 +31,38 @@ class UserUpdateRequest(DataHolderBase):
     siteAdmin: bool
     enabled: bool
 
+@dataclass
+class UserResponseElement(DataHolderBase):
+    """Class for User Update Request communication to OpenApi"""
+    id: dict
+    name: str
+    groupAdmin: bool
+    siteAdmin: bool
+    email: str
+    groupName: str
+
+@view_config(
+    route_name="user_self", 
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get_self(request: Request) -> UserResponseElement:
+    import pdb
+    pdb.set_trace()
+    
+    auth_user = security.revalidate_user(request)
+
+    return UserResponseElement(
+        id              =   resource.get_identifier(auth_user),
+        name            =   auth_user.fullname,
+        group_admin     =   auth_user.group_admin,
+        site_admin      =   auth_user.site_admin,
+        email           =   auth_user.email,
+        group_name      =   auth_user.group_name
+    )
+
+
 @view_config(
     route_name="user_id", 
     renderer='json', 

@@ -184,7 +184,7 @@ DataMeta.admin.reload = function() {
             DataMeta.admin.subnav();
             DataMeta.admin.rebuildUserTable(json.users);
             
-            fetch('/users/self',
+            fetch(DataMeta.api('users/self'),
             {
                 method: 'GET'
             })
@@ -195,6 +195,8 @@ DataMeta.admin.reload = function() {
                     DataMeta.admin.getMetadata();
                     DataMeta.admin.rebuildGroupTable(json.groups);  
                 }
+
+                console.log(json)
 
             })
             .catch((error) => {
