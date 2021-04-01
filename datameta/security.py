@@ -35,31 +35,25 @@ def get_new_password_reset_token(db:Session, user:User, expires=datetime.now() +
     email address, generates a new one and returns it.
 
     Returns:
-        None  - If the user is not found or disabled
-        token - otherwise"""
+        - PasswordToken object (with hashed token value)
+        - unhashed token value
+    """
 
     # Delete existing tokens
     db.query(PasswordToken).filter(PasswordToken.user_id==user.id).delete()
 
     # Create new token value
-    value = secrets.token_urlsafe(40)
+    clear_token = secrets.token_urlsafe(40)
 
     # Add hashed token to db
-    db_token = PasswordToken(
+    db_token_obj = PasswordToken(
             user=user,
-            value=hash_token(value),
+            value=hash_token(clear_token),
             expires=expires
     )
-    db.add(db_token)
+    db.add(db_token_obj)
 
-    # Return cleartext token to user
-    user_token = PasswordToken(
-            user=user,
-            value=value,
-            expires=expires
-    )
-
-    return user_token
+    return db_token_obj, clear_token
 
 def get_new_password_reset_token_from_email(db:Session, email:str):
     """Clears all password recovery tokens for user identified by the supplied
@@ -117,7 +111,7 @@ def get_bearer_token(request):
     if auth is not None:
         try:
             method, content = auth.split(" ")
-            if method=="Bearer":
+            if method == "Bearer":
                 return content
         except:
             pass
