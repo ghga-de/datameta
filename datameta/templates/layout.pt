@@ -83,7 +83,7 @@
         </script>
         <script>
             // Takes name and organisation from API call and puts them in the footer, enables the admin interface button, if the user is a site_admin
-            window.addEventListener("load", function() {
+            window.addEventListener("dmready", function() {
                 var nameOrgString = "Logged in as: " + DataMeta.user.name + " ("+ DataMeta.user.group.name + ")";
                 document.getElementById("name_org").innerHTML = nameOrgString;
                 if(DataMeta.user.siteAdmin || DataMeta.user.groupAdmin) {

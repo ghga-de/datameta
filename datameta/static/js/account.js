@@ -14,7 +14,7 @@
 # limitations under the License.
 */
 
-window.addEventListener("load", function() {
+window.addEventListener("dmready", function() {
 
     function view_success() {
         new bootstrap.Collapse(document.getElementById("success"), { show: true })
@@ -64,7 +64,7 @@ window.addEventListener("load", function() {
             document.getElementById("new_password_repeat").classList.remove("is-invalid")
         }
         // Talk to the API
-        fetch('/api/v0/users/' + data.get("uuid") + '/password',
+        fetch('/api/v0/users/' + DataMeta.user.id.uuid + '/password',
             {
                 method: 'put',
                 headers: {

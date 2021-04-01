@@ -1,7 +1,7 @@
 <div metal:use-macro="load: layout.pt">
     <script metal:fill-slot="head">
         // Takes name and organisation from API call and creates the welcome screen message.
-        window.addEventListener("load", function() {
+        window.addEventListener("dmready", function() {
             var welcomeMessage = "Welcome back, " + DataMeta.user.name + ".<br><br> Your Organisation is "+ DataMeta.user.group.name + ".";
             document.getElementById("welcome_message").innerHTML = welcomeMessage;
         });

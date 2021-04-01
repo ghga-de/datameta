@@ -183,27 +183,16 @@ DataMeta.admin.reload = function() {
             DataMeta.admin.reload_requests(json.reg_requests, json.groups);
             DataMeta.admin.subnav();
             DataMeta.admin.rebuildUserTable(json.users);
-            
-            fetch(DataMeta.api('users/self'),
-            {
-                method: 'GET'
-            })
-            .then(response => response.json())
-            .then(function (self_json) {
-                if(self_json.siteAdmin) {
-                    document.getElementById("nav-groups-tab-li").style.display = "";
-                    document.getElementById("nav-metadata-tab-li").style.display = "";
-                    document.getElementById("nav-site-tab-li").style.display = "";
-                    DataMeta.admin.getAppSettings();
-                    DataMeta.admin.getMetadata();
-                    DataMeta.admin.rebuildGroupTable(json.groups);  
-                }
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-
             DataMeta.admin.groups = json.groups;
+
+            if (DataMeta.user.siteAdmin) {
+                document.getElementById("nav-groups-tab-li").style.display = "";
+                document.getElementById("nav-metadata-tab-li").style.display = "";
+                document.getElementById("nav-site-tab-li").style.display = "";
+                DataMeta.admin.getAppSettings();
+                DataMeta.admin.getMetadata();
+                DataMeta.admin.rebuildGroupTable(json.groups);  
+            }
         })
         .catch((error) => {
             console.log(error);
@@ -1095,7 +1084,7 @@ function clearAlerts () {
     document.getElementById("metadata_alert").classList.remove("show");
 }
 
-window.addEventListener("load", function() {
+window.addEventListener("dmready", function() {
     DataMeta.admin.initSiteTable();
     DataMeta.admin.initMetadataTable();
     DataMeta.admin.initUserTable();

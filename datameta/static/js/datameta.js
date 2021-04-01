@@ -141,14 +141,18 @@ DataMeta.getLargeMD5 = function(file, cbProgress) {
 /**
  * Gets information about the logged in user: ids, name, email, admin status and group
  */
-fetch(DataMeta.api('users/self'),
+window.addEventListener("load", function() {
+    fetch(DataMeta.api('users/self'),
     {
         method: 'GET'
     })
     .then(response => response.json())
     .then(function (json) {
         DataMeta.user = json;
+        var event = new Event('dmready')
+        window.dispatchEvent(event);
     })
     .catch((error) => {
         console.log(error);
     });
+});

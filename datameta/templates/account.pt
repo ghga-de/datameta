@@ -61,8 +61,6 @@
                                 The two passwords do not match.
                             </div>
                         </div>
-
-                        <input type="hidden" id="uuid" name="uuid" value="${user.uuid}">
                         <div class="input-group mb-4">
                             <button class="btn btn-outline-success" type="submit" id="submit_password">Submit Changes</button>
                         </div>
