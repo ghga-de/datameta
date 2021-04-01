@@ -42,12 +42,12 @@ class UserResponseElement(DataHolderBase):
     group: dict
 
 @view_config(
-    route_name="user_self", 
+    route_name="whoami", 
     renderer='json', 
     request_method="GET", 
     openapi=True
 )
-def get_self(request: Request) -> UserResponseElement:
+def get_whoami(request: Request) -> UserResponseElement:
     
     auth_user = security.revalidate_user(request)
 

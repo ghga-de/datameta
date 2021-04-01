@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.10.0
+  version: 0.11.0
   title: DataMeta
 
 servers:
@@ -95,12 +95,13 @@ paths:
         '500':
           description: Internal Server Error
 
-  /users/self:
+  /whoami:
     get:
-      summary: Return relevant information about the user
+      summary: "[Not RESTful]: Returns information about the authenticated user"
       description: >-
         Returns the id's, name, groupAdmin, siteAdmin, 
         email and groupName attributes for the logged in user.
+        [Attention this endpoint is not RESTful, the result should not be cached.]
       tags:
         - Authentication and Users
       operationId: GetUserInformation
