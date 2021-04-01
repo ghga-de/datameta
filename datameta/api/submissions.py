@@ -90,7 +90,7 @@ def validate_submission_association(db_files, db_msets):
 
     # Make sure the filenames are unique
     for fname, db_objs in f_names_obj.items():
-        if len(db_objs)>1:
+        if len(db_objs) > 1:
             errors += [ (db_file, None, "Filename occurs multiple times among provided files") for db_file in db_objs ]
 
     # Collect the file names referenced by the metadata sets - null values are not considered here
@@ -166,6 +166,9 @@ def validate_submission(request, auth_user):
     # Collect metadatasets, drop duplicates
     db_msets = { mset_id : resource.resource_query_by_id(db, MetaDataSet, mset_id).options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)).one_or_none()
         for mset_id in set(request.openapi_validated.body['metadatasetIds']) }
+
+    if not db_files and not db_msets:
+        raise errors.get_validation_error(messages=["Neither data nor metadata provided in submission."])
 
     # Check for access critical failures
     validate_submission_access(db, db_files, db_msets, auth_user)
