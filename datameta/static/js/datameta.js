@@ -20,6 +20,7 @@
 
 window.DataMeta       = {};
 DataMeta.uilocal      = {};
+DataMeta.user         = {};
 DataMeta.toolTips     = [];
 DataMeta.popoverList  = [];
 DataMeta.api = path => "/api/v0/" + path;
@@ -136,3 +137,22 @@ DataMeta.getLargeMD5 = function(file, cbProgress) {
         });
     });
 }
+
+/**
+ * Gets information about the logged in user: ids, name, email, admin status and group
+ */
+window.addEventListener("load", function() {
+    fetch(DataMeta.api('users/self'),
+    {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(function (json) {
+        DataMeta.user = json;
+        var event = new Event('dmready')
+        window.dispatchEvent(event);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+});
