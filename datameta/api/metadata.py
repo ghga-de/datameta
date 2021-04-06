@@ -21,7 +21,6 @@ from ..models import MetaDatum
 from .. import resource, security, siteid
 from ..resource import resource_by_id, get_identifier
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
-from ..errors import get_validation_error
 
 @dataclass
 class MetaDataResponseElement(DataHolderBase):
