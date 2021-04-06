@@ -1,15 +1,16 @@
 """Testing group name update via API request
 """
+from parameterized import parameterized
 
 from . import BaseIntegrationTest
-from parameterized import parameterized
 from datameta.api import base_url
+
 class GroupNameUpdate(BaseIntegrationTest):
 
     @parameterized.expand([
         # TEST_NAME                    EXEC_USER           TARGET_GRP       RESP
         ("foreign_as_admin"          , "admin"           , "group_x_id"   , 204),
-        ("own_as_group_admin"        , "group_x_admin"   , "group_x_id"   , 204),
+        ("own_as_group_admin"        , "group_x_admin"   , "group_x_id"   , 403),
         ("foreign_as_group_admin"    , "group_x_admin"   , "group_y_id"   , 403),
         ("invalid_group"             , "admin"           , "duckburgh"    , 403),
         ("own_as_regular_user"       , "user_a"          , "group_x_id"   , 403),
@@ -21,11 +22,12 @@ class GroupNameUpdate(BaseIntegrationTest):
         request_body = {"name": "new_group_name"}
 
         response = self.testapp.put_json(
-            base_url + f"/groups/{target_group_id}",
+            f"{base_url}/groups/{target_group_id}",
             headers = user.auth.header,
             params = request_body,
             status = expected_response
         )
+
     def test_failure_group_name_update_not_authorised(self, status:int=401):
         """Testing unsuccessful group name change by unidentified, unauthorized user.
 
@@ -35,7 +37,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         request_body = {"name": "fancy_group_name"}
         
         response = self.testapp.put_json(
-            base_url + f"/groups/group_y_id",
+            f"{base_url}/groups/group_y_id",
             params = request_body,
             status = status
         )
@@ -50,7 +52,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         request_body = {"name": "fancy_group_name"}
 
         response = self.testapp.put_json(
-            base_url + f"/groups/group_x_id",
+            f"{base_url}/groups/group_x_id",
             headers = user.expired_auth.header,
             params = request_body,
             status = status
