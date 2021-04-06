@@ -12,22 +12,28 @@ from .utils import create_pwtoken
 class TestPasswordUpdate(BaseIntegrationTest):
 
     @parameterized.expand([
-        # TEST_NAME             EXEC_USER TOKEN NEW_PW RESP
-        ("self_password_update", "user_a", "", "012345678910", 204),
-        ("self_invalid_password_update", "user_a", "", "*meep*", 400),
-        ("self_invalid_reset_token", "user_a", "this_token_does_not_exist_for_sure", "012345678910", 404),
+        # TEST_NAME             EXEC_USER  TGT_USER TOKEN NEW_PW EXPIRED? RESP
+        ("self_password_update", "user_a", "", "", "012345678910", False, 204),
+        ("self_expired_auth", "user_a", "", "", "012345678910", True, 401),
+        ("self_invalid_password", "user_a", "", "", "*meep*", False, 400),
+        ("self_invalid_reset_token", "user_a", "", "this_token_does_not_exist_for_sure", "012345678910", False, 404),
+        ("other_password_update", "user_a", "user_b", "", "012345678910", False, 403),
+        ("other_password_update", "user_a", "nihilist", "", "012345678910", False, 403),
         ])
 
-    def test_password_update(self, _, executing_user:str, token:str, new_password:str, expected_response:int):
+    def test_password_update(self, _, executing_user:str, target_user:str, token:str, new_password:str, expired_auth:bool, expected_response:int):
         if token:
             user_id = "0"
             credential = token
             auth_header = None
         else:
             user = self.users[executing_user]
-            user_id = user.site_id
             credential = user.password
-            auth_header = user.auth.header
+            auth_header = user.expired_auth.header if expired_auth else user.auth.header
+            if not target_user:
+                user_id = user.site_id
+            else:
+                user_id = self.users[target_user].site_id if self.users.get(target_user) else target_user
 
         request_body = {
             "passwordChangeCredential": credential,
@@ -45,67 +51,7 @@ class TestPasswordUpdate(BaseIntegrationTest):
             f"{base_url}/users/{user_id}/password",
             **req_json
         )
-
-    def test_failure_own_password_update_expired_apitoken(self, status:int=401):
-        """Testing unsuccessful (self-)password change with expired api token.
-
-        Expected Response:
-            HTTP 401
-        """
-        user = self.users["user_a"]
-
-        request_body = {
-            "passwordChangeCredential": user.password,
-            "newPassword": "012345678910"
-        }
-
-        response = self.testapp.put_json(
-            f"{base_url}/users/{user.site_id}/password",
-            headers=user.expired_auth.header,
-            params=request_body,
-            status=status
-        )
-
-    def test_failure_other_password_update(self, status:int=403):
-        """Testing unsuccessful password change for other user.
-
-        Expected Response:
-            HTTP 403
-        """
-        attacker, victim = self.users["user_a"], self.users["user_b"]
-
-        request_body = {
-            "passwordChangeCredential": attacker.password,
-            "newPassword": "012345678910"
-        }
-
-        response = self.testapp.put_json(
-            f"{base_url}/users/{victim.site_id}/password",
-            headers = attacker.auth.header,
-            params = request_body,
-            status=status
-        )
-
-    def test_failure_invalid_user_password_update(self, status:int=403):
-        """Testing unsuccessful (self-)password change for invalid/non-existing user
-
-        Expected Response:
-            HTTP 403
-        """
-        attacker = self.users["user_a"]
-
-        request_body = {
-            "passwordChangeCredential": attacker.password,
-            "newPassword": "012345678910"
-        }
-
-        response = self.testapp.put_json(
-            f"{base_url}/users/nihilist/password",
-            headers = attacker.auth.header,
-            params = request_body,
-            status=status
-        )
-
+    
     def test_failure_expired_reset_token(self, status:int=410):
         """Testing unsuccessful (self-)password change with expired token.
 
