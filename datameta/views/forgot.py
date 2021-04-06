@@ -51,11 +51,13 @@ def v_forgot_api(request):
     if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
         return { 'success' : False, 'error' : 'MALFORMED_EMAIL' }
 
-    reset_token = security.get_new_password_reset_token_from_email(db, req_email)
-
-    # Generate a new forgot token and send it to the user
-    if token:
-        db_token_obj, clear_token = reset_token
+    try:
+        db_token_obj, clear_token = security.get_new_password_reset_token_from_email(db, req_email)
+    except KeyError:
+        # User not found
+        log.debug(f"DURING RECOVERY TOKEN REQUEST: USER COULD NOT BE RESOLVED FROM EMAIL: {req_email}")
+    else:
+        # Generate a new forgot token and send it to the user
         send_forgot_token(request, db_token_obj, clear_token)
         log.debug(f"USER REQUESTED RECOVERY TOKEN: {clear_token}")
 

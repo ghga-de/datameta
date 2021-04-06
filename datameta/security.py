@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 def generate_token():
     return "".join(choice(ascii_letters+digits) for _ in range(64) )
 
-def get_new_password_reset_token(db:Session, user:User, expires=datetime.now() + timedelta(minutes=10)):
+def get_new_password_reset_token(db:Session, user:User, expires=None):
     """Clears all password recovery tokens for user identified by the supplied
     email address, generates a new one and returns it.
 
@@ -49,7 +49,7 @@ def get_new_password_reset_token(db:Session, user:User, expires=datetime.now() +
     db_token_obj = PasswordToken(
             user=user,
             value=hash_token(clear_token),
-            expires=expires
+            expires=expires if expires else datetime.now() + timedelta(minutes=10)
     )
     db.add(db_token_obj)
 
@@ -60,13 +60,15 @@ def get_new_password_reset_token_from_email(db:Session, email:str):
     email address, generates a new one and returns it.
 
     Returns:
-        None  - If the user is not found or disabled
-        token - otherwise"""
+        - PasswordToken with hashed token value
+        - cleartext token for user notification
+    Raises:
+        KeyError - if user not found/not enabled"""
     user = db.query(User).filter(User.enabled == True, User.email == email).one_or_none()
 
     # User not found or disabled
     if not user:
-        return None
+        raise KeyError(f"Could not find active user with email={email}")
 
     return get_new_password_reset_token(db, user)
 
