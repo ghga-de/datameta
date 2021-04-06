@@ -19,8 +19,8 @@ from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 from dataclasses import dataclass
 from . import DataHolderBase
 from ..models import User, Group
-from .. import security, errors
-from ..resource import resource_by_id
+from .. import security, errors, resource
+from ..resource import resource_by_id, get_identifier
 
 @dataclass
 class UserUpdateRequest(DataHolderBase):
@@ -30,6 +30,36 @@ class UserUpdateRequest(DataHolderBase):
     groupAdmin: bool
     siteAdmin: bool
     enabled: bool
+
+@dataclass
+class UserResponseElement(DataHolderBase):
+    """Class for User Update Request communication to OpenApi"""
+    id: dict
+    name: str
+    group_admin: bool
+    site_admin: bool
+    email: str
+    group: dict
+
+@view_config(
+    route_name="whoami", 
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get_whoami(request: Request) -> UserResponseElement:
+    
+    auth_user = security.revalidate_user(request)
+
+    return UserResponseElement(
+        id              =   resource.get_identifier(auth_user),
+        name            =   auth_user.fullname,
+        group_admin     =   auth_user.group_admin,
+        site_admin      =   auth_user.site_admin,
+        email           =   auth_user.email,
+        group           =   {"id": resource.get_identifier(auth_user.group), "name": auth_user.group.name}
+    )
+
 
 @view_config(
     route_name="user_id", 
@@ -69,6 +99,8 @@ def put(request: Request):
     if site_admin != None:
         if not auth_user.site_admin:
             raise HTTPForbidden()
+        if auth_user.id.uuid == target_user.id.uuid:
+            raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
     if group_admin != None:
@@ -78,6 +110,10 @@ def put(request: Request):
     # The user has to be site admin or group admin of the users group to enable or disable a user
     if enabled != None:
         if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
+            raise HTTPForbidden()
+        if not auth_user.site_admin and target_user.site_admin:
+            raise HTTPForbidden()
+        if auth_user.id.uuid == target_user.id.uuid:
             raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user
