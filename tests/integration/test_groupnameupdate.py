@@ -2,106 +2,29 @@
 """
 
 from . import BaseIntegrationTest
+from parameterized import parameterized
 from datameta.api import base_url
 class GroupNameUpdate(BaseIntegrationTest):
 
-    def test_successful_admin_group_name_update(self, status:int=204):
-        """Testing successful group name change by admin user.
-
-        Expected Response:
-            HTTP 204
-        """
-        user = self.users["admin"]
-        request_body = {"name": "fancy_group_name"}
-
-        response = self.testapp.put_json(
-            base_url + f"/groups/group_x_id",
-            headers = user.auth.header,
-            params = request_body,
-            status = status
-        )
-
-    def test_success_groupadmin_own_group_name_update(self, status:int=204):
-        """Testing successful own group name change by group admin user.
-
-        Expected Response:
-            HTTP 204
-        """
-        user = self.users["group_x_admin"]
-        request_body = {"name": "fancy_group_name"}
+    @parameterized.expand([
+        # TEST_NAME                    EXEC_USER           TARGET_GRP       RESP
+        ("foreign_as_admin"          , "admin"           , "group_x_id"   , 204),
+        ("own_as_group_admin"        , "group_x_admin"   , "group_x_id"   , 204),
+        ("foreign_as_group_admin"    , "group_x_admin"   , "group_y_id"   , 403),
+        ("invalid_group"             , "admin"           , "duckburgh"    , 403),
+        ("own_as_regular_user"       , "user_a"          , "group_x_id"   , 403),
+        ("foreign_as_regular_user"   , "user_a"          , "group_y_id"   , 403)
+        ])
+    def test_group_name_update(self, _, executing_user:str, target_group_id:str, expected_response:int):
+        user = self.users[executing_user]
+        request_body = {"name": "new_group_name"}
 
         response = self.testapp.put_json(
-            base_url + f"/groups/group_x_id",
+            base_url + f"/groups/{target_group_id}",
             headers = user.auth.header,
             params = request_body,
-            status = status
+            status = expected_response
         )
-
-    def test_failure_groupadmin_other_group_name_update(self, status:int=403):
-        """Testing unsuccessful other group name change by group admin user.
-
-        Expected Response:
-            HTTP 403
-        """
-        user = self.users["group_x_admin"]
-        request_body = {"name": "fancy_group_name"}
-
-        response = self.testapp.put_json(
-            base_url + f"/groups/group_y_id",
-            headers = user.auth.header,
-            params = request_body,
-            status = status
-        )
-
-    def test_failure_admin_invalid_group_name(self, status:int=403):
-        """Testing unsuccessful group name update of invalid group.
-
-        Expected Response:
-            HTTP 403
-        """
-        user = self.users["admin"]
-        request_body = {"name": "fancy_group_name"}
-
-        response = self.testapp.put_json(
-            base_url + f"/groups/duckburgh",
-            headers = user.auth.header,
-            params = request_body,
-            status = status
-        )
-    
-
-    def test_failure_own_group_name_update(self, status:int=403):
-        """Testing unsuccessful own group name change by normal user.
-
-        Expected Response:
-            HTTP 403
-        """
-        user = self.users["user_a"]
-        request_body = {"name": "fancy_group_name"}
-
-        response = self.testapp.put_json(
-            base_url + f"/groups/group_x_id",
-            headers = user.auth.header,
-            params = request_body,
-            status = status
-        )
-
-    def test_failure_other_group_name_update(self, status:int=403):
-        """Testing unsuccessful other group name change by normal user.
-
-        Expected Response:
-            HTTP 403
-        """
-        user = self.users["user_a"]
-        request_body = {"name": "fancy_group_name"}
-
-        response = self.testapp.put_json(
-            base_url + f"/groups/group_y_id",
-            headers = user.auth.header,
-            params = request_body,
-            status = status
-        )
-
     def test_failure_group_name_update_not_authorised(self, status:int=401):
         """Testing unsuccessful group name change by unidentified, unauthorized user.
 
