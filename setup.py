@@ -53,6 +53,7 @@ tests_require = [
     'pytest-cov',
     "sqlalchemy_utils",
     "requests",
+    "parameterized >= 0.8.1"
 ]
 
 setup(
