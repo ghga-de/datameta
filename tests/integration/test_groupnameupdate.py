@@ -15,6 +15,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         ("own_as_regular_user"       , "user_a"          , "group_x_id"   , 403),
         ("foreign_as_regular_user"   , "user_a"          , "group_y_id"   , 403)
         ])
+
     def test_group_name_update(self, _, executing_user:str, target_group_id:str, expected_response:int):
         user = self.users[executing_user]
         request_body = {"name": "new_group_name"}
