@@ -2,6 +2,7 @@
 """
 
 from . import BaseIntegrationTest
+from parameterized import parameterized
 from datameta.api import base_url
 class GroupNameUpdate(BaseIntegrationTest):
 
