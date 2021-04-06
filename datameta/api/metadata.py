@@ -88,8 +88,6 @@ def put(request:Request):
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
 
     body = request.openapi_validated.body
-    if body["isFile"] and not body["name"]:
-        raise get_validation_error(messages=["File names cannot be empty."])
 
     target_metadatum.name                = body["name"]
     target_metadatum.short_description   = body["regexDescription"] if body["regexDescription"] else None
