@@ -65,6 +65,9 @@ def post(request: Request) -> FileUploadResponse:
     req_name = request.openapi_validated.body["name"]
     req_checksum = request.openapi_validated.body["checksum"]
 
+    if not req_name:
+        raise errors.get_validation_error(message=["File names cannot be empty."])
+
     # Create the corresponding database object
     db_file = models.File(
             site_id           = siteid.generate(request, models.File),
@@ -169,7 +172,6 @@ def update_file(request: Request) -> HTTPOk:
         raise HTTPNotFound(json=None) # 404
     if db_file.user_id != auth_user.id:
         raise HTTPForbidden(json=None) # 403
-
     # We only allow modifications before the file is committed (uploaded)
     if db_file.content_uploaded:
         raise errors.get_not_modifiable_error() # 403
@@ -178,7 +180,10 @@ def update_file(request: Request) -> HTTPOk:
     if 'checksum' in request.openapi_validated.body:
         db_file.checksum  = request.openapi_validated.body['checksum']
     if 'name' in request.openapi_validated.body:
-        db_file.name      = request.openapi_validated.body['name']
+        updated_name      = request.openapi_validated.body['name']
+        if not updated_name:
+            raise errors.get_validation_error(["File names cannot be empty."])
+        db_file.name = updated_name
 
     # Freeze the file
     if request.openapi_validated.body.get('contentUploaded'):
