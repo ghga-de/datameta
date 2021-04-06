@@ -1,9 +1,15 @@
 <div metal:use-macro="load: layout.pt">
+    <script metal:fill-slot="head">
+        // Takes name and organisation from API call and creates the welcome screen message.
+        window.addEventListener("dmready", function() {
+            var welcomeMessage = "Welcome back, " + DataMeta.user.name + ".<br><br> Your Organisation is "+ DataMeta.user.group.name + ".";
+            document.getElementById("welcome_message").innerHTML = welcomeMessage;
+        });
+    </script>
     <div metal:fill-slot="content" class="row">
         <div>   
-            <h5 class="mb-3">
-            Welcome back, ${request.session['user_fullname']}.<br><br>
-            Your Organisation is ${request.session['user_groupname']}.
+            <h5 class="mb-3" id="welcome_message">
+            Welcome back!
             </h5>        
         </div>
     </div>

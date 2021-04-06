@@ -43,6 +43,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("apikeys_id", base_url + "/keys/{id}")
     config.add_route("user_id_keys", base_url + "/users/{id}/keys")
     config.add_route("SetUserPassword", base_url + "/users/{id}/password")
+    config.add_route("whoami", base_url + "/whoami")
     config.add_route("user_id", base_url + "/users/{id}")
     config.add_route("metadata", base_url + "/metadata")
     config.add_route("metadata_id", base_url + "/metadata/{id}")
