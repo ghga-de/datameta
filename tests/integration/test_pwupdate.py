@@ -12,15 +12,14 @@ from .utils import create_pwtoken
 class TestPasswordUpdate(BaseIntegrationTest):
 
     @parameterized.expand([
-        # TEST_NAME             EXEC_USER  TGT_USER TOKEN NEW_PW EXPIRED? RESP
-        ("self_password_update", "user_a", "", "", "012345678910", False, 204),
-        ("self_expired_auth", "user_a", "", "", "012345678910", True, 401),
-        ("self_invalid_password", "user_a", "", "", "*meep*", False, 400),
-        ("self_invalid_reset_token", "user_a", "", "this_token_does_not_exist_for_sure", "012345678910", False, 404),
-        ("other_password_update", "user_a", "user_b", "", "012345678910", False, 403),
-        ("other_password_update", "user_a", "nihilist", "", "012345678910", False, 403),
+        # TEST_NAME                     EXEC_USER    TGT_USER       TOKEN                                    NEW_PW             EXPIRED   RESP
+        ("self_password_update"       , "user_a"   , ""           , ""                                     , "012345678910"   , False   , 204),
+        ("self_expired_auth"          , "user_a"   , ""           , ""                                     , "012345678910"   , True    , 401),
+        ("self_invalid_password"      , "user_a"   , ""           , ""                                     , "*meep*"         , False   , 400),
+        ("self_invalid_reset_token"   , "user_a"   , ""           , "this_token_does_not_exist_for_sure"   , "012345678910"   , False   , 404),
+        ("other_password_update"      , "user_a"   , "user_b"     , ""                                     , "012345678910"   , False   , 403),
+        ("other_password_update"      , "user_a"   , "nihilist"   , ""                                     , "012345678910"   , False   , 403),
         ])
-
     def test_password_update(self, _, executing_user:str, target_user:str, token:str, new_password:str, expired_auth:bool, expected_response:int):
         if token:
             user_id = "0"
