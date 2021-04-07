@@ -1,7 +1,24 @@
 <div metal:use-macro="load: layout.pt">
     <div metal:fill-slot="content" class="row">
-        <div class="alert alert-warning" role="alert">
-            This feature is not yet implemented.
+        <div class="col">
+            <table id="table_view" class="table table-sm table-hover text-nowrap" style="width:100%">
+            </table>
         </div>
     </div>
+
+    <metal:block fill-slot="head">
+    <link href="${request.static_url('datameta:static/css/dataTables.bootstrap5.css')}" rel="stylesheet">
+    <style>
+    td.id_col {
+        background-color: #f7d4da;
+    }
+    </style>
+    </metal:block>
+
+    <metal:block fill-slot="body">
+    <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/node_modules/jquery/dist/jquery.js')}"></script>
+    <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/jquery.dataTables.min.js')}"></script>
+    <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/dataTables.bootstrap5.min.js')}"></script>
+    <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/view.js')}"></script>
+    </metal:block>
 </div>
