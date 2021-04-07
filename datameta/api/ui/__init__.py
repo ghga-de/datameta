@@ -22,3 +22,4 @@ def includeme(config: Configurator) -> None:
     config.add_route('admin_get', '/api/ui/admin')
     config.add_route('admin_put_request', '/api/ui/admin/request')
     config.add_route('forgot_api', '/api/ui/forgot')
+    config.add_route("ui_view", "/api/ui/view")

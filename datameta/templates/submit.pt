@@ -113,8 +113,8 @@
 <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/dataTables.bootstrap5.min.js')}"></script>
 <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/node_modules/byte-size/dist/index.js')}"></script>
 <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/submit.js')}"></script>
-<script src="${request.static_url('datameta:static/node_modules/crypto-js/crypto-js.js')}"></script>
-<script src="/static/js/fileupload.js"></script>
+<script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/node_modules/crypto-js/crypto-js.js')}"></script>
+<script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/fileupload.js')}"></script>
 </metal:block>
 </metal:block>
 
