@@ -73,7 +73,10 @@ def get_record_from_metadataset(mdata_set:models.MetaDataSet) -> dict:
 def post(request:Request) -> MetaDataSetResponse:
     """Create new metadataset"""
     auth_user = security.revalidate_user(request)
-    record = request.openapi_validated.body["record"]
+
+    # Obtain string converted version of the record
+    record = { k:str(v) for k,v in request.openapi_validated.body["record"].items() }
+
     # prevalidate (raises 400 in case of validation failure):
     validate_metadataset_record(request, record)
 

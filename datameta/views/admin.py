@@ -101,10 +101,10 @@ def v_admin_put_request(request):
         db.delete(reg_req)
 
         # Obtain a new token
-        token = security.get_new_password_reset_token(db, new_user)
+        _, clear_token = security.get_new_password_reset_token(db, new_user)
 
         # Generate the token url
-        token_url = request.route_url('setpass', token = token.value)
+        token_url = request.route_url('setpass', token = clear_token)
 
         # Send the token to the user
         email.send(

@@ -179,16 +179,25 @@ DataMeta.admin.reload = function() {
         })
         .then(response => response.json())
         .then(function (json) {
+
             DataMeta.admin.reload_requests(json.reg_requests, json.groups);
             DataMeta.admin.subnav();
             DataMeta.admin.rebuildUserTable(json.users);
-            DataMeta.admin.rebuildGroupTable(json.groups);            })
+            DataMeta.admin.groups = json.groups;
+
+            if (DataMeta.user.siteAdmin) {
+                document.getElementById("nav-groups-tab-li").style.display = "";
+                document.getElementById("nav-metadata-tab-li").style.display = "";
+                document.getElementById("nav-site-tab-li").style.display = "";
+                DataMeta.admin.getAppSettings();
+                DataMeta.admin.getMetadata();
+                DataMeta.admin.rebuildGroupTable(json.groups);  
+            }
+        })
         .catch((error) => {
             console.log(error);
         });
 
-    DataMeta.admin.getAppSettings();
-    DataMeta.admin.getMetadata();
 }
 
 //Rebuilds the user table, based on the Data fetched from the API
@@ -281,22 +290,23 @@ DataMeta.admin.rebuildSiteTable = function(settings) {
 
 //Initializes the site settings table
 DataMeta.admin.initSiteTable = function() {
-    $('#table_site').DataTable({
-        rowId: 'id.uuid',
-        order: [[1, "asc"]],
-        paging : true,
-        pageLength: 25,
-        searching: false,
-        scrollX: true,
-        columns: [
-            { title: "Key", data: "key"},
-            { title: "Value Type", data: "valueType"},
-            { title: "Value", data: "value"},
-            { orderable:false, title: "Edit", render:function() {
-                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
-            }}
-        ]
-    });
+    if($('#table_site')) {
+        $('#table_site').DataTable({
+            rowId: 'id.uuid',
+            order: [[1, "asc"]],
+            paging : true,
+            pageLength: 25,
+            searching: false,
+            scrollX: true,
+            columns: [
+                { title: "Key", data: "key"},
+                { title: "Value Type", data: "valueType"},
+                { title: "Value", data: "value", render:function(data) {
+                    return '<div id="settings_data">' + data +'</div><button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
+                }},
+            ]
+        });
+    }
 }
 
 //Rebuilds the group table, based on the Data fetched from the API
@@ -309,30 +319,32 @@ DataMeta.admin.rebuildMetadataTable = function(metadata) {
 
 //Initializes the metadata table
 DataMeta.admin.initMetadataTable = function() {
-    $('#table_metadata').DataTable({
-        rowId: 'id.uuid',
-        order: [[1, "asc"]],
-        paging : true,
-        pageLength: 25,
-        searching: false,
-        scrollX: true,
-        columns: [
-            { title: "Name", data: "name"},
-            { title: "Short Description", data: "regexDescription"},
-            { title: "Long Description", data: "longDescription"},
-            { title: "Example", data: "example"},
-            { title: "Regular Expression", data: "regExp"},
-            { title: "Date/Time Format", data: "dateTimeFmt"},
-            { orderable:false, title: "isMandatory", data: "isMandatory"},
-            { title: "Order", data: "order"},
-            { orderable:false, title: "isFile", data: "isFile"},
-            { orderable:false, title: "isSubmissionUnique", data: "isSubmissionUnique"},
-            { orderable:false, title: "isSiteUnique", data: "isSiteUnique"},
-            { orderable:false, title: "Edit", render:function() {
-                return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableMetaDatumEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
-            }}
-        ]
-    });
+    if($('#table_metadata')) {
+        $('#table_metadata').DataTable({
+            rowId: 'id.uuid',
+            order: [[1, "asc"]],
+            paging : true,
+            pageLength: 25,
+            searching: false,
+            scrollX: true,
+            columns: [
+                { title: "Name", data: "name"},
+                { title: "Short Description", data: "regexDescription"},
+                { title: "Long Description", data: "longDescription"},
+                { title: "Example", data: "example"},
+                { title: "Regular Expression", data: "regExp"},
+                { title: "Date/Time Format", data: "dateTimeFmt"},
+                { orderable:false, title: "isMandatory", data: "isMandatory"},
+                { title: "Order", data: "order"},
+                { orderable:false, title: "isFile", data: "isFile"},
+                { orderable:false, title: "isSubmissionUnique", data: "isSubmissionUnique"},
+                { orderable:false, title: "isSiteUnique", data: "isSiteUnique"},
+                { orderable:false, title: "Edit", render:function() {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableMetaDatumEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
+                }}
+            ]
+        });
+    }
 }
 
 // Enables the edit mode for Site Settings
@@ -348,11 +360,12 @@ function enableSettingsEditMode(event) {
 
     var row = button.parentNode.parentNode;
 
-    var innerHTML = row.children[2].innerHTML;
+    var data = button.parentNode.querySelector("#settings_data").innerHTML;
+
     row.children[2].innerHTML = '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
                                 '<i class="bi bi-pencil"></i>' +
                                 '</span>' +
-                                '<textarea type="text" class="form-control">' + innerHTML + '</textarea>' +
+                                '<textarea type="text" class="form-control">' + data + '</textarea>' +
                                 '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="saveSettings(event);"><i class="bi bi-check2"></i></button></div>';
                         
     $('#table_site').DataTable().columns.adjust().draw();
@@ -928,7 +941,7 @@ DataMeta.admin.getAppSettings = function () {
                 // Remove any alerts there still are
                 document.getElementById("site_alert").classList.remove("show");
             });
-        } else  if (response.status == "400") {
+        } else if (response.status == "400") {
             response.json().then((json) => {
                 show_group_alert(json.message);
             });
@@ -1071,12 +1084,13 @@ function clearAlerts () {
     document.getElementById("metadata_alert").classList.remove("show");
 }
 
-window.addEventListener("load", function() {
+window.addEventListener("dmready", function() {
     DataMeta.admin.initSiteTable();
     DataMeta.admin.initMetadataTable();
     DataMeta.admin.initUserTable();
     DataMeta.admin.initGroupTable();
     DataMeta.admin.reload();
+    
     document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-metadata-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);

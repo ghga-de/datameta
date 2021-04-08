@@ -30,42 +30,45 @@ log = logging.getLogger(__name__)
 def generate_token():
     return "".join(choice(ascii_letters+digits) for _ in range(64) )
 
-def get_new_password_reset_token(db:Session, user:User):
+def get_new_password_reset_token(db:Session, user:User, expires=None):
     """Clears all password recovery tokens for user identified by the supplied
     email address, generates a new one and returns it.
 
     Returns:
-        None  - If the user is not found or disabled
-        token - otherwise"""
+        - PasswordToken object (with hashed token value)
+        - unhashed token value
+    """
 
     # Delete existing tokens
     db.query(PasswordToken).filter(PasswordToken.user_id==user.id).delete()
 
     # Create new token value
-    value = secrets.token_urlsafe(40)
+    clear_token = secrets.token_urlsafe(40)
 
-    # Insert token
-    pass_token = PasswordToken(
+    # Add hashed token to db
+    db_token_obj = PasswordToken(
             user=user,
-            value=value,
-            expires=datetime.now() + timedelta(minutes=10)
-            )
-    db.add(pass_token)
+            value=hash_token(clear_token),
+            expires=expires if expires else datetime.now() + timedelta(minutes=10)
+    )
+    db.add(db_token_obj)
 
-    return pass_token
+    return db_token_obj, clear_token
 
 def get_new_password_reset_token_from_email(db:Session, email:str):
     """Clears all password recovery tokens for user identified by the supplied
     email address, generates a new one and returns it.
 
     Returns:
-        None  - If the user is not found or disabled
-        token - otherwise"""
+        - PasswordToken with hashed token value
+        - cleartext token for user notification
+    Raises:
+        KeyError - if user not found/not enabled"""
     user = db.query(User).filter(User.enabled == True, User.email == email).one_or_none()
 
     # User not found or disabled
     if not user:
-        return None
+        raise KeyError(f"Could not find active user with email={email}")
 
     return get_new_password_reset_token(db, user)
 
@@ -110,7 +113,7 @@ def get_bearer_token(request):
     if auth is not None:
         try:
             method, content = auth.split(" ")
-            if method=="Bearer":
+            if method == "Bearer":
                 return content
         except:
             pass
@@ -122,7 +125,7 @@ def get_password_reset_token(db:Session, token:str):
     enabled, otherwise no checking is performed, most importantly expiration
     checks are not performed"""
     return db.query(PasswordToken).join(User).filter(and_(
-        PasswordToken.value == token,
+        PasswordToken.value == hash_token(token),
         User.enabled == True
         )).one_or_none()
 

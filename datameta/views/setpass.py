@@ -31,7 +31,8 @@ def v_setpass(request):
 
     # Token expired? Send new one.
     if expired_token:
-        send_forgot_token(request, dbtoken.user)
+        db_token_obj, clear_token = security.get_new_password_reset_token(request.dbsession, dbtoken.user)
+        send_forgot_token(request, db_token_obj, clear_token)
 
     return {
             'pagetitle' : 'DataMeta - Set Password',
