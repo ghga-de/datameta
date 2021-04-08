@@ -8,7 +8,6 @@ from datameta.api import base_url
 
 from .utils import get_user, get_group
 class TestUserManagement(BaseIntegrationTest):
-
     @parameterized.expand([
         ("self_name_change", "user_a", "", "changed_by_user_a", 204),
         ("other_name_change_by_regular_user", "user_a", "user_c", "changed_by_user_a", 403),
@@ -41,7 +40,7 @@ class TestUserManagement(BaseIntegrationTest):
             expected_response == 403 and db_user["fullname"] == target_user.fullname
         ])
         
-        assert expected_outcome, f"{testname} failed: {db_user['fullname']} != {new_name} {expected_response}."
+        assert expected_outcome, f"{testname} failed"
 
     @parameterized.expand([
         ("self_group_change", "user_a", "", "group_y", 403),
@@ -51,13 +50,10 @@ class TestUserManagement(BaseIntegrationTest):
         ("self_group_change_by_admin", "admin", "", "group_y", 204),
     ])
     def test_group_change(self, testname:str, executing_user:str, target_user:str, new_group:str, expected_response:int):
-
-        def make_request(session_factory, user, target_user, new_group_uuid, expected_response):
+        def process_request(user, target_user, new_group_uuid, expected_response):
             req_json = {
                 "headers": user.auth.header,
-                "params": {
-                    "groupId": new_group_uuid
-                },
+                "params": {"groupId": new_group_uuid},
                 "status": expected_response
             }
 
@@ -66,24 +62,23 @@ class TestUserManagement(BaseIntegrationTest):
                 **req_json
             )
 
-            db_user = get_user(session_factory, target_user)
+            db_user = get_user(self.session_factory, target_user)
             expected_outcome = any([
                 expected_response == 204 and db_user["group_uuid"] == new_group_uuid,
                 expected_response == 403 and db_user["group_uuid"] != new_group_uuid
             ])
         
-            assert expected_outcome, f"{testname} failed: {db_user['group_uuid']==new_group_uuid} {expected_response}."
-            
+            assert expected_outcome, f"{testname} failed."
 
         user = self.users[executing_user]
         target_user = self.users[target_user] if target_user else user
 
         new_group_uuid = str(get_group(self.session_factory, new_group))
         current_group_uuid = str(get_group(self.session_factory, target_user.groupname))
-        make_request(self.session_factory, user, target_user, new_group_uuid, expected_response)
+        process_request(user, target_user, new_group_uuid, expected_response)
 
         if expected_response == 204:
-            make_request(self.session_factory, user, target_user, current_group_uuid, expected_response)
+            process_request(user, target_user, current_group_uuid, expected_response)
         
     @parameterized.expand([
         ("self_regular_user_grant_site_admin", "user_a", "", ("+siteAdmin",), 403),
@@ -99,43 +94,40 @@ class TestUserManagement(BaseIntegrationTest):
         ("other_disable_regular_user_other_group", "group_x_admin", "user_c", ("-enabled",), 403),
     ])
     def test_status_changes(self, testname:str, executing_user:str, target_user:str, actions:tuple, expected_response:int):
-
-        def make_request(session_factory, user, target_user, actions, expected_response):
-            unmod_user = get_user(session_factory, target_user)
+        def process_request(user, target_user, actions, expected_response, is_undo=False):
+            unmod_user = get_user(self.session_factory, target_user)
             req_json = {
                 "headers": user.auth.header,
-                "status": expected_response
+                "status": expected_response,
+                "params": dict()
             }
             for action in actions:
-                req_json.setdefault("params", dict())[action[1:]] = action[0] == "+"
-            
+                value = (action[0] == "+") if not is_undo else (action[0] != "+")
+                req_json["params"][action[1:]] = value
+
             response = self.testapp.put_json(
                 f"{base_url}/users/{target_user.uuid}",
                 **req_json
             )
-        
-            db_user = get_user(session_factory, target_user)
+
+            db_user = get_user(self.session_factory, target_user)
 
             expected_outcome = any([
                 expected_response == 204 and all(val == db_user[key] for key, val in req_json["params"].items()),
                 expected_response == 403 and all((val != db_user[key] or val == unmod_user[key]) for key, val in req_json["params"].items()),
             ])
-        
-            assert expected_outcome, f"{testname} failed: {response} {expected_outcome} {expected_response} {req_json['params']} {db_user}."
 
-        def flip_actions(actions):
-            flipd = {"+": "-", "-": "+"}
-            return [flipd[action[0]] + action[1:] for action in actions]
+            assert expected_outcome, f"{testname} failed."
 
         user = self.users[executing_user]
         target_user = self.users[target_user] if target_user else user
-        make_request(self.session_factory, user, target_user, actions, expected_response)
+        process_request(user, target_user, actions, expected_response)
 
         if expected_response == 204:
-            make_request(self.session_factory, user, target_user, flip_actions(actions), expected_response)
+            process_request(user, target_user, actions, expected_response, is_undo=True)
         
 
-    def test_hacky_status_changes(self):
+    def test_edgecase_status_changes(self):
         """admin: make user_b a site_admin"""
         admin = self.users["admin"]
         request_body = {
