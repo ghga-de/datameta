@@ -14,6 +14,39 @@ import secrets
 
 from datameta.security import get_new_password_reset_token
 
+def get_group(
+    session_factory,
+    group_name
+):
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        group_obj = session.query(models.Group).filter(models.Group.name==group_name).one_or_none()
+
+        if not group_obj:
+            assert False, f"I don't know this group: {group_name}"
+
+        return group_obj.uuid
+
+def get_user(
+    session_factory,
+    user
+):
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        user_obj = session.query(models.User).filter(models.User.uuid==user.uuid).one_or_none()
+
+        if not user_obj:
+            assert False, f"I don't know this user: {str(user)}"
+
+        user_vals = dict()
+        for attr in ("fullname", "enabled", "site_admin", "group_admin"):
+            json_val = "".join(item.capitalize() if i else item for i, item in enumerate(attr.split("_")))
+            user_vals[json_val] = getattr(user_obj, attr)
+        user_vals["group_uuid"] = str(user_obj.group.uuid)
+
+        return user_vals
+
+
 def create_pwtoken(
     session_factory,
     user,
