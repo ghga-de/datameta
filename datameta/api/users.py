@@ -85,56 +85,58 @@ def put(request: Request):
     # Get the targeted user
     target_user = resource_by_id(db, User, user_id)
 
-    if(target_user == None):
+    if target_user is None:
         raise HTTPNotFound() # 404 User ID not found
+
+    has_group_rights = auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid
+    self_changes = auth_user.uuid == target_user.uuid
 
     # First, check, if the user has the rights to perform all the changes they want
 
     # The user has to be site admin to change another users group
-    if group_id != None:
+    if group_id is not None:
         if not auth_user.site_admin:
             raise HTTPForbidden()
 
     # The user has to be site admin to make another user site admin
-    if site_admin != None:
+    if site_admin is not None:
         if not auth_user.site_admin:
             raise HTTPForbidden()
-        if auth_user.id.uuid == target_user.id.uuid:
+        if self_changes:
             raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
-    if group_admin != None:
-        if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
+    if group_admin is not None:
+        if not (auth_user.site_admin or has_group_rights):
             raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to enable or disable a user
-    if enabled != None:
-        if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
+    if enabled is not None:
+        if not (auth_user.site_admin or has_group_rights):
             raise HTTPForbidden()
         if not auth_user.site_admin and target_user.site_admin:
             raise HTTPForbidden()
-        if auth_user.id.uuid == target_user.id.uuid:
+        if self_changes:
             raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user
-    if name != None:
-        if not (auth_user.site_admin or auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid
-            or auth_user.uuid == target_user.uuid):
+    if name is not None:
+        if not (auth_user.site_admin or has_group_rights or self_changes):
             raise HTTPForbidden()
 
     # Now, make the corresponding changes
-    if group_id != None:
+    if group_id is not None:
         new_group = resource_by_id(db, Group, group_id)
-        if new_group == None:
+        if new_group is None:
             raise HTTPNotFound() # 404 Group ID not found
         target_user.group_id = new_group.id
-    if site_admin != None:
+    if site_admin is not None:
         target_user.site_admin = site_admin
-    if group_admin != None:
+    if group_admin is not None:
         target_user.group_admin = group_admin
-    if enabled != None:
+    if enabled is not None:
         target_user.enabled = enabled
-    if name != None:
+    if name is not None:
         target_user.fullname = name
 
     return HTTPNoContent()
