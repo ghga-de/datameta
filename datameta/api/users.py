@@ -35,7 +35,7 @@ class UserUpdateRequest(DataHolderBase):
 class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
-    name: str
+    name: str # why is this name when it is called fullname in the db?
     group_admin: bool
     site_admin: bool
     email: str
