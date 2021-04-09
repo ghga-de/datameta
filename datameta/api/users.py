@@ -89,14 +89,13 @@ def put(request: Request):
         raise HTTPNotFound() # 404 User ID not found
 
     has_group_rights = auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid
-    self_changes = auth_user.uuid == target_user.uuid
+    user_is_target = auth_user.uuid == target_user.uuid
 
     # First, check, if the user has the rights to perform all the changes they want
 
     # The user has to be site admin to change another users group
-    if group_id is not None:
-        if not auth_user.site_admin:
-            raise HTTPForbidden()
+    if group_id is not None and not auth_user.site_admin:
+        raise HTTPForbidden()
 
     # The user has to be site admin to make another user site admin
     if site_admin is not None:
@@ -106,9 +105,8 @@ def put(request: Request):
             raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
-    if group_admin is not None:
-        if not (auth_user.site_admin or has_group_rights):
-            raise HTTPForbidden()
+    if group_admin is not None and not (auth_user.site_admin or has_group_rights):
+        raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to enable or disable a user
     if enabled is not None:

@@ -6,7 +6,7 @@ from . import BaseIntegrationTest, default_users
 from datameta import models
 from datameta.api import base_url
 
-from .utils import get_user, get_group
+from .utils import get_user_by_uuid, get_group_by_name
 class TestUserManagement(BaseIntegrationTest):
     @parameterized.expand([
         ("self_name_change", "user_a", "", "changed_by_user_a", 204),
@@ -34,7 +34,7 @@ class TestUserManagement(BaseIntegrationTest):
             **req_json
         )
 
-        db_user = get_user(self.session_factory, target_user)
+        db_user = get_user_by_uuid(self.session_factory, target_user.uuid)
         expected_outcome = any([
             expected_response == 204 and db_user["fullname"] == new_name,
             expected_response == 403 and db_user["fullname"] == target_user.fullname
@@ -62,7 +62,7 @@ class TestUserManagement(BaseIntegrationTest):
                 **req_json
             )
 
-            db_user = get_user(self.session_factory, target_user)
+            db_user = get_user_by_uuid(self.session_factory, target_user.uuid)
             expected_outcome = any([
                 expected_response == 204 and db_user["group_uuid"] == new_group_uuid,
                 expected_response == 403 and db_user["group_uuid"] != new_group_uuid
@@ -73,8 +73,8 @@ class TestUserManagement(BaseIntegrationTest):
         user = self.users[executing_user]
         target_user = self.users[target_user] if target_user else user
 
-        new_group_uuid = str(get_group(self.session_factory, new_group))
-        current_group_uuid = str(get_group(self.session_factory, target_user.groupname))
+        new_group_uuid = str(get_group_by_name(self.session_factory, new_group))
+        current_group_uuid = str(get_group_by_name(self.session_factory, target_user.groupname))
         process_request(user, target_user, new_group_uuid, expected_response)
 
         if expected_response == 204:
@@ -95,7 +95,7 @@ class TestUserManagement(BaseIntegrationTest):
     ])
     def test_status_changes(self, testname:str, executing_user:str, target_user:str, actions:tuple, expected_response:int):
         def process_request(user, target_user, actions, expected_response, is_undo=False):
-            unmod_user = get_user(self.session_factory, target_user)
+            unmod_user = get_user_by_uuid(self.session_factory, target_user.uuid)
             req_json = {
                 "headers": user.auth.header,
                 "status": expected_response,
@@ -110,7 +110,7 @@ class TestUserManagement(BaseIntegrationTest):
                 **req_json
             )
 
-            db_user = get_user(self.session_factory, target_user)
+            db_user = get_user_by_uuid(self.session_factory, target_user.uuid)
 
             expected_outcome = any([
                 expected_response == 204 and all(val == db_user[key] for key, val in req_json["params"].items()),
