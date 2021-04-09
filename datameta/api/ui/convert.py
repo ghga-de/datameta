@@ -36,12 +36,28 @@ def formatted_mrec_value(value, datetimefmt):
             pass
     return value
 
+def determine_ss_reader(file_like_obj):
+    # https://readxl.tidyverse.org/reference/excel_format.html
+    XLSX, XLS = b'PK\x03\x04', b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'
+    nibble = file_like_obj.read(4)
+    if nibble == XLSX:
+        reader = pd.read_excel
+    elif nibble + file_like_obj.read(4) == XLS:
+        reader = pd.read_excel
+    else:
+        reader = pd.read_csv
+    file_like_obj.seek(0)
+    return reader
+
+    
+
 ####################################################################################################
 
 def convert_samplesheet(db, file_like_obj, filename, user):
     # Try to read the sample sheet
     try:
-        submitted_metadata = pd.read_excel(file_like_obj, dtype="object")
+        reader = determine_ss_reader(file_like_obj)
+        submitted_metadata = reader(file_like_obj, dtype="object")
     except Exception as e:
         log.info(f"submitted sample sheet '{filename}' triggered exception {e}")
         raise samplesheet.SampleSheetReadError("Unable to parse the sample sheet.")
