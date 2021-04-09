@@ -89,7 +89,8 @@ def put(request: Request):
         raise HTTPNotFound() # 404 User ID not found
 
     has_group_rights = auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid
-    user_is_target = auth_user.uuid == target_user.uuid
+    has_admin_rights = auth_user.site_admin or has_group_rights
+    edit_own_user = auth_user.uuid == target_user.uuid
 
     # First, check, if the user has the rights to perform all the changes they want
 
@@ -98,29 +99,24 @@ def put(request: Request):
         raise HTTPForbidden()
 
     # The user has to be site admin to make another user site admin
-    if site_admin is not None:
-        if not auth_user.site_admin:
-            raise HTTPForbidden()
-        if self_changes:
+    if site_admin is not None and (
+        not auth_user.site_admin or edit_own_user
+    ):
             raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
-    if group_admin is not None and not (auth_user.site_admin or has_group_rights):
+    if group_admin is not None and not has_admin_rights:
         raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to enable or disable a user
-    if enabled is not None:
-        if not (auth_user.site_admin or has_group_rights):
-            raise HTTPForbidden()
-        if not auth_user.site_admin and target_user.site_admin:
-            raise HTTPForbidden()
-        if self_changes:
-            raise HTTPForbidden()
+    if enabled is not None and (
+        not has_admin_rights or not auth_user.site_admin and target_user.site_admin or edit_own_user
+    ):
+        raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user
-    if name is not None:
-        if not (auth_user.site_admin or has_group_rights or self_changes):
-            raise HTTPForbidden()
+    if name is not None and not (has_admin_rights or edit_own_user):
+        raise HTTPForbidden()
 
     # Now, make the corresponding changes
     if group_id is not None:
