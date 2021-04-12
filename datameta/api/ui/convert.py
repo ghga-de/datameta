@@ -36,28 +36,48 @@ def formatted_mrec_value(value, datetimefmt):
             pass
     return value
 
-def determine_ss_reader(file_like_obj):
+def determine_separator(f, separators=",;\t:"):
+    def get_line_seps(f, header=False):
+        try:
+            line = next(f).decode()
+        except StopIteration:
+            raise ValueError("Empty file." if header else "No data in file.")
+        return sorted(((line.count(sep), sep) for sep in separators), reverse=True)
+
+    sep_counts_1, sep_counts_2 = get_line_seps(f, header=True), get_line_seps(f)
+    for (count1, sep1), (count2, sep2) in zip(sep_counts_1, sep_counts_2):
+        if sep1 == sep2 and count1 == count2:
+            return sep1
+    raise ValueError("File contains inconclusive column separators.")
+
+def determine_samplesheet_reader(file_like_obj):
     # https://readxl.tidyverse.org/reference/excel_format.html
     XLSX, XLS = b'PK\x03\x04', b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'
     nibble = file_like_obj.read(4)
+    def make_excel_reader(sheet):
+        return pd.read_excel(sheet, dtype="object")
     if nibble == XLSX:
-        reader = pd.read_excel
+        reader = make_excel_reader
     elif nibble + file_like_obj.read(4) == XLS:
-        reader = pd.read_excel
+        reader = make_excel_reader
     else:
-        reader = pd.read_csv
+        file_like_obj.seek(0)
+        separator = determine_separator(file_like_obj)
+        def make_table_reader(sheet, sep=separator):
+            return pd.read_table(sheet, dtype="object", sep=sep)
+        reader = make_table_reader
+
     file_like_obj.seek(0)
     return reader
 
-    
 
 ####################################################################################################
 
 def convert_samplesheet(db, file_like_obj, filename, user):
     # Try to read the sample sheet
     try:
-        reader = determine_ss_reader(file_like_obj)
-        submitted_metadata = reader(file_like_obj, dtype="object")
+        reader = determine_samplesheet_reader(file_like_obj)
+        submitted_metadata = reader(file_like_obj)
     except Exception as e:
         log.info(f"submitted sample sheet '{filename}' triggered exception {e}")
         raise samplesheet.SampleSheetReadError("Unable to parse the sample sheet.")
