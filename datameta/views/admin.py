@@ -64,14 +64,14 @@ def v_admin_put_request(request):
         raise HTTPBadRequest()
 
     # Check if the request exists
-    reg_req = resource_by_id(db ,RegRequest, reg_req_id)
+    reg_req = resource_by_id(db, RegRequest, reg_req_id)
     
     if reg_req is None:
         return HTTPNotFound('Registration request not found')
 
     # Check if the requesting user is authorized. Both the request group as well as the
     # administratively selected group have to be the requesting user's group
-    if not req_user.site_admin and (reg_req.group_id!=req_user.group_id.uuid or newuser_group_id!=req_user.group_id.uuid):
+    if not req_user.site_admin and (reg_req.group.uuid!=req_user.group.uuid or newuser_group_id!=str(req_user.group.uuid)):
         return HTTPUnauthorized()
 
     # Check if the specified group id is valid
