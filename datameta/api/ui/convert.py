@@ -20,6 +20,7 @@ from pyramid.view import view_config
 import webob
 import logging
 import datetime
+import csv
 
 import pandas as pd
 
@@ -36,25 +37,12 @@ def formatted_mrec_value(value, datetimefmt):
             pass
     return value
 
-def determine_separator(f, separators=",;\t:"):
-    def get_line_seps(f, header=False):
-        try:
-            line = next(f).decode()
-        except StopIteration:
-            raise ValueError("Empty file." if header else "No data in file.")
-        return sorted(((line.count(sep), sep) for sep in separators), reverse=True)
-
-    sep_counts_1, sep_counts_2 = get_line_seps(f, header=True), get_line_seps(f)
-    for (count1, sep1), (count2, sep2) in zip(sep_counts_1, sep_counts_2):
-        if sep1 == sep2 and count1 == count2:
-            return sep1
-    raise ValueError("File contains inconclusive column separators.")
-
 def determine_samplesheet_reader(file_like_obj):
     # https://readxl.tidyverse.org/reference/excel_format.html
     XLSX, XLS = b'PK\x03\x04', b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'
     nibble = file_like_obj.read(4)
     def make_excel_reader(sheet):
+        sheet.seek(0)
         return pd.read_excel(sheet, dtype="object")
     if nibble == XLSX:
         reader = make_excel_reader
@@ -62,12 +50,12 @@ def determine_samplesheet_reader(file_like_obj):
         reader = make_excel_reader
     else:
         file_like_obj.seek(0)
-        separator = determine_separator(file_like_obj)
-        def make_table_reader(sheet, sep=separator):
+        dialect = csv.Sniffer().sniff(file_like_obj.read(1024).decode())
+        def make_table_reader(sheet, sep=dialect.delimiter):
+            sheet.seek(0)
             return pd.read_table(sheet, dtype="object", sep=sep)
         reader = make_table_reader
 
-    file_like_obj.seek(0)
     return reader
 
 
