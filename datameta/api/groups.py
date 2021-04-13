@@ -22,6 +22,7 @@ from ..models import Group
 from .. import security, errors
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError
 
 from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
 
@@ -135,7 +136,7 @@ def put(request: Request):
         try:
             target_group.name = new_group_name
             db.flush()
-        except:
+        except IntegrityError:
             response_body = []
             err = {
                 "exception": "ValidationError",
