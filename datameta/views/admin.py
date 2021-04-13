@@ -35,7 +35,7 @@ def v_admin(request):
 
 @view_config(route_name='admin_put_request', renderer='json', request_method='PUT')
 def v_admin_put_request(request):
-    """Serves PUT requests at /api/admin/request that allows the user to
+    """Serves PUT requests at /api/ui/admin/request that allows the user to
     respond to registration requests that were made againts the site and for
     which the user is authorative."""
 
@@ -60,7 +60,7 @@ def v_admin_put_request(request):
         else:
             raise SyntaxError()
     except Exception as e:
-        log.error(f"MALFORMED API REQUEST AT /api/admin/request: {e}")
+        log.error(f"MALFORMED API REQUEST AT /api/ui/admin/request: {e}")
         raise HTTPBadRequest()
 
     # Check if the request exists

@@ -49,7 +49,7 @@ def v_register_submit(request):
         org_create = request.POST.get('org_create') is not None
         org_new_name = request.POST.get('org_new_name')
     except (KeyError, ValueError) as e:
-        log.info(f"Malformed request at /register/submit: {e}")
+        log.info(f"Malformed request at /api/ui/register: {e}")
         raise HTTPBadRequest()
 
     # Basic validity check for email
