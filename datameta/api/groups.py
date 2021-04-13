@@ -132,8 +132,10 @@ def put(request: Request):
     # Change the group name only if the user is site admin or the admin for the specific group
     if auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == group_id):
 
-        same_name_group = db.query(Group).filter(Group.name==new_group_name).one_or_none()  
-        if (same_name_group != None):
+        try:
+            target_group.name = new_group_name
+            db.flush()
+        except:
             response_body = []
             err = {
                 "exception": "ValidationError",
@@ -142,6 +144,5 @@ def put(request: Request):
             response_body.append(err)
             raise HTTPBadRequest(json=response_body)
         
-        target_group.name = new_group_name
         return HTTPNoContent()
     raise HTTPForbidden() # 403 Not authorized to change this group name
