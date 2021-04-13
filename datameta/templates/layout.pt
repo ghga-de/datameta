@@ -114,7 +114,7 @@
 
         <footer class="fixed-bottom footer mt-auto py-3 bg-light">
             <div class="container position-relative">
-                <span class="text-muted">&copy; 2021 DataMeta</span><span tal:condition="request.registry.settings.get('datameta.demo_mode')"> (DEMO MODE)</span>
+                <span class="text-muted">&copy; 2021 DataMeta</span><span tal:condition="request.registry.settings.get('datameta.demo_mode') in [True, 'true', 'True']"> (DEMO MODE)</span>
                 <span id="name_org" class="ms-2"></span>
                     <div class="form-check form-switch position-absolute top-50 end-0 translate-middle">
                       <input class="form-check-input" type="checkbox" name="flexSwitchWidescreen" id="flexSwitchWidescreen" onClick="toggle_widescreen()">
