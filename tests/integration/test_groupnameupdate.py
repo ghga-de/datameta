@@ -16,7 +16,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         ("own_as_regular_user"         , "user_a"          , "group_x_id"   , "fancy_group"  , 403),
         ("foreign_as_regular_user"     , "user_a"          , "group_y_id"   , "fancy_group"  , 403),
         # this throws an IntegrityError instead of 400
-        # ("admin_use_existing_groupname", "admin"           , "group_x_id"   , "group_y"      , 400),
+        ("admin_use_existing_groupname", "admin"           , "group_x_id"   , "group_y"      , 400),
         ("unauthorized"                , ""                , "group_x_id"   , "fancy_group"  , 401),
         ("admin_expired_token"         , "admin:expired"   , "group_x_id"   , "fancy_group"  , 401),
         ])
