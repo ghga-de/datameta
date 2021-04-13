@@ -9,7 +9,7 @@
         "site_admin": true
     },
     "group_x_admin": {
-        "email": "group_x_admin@user.groupx",
+        "email": "group_x_admin@user.group_x",
         "password": "group_x_admin",
         "fullname": "group_x_admin",
         "site_id": "group_x_admin",
@@ -18,7 +18,7 @@
         "site_admin": false
     },
     "user_a": {
-        "email": "user_a@user.groupx",
+        "email": "user_a@user.group_x",
         "password": "user_a",
         "fullname": "user_a",
         "site_id": "user_a",
@@ -27,7 +27,7 @@
         "site_admin": false
     },
     "user_b": {
-        "email": "user_b@user.groupx",
+        "email": "user_b@user.group_x",
         "password": "user_b",
         "fullname": "user_b",
         "site_id": "user_b",
@@ -36,7 +36,7 @@
         "site_admin": false
     },
     "group_y_admin": {
-        "email": "group_y_admin@user.groupy",
+        "email": "group_y_admin@user.group_y",
         "password": "group_y_admin",
         "fullname": "group_y_admin",
         "site_id": "group_y_admin",
@@ -45,7 +45,7 @@
         "site_admin": false
     },
     "user_c": {
-        "email": "user_c@user.groupy",
+        "email": "user_c@user.group_y",
         "password": "user_c",
         "fullname": "user_c",
         "site_id": "user_c",
