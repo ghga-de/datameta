@@ -1090,10 +1090,27 @@ window.addEventListener("dmready", function() {
     DataMeta.admin.initUserTable();
     DataMeta.admin.initGroupTable();
     DataMeta.admin.reload();
-    
+
     document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-metadata-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-users-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-requests-tab").addEventListener("click", clearAlerts);
+});
+
+window.addEventListener("load", function() {
+    // Add listeners for "shown" events that re-draw() the datatables whenever
+    // their respective tab is shown.
+    document.getElementById("nav-users-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_users").DataTable().draw("page");
+    });
+    document.getElementById("nav-groups-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_groups").DataTable().draw("page");
+    });
+    document.getElementById("nav-metadata-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_metadata").DataTable().draw("page");
+    });
+    document.getElementById("nav-site-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_site").DataTable().draw("page");
+    });
 });

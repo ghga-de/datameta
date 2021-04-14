@@ -314,6 +314,8 @@ DataMeta.submit.showMetaErrors = function(metadata, errors) {
     }).then(function(json) {
         var keys = json.map(metadatum => metadatum.name);
         var columns = [ DataMeta.submit.statusColumn ].concat(DataMeta.submit.buildKeyColunns([], keys));
+        var card_failed = document.getElementById("card_failed");
+        card_failed.classList.remove("d-none");
         $("#table_errors").DataTable({
             destroy: true,
             scrollX: true,
@@ -324,9 +326,7 @@ DataMeta.submit.showMetaErrors = function(metadata, errors) {
             searching: false,
             columns: columns
         });
-        var card_failed = document.getElementById("card_failed");
         DataMeta.submit.visualizeErrors(errors, false, card_failed);
-        card_failed.classList.remove("d-none");
     }).catch(function(error) {
         DataMeta.new_alert("<strong>ERROR</strong> An unknown error occurred when validating the submitted metadata. Please try again.", "danger")
         console.log(error);
