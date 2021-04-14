@@ -38,6 +38,7 @@
         </style>
         <metal:macro metal:define-slot="head"/>
         <script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
+        <script src="${request.static_url('datameta:static/js/datameta.js')}"></script>
         <script>
             // Toggles the widescreen view according to the current setting of the
             function toggle_widescreen() {
@@ -60,6 +61,7 @@
                     container.classList.remove("px-4");
                     document.cookie = "widescreen=false; expires=" + expires + "; path=/; SameSite=Lax";
                 }
+                DataMeta.datatablesRedraw();
             }
 
             function init_widescreen() {
@@ -78,6 +80,7 @@
                     flexSwitch = document.getElementById("flexSwitchWidescreen");
                     flexSwitch.checked = true;
                 }
+                DataMeta.datatablesRedraw();
             }
 
             // Takes name and organisation from API call and puts them in the footer, enables the admin interface button, if the user is a site_admin
@@ -89,7 +92,6 @@
                 }
             });
         </script>
-        <script src="${request.static_url('datameta:static/js/datameta.js')}"></script>
     </head>
     <body class="d-flex flex-column h-100" onload=init_widescreen()>
 
