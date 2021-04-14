@@ -63,7 +63,7 @@ def get_samplesheet_reader(file_like_obj):
 ####################################################################################################
 
 def convert_samplesheet(db, file_like_obj, filename, user):
-    # Try to read the sample sheet    
+    # Try to read the sample sheet
     try:
         reader = get_samplesheet_reader(file_like_obj)
         submitted_metadata = reader(file_like_obj)
@@ -121,4 +121,3 @@ def post(request: Request) -> HTTPOk:
     except samplesheet.SampleSheetReadError as e:
         log.warning(f"Sample sheet '{input_file.filename}' could not be read: {e}")
         raise errors.get_validation_error(messages = [ str(e) ])
-
