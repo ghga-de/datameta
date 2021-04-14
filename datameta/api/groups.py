@@ -137,13 +137,7 @@ def put(request: Request):
             target_group.name = new_group_name
             db.flush()
         except IntegrityError:
-            response_body = []
-            err = {
-                "exception": "ValidationError",
-                "message" : "This group name does already exist."
-            } 
-            response_body.append(err)
-            raise HTTPBadRequest(json=response_body)
+            raise errors.get_validation_error("A group with that name already exists.")
         
         return HTTPNoContent()
     raise HTTPForbidden() # 403 Not authorized to change this group name
