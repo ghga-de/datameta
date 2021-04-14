@@ -27,10 +27,4 @@ def includeme(config):
     config.add_route('view', '/view')
     config.add_route('admin', '/admin')
 
-    # Ui functionality endpoints
-    config.add_route('admin_get', '/api/ui/admin')
-    config.add_route('forgot_api', '/api/ui/forgot')
-    config.add_route('admin_put_request', '/api/ui/admin/request')
-    config.add_route('register_submit', '/api/ui/register')
-
 
