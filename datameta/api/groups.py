@@ -22,6 +22,7 @@ from ..models import Group
 from .. import security, errors
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError
 
 from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
 
@@ -118,7 +119,7 @@ def put(request: Request):
     """Change the name of the group"""
 
     group_id = request.matchdict["id"]
-    newGroupName = request.openapi_validated.body["name"]
+    new_group_name = request.openapi_validated.body["name"]
     db = request.dbsession
 
     # Authenticate the user
@@ -129,9 +130,14 @@ def put(request: Request):
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
-    # Change the group name only if the user is site admin
-    if auth_user.site_admin:
-        target_group.name = newGroupName
+    # Change the group name only if the user is site admin or the admin for the specific group
+    if auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == group_id):
+
+        try:
+            target_group.name = new_group_name
+            db.flush()
+        except IntegrityError:
+            raise errors.get_validation_error("A group with that name already exists.")
+        
         return HTTPNoContent()
-    
     raise HTTPForbidden() # 403 Not authorized to change this group name

@@ -53,7 +53,7 @@ class Group(Base):
     id               = Column(Integer, primary_key=True)
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     site_id          = Column(String(50), unique=True, nullable=False, index=True)
-    name             = Column(Text, nullable=False)
+    name             = Column(Text, nullable=False, unique=True)
     # Relationships
     user             = relationship('User', back_populates='group')
     submissions      = relationship('Submission', back_populates='group')
