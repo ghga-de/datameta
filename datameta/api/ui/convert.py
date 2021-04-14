@@ -37,34 +37,35 @@ def formatted_mrec_value(value, datetimefmt):
             pass
     return value
 
-def determine_samplesheet_reader(file_like_obj):
+def get_samplesheet_reader(file_like_obj):
+    """Given a file with tabular data which is either in delimited plain text
+    format or in XLS(X) format, returns a function capable of reading the file
+    and returning a pandas.DataFrame"""
     # https://readxl.tidyverse.org/reference/excel_format.html
-    XLSX, XLS = b'PK\x03\x04', b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'
-    nibble = file_like_obj.read(4)
-    def make_excel_reader(sheet):
-        sheet.seek(0)
-        return pd.read_excel(sheet, dtype="object")
-    if nibble == XLSX:
-        reader = make_excel_reader
-    elif nibble + file_like_obj.read(4) == XLS:
-        reader = make_excel_reader
-    else:
-        file_like_obj.seek(0)
-        dialect = csv.Sniffer().sniff(file_like_obj.read(1024).decode())
-        def make_table_reader(sheet, sep=dialect.delimiter):
-            sheet.seek(0)
-            return pd.read_table(sheet, dtype="object", sep=sep)
-        reader = make_table_reader
+    xlsx_sig    = b'PK\x03\x04'
+    xls_sig     = b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'
+    magic_bytes = file_like_obj.read(8)
 
-    return reader
+    file_like_obj.seek(0)
+
+    if magic_bytes.startswith(xlsx_sig) or magic_bytes.startswith(xls_sig):
+        def create_excel_reader(sheet):
+            return pd.read_excel(sheet, dtype="object")
+        return create_excel_reader
+    else:
+        dialect = csv.Sniffer().sniff(file_like_obj.read(1024).decode())
+        def create_table_reader(sheet, sep=dialect.delimiter):
+            return pd.read_table(sheet, dtype="object", sep=sep)
+        file_like_obj.seek(0)
+        return create_table_reader
 
 
 ####################################################################################################
 
 def convert_samplesheet(db, file_like_obj, filename, user):
-    # Try to read the sample sheet
+    # Try to read the sample sheet    
     try:
-        reader = determine_samplesheet_reader(file_like_obj)
+        reader = get_samplesheet_reader(file_like_obj)
         submitted_metadata = reader(file_like_obj)
     except Exception as e:
         log.info(f"submitted sample sheet '{filename}' triggered exception {e}")
