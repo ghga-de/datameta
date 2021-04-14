@@ -75,7 +75,7 @@ def post(request:Request) -> MetaDataSetResponse:
     auth_user = security.revalidate_user(request)
 
     # Obtain string converted version of the record
-    record = { k:str(v) for k,v in request.openapi_validated.body["record"].items() }
+    record = { k : str(v) if v is not None else None for k,v in request.openapi_validated.body["record"].items() }
 
     # prevalidate (raises 400 in case of validation failure):
     validate_metadataset_record(request, record)
