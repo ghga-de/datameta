@@ -51,6 +51,58 @@ class FileResponse(FileBase):
 @view_config(
     route_name      = "files",
     renderer        = "json",
+    request_method  = "DELETE",
+    openapi         = True
+)
+def delete_files(request: Request) -> HTTPNoContent:
+    # Check authentication and raise 401 if unavailable
+    auth_user = security.revalidate_user(request)
+
+    db = request.dbsession
+
+    file_metadata = list()
+
+    for file_id in set(request.openapi_validated.body["fileIds"]):
+
+        # Obtain file from database
+        db_file = resource.resource_query_by_id(db, models.File, file_id).one_or_none()
+
+        # Check if file could be found
+        if db_file is None:
+            # Q: if only a subset of the file ids is unknown, still raise 404?
+            # S: ignore and delete the valid ones
+            raise HTTPNotFound(json=None)
+
+        # Check if requesting user has access to the file
+        if db_file.user_id != auth_user.id:
+            raise HTTPForbidden(json=None)
+
+        # Delete the database record
+        try:
+            storage_uri = delete_files_db(db, [db_file])[0]
+        except FileDeleteError as e:
+            raise errors.get_not_modifiable_error()
+
+        user_uuid = db_file.user.uuid
+        file_uuid = db_file.uuid
+        log.info(f"[DB_FILE][DELETE][user={user_uuid}][file={file_uuid}]")
+        file_metadata.append((user_uuid, file_uuid, storage_uri))
+
+    # Commit transaction
+    request.tm.commit()
+    request.tm.begin()
+
+    # Delete the files in storage if exists
+    for user_uuid, file_uuid, storage_uri in file_metadata:
+        storage.rm(request, storage_uri)
+        log.info(f"[STORAGE][DELETE][user={user_uuid}][file={file_uuid}]")
+
+    return HTTPNoContent()
+
+
+@view_config(
+    route_name      = "files",
+    renderer        = "json",
     request_method  = "POST",
     openapi         = True
 )
