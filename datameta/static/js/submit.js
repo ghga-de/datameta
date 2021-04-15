@@ -157,9 +157,13 @@ DataMeta.set_progress_bar = function(uuid, val, classes, text) {
 
 DataMeta.reloadPopovers = function() {
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl)
-    })
+    try{
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl)
+        })
+    } catch (error){
+        console.log(error)
+    }
 }
 
 /*
@@ -325,6 +329,7 @@ DataMeta.submit.showMetaErrors = function(metadata, errors) {
             columns: columns
         });
         var card_failed = document.getElementById("card_failed");
+
         DataMeta.submit.visualizeErrors(errors, false, card_failed);
         card_failed.classList.remove("d-none");
     }).catch(function(error) {
