@@ -20,6 +20,7 @@ from pyramid.view import view_config
 import webob
 import logging
 import datetime
+import csv
 
 import pandas as pd
 
@@ -36,12 +37,36 @@ def formatted_mrec_value(value, datetimefmt):
             pass
     return value
 
+def get_samplesheet_reader(file_like_obj):
+    """Given a file with tabular data which is either in delimited plain text
+    format or in XLS(X) format, returns a function capable of reading the file
+    and returning a pandas.DataFrame"""
+    # https://readxl.tidyverse.org/reference/excel_format.html
+    xlsx_sig    = b'PK\x03\x04'
+    xls_sig     = b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'
+    magic_bytes = file_like_obj.read(8)
+
+    file_like_obj.seek(0)
+
+    if magic_bytes.startswith(xlsx_sig) or magic_bytes.startswith(xls_sig):
+        def create_excel_reader(sheet):
+            return pd.read_excel(sheet, dtype="object")
+        return create_excel_reader
+    else:
+        dialect = csv.Sniffer().sniff(file_like_obj.read(1024).decode())
+        def create_table_reader(sheet, sep=dialect.delimiter):
+            return pd.read_table(sheet, dtype="object", sep=sep)
+        file_like_obj.seek(0)
+        return create_table_reader
+
+
 ####################################################################################################
 
 def convert_samplesheet(db, file_like_obj, filename, user):
     # Try to read the sample sheet
     try:
-        submitted_metadata = pd.read_excel(file_like_obj, dtype="object")
+        reader = get_samplesheet_reader(file_like_obj)
+        submitted_metadata = reader(file_like_obj)
     except Exception as e:
         log.info(f"submitted sample sheet '{filename}' triggered exception {e}")
         raise samplesheet.SampleSheetReadError("Unable to parse the sample sheet.")
@@ -96,4 +121,3 @@ def post(request: Request) -> HTTPOk:
     except samplesheet.SampleSheetReadError as e:
         log.warning(f"Sample sheet '{input_file.filename}' could not be read: {e}")
         raise errors.get_validation_error(messages = [ str(e) ])
-
