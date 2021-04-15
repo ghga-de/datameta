@@ -13,19 +13,18 @@
 # limitations under the License.
 
 def includeme(config):
+
+    #Ui view endpoints
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('root', '/')
     config.add_route('login', '/login')
     config.add_route('register', '/register')
-    config.add_route('register_submit', '/register/submit')
     config.add_route('setpass', '/setpass/{token}')
     config.add_route('forgot', '/forgot')
-    config.add_route('forgot_api', '/api/forgot')
     config.add_route('home', '/home')
     config.add_route('submit', '/submit')
     config.add_route('account', '/account')
     config.add_route('view', '/view')
-    # ADMIN
     config.add_route('admin', '/admin')
-    config.add_route('admin_get', '/api/admin')
-    config.add_route('admin_put_request', '/api/admin/request')
+
+

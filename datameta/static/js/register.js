@@ -63,7 +63,7 @@ window.addEventListener("load", function() {
             }
         };
 
-        xhr.open('POST', '/register/submit');
+        xhr.open('POST', '/api/ui/register');
         xhr.send(data);
     });
 

@@ -17,7 +17,7 @@ from pyramid.view import view_config
 
 from ..models import User, PasswordToken
 from .. import security
-from .forgot import send_forgot_token
+from ..api.ui.forgot import send_forgot_token
 
 import datetime
 

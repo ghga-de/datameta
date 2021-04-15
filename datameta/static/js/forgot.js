@@ -38,7 +38,7 @@ window.addEventListener("load", function() {
         document.getElementById("email").classList.remove("is-invalid");
         document.getElementById("success").classList.remove("show");
 
-        fetch('/api/forgot',
+        fetch('/api/ui/forgot',
             {
                 method: 'post',
                 headers: {
