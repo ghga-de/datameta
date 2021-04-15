@@ -138,7 +138,6 @@ def v_admin_put_request(request):
 
     return HTTPNoContent()
 
-
 @view_config(route_name='admin_get', renderer='json', request_method='GET')
 def v_admin_get(request):
     """Serves GET requests made against /admin to render the admin view"""
