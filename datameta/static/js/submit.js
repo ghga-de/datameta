@@ -329,7 +329,6 @@ DataMeta.submit.showMetaErrors = function(metadata, errors) {
             columns: columns
         });
         var card_failed = document.getElementById("card_failed");
-
         DataMeta.submit.visualizeErrors(errors, false, card_failed);
         card_failed.classList.remove("d-none");
     }).catch(function(error) {
