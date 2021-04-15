@@ -18,9 +18,7 @@ def includeme(config: Configurator) -> None:
     """Pyramid knob."""
     config.add_route("pending", "/api/ui/pending")
     config.add_route("convert", "/api/ui/convert")
-    
     config.add_route('register_submit', '/api/ui/register')
     config.add_route('admin_get', '/api/ui/admin')
     config.add_route('admin_put_request', '/api/ui/admin/request')
     config.add_route('forgot_api', '/api/ui/forgot')
-

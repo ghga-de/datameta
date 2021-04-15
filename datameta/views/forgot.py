@@ -12,26 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
-
-from .. import email
-from ..settings import get_setting
-
-def send_forgot_token(request, db_token_obj, clear_token):
-    """Sends a password reset token email to the corresponding user"""
-    db = request.dbsession
-
-    email.send(
-        recipients = (db_token_obj.user.fullname, db_token_obj.user.email),
-        subject = get_setting(db, "subject_forgot_token").str_value,
-        template = get_setting(db, "template_forgot_token").str_value,
-        values={
-           'fullname' : db_token_obj.user.fullname,
-           'token_url' : request.route_url('setpass', token = clear_token)
-           }
-        )
-
 
 @view_config(route_name='forgot', renderer='../templates/forgot.pt')
 def v_forgot(request):
