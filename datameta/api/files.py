@@ -48,6 +48,33 @@ class FileResponse(FileBase):
     content_uploaded  : bool
     filesize          : Optional[int] = None
 
+
+def delete_single_file_from_db(file_id, db, auth_user):
+    # Obtain file from database
+    db_file = resource.resource_query_by_id(db, models.File, file_id).one_or_none()
+
+    # Check if file could be found
+    if db_file is None:
+        # Q: if only a subset of the file ids is unknown, still raise 404?
+        # S: ignore and delete the valid ones
+        raise HTTPNotFound(json=None)
+
+    # Check if requesting user has access to the file
+    if db_file.user_id != auth_user.id:
+        raise HTTPForbidden(json=None)
+
+    if db_file.metadatumrecord is not None:
+        raise errors.get_not_modifiable_error()
+
+    user_uuid, file_uuid, storage_uri = db_file.user.uuid, db_file.uuid, db_file.storage_uri
+    
+    # Delete the database record
+    db.delete(db_file)
+
+    return user_uuid, file_uuid, storage_uri
+
+
+
 @view_config(
     route_name      = "files",
     renderer        = "json",
@@ -60,40 +87,18 @@ def delete_files(request: Request) -> HTTPNoContent:
 
     db = request.dbsession
 
-    file_metadata = list()
-
-    for file_id in set(request.openapi_validated.body["fileIds"]):
-
-        # Obtain file from database
-        db_file = resource.resource_query_by_id(db, models.File, file_id).one_or_none()
-
-        # Check if file could be found
-        if db_file is None:
-            # Q: if only a subset of the file ids is unknown, still raise 404?
-            # S: ignore and delete the valid ones
-            raise HTTPNotFound(json=None)
-
-        # Check if requesting user has access to the file
-        if db_file.user_id != auth_user.id:
-            raise HTTPForbidden(json=None)
-
-        # Delete the database record
-        try:
-            storage_uri = delete_files_db(db, [db_file])[0]
-        except FileDeleteError as e:
-            raise errors.get_not_modifiable_error()
-
-        user_uuid = db_file.user.uuid
-        file_uuid = db_file.uuid
-        log.info(f"[DB_FILE][DELETE][user={user_uuid}][file={file_uuid}]")
-        file_metadata.append((user_uuid, file_uuid, storage_uri))
+    file_metadata = [
+        delete_single_file_from_db(file_id, db, auth_user)
+        for file_id in set(request.openapi_validated.body["fileIds"])    
+    ]
 
     # Commit transaction
     request.tm.commit()
     request.tm.begin()
 
-    # Delete the files in storage if exists
+    # Delete the files from storage
     for user_uuid, file_uuid, storage_uri in file_metadata:
+        log.info(f"[DB_FILE][DELETE][user={user_uuid}][file={file_uuid}]")
         storage.rm(request, storage_uri)
         log.info(f"[STORAGE][DELETE][user={user_uuid}][file={file_uuid}]")
 
@@ -299,26 +304,8 @@ def delete_file(request: Request) -> HTTPNoContent:
 
     db = request.dbsession
 
-    # Obtain file from database
-    db_file = resource.resource_by_id(db, models.File, request.matchdict['id'])
-
-    # Check if file could be found
-    if db_file is None:
-        raise HTTPNotFound(json=None)
-
-    # Check if requesting user has access to the file
-    if db_file.user_id != auth_user.id:
-        raise HTTPForbidden(json=None)
-
-    # Delete the database record
-    try:
-        storage_uri = delete_files_db(db, [db_file])[0]
-    except FileDeleteError as e:
-        raise errors.get_not_modifiable_error()
-
-    user_uuid = db_file.user.uuid
-    file_uuid = db_file.uuid
-
+    user_uuid, file_uuid, storage_uri = delete_single_file_from_db(request.matchdict['id'], db, auth_user)
+    
     # Commit transaction
     request.tm.commit()
     request.tm.begin()
