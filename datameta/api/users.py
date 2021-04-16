@@ -68,7 +68,7 @@ def get_whoami(request: Request) -> UserResponseElement:
     openapi=True
 )
 def put(request: Request):
-    """Change the name of the group"""
+    """Change the name of the user"""
 
     user_id = request.matchdict["id"]
     name = request.openapi_validated.body.get("name")
