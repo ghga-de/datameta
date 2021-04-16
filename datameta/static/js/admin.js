@@ -29,7 +29,7 @@ DataMeta.admin.answer_request = function(accept, form) {
         response: response,
         group_admin: (fdata.get("group_admin") == "on"),
         group_newname: fdata.get("group_newname"),
-        group_id: fdata.get("group_id") == -1 ? null :fdata.get("group_id"),
+        group_id: fdata.get("group_id") == -1 || fdata.get("new_org") == 0 ? null :fdata.get("group_id"),
         fullname: fdata.get("fullname")
     });
     fetch('/api/ui/admin/request',

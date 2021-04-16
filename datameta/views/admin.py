@@ -29,4 +29,3 @@ def v_admin(request):
 	    return { 'showreq' : request.GET['showreq'] }
     except KeyError:
 	    return { 'showreq' : '' }
-
