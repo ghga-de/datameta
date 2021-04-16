@@ -35,7 +35,9 @@ def demo_mode(request):
 
 def rm(request, storage_path):
     """Remove a file from storage by local storage file name"""
-    if not demo_mode(request):
+    if not storage_path:
+        log.debug("NO STORAGE PATH. THIS SHOULD ONLY HAPPEN IN TEST MODE.")        
+    elif not demo_mode(request):
         if storage_path.startswith("file://"):
             os.remove(os.path.join(request.registry.settings['datameta.storage_path'], storage_path[7:]))
         else:
