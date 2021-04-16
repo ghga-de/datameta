@@ -57,6 +57,7 @@ def create_metadataset(
 
 def create_file(
     session_factory,
+    storage_path,
     file_fixture,
     site_id,
     user
@@ -69,10 +70,14 @@ def create_file(
         file_obj = models.File(
             name=file_fixture.name,
             checksum=file_fixture.checksum,
+            storage_uri=f"file://{file_fixture.name}",
             site_id=site_id,
             content_uploaded=False,
             user=user_obj
         )
+        
+        import shutil
+        shutil.copy(file_fixture.path, storage_path)
 
         session.add(file_obj)
         session.flush()

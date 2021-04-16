@@ -14,11 +14,11 @@ class BulkDeletionTest(BaseIntegrationTest):
         user = self.users["admin"]
 
         file_ids = [
-            str(create_file(self.session_factory, f, i, user))
+            str(create_file(self.session_factory, self.storage_path.name, f, i, user))
             for i, f in enumerate(self.test_files)
         ]
         
-        req_json = {
+        req_args = {
             "params": {"fileIds": file_ids},
             "headers": user.auth.header,
             "status": 204
@@ -26,7 +26,7 @@ class BulkDeletionTest(BaseIntegrationTest):
 
         response = self.testapp.post_json(
             f"{base_url}/rpc/delete-files",
-            **req_json
+            **req_args
         )
 
     def test_mds_deletion(self):
@@ -37,7 +37,7 @@ class BulkDeletionTest(BaseIntegrationTest):
             for i, _ in enumerate(self.metadata_records)
         ]
 
-        req_json = {
+        req_args = {
             "params": {"metadatasetIds": mds_ids},
             "headers": user.auth.header,
             "status": 204
