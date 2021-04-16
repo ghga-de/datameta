@@ -49,14 +49,12 @@ class FileResponse(FileBase):
     filesize          : Optional[int] = None
 
 
-def delete_single_file_from_db(file_id, db, auth_user):
+def delete_staged_file_from_db(file_id, db, auth_user):
     # Obtain file from database
     db_file = resource.resource_query_by_id(db, models.File, file_id).one_or_none()
 
     # Check if file could be found
     if db_file is None:
-        # Q: if only a subset of the file ids is unknown, still raise 404?
-        # S: ignore and delete the valid ones
         raise HTTPNotFound(json=None)
 
     # Check if requesting user has access to the file
@@ -74,11 +72,10 @@ def delete_single_file_from_db(file_id, db, auth_user):
     return user_uuid, file_uuid, storage_uri
 
 
-
 @view_config(
-    route_name      = "files",
+    route_name      = "rpc_delete_files",
     renderer        = "json",
-    request_method  = "DELETE",
+    request_method  = "POST",
     openapi         = True
 )
 def delete_files(request: Request) -> HTTPNoContent:
@@ -87,8 +84,8 @@ def delete_files(request: Request) -> HTTPNoContent:
 
     db = request.dbsession
 
-    file_metadata = [
-        delete_single_file_from_db(file_id, db, auth_user)
+    deleted_files = [
+        delete_staged_file_from_db(file_id, db, auth_user)
         for file_id in set(request.openapi_validated.body["fileIds"])    
     ]
 
@@ -97,7 +94,7 @@ def delete_files(request: Request) -> HTTPNoContent:
     request.tm.begin()
 
     # Delete the files from storage
-    for user_uuid, file_uuid, storage_uri in file_metadata:
+    for user_uuid, file_uuid, storage_uri in deleted_files:
         log.info(f"[DB_FILE][DELETE][user={user_uuid}][file={file_uuid}]")
         storage.rm(request, storage_uri)
         log.info(f"[STORAGE][DELETE][user={user_uuid}][file={file_uuid}]")
@@ -290,7 +287,7 @@ def delete_files_db(db, db_files:list) -> list:
     openapi=True
 )
 def delete_file(request: Request) -> HTTPNoContent:
-    """Delete not-submitted file.
+    """Delete staged file.
 
     Raises:
         400 HTTPBadRequest   - The request is malformed
@@ -304,7 +301,7 @@ def delete_file(request: Request) -> HTTPNoContent:
 
     db = request.dbsession
 
-    user_uuid, file_uuid, storage_uri = delete_single_file_from_db(request.matchdict['id'], db, auth_user)
+    user_uuid, file_uuid, storage_uri = delete_staged_file_from_db(request.matchdict['id'], db, auth_user)
     
     # Commit transaction
     request.tm.commit()
