@@ -93,9 +93,12 @@ def delete_files(request: Request) -> HTTPNoContent:
     request.tm.commit()
     request.tm.begin()
 
-    # Delete the files from storage
+    # Log the deletions from db
     for user_uuid, file_uuid, storage_uri in deleted_files:
         log.info(f"[DB_FILE][DELETE][user={user_uuid}][file={file_uuid}]")
+
+    # Delete the files from storage
+    for user_uuid, file_uuid, storage_uri in deleted_files:
         storage.rm(request, storage_uri)
         log.info(f"[STORAGE][DELETE][user={user_uuid}][file={file_uuid}]")
 

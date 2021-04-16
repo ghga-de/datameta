@@ -152,7 +152,7 @@ DataMeta.getLargeMD5 = function(file, cbProgress) {
  * Gets information about the logged in user: ids, name, email, admin status and group
  */
 window.addEventListener("load", function() {
-    fetch(DataMeta.api('whoami'),
+    fetch(DataMeta.api('rpc/whoami'),
     {
         method: 'GET'
     })
