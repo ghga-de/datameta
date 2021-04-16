@@ -1,8 +1,8 @@
 """make group name unique
 
-Revision ID: 16a09feb3391
-Revises: cfb9cf1b7f6c
-Create Date: 2021-03-25 20:59:08.171642
+Revision ID: 8399f5ae0845
+Revises: 7b16156a6bca
+Create Date: 2021-04-16 12:32:21.434583
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '16a09feb3391'
-down_revision = 'cfb9cf1b7f6c'
+revision = '8399f5ae0845'
+down_revision = '7b16156a6bca'
 branch_labels = None
 depends_on = None
 
