@@ -95,7 +95,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  /whoami:
+  /rpc/whoami:
     get:
       summary: "[Not RESTful]: Returns information about the authenticated user"
       description: >-
@@ -103,7 +103,7 @@ paths:
         email and groupName attributes for the logged in user.
         [Attention this endpoint is not RESTful, the result should not be cached.]
       tags:
-        - Authentication and Users
+        - Remote Procedure Calls
       operationId: GetUserInformation
       responses:
         "200":
@@ -122,6 +122,73 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
+
+  /rpc/delete-files:
+    post:
+      summary: Bulk-delete Staged Files
+      description: >-
+        Bulk-delete Staged Files.
+      tags:
+        - Remote Procedure Calls
+      operationId: BulkDeleteStagedFiles
+      requestBody:
+        content:
+          application/json:
+           schema:
+             $ref: "#/components/schemas/StagedFiles"
+        description: >-
+          Provide a list of staged files to be deleted.
+      responses:
+        '204':
+          description: Deletion successful
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: File not found
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '500':
+          description: Internal Server Error
+
+  /rpc/delete-metadatasets:
+    post:
+      summary: Bulk-delete Staged MetaDataSets
+      description: >-
+        Bulk-delete Staged MetaDataSets.
+      tags:
+        - Remote Procedure Calls
+      operationId: BulkDeleteStagedMetaDataSets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StagedMetaDataSets"
+        description: >-
+          Provide a list of staged MetaDataSets to be deleted.
+      responses:
+        '204':
+          description: Deletion successful
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: File not found
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '500':
+          description: Internal Server Error
+
 
   /users/{id}/keys:
     get:
@@ -365,37 +432,6 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
-    delete:
-      summary: Bulk-delete Staged MetaDataSets
-      description: >-
-        Bulk-delete Staged MetaDataSets.
-      tags:
-        - Metadata
-      operationId: BulkDeleteStagedMetaDataSets
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/StagedMetaDataSets"
-        description: >-
-          Provide a list of staged MetaDataSets to be deleted.
-      responses:
-        '204':
-          description: Deletion successful
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: File not found
-        '400':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-        '500':
-          description: Internal Server Error
 
   /metadatasets/{id}:
     get:
@@ -507,37 +543,6 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
         '401':
           description: Unauthorized
-        '500':
-          description: Internal Server Error
-    delete:
-      summary: Bulk-delete Staged Files
-      description: >-
-        Bulk-delete Staged Files.
-      tags:
-        - Files
-      operationId: BulkDeleteStagedFiles
-      requestBody:
-        content:
-          application/json:
-           schema:
-             $ref: "#/components/schemas/StagedFiles"
-        description: >-
-          Provide a list of staged files to be deleted.
-      responses:
-        '204':
-          description: Deletion successful
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: File not found
-        '400':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
 
