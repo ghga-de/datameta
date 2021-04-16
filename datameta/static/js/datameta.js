@@ -50,6 +50,16 @@ if (!Element.prototype.closest) {
     };
 }
 
+DataMeta.datatablesRedraw = function() {
+    if (window.jQuery) {
+        var settings = $.fn.dataTableSettings;
+
+        for ( var i=0 ; i<settings.length ; i++ ) {
+            settings[i].oInstance.fnDraw("page");
+        }
+    }
+}
+
 /***********************************************   MD5   *********************************************/
 /**
  * Return a cryptojs WordArray given an arrayBuffer (elemtent 0). Also return
