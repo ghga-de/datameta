@@ -68,7 +68,7 @@ def get_whoami(request: Request) -> UserResponseElement:
     openapi=True
 )
 def put(request: Request):
-    """Change the name of the user"""
+    """Change user properties"""
 
     user_id = request.matchdict["id"]
     name = request.openapi_validated.body.get("name")
@@ -102,7 +102,7 @@ def put(request: Request):
     if site_admin is not None and (
         not auth_user.site_admin or edit_own_user
     ):
-            raise HTTPForbidden()
+        raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
     if group_admin is not None and not has_admin_rights:
@@ -110,7 +110,7 @@ def put(request: Request):
 
     # The user has to be site admin or group admin of the users group to enable or disable a user
     if enabled is not None and (
-        not has_admin_rights or not auth_user.site_admin and target_user.site_admin or edit_own_user
+        not has_admin_rights or (not auth_user.site_admin and target_user.site_admin) or edit_own_user
     ):
         raise HTTPForbidden()
 

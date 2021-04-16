@@ -12,56 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
-
-from ..models import User, PasswordToken
-from .. import email, security
-from ..settings import get_setting
-
-import logging
-log = logging.getLogger(__name__)
-
-import re
-
-def send_forgot_token(request, db_token_obj, clear_token):
-    """Sends a password reset token email to the corresponding user"""
-    db = request.dbsession
-
-    email.send(
-        recipients = (db_token_obj.user.fullname, db_token_obj.user.email),
-        subject = get_setting(db, "subject_forgot_token").str_value,
-        template = get_setting(db, "template_forgot_token").str_value,
-        values={
-           'fullname' : db_token_obj.user.fullname,
-           'token_url' : request.route_url('setpass', token = clear_token)
-           }
-        )
-
-@view_config(route_name='forgot_api', renderer='json')
-def v_forgot_api(request):
-    db = request.dbsession
-    # Extract email from body
-    try:
-        req_email = request.json_body['email']
-        req_email = req_email.lower() # Convert separately to maintain KeyError
-    except KeyError:
-        return { 'success' : False, 'error' : 'INVALID_REQUEST' }
-
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
-        return { 'success' : False, 'error' : 'MALFORMED_EMAIL' }
-
-    try:
-        db_token_obj, clear_token = security.get_new_password_reset_token_from_email(db, req_email)
-    except KeyError:
-        # User not found
-        log.debug(f"DURING RECOVERY TOKEN REQUEST: USER COULD NOT BE RESOLVED FROM EMAIL: {req_email}")
-    else:
-        # Generate a new forgot token and send it to the user
-        send_forgot_token(request, db_token_obj, clear_token)
-        log.debug(f"USER REQUESTED RECOVERY TOKEN: {clear_token}")
-
-    return { 'success' : True }
 
 @view_config(route_name='forgot', renderer='../templates/forgot.pt')
 def v_forgot(request):

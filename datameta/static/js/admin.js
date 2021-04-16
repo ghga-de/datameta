@@ -14,7 +14,7 @@
 # limitations under the License.
 */
 
-"use strict"; 
+"use strict";
 
 DataMeta.admin = {}
 
@@ -29,10 +29,10 @@ DataMeta.admin.answer_request = function(accept, form) {
         response: response,
         group_admin: (fdata.get("group_admin") == "on"),
         group_newname: fdata.get("group_newname"),
-        group_id: fdata.get("group_id") == -1 ? null :fdata.get("group_id"),
+        group_id: fdata.get("group_id") == -1 || fdata.get("new_org") == 0 ? null :fdata.get("group_id"),
         fullname: fdata.get("fullname")
     });
-    fetch('/api/admin/request',
+    fetch('/api/ui/admin/request',
         {
             method: 'put',
             headers: {
@@ -173,7 +173,7 @@ DataMeta.admin.subnav = function() {
  * update functions for the individual tabs
  */
 DataMeta.admin.reload = function() {
-    fetch('/api/admin',
+    fetch('/api/ui/admin',
         {
             method: 'GET'
         })
@@ -191,7 +191,7 @@ DataMeta.admin.reload = function() {
                 document.getElementById("nav-site-tab-li").style.display = "";
                 DataMeta.admin.getAppSettings();
                 DataMeta.admin.getMetadata();
-                DataMeta.admin.rebuildGroupTable(json.groups);  
+                DataMeta.admin.rebuildGroupTable(json.groups);
             }
         })
         .catch((error) => {
@@ -205,7 +205,7 @@ DataMeta.admin.rebuildUserTable = function(users) {
     var t = $('#table_users').DataTable();
     t.clear();
     t.rows.add(users);
-    t.draw();   
+    t.draw();
 }
 
 //Initializes the user table
@@ -258,7 +258,7 @@ DataMeta.admin.rebuildGroupTable = function(groups) {
     var t = $('#table_groups').DataTable();
     t.clear();
     t.rows.add(groups);
-    t.draw();   
+    t.draw();
 }
 
 //Initializes the group table
@@ -285,7 +285,7 @@ DataMeta.admin.rebuildSiteTable = function(settings) {
     var t = $('#table_site').DataTable()
     t.clear();
     t.rows.add(settings);
-    t.draw();   
+    t.draw();
 }
 
 //Initializes the site settings table
@@ -314,7 +314,7 @@ DataMeta.admin.rebuildMetadataTable = function(metadata) {
     var t = $('#table_metadata').DataTable()
     t.clear();
     t.rows.add(metadata);
-    t.draw();   
+    t.draw();
 }
 
 //Initializes the metadata table
@@ -362,18 +362,18 @@ function enableSettingsEditMode(event) {
 
     var data = button.parentNode.querySelector("#settings_data").innerHTML;
 
-    row.children[2].innerHTML = '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
+    row.children[2].innerHTML = '<div class="input-group" style="width:100%"><span class="input-group-text">' +
                                 '<i class="bi bi-pencil"></i>' +
                                 '</span>' +
                                 '<textarea type="text" class="form-control">' + data + '</textarea>' +
                                 '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="saveSettings(event);"><i class="bi bi-check2"></i></button></div>';
-                        
+
     $('#table_site').DataTable().columns.adjust().draw();
 }
 
 // Saves the editing done for Site Settings
 function saveSettings(event) {
-    
+
     // The button that triggered the function call
     var button = event.srcElement;
 
@@ -452,14 +452,14 @@ function enableMetaDatumEditMode(event) {
 
     innerHTML = row.children[5].innerHTML;
     row.children[5].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
-    
+
     innerHTML = row.children[6].innerHTML;
     var checked = ((innerHTML == "true") ? "checked": "")
     row.children[6].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
-    
+
     innerHTML = row.children[7].innerHTML;
     row.children[7].innerHTML = '<div class="input-group" style="width:70px"><input type="number" class="form-control" value="' + innerHTML +'"></div>';
-    
+
     innerHTML = row.children[8].innerHTML;
     checked = ((innerHTML == "true") ? "checked": "")
     row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
@@ -494,17 +494,17 @@ DataMeta.admin.newMetaDatumRow = function() {
 
     // create a new row
     var row = [{
-        id: {uuid: "-1"}, 
-        name: "", 
-        regexDescription: "", 
-        longDescription: "", 
+        id: {uuid: "-1"},
+        name: "",
+        regexDescription: "",
+        longDescription: "",
         example: "",
-        regExp: "", 
-        dateTimeFmt: "", 
-        isMandatory: "", 
-        order: "0", 
-        isFile: "", 
-        isSubmissionUnique: "", 
+        regExp: "",
+        dateTimeFmt: "",
+        isMandatory: "",
+        order: "0",
+        isFile: "",
+        isSubmissionUnique: "",
         isSiteUnique: ""}];
 
     // add the new row to the table
@@ -541,8 +541,8 @@ function saveMetaDatum(event) {
     }
 
     var row = button.parentNode.parentNode.parentNode;
-    
-    var metadata_id = row.id; 
+
+    var metadata_id = row.id;
     var name = row.children[0].querySelector('input').value;
     var regexDescription = row.children[1].querySelector('textarea').value;
     var longDescription = row.children[2].querySelector('textarea').value;
@@ -616,7 +616,7 @@ function addMetaDatum(event) {
     }
 
     var row = button.parentNode.parentNode.parentNode;
-    
+
     var name = row.children[0].querySelector('input').value;
     var regexDescription = row.children[1].querySelector('textarea').value;
     var longDescription = row.children[2].querySelector('textarea').value;
@@ -768,7 +768,7 @@ function toggleUserEnabled(event) {
 }
 
 /**
- * Switch the Group 
+ * Switch the Group
  */
 function switchGroup(event) {
 
@@ -807,7 +807,7 @@ function switchGroup(event) {
 }
 
 /**
- * Change the name of an user 
+ * Change the name of an user
  */
 function changeUserName(event) {
 
@@ -824,12 +824,12 @@ function changeUserName(event) {
     var name = button.getAttribute('data');
     var uuid = row.id;
 
-    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
+    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' +
                         '<i class="bi bi-person-circle"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
                         '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmUserNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
-                        
+
     $('#table_users').DataTable().columns.adjust().draw();
 }
 
@@ -848,7 +848,7 @@ function confirmUserNameChange(event, uuid) {
 }
 
 /**
- * Change the name of a group 
+ * Change the name of a group
  */
  function changeGroupName(event) {
 
@@ -865,7 +865,7 @@ function confirmUserNameChange(event, uuid) {
     var name = button.getAttribute('data');
     var uuid = row.id;
 
-    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' + 
+    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' +
                         '<i class="bi bi-building"></i>' +
                         '</span>' +
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
@@ -974,7 +974,7 @@ DataMeta.admin.getMetadata = function () {
 
                 // Rebuild Table with the newly fetched Data
                 DataMeta.admin.rebuildMetadataTable(json);
-                
+
                 // Remove any alerts there still are
                 document.getElementById("metadata_alert").classList.remove("show");
             });
@@ -1090,10 +1090,27 @@ window.addEventListener("dmready", function() {
     DataMeta.admin.initUserTable();
     DataMeta.admin.initGroupTable();
     DataMeta.admin.reload();
-    
+
     document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-metadata-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-users-tab").addEventListener("click", clearAlerts);
     document.getElementById("nav-requests-tab").addEventListener("click", clearAlerts);
+});
+
+window.addEventListener("load", function() {
+    // Add listeners for "shown" events that re-draw() the datatables whenever
+    // their respective tab is shown.
+    document.getElementById("nav-users-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_users").DataTable().draw("page");
+    });
+    document.getElementById("nav-groups-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_groups").DataTable().draw("page");
+    });
+    document.getElementById("nav-metadata-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_metadata").DataTable().draw("page");
+    });
+    document.getElementById("nav-site-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_site").DataTable().draw("page");
+    });
 });
