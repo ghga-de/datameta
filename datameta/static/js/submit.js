@@ -157,9 +157,13 @@ DataMeta.set_progress_bar = function(uuid, val, classes, text) {
 
 DataMeta.reloadPopovers = function() {
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl)
-    })
+    try{
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl)
+        })
+    } catch (error){
+        console.log(error)
+    }
 }
 
 /*
