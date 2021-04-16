@@ -129,7 +129,6 @@ def put(request: Request):
 
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
-<<<<<<< HEAD
 
     # Change the group name only if the user is site admin or the admin for the specific group
     if auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == group_id):
@@ -141,12 +140,4 @@ def put(request: Request):
             raise errors.get_validation_error("A group with that name already exists.")
         
         return HTTPNoContent()
-=======
-    
-    # Change the group name only if the user is site admin
-    if auth_user.site_admin:
-        target_group.name = newGroupName
-        return HTTPNoContent()
-
->>>>>>> Fixed group_admin requests, fixed creation of a new organisation
     raise HTTPForbidden() # 403 Not authorized to change this group name
