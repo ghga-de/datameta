@@ -1,0 +1,48 @@
+name: Run versioning checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited, reopened]
+    branches: [ main, develop ]
+
+jobs:
+  version_checks:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        path: "pr"
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.base_ref }}
+        path: "base"
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.9.x'
+    - name: Install Dependencies
+      run: pip install pyyaml
+    - name: Verify Package Version
+      working-directory: "pr"
+      run: |
+        pkg_ver="$(python setup.py -V)"
+        echo "Package version is $pkg_ver"
+        if ! git rev-parse --verify "refs/tags/v$pkg_ver" &>/dev/null; then
+          echo "[OK] Package version was not yet tagged"
+        else
+          echo "[ERR] The current package version has been tagged previously. The first merge after a release must bump the package version." >&2
+          exit 1
+        fi
+    - name: Verify OpenAPI version
+      run: |
+        if ! diff -wB pr/datameta/api/openapi.yaml base/datameta/api/openapi.yaml; then
+          echo "[INFO] OpenAPI specification has changes"
+          if [ "$(./pr/utils/openapi_version.py < pr/datameta/api/openapi.yaml)" == "$(./pr/utils/openapi_version.py < base/datameta/api/openapi.yaml)" ]; then
+            echo "[ERR] OpenAPI specification needs API version bump" >&2
+            exit 1
+          else
+            echo "[OK] OpenAPI specification contains new API version"
+          fi
+        else
+          echo "[OK] OpenAPI specification unchanged"
+        fi
