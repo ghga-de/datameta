@@ -205,7 +205,7 @@ DataMeta.admin.rebuildUserTable = function(users) {
     var t = $('#table_users').DataTable();
     t.clear();
     t.rows.add(users);
-    t.draw();
+    t.columns.adjust().draw();
 }
 
 //Initializes the user table
@@ -216,7 +216,7 @@ DataMeta.admin.initUserTable = function() {
         paging : true,
         lengthMenu: [ 10, 25, 50, 100 ],
         pageLength: 25,
-        searching: false,
+        searching: true,
         scrollX: true,
         columns: [
             { title: "User ID", data: "id.site"},
@@ -228,26 +228,35 @@ DataMeta.admin.initUserTable = function() {
                 return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="switchGroup(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
             }},
             { title: "Group ID", data: "group_id.site"},
-            { orderable:false, title: "Enabled", data: "enabled", render:function(data) {
-                if(data) {
-                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleUserEnabled(event);"><i class="bi bi-check2"></i></button>'
-                } else {
-                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleUserEnabled(event)";><i class="bi bi-x"></i></button>'
+            { title: "Enabled", data: "enabled", render:function(data, type, row) {
+                if ( type === 'display' || type === 'filter' ) {
+                    if(data) {
+                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleUserEnabled(event);"><i class="bi bi-check2"></i></button>'
+                    } else {
+                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleUserEnabled(event)";><i class="bi bi-x"></i></button>'
+                    }
                 }
+                return Boolean(data);
             }},
-            { orderable:false, title: "Is Group Admin", data: "group_admin", render:function(data) {
-                if(data) {
-                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleGroupAdmin(event)"><i class="bi bi-check2"></i></button>'
-                } else {
-                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleGroupAdmin(event)"><i class="bi bi-x"></i></button>'
+            { title: "Is Group Admin", data: "group_admin", render:function(data, type, row) {
+                if ( type === 'display' || type === 'filter' ) {
+                    if(data) {
+                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleGroupAdmin(event)"><i class="bi bi-check2"></i></button>'
+                    } else {
+                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleGroupAdmin(event)"><i class="bi bi-x"></i></button>'
+                    }
                 }
+                return Boolean(data);
             }},
-            { orderable:false, title: "Is Site Admin", data: "site_admin", render:function(data) {
-                if(data) {
-                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleSiteAdmin(event)"><i class="bi bi-check2"></i></button>'
-                } else {
-                    return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleSiteAdmin(event)"><i class="bi bi-x"></i></button>'
+            { title: "Is Site Admin", data: "site_admin", render:function(data, type, row) {
+                if ( type === 'display' || type === 'filter' ) {
+                    if(data) {
+                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleSiteAdmin(event)"><i class="bi bi-check2"></i></button>'
+                    } else {
+                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleSiteAdmin(event)"><i class="bi bi-x"></i></button>'
+                    }
                 }
+                return Boolean(data);
             }}
         ]
     });
@@ -830,7 +839,7 @@ function changeUserName(event) {
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
                         '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmUserNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
 
-    $('#table_users').DataTable().columns.adjust().draw();
+    $('#table_users').DataTable().columns.adjust().draw("page");
 }
 
 //Confirms the UserNameChange and performs the api call

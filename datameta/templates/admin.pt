@@ -127,6 +127,10 @@
         </div>
     </div>
 
+    <metal:block fill-slot="head">
+    <link href="${request.static_url('datameta:static/css/dataTables.bootstrap5.css')}" rel="stylesheet">
+    </metal:block>
+
     <metal:block fill-slot="body">
         <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/node_modules/jquery/dist/jquery.js')}"></script>
         <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/jquery.dataTables.min.js')}"></script>
