@@ -64,6 +64,46 @@ def get_record_from_metadataset(mdata_set:models.MetaDataSet) -> dict:
         for rec in mdata_set.metadatumrecords
     }
 
+def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
+    # Find the requested metadataset
+    mdata_set = resource_by_id(db, models.MetaDataSet, mdata_id)
+
+    # Check if the metadataset exists
+    if not mdata_set:
+        raise HTTPNotFound()
+
+    # Check if user owns this metadataset
+    if auth_user.id != mdata_set.user_id:
+        raise HTTPForbidden()
+
+    # Check if the metadataset was already submitted
+    if mdata_set.submission:
+        raise errors.get_not_modifiable_error()
+
+    # Delete the records
+    request.dbsession.query(models.MetaDatumRecord).filter(models.MetaDatumRecord.metadataset_id==mdata_set.id).delete()
+
+    # Delete the metadataset
+    db.delete(mdata_set)
+
+@view_config(
+    route_name      = "rpc_delete_metadatasets",
+    renderer        = "json",
+    request_method  = "POST",
+    openapi         = True
+)
+def delete_metadatasets(request: Request) -> HTTPNoContent:
+    # Check authentication or raise 401
+    auth_user = security.revalidate_user(request)
+
+    db = request.dbsession
+
+    for mdata_id in set(request.openapi_validated.body["metadatasetIds"]):
+        delete_staged_metadataset_from_db(mdata_id, db, auth_user, request)
+
+    return HTTPNoContent()
+
+
 @view_config(
     route_name="metadatasets",
     renderer='json',
@@ -161,25 +201,6 @@ def delete_metadataset(request:Request) -> HTTPNoContent:
 
     db = request.dbsession
 
-    # Find the requested metadataset
-    mdata_set = resource_by_id(db, models.MetaDataSet, request.matchdict['id'])
-
-    # Check if the metadataset exists
-    if not mdata_set:
-        raise HTTPNotFound()
-
-    # Check if user owns this metadataset
-    if auth_user.id != mdata_set.user_id:
-        raise HTTPForbidden()
-
-    # Check if the metadataset was already submitted
-    if mdata_set.submission:
-        raise errors.get_not_modifiable_error()
-
-    # Delete the records
-    request.dbsession.query(models.MetaDatumRecord).filter(models.MetaDatumRecord.metadataset_id==mdata_set.id).delete()
-
-    # Delete the metadataset
-    db.delete(mdata_set)
+    delete_staged_metadataset_from_db(request.matchdict['id'], db, auth_user, request)
 
     return HTTPNoContent()

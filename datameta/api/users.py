@@ -42,7 +42,7 @@ class UserResponseElement(DataHolderBase):
     group: dict
 
 @view_config(
-    route_name="whoami", 
+    route_name="rpc_whoami",
     renderer='json', 
     request_method="GET", 
     openapi=True
