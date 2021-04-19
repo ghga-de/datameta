@@ -22,8 +22,7 @@ def get_group_by_name(
         session = get_tm_session(session_factory, transaction.manager)
         group_obj = session.query(models.Group).filter(models.Group.name==group_name).one_or_none()
 
-        if not group_obj:
-            assert False, f"I don't know this group: {group_name}"
+        assert group_obj, f"I don't know this group: {group_name}"
 
         return group_obj.uuid
 
@@ -35,8 +34,7 @@ def get_user_by_uuid(
         session = get_tm_session(session_factory, transaction.manager)
         user_obj = session.query(models.User).filter(models.User.uuid==user_uuid).one_or_none()
 
-        if not user_obj:
-            assert False, f"I don't know this user: {str(user_uuid)}"
+        assert user_obj, f"I don't know this user: {str(user_uuid)}"
 
         user_vals = dict()
         for attr in ("fullname", "enabled", "site_admin", "group_admin"):
