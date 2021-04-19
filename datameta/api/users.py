@@ -35,7 +35,7 @@ class UserUpdateRequest(DataHolderBase):
 class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
-    name: str
+    name: str # why is this name when it is called fullname in the db?
     group_admin: bool
     site_admin: bool
     email: str
@@ -68,7 +68,7 @@ def get_whoami(request: Request) -> UserResponseElement:
     openapi=True
 )
 def put(request: Request):
-    """Change the name of the group"""
+    """Change user properties"""
 
     user_id = request.matchdict["id"]
     name = request.openapi_validated.body.get("name")
@@ -85,56 +85,52 @@ def put(request: Request):
     # Get the targeted user
     target_user = resource_by_id(db, User, user_id)
 
-    if(target_user == None):
+    if target_user is None:
         raise HTTPNotFound() # 404 User ID not found
+
+    has_group_rights = auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid
+    has_admin_rights = auth_user.site_admin or has_group_rights
+    edit_own_user = auth_user.uuid == target_user.uuid
 
     # First, check, if the user has the rights to perform all the changes they want
 
     # The user has to be site admin to change another users group
-    if group_id != None:
-        if not auth_user.site_admin:
-            raise HTTPForbidden()
+    if group_id is not None and not auth_user.site_admin:
+        raise HTTPForbidden()
 
     # The user has to be site admin to make another user site admin
-    if site_admin != None:
-        if not auth_user.site_admin:
-            raise HTTPForbidden()
-        if auth_user.uuid == target_user.uuid:
-            raise HTTPForbidden()
+    if site_admin is not None and (
+        not auth_user.site_admin or edit_own_user
+    ):
+        raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
-    if group_admin != None:
-        if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
-            raise HTTPForbidden()
+    if group_admin is not None and not has_admin_rights:
+        raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to enable or disable a user
-    if enabled != None:
-        if not (auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid)):
-            raise HTTPForbidden()
-        if not auth_user.site_admin and target_user.site_admin:
-            raise HTTPForbidden()
-        if auth_user.uuid == target_user.uuid:
-            raise HTTPForbidden()
+    if enabled is not None and (
+        not has_admin_rights or (not auth_user.site_admin and target_user.site_admin) or edit_own_user
+    ):
+        raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user
-    if name != None:
-        if not (auth_user.site_admin or auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid
-            or auth_user.uuid == target_user.uuid):
-            raise HTTPForbidden()
+    if name is not None and not (has_admin_rights or edit_own_user):
+        raise HTTPForbidden()
 
     # Now, make the corresponding changes
-    if group_id != None:
+    if group_id is not None:
         new_group = resource_by_id(db, Group, group_id)
-        if new_group == None:
+        if new_group is None:
             raise HTTPNotFound() # 404 Group ID not found
         target_user.group_id = new_group.id
-    if site_admin != None:
+    if site_admin is not None:
         target_user.site_admin = site_admin
-    if group_admin != None:
+    if group_admin is not None:
         target_user.group_admin = group_admin
-    if enabled != None:
+    if enabled is not None:
         target_user.enabled = enabled
-    if name != None:
+    if name is not None:
         target_user.fullname = name
 
     return HTTPNoContent()
