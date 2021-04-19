@@ -171,7 +171,7 @@ Refreshes the data displayed by the `submit` view
 DEPRECATED
 */
 DataMeta.submitRefresh = function() {
-    alert("DataMeta.submitRefresh() is deprectated");
+    alert("DataMeta.submitRefresh() is deprecated");
 }
 
 DataMeta.delete_pending = function() {
