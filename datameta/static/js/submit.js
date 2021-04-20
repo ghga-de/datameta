@@ -174,29 +174,6 @@ DataMeta.submitRefresh = function() {
     alert("DataMeta.submitRefresh() is deprecated");
 }
 
-DataMeta.delete_pending = function() {
-    var xhr = new XMLHttpRequest();
-
-    var data = new FormData();
-    data.set("action", "delete_pending");
-
-    xhr.onreadystatechange = function(){
-        var error = false;
-        if (xhr.readyState === 4){
-            if (xhr.status === 200) {
-                var json = JSON.parse(xhr.responseText);
-                error = !json.success;
-            } else error = 1;
-            if (error) DataMeta.new_alert("Deletion failed. Please try again.", "danger");
-            DataMeta.submitRefresh();
-            document.getElementById("del_pending_btn").disabled = false;
-        }
-    };
-
-    xhr.open('POST', '/submit/action');
-    xhr.send(data);
-}
-
 /*
  *****************************************************************************************************
  */
@@ -403,10 +380,10 @@ DataMeta.submit.visualizeErrors = function(errors, noselect, rootElement) {
 }
 
 DataMeta.submit.checkboxChange = function(event) {
-    document.getElementById("masterfset").disabled = true;
+    DataMeta.submit.setLock(true);
     DataMeta.submit.unchecked[event.target.getAttribute('data-datameta-uuid')] = ! event.target.checked;
     DataMeta.submit.submit(true);
-    document.getElementById("masterfset").disabled = false;
+    DataMeta.submit.setLock(false);
 }
 
 DataMeta.submit.submit = function(validateOnly) {
@@ -530,7 +507,7 @@ DataMeta.submit.renderMetadataHelp = function() {
 }
 
 DataMeta.submit.checkBoxes = function(table, checked) {
-    document.getElementById("masterfset").disabled = true;
+    DataMeta.submit.setLock(true);
     var checkboxes = document.querySelectorAll("input.datameta-entity-check[data-datameta-type='"+ table +"']")
     checkboxes.forEach(function(box) {
         box.checked = checked;
@@ -538,111 +515,89 @@ DataMeta.submit.checkBoxes = function(table, checked) {
     })
 
     DataMeta.submit.submit(true);
-    document.getElementById("masterfset").disabled = false;
+    DataMeta.submit.setLock(false);
 }
 
 DataMeta.submit.deleteSelectedMeta = function() {
-    fetch(
-        "/api/ui/pending",
-        {method:"GET"}
-    ).then(function(response) {
-        if (response.ok) return response.json();
-        if (response.status==400) throw new DataMeta.AnnotatedError(request);
-    }).then(function(json) {
-        // Get checked metadatasets
-        var metadatasetIds = [];
-        json.metadatasets.forEach(function(mset) {
-            if(!DataMeta.submit.unchecked[mset.id.uuid]) { 
-                metadatasetIds.push(mset.id.uuid);
-            }
-        });
 
-        // Delete all checked metadatasets
-        fetch(DataMeta.api('rpc/delete-metadatasets'),
-        {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body:  JSON.stringify({metadatasetIds})
-        }).then(function(response) {
-            if (response.ok) {
-                return DataMeta.submit.refresh();
-            } else if (response.status==401) {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unauthenticated.", "danger")
-            } else if (response.status==403) {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Access denied.", "danger")
-            } else if (response.status==404) {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Record not found.", "danger")
-            } else if (response.status==400) {
-                response.json().then(json => {
-                    DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + json[0].message, "danger")
-                });
-            } else {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unknown error.", "danger")
-            }
-            DataMeta.submit.refresh();
-        }).catch(function(error) {
+    DataMeta.submit.setLock(true);
+
+    // Get checked metadatasets
+    var metadatasetIds = Array.from(document.querySelectorAll("input.datameta-entity-check[data-datameta-type='meta']:checked"), input => input.getAttribute("data-datameta-uuid"));
+
+    // Delete all checked metadatasets
+    fetch(DataMeta.api('rpc/delete-metadatasets'),
+    {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body:  JSON.stringify({metadatasetIds})
+    }).then(function(response) {
+        if (response.ok) {
+            return DataMeta.submit.refresh();
+        } else if (response.status==401) {
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unauthenticated.", "danger")
+        } else if (response.status==403) {
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Access denied.", "danger")
+        } else if (response.status==404) {
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Record not found.", "danger")
+        } else if (response.status==400) {
+            response.json().then(json => {
+                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + json[0].message, "danger")
+            });
+        } else {
             DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unknown error.", "danger")
-            console.log(error)
-        });
+        }
+        DataMeta.submit.refresh();
     }).catch(function(error) {
-        DataMeta.new_alert("<strong>ERROR</strong> An unknown error occurred when bulk deleting metadata. Please try again.", "danger")
-        console.log(error);
+        DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unknown error.", "danger")
+        console.log(error)
     });
+
+    DataMeta.submit.setLock(false);
 }
 
 DataMeta.submit.deleteSelectedFiles = function() {
-    fetch(
-        "/api/ui/pending",
-        {method:"GET"}
-    ).then(function(response) {
-        if (response.ok) return response.json();
-        if (response.status==400) throw new DataMeta.AnnotatedError(request);
-    }).then(function(json) {
-        // Get checked files
-        var fileIds = []
-        json.files.forEach(function(file) {
-            if(!DataMeta.submit.unchecked[file.id.uuid]) { 
-                fileIds.push(file.id.uuid);
-            }
-        });
+    
+    DataMeta.submit.setLock(true);
 
-        // Delete all checked files
-        fetch(DataMeta.api('rpc/delete-files'),
-        {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({fileIds})
-        }).then(function(response) {
-            if (response.ok) {
-                return DataMeta.submit.refresh();
-            } else if (response.status==401) {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unauthenticated.", "danger");
-            } else if (response.status==403) {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Access denied.", "danger");
-            } else if (response.status==404) {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: File not found.", "danger");
-            } else if (response.status==400) {
-                response.json().then(json => {
-                    DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: " + json[0].message, "danger");
-                });
-            } else {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unknown error.", "danger");
-            }
-            DataMeta.submit.refresh();
-        }).catch(function(error) {
+    // Get checked files
+    var fileIds = Array.from(document.querySelectorAll("input.datameta-entity-check[data-datameta-type='file']:checked"), input => input.getAttribute("data-datameta-uuid"));
+
+    // Delete all checked files
+    fetch(DataMeta.api('rpc/delete-files'),
+    {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({fileIds})
+    }).then(function(response) {
+        if (response.ok) {
+            return DataMeta.submit.refresh();
+        } else if (response.status==401) {
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unauthenticated.", "danger");
+        } else if (response.status==403) {
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Access denied.", "danger");
+        } else if (response.status==404) {
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: File not found.", "danger");
+        } else if (response.status==400) {
+            response.json().then(json => {
+                DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: " + json[0].message, "danger");
+            });
+        } else {
             DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unknown error.", "danger");
-            console.log(error)
-        });
+        }
+        DataMeta.submit.refresh();
     }).catch(function(error) {
-        DataMeta.new_alert("<strong>ERROR</strong> An unknown error occurred when bulk deleting files. Please try again.", "danger");
-        console.log(error);
+        DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unknown error.", "danger");
+        console.log(error)
     });
+
+    DataMeta.submit.setLock(false);
 }
 
 window.addEventListener("load", function() {
@@ -679,11 +634,6 @@ window.addEventListener("load", function() {
 
     document.getElementById("delete_selected_files_btn").addEventListener("click", function(event) {
         DataMeta.submit.deleteSelectedFiles();
-    });
-
-    document.getElementById("del_pending_btn").addEventListener("click", function(event) {
-        event.target.disabled = true;
-        DataMeta.delete_pending();
     });
 
     document.getElementById("btn_close_card_failed").addEventListener("click", event => document.getElementById("card_failed").classList.add("d-none"));

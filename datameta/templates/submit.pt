@@ -77,16 +77,16 @@
                 </div>
                 <div class="row mb-2">
                     <div class="col-9">
-                        <button type="button" id="select_all_metadate_btn" class="btn-sm btn-warning">
+                        <button type="button" id="select_all_metadate_btn" class="btn btn-sm btn-warning">
                             Select All
                         </button>
-                        <button type="button" id="deselect_all_metadata_btn" class="btn-sm btn-warning">
+                        <button type="button" id="deselect_all_metadata_btn" class="btn btn-sm btn-warning">
                             De-Select All
                         </button>
                     </div>
                     
                     <div class="col-3 d-flex justify-content-end">
-                        <button type="button" id="delete_selected_metadata_btn" class="btn-sm btn-danger justify-content-end">
+                        <button type="button" id="delete_selected_metadata_btn" class="btn btn-sm btn-danger justify-content-end">
                             Delete Selected
                         </button>
                     </div>
@@ -110,16 +110,16 @@
 
                 <div class="row mb-2">
                     <div class="col-9">
-                        <button type="button" id="select_all_files_btn" class="btn-sm btn-warning">
+                        <button type="button" id="select_all_files_btn" class="btn btn-sm btn-warning">
                             Select All
                         </button>
-                        <button type="button" id="deselect_all_files_btn" class="btn-sm btn-warning">
+                        <button type="button" id="deselect_all_files_btn" class="btn btn-sm btn-warning">
                             De-Select All
                         </button>
                     </div>
                     
                     <div class="col-3 d-flex justify-content-end">
-                        <button type="button" id="delete_selected_files_btn" class="btn-sm btn-danger justify-content-end">
+                        <button type="button" id="delete_selected_files_btn" class="btn btn-sm btn-danger justify-content-end">
                             Delete Selected
                         </button>
                     </div>
