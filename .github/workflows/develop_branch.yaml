@@ -7,12 +7,10 @@ on:
 
 jobs:
   branch_check:
-    if: ${{ github.head_ref != 'refs/heads/develop' }}
+    if: ${{ github.head_ref != 'develop' }}
     runs-on: ubuntu-latest
     steps:
     - name: Reject non-develop merges
       run: |
-        set -x
-        echo "${{ github.head_ref }}"
         echo "PRs into 'main' must come via 'develop'" >&2
         exit 1
