@@ -551,12 +551,13 @@ DataMeta.submit.deleteSelectedMeta = function() {
             DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unknown error.", "danger")
         }
         DataMeta.submit.refresh();
+        DataMeta.submit.setLock(false);
     }).catch(function(error) {
         DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unknown error.", "danger")
-        console.log(error)
+        console.log(error);
+        DataMeta.submit.refresh();
+        DataMeta.submit.setLock(false);
     });
-
-    DataMeta.submit.setLock(false);
 }
 
 DataMeta.submit.deleteSelectedFiles = function() {
@@ -592,12 +593,13 @@ DataMeta.submit.deleteSelectedFiles = function() {
             DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unknown error.", "danger");
         }
         DataMeta.submit.refresh();
+        DataMeta.submit.setLock(false);
     }).catch(function(error) {
         DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unknown error.", "danger");
-        console.log(error)
+        console.log(error);
+        DataMeta.submit.refresh();
+        DataMeta.submit.setLock(false);
     });
-
-    DataMeta.submit.setLock(false);
 }
 
 window.addEventListener("load", function() {
