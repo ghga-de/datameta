@@ -12,5 +12,7 @@ jobs:
     steps:
     - name: Reject non-develop merges
       run: |
+        set -x
+        echo "${{ github.ref }}
         echo "PRs into 'main' must come via 'develop'" >&2
         exit 1
