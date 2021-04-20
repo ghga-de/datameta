@@ -66,12 +66,29 @@
         <div class="card col-12">
             <div class="card-body">
                 <div class="row mb-3">
-                    <div class="col-10">
+                    <div class="col-9">
                         <h5 class="card-title">Pending metadata submissions</h5>
                         <p class="card-text">The following metadata and files have been uploaded. Records shown in green are ready to commit!</p>
                     </div>
-                    <div class="col-2">
+                    <div class="col-3">
+                        <input type="text" name="label" id="commit_label" placeholder="Enter Label" class="w-100 mb-2" >
                         <a id="commit_btn" class="btn btn-success w-100" href="#" style="display:none">Commit</a>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-9">
+                        <button type="button" id="select_all_metadate_btn" class="btn-sm btn-warning">
+                            Select All
+                        </button>
+                        <button type="button" id="deselect_all_metadata_btn" class="btn-sm btn-warning">
+                            De-Select All
+                        </button>
+                    </div>
+                    
+                    <div class="col-3 d-flex justify-content-end">
+                        <button type="button" id="delete_selected_metadata_btn" class="btn-sm btn-danger justify-content-end">
+                            Delete Selected
+                        </button>
                     </div>
                 </div>
                 <table id="table_metadata" class="table table-sm table-hover text-nowrap" style="width:100%">
@@ -90,6 +107,24 @@
             <div class="card-body">
                 <h5 class="card-title">Pending file submissions</h5>
                 <p class="card-text">The following files have been uploaded but not yet annotated:</p>
+
+                <div class="row mb-2">
+                    <div class="col-9">
+                        <button type="button" id="select_all_files_btn" class="btn-sm btn-warning">
+                            Select All
+                        </button>
+                        <button type="button" id="deselect_all_files_btn" class="btn-sm btn-warning">
+                            De-Select All
+                        </button>
+                    </div>
+                    
+                    <div class="col-3 d-flex justify-content-end">
+                        <button type="button" id="delete_selected_files_btn" class="btn-sm btn-danger justify-content-end">
+                            Delete Selected
+                        </button>
+                    </div>
+                </div>
+
                 <table id="table_unannotated" class="table table-sm table-hover" style="width:100%">
                 </table>
             </div>
