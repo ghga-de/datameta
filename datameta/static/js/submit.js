@@ -536,27 +536,42 @@ DataMeta.submit.deleteSelectedMeta = function() {
         body:  JSON.stringify({metadatasetIds})
     }).then(function(response) {
         if (response.ok) {
-            return DataMeta.submit.refresh();
-        } else if (response.status==401) {
-            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unauthenticated.", "danger")
+            DataMeta.submit.refresh();
+            DataMeta.submit.setLock(false);
+            return;
+        }
+
+        if (response.status==400) throw new DataMeta.AnnotatedError(response)
+        
+        var message;
+
+        if (response.status==401) {
+            message = "Unauthenticated."
         } else if (response.status==403) {
-            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Access denied.", "danger")
+            message = "Access denied."
         } else if (response.status==404) {
-            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Record not found.", "danger")
-        } else if (response.status==400) {
-            response.json().then(json => {
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + json[0].message, "danger")
+            message = "File not found."
+        } else {
+            message = "Unknown error."
+        }
+
+        throw new Error(message);
+    }).catch(function(error) {
+        if (error instanceof DataMeta.AnnotatedError) {
+            error.json().then(function(json){
+                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + json[0].message, "danger");
+                console.log(error);
+                DataMeta.submit.refresh();
+                DataMeta.submit.setLock(false);
             });
         } else {
-            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unknown error.", "danger")
+            error.json().then(function(json){
+                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + json.message, "danger")
+                console.log(error);
+                DataMeta.submit.refresh();
+                DataMeta.submit.setLock(false);
+            });
         }
-        DataMeta.submit.refresh();
-        DataMeta.submit.setLock(false);
-    }).catch(function(error) {
-        DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: Unknown error.", "danger")
-        console.log(error);
-        DataMeta.submit.refresh();
-        DataMeta.submit.setLock(false);
     });
 }
 
@@ -578,27 +593,42 @@ DataMeta.submit.deleteSelectedFiles = function() {
         body: JSON.stringify({fileIds})
     }).then(function(response) {
         if (response.ok) {
-            return DataMeta.submit.refresh();
-        } else if (response.status==401) {
-            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unauthenticated.", "danger");
+            DataMeta.submit.refresh();
+            DataMeta.submit.setLock(false);
+            return;
+        }
+
+        if (response.status==400) throw new DataMeta.AnnotatedError(response)
+        
+        var message;
+
+        if (response.status==401) {
+            message = "Unauthenticated."
         } else if (response.status==403) {
-            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Access denied.", "danger");
+            message = "Access denied."
         } else if (response.status==404) {
-            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: File not found.", "danger");
-        } else if (response.status==400) {
-            response.json().then(json => {
+            message = "File not found."
+        } else {
+            message = "Unknown error."
+        }
+
+        throw new Error(message);
+    }).catch(function(error) {
+        if (error instanceof DataMeta.AnnotatedError) {
+            error.json().then(function(json){
                 DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: " + json[0].message, "danger");
+                console.log(error);
+                DataMeta.submit.refresh();
+                DataMeta.submit.setLock(false);
             });
         } else {
-            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unknown error.", "danger");
+            error.json().then(function(json){
+                DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: " + json.message, "danger")
+                console.log(error);
+                DataMeta.submit.refresh();
+                DataMeta.submit.setLock(false);
+            });
         }
-        DataMeta.submit.refresh();
-        DataMeta.submit.setLock(false);
-    }).catch(function(error) {
-        DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: Unknown error.", "danger");
-        console.log(error);
-        DataMeta.submit.refresh();
-        DataMeta.submit.setLock(false);
     });
 }
 
