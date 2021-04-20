@@ -1,0 +1,41 @@
+name: Push to Dockerhub (relase)
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  docker_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Verify Package Version vs Tag Version
+        run: |
+          echo "PKG_VER=$(python setup.py -V)" >> $GITHUB_ENV
+          tag_ver="${GITHUB_REF##*/}"
+          echo "Package version is $pkg_ver" >&2
+          echo "Tag version is $tag_ver" >&2
+          if [ "v$PKG_VER" != "$tag_ver" ]; then
+            echo "Package version and tag name mismatch." >&2
+            exit 1
+          fi
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: datameta/datameta:v${{ env.PKG_VER }}
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
