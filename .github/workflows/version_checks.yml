@@ -26,6 +26,7 @@ jobs:
     - name: Verify Package Version
       working-directory: "pr"
       run: |
+        set -x
         pkg_ver="$(python setup.py -V)"
         echo "Package version is $pkg_ver"
         if ! git rev-parse --verify "refs/tags/v$pkg_ver" &>/dev/null; then
