@@ -13,11 +13,13 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
-      - name: Verify Package Version vs Tag Version
+      - name: Extract package version
         run: |
           echo "PKG_VER=$(python setup.py -V)" >> $GITHUB_ENV
+      - name: Verify Package Version vs Tag Version
+        run: |
           tag_ver="${GITHUB_REF##*/}"
-          echo "Package version is $pkg_ver" >&2
+          echo "Package version is $PKG_VER" >&2
           echo "Tag version is $tag_ver" >&2
           if [ "v$PKG_VER" != "$tag_ver" ]; then
             echo "Package version and tag name mismatch." >&2
