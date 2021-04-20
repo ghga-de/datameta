@@ -15,6 +15,16 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.7
+    - name: Verify Package Version vs Tag Version
+      run: |
+        pkg_ver="$(python setup.py -V)"
+        tag_ver="${GITHUB_REF##*/}"
+        echo "Package version is $pkg_ver" >&2
+        echo "Tag version is $tag_ver" >&2
+        if [ "v$pkg_ver" != "$tag_ver" ]; then
+          echo "Package version and tag name mismatch." >&2
+          exit 1
+        fi
     - name: Install pypa/build
       run: >-
         python -m
