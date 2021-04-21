@@ -142,7 +142,8 @@ def create_user(
             fullname=user.fullname,
             group=group_obj,
             group_admin=user.group_admin,
-            site_admin=user.site_admin
+            site_admin=user.site_admin,
+            site_read=user.site_read
         )
         session.add(user_obj)
         session.flush()
