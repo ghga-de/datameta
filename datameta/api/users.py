@@ -88,34 +88,26 @@ def put(request: Request):
     if target_user is None:
         raise HTTPNotFound() # 404 User ID not found
 
-    has_group_rights = auth_user.group_admin and auth_user.group.uuid == target_user.group.uuid
-    has_admin_rights = auth_user.site_admin or has_group_rights
-    edit_own_user = auth_user.uuid == target_user.uuid
-
     # First, check, if the user has the rights to perform all the changes they want
 
     # The user has to be site admin to change another users group
-    if group_id is not None and not auth_user.site_admin:
+    if group_id and not security.is_authorized_group_change(auth_user):
         raise HTTPForbidden()
 
     # The user has to be site admin to make another user site admin
-    if site_admin is not None and (
-        not auth_user.site_admin or edit_own_user
-    ):
+    if site_admin is not None and not security.is_authorized_grant_siteadmin(auth_user, target_user):
         raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
-    if group_admin is not None and not has_admin_rights:
+    if group_admin is not None and not security.is_authorized_grant_groupadmin(auth_user, target_user):
         raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to enable or disable a user
-    if enabled is not None and (
-        not has_admin_rights or (not auth_user.site_admin and target_user.site_admin) or edit_own_user
-    ):
+    if enabled is not None and not security.is_authorized_status_change(auth_user, target_user):
         raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user
-    if name is not None and not (has_admin_rights or edit_own_user):
+    if name is not None and not security.is_authorized_name_change(auth_user, target_user):
         raise HTTPForbidden()
 
     # Now, make the corresponding changes

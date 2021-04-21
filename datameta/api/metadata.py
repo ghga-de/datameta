@@ -75,13 +75,13 @@ def get(request:Request) -> List[MetaDataResponseElement]:
     openapi=True
 )
 def put(request:Request):
-    """Change a metadataset"""
+    """Change a metadatum"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
     metadata_id = request.matchdict["id"]
 
-    # Only site admins can change metadatasets
-    if not auth_user.site_admin:
+    # Only site admins can change metadata
+    if not security.is_authorized_metadatum_update(auth_user):
          raise HTTPForbidden()
 
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
@@ -109,11 +109,11 @@ def put(request:Request):
     openapi=True
 )
 def post(request:Request):
-    """POST a new metadataset"""
+    """POST a new metadatum"""
     auth_user = security.revalidate_user(request)
 
-    # Only site admins can post new metadatasets
-    if not auth_user.site_admin:
+    # Only site admins can post new metadata
+    if not security.is_authorized_metadatum_creation(auth_user):
          raise HTTPForbidden()
 
     body = request.openapi_validated.body

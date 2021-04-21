@@ -94,14 +94,13 @@ def get_all_submissions(request: Request) -> GroupSubmissions:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
     # check if user is part of the target group:
-    if not group_id in [auth_user.group.uuid, auth_user.group.site_id]:
+    if not security.is_authorized_group_submission_view(auth_user, group_id):
         raise HTTPForbidden()
 
     return GroupSubmissions(
         request=request,
         group_id=group_id
     )
-
 
 @dataclass
 class ChangeGroupName(DataHolderBase):
@@ -130,9 +129,7 @@ def put(request: Request):
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
-    # Change the group name only if the user is site admin or the admin for the specific group
-    if auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == group_id):
-
+    if not security.is_authorized_groupname_change(auth_user, group_id):
         try:
             target_group.name = new_group_name
             db.flush()
@@ -141,3 +138,5 @@ def put(request: Request):
         
         return HTTPNoContent()
     raise HTTPForbidden() # 403 Not authorized to change this group name
+
+

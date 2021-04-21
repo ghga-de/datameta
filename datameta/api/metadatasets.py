@@ -73,7 +73,7 @@ def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
         raise HTTPNotFound()
 
     # Check if user owns this metadataset
-    if auth_user.id != mdata_set.user_id:
+    if not security.is_authorized_mds_deletion(auth_user, mdata_set):
         raise HTTPForbidden()
 
     # Check if the metadataset was already submitted
@@ -154,16 +154,6 @@ def post(request:Request) -> MetaDataSetResponse:
         submission_id  = get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
 
-
-def check_metadata_access(metadataset_obj:models.MetaDataSet, user:models.User):
-    if metadataset_obj.submission_id:
-        # if metadataset was already submitted, the group must match
-        return metadataset_obj.submission.group_id == user.group_id
-    else:
-        # if metadataset was not yet submitted, the user must match
-        return metadataset_obj.user_id == user.id
-
-
 @view_config(
     route_name="metadatasets_id",
     renderer='json',
@@ -179,7 +169,7 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     if not mdata_set:
         raise HTTPNotFound()
 
-    if not check_metadata_access(mdata_set, auth_user):
+    if not security.is_authorized_mds_view(auth_user, mdata_set):
         raise HTTPForbidden()
 
     return MetaDataSetResponse(
