@@ -19,6 +19,7 @@ from pyramid.view import view_config
 from . import DataHolderBase
 from ..models import MetaDatum
 from .. import resource, security, siteid
+from ..security import authz
 from ..resource import resource_by_id, get_identifier
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 
@@ -81,7 +82,7 @@ def put(request:Request):
     metadata_id = request.matchdict["id"]
 
     # Only site admins can change metadata
-    if not security.is_authorized_metadatum_update(auth_user):
+    if not authz.is_authorized_metadatum_update(auth_user):
          raise HTTPForbidden()
 
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
@@ -113,7 +114,7 @@ def post(request:Request):
     auth_user = security.revalidate_user(request)
 
     # Only site admins can post new metadata
-    if not security.is_authorized_metadatum_creation(auth_user):
+    if not authz.is_authorized_metadatum_creation(auth_user):
          raise HTTPForbidden()
 
     body = request.openapi_validated.body

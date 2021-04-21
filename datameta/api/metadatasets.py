@@ -19,6 +19,7 @@ from pyramid.request import Request
 from typing import Optional, Dict
 from ..linting import validate_metadataset_record
 from .. import security, siteid, models
+from ..security import authz
 import datetime
 from ..resource import resource_by_id, get_identifier
 from . import DataHolderBase
@@ -73,7 +74,7 @@ def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
         raise HTTPNotFound()
 
     # Check if user owns this metadataset
-    if not security.is_authorized_mds_deletion(auth_user, mdata_set):
+    if not authz.is_authorized_mds_deletion(auth_user, mdata_set):
         raise HTTPForbidden()
 
     # Check if the metadataset was already submitted
@@ -169,7 +170,7 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     if not mdata_set:
         raise HTTPNotFound()
 
-    if not security.is_authorized_mds_view(auth_user, mdata_set):
+    if not authz.is_authorized_mds_view(auth_user, mdata_set):
         raise HTTPForbidden()
 
     return MetaDataSetResponse(
