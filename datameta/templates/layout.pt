@@ -85,8 +85,10 @@
 
             // Takes name and organisation from API call and puts them in the footer, enables the admin interface button, if the user is a site_admin
             window.addEventListener("dmready", function() {
-                var nameOrgString = "Logged in as: " + DataMeta.user.name + " ("+ DataMeta.user.group.name + ")";
+                var nameOrgString = DataMeta.user.name + " ("+ DataMeta.user.group.name + ")";
                 document.getElementById("name_org").innerHTML = nameOrgString;
+                document.getElementById("datameta_version").innerHTML = DataMeta.version;
+                document.getElementById("datameta_api_version").innerHTML = DataMeta.apiVersion;
                 if(DataMeta.user.siteAdmin || DataMeta.user.groupAdmin) {
                     document.getElementById("admin_view_button").style.display = "";
                 }
@@ -114,16 +116,25 @@
             </div>
         </main>
 
-        <footer class="fixed-bottom footer mt-auto py-3 bg-light">
-            <div class="container position-relative">
-                <span class="text-muted">&copy; 2021 DataMeta</span><span tal:condition="request.registry.settings.get('datameta.demo_mode') in [True, 'true', 'True']"> (DEMO MODE)</span>
-                <span id="name_org" class="ms-2"></span>
-                    <div class="form-check form-switch position-absolute top-50 end-0 translate-middle">
-                      <input class="form-check-input" type="checkbox" name="flexSwitchWidescreen" id="flexSwitchWidescreen" onClick="toggle_widescreen()">
-                      <label class="form-check-label" for="flexSwitchWidescreen">
-                        Widescreen
-                      </label>
-                    </div>
+        <footer class="fixed-bottom footer mt-auto pt-2 bg-light">
+            <div class="container d-flex justify-content-between">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                    </svg>
+                    <span id="name_org" class="ms-1" style="vertical-align:middle"></span>
+                </div>
+                <div class="form-check form-switch ">
+                    <input class="form-check-input" type="checkbox" name="flexSwitchWidescreen" id="flexSwitchWidescreen" onClick="toggle_widescreen()">
+                    <label class="form-check-label" for="flexSwitchWidescreen">Widescreen</label>
+                </div>
+            </div>
+            <div class="container mb-1" style="font-size:7pt">
+                <span>DataMeta Version </span><span id="datameta_version"></span><span> - API Version </span><span id="datameta_api_version"></span>
+                <span class="text-danger" tal:condition="request.registry.settings.get('datameta.demo_mode') in [True, 'true', 'True']">
+                    - [DEMO MODE]
+                </span>
             </div>
 
         </footer>
