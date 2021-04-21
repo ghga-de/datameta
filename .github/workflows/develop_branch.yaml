@@ -3,14 +3,13 @@ name: Reject non-develop merge
 on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
-    branches: [ main ]
 
 jobs:
   branch_check:
-    if: ${{ github.head_ref != 'develop' }}
     runs-on: ubuntu-latest
     steps:
     - name: Reject non-develop merges
+      if: ${{ github.head_ref != 'develop' && github.base_ref == 'main' }}
       run: |
         echo "PRs into 'main' must come via 'develop'" >&2
         exit 1
