@@ -19,7 +19,8 @@ from random import choice
 from string import ascii_letters, digits
 from sqlalchemy import and_
 
-from .models import User, ApiKey, PasswordToken, Session
+from .models import User, ApiKey, PasswordToken, Session, MetaDataSet
+
 
 import bcrypt
 import hashlib
@@ -219,8 +220,8 @@ def is_authorized_data_view(user, data_user_id, data_group_id, was_submitted=Fal
     # if dataset was already submitted, the group must match
     # if dataset was not yet submitted, the user must match
     return (
-        (was_submitted and data_user_id == user.id) or
-        (not was_submitted and data_group_id == user.group_id)
+        (was_submitted and data_group_id == user.group_id) or
+        (not was_submitted and data_user_id == user.id)
     )
 
 def is_authorized_file_view(user, file_obj):
@@ -233,10 +234,18 @@ def is_authorized_file_view(user, file_obj):
     return is_authorized_data_view(user, file_obj.user_id, group_id, was_submitted=was_submitted)
     
 def is_authorized_mds_view(user, mds_obj):
-    was_submitted = bool(mds_obj.submission_id)
+    was_submitted = bool(mds_obj.submission_id is not None)
     group_id = mds_obj.submission.group_id if was_submitted else None
     return is_authorized_data_view(user, mds_obj.user_id, group_id, was_submitted=was_submitted)
     
+
+def check_metadata_access(metadataset_obj:MetaDataSet, user:User):
+    if metadataset_obj.submission_id:
+        # if metadataset was already submitted, the group must match
+        return metadataset_obj.submission.group_id == user.group_id
+    else:
+        # if metadataset was not yet submitted, the user must match
+        return metadataset_obj.user_id == user.id
 
 def is_authorized_apikey_view(user, target_user):
     return is_self_user_action(user.id, target_user.id)
