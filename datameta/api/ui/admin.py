@@ -84,6 +84,7 @@ def v_admin_put_request(request):
                 group = group,
                 enabled = True,
                 site_admin = False,
+                site_read = False,
                 group_admin = newuser_make_admin,
                 pwhash = '!')
         try:
@@ -159,7 +160,8 @@ def v_admin_get(request):
         'email' : user.email,
         'enabled' : user.enabled,
         'site_admin' : user.site_admin,
-        'group_admin' : user.group_admin
+        'group_admin' : user.group_admin,
+        'site_read' : user.site_read
         } for user in query ]
 
     # If the requesting user is a site admin, return all groups, otherwise only theirs

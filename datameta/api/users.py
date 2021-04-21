@@ -39,6 +39,7 @@ class UserResponseElement(DataHolderBase):
     name: str # why is this name when it is called fullname in the db?
     group_admin: bool
     site_admin: bool
+    site_read: bool
     email: str
     group: dict
 
@@ -57,10 +58,10 @@ def get_whoami(request: Request) -> UserResponseElement:
         name            =   auth_user.fullname,
         group_admin     =   auth_user.group_admin,
         site_admin      =   auth_user.site_admin,
+        site_read       =   auth_user.site_read,
         email           =   auth_user.email,
         group           =   {"id": resource.get_identifier(auth_user.group), "name": auth_user.group.name}
     )
-
 
 @view_config(
     route_name="user_id", 
@@ -77,6 +78,7 @@ def put(request: Request):
     group_admin = request.openapi_validated.body.get("groupAdmin")
     site_admin = request.openapi_validated.body.get("siteAdmin")
     enabled = request.openapi_validated.body.get("enabled")
+    site_read = request.openapi_validated.body.get("siteRead")
 
     db = request.dbsession
 
@@ -95,6 +97,10 @@ def put(request: Request):
     if group_id and not authz.group_change(auth_user):
         raise HTTPForbidden()
 
+    # The user has to be site admin to change site_read permissions for a user
+    if site_read is not None and not authz.grant_siteread(auth_user):
+        raise HTTPForbidden()
+
     # The user has to be site admin to make another user site admin
     if site_admin is not None and not authz.grant_siteadmin(auth_user, target_user):
         raise HTTPForbidden()
@@ -111,12 +117,15 @@ def put(request: Request):
     if name is not None and not authz.name_change(auth_user, target_user):
         raise HTTPForbidden()
 
+
     # Now, make the corresponding changes
     if group_id is not None:
         new_group = resource_by_id(db, Group, group_id)
         if new_group is None:
             raise HTTPNotFound() # 404 Group ID not found
         target_user.group_id = new_group.id
+    if site_read is not None:
+        target_user.site_read = site_read
     if site_admin is not None:
         target_user.site_admin = site_admin
     if group_admin is not None:

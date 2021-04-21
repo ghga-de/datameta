@@ -8,9 +8,10 @@ def is_power_grab(user, target_user):
     return not user.site_admin and target_user.site_admin
 
 def has_data_access(user, data_user_id, data_group_id=None, was_submitted=False):
-    # if dataset was already submitted, the group must match
+    # if dataset was already submitted, the group must match, or the user must have site_read priviledges
     # if dataset was not yet submitted, the user must match
     return any((
+        (user.site_read),
         (was_submitted and data_group_id and data_group_id == user.group_id),
         (not was_submitted and data_user_id and data_user_id == user.id)
     ))
@@ -50,8 +51,10 @@ def groupname_change(user):
     return user.site_admin
 
 def group_submission_view(user, group_id):
-    # Only members of a group are allowed to view its submissions (what about the site admin??)
-    return group_id in [user.group.uuid, user.group.site_id]
+    return any((
+        (group_id in [user.group.uuid, user.group.site_id]),
+        (user.site_read)
+    ))
 
 def mds_submission(user, mds_obj):
     return has_data_access(user, mds_obj.user_id)
@@ -76,11 +79,13 @@ def password_change(user, target_user):
 def group_change(user):
     return user.site_admin
 
+def grant_siteread(user):
+    return user.site_admin
+
 def grant_siteadmin(user, target_user):
     return user.site_admin and not user_is_target(user, target_user)
 
 def grant_groupadmin(user, target_user):
-    # group admin can revoke its own group admin status?
     return has_group_rights(user, target_user.group)
 
 def status_change(user, target_user):

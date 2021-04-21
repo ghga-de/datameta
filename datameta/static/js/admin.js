@@ -719,11 +719,11 @@ function toggleGroupAdmin(event) {
 
     if(enabled) {
         if(confirm("Do you want to remove the user " + name + " as admin of " + group + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, false, undefined, undefined);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, false, undefined, undefined, undefined);
         }
     } else {
         if(confirm("Do you want to make the user " + name + " admin of " + group + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, true, undefined, undefined);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, true, undefined, undefined, undefined);
         }
     }
 }
@@ -748,11 +748,11 @@ function toggleSiteAdmin(event) {
 
     if(enabled) {
         if(confirm("Do you want to remove the user " + name + " as site admin?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, false, undefined);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, false, undefined, undefined);
         }
     } else {
         if(confirm("Do you want to make the user " + name + " site admin?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, true, undefined);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, true, undefined, undefined);
         }
     }
 }
@@ -777,11 +777,11 @@ function toggleUserEnabled(event) {
 
     if(enabled) {
         if(confirm("Do you want to deactivate the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, false);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, false, undefined);
         }
     } else {
         if(confirm("Do you want to activate the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, true);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, true, undefined);
         }
     }
 }
@@ -806,11 +806,11 @@ function toggleUserEnabled(event) {
 
     if(enabled) {
         if(confirm("Do you want to remove Site Read priviledges from the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, false);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, undefined, false);
         }
     } else {
         if(confirm("Do you want to give Site Read priviledges to the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, true);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, undefined, true);
         }
     }
 }
