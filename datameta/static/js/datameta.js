@@ -159,8 +159,17 @@ window.addEventListener("load", function() {
     .then(response => response.json())
     .then(function (json) {
         DataMeta.user = json;
-        var event = new Event('dmready')
-        window.dispatchEvent(event);
+        fetch(
+            DataMeta.api('server'),
+            { method: 'GET' }
+        ).then(function(response) {
+            return response.json();
+        }).then(function (json_api) {
+            DataMeta.version       = json_api.datametaVersion;
+            DataMeta.apiVersion   = json_api.apiVersion;
+            var event              = new Event('dmready')
+            window.dispatchEvent(event);
+        })
     })
     .catch((error) => {
         console.log(error);

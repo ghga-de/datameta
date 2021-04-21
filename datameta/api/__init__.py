@@ -22,6 +22,8 @@ from dataclasses_json import dataclass_json, LetterCase
 import os
 import yaml
 
+import datameta
+
 openapi_spec_path = os.path.join(os.path.dirname(__file__), "openapi.yaml")
 # read base url from openapi.yaml:
 with open(openapi_spec_path, "r") as spec_file:
@@ -39,6 +41,7 @@ class DataHolderBase:
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
     config.add_route("api", "/api")
+    config.add_route("server", base_url + "/server")
     config.add_route("apikeys", base_url + "/keys")
     config.add_route("apikeys_id", base_url + "/keys/{id}")
     config.add_route("user_id_keys", base_url + "/users/{id}/keys")
@@ -70,4 +73,4 @@ def includeme(config: Configurator) -> None:
     request_method="GET",
 )
 def get(request: Request):
-    return HTTPFound(base_url, json_body = {'version' : api_version})
+    return HTTPFound(base_url)
