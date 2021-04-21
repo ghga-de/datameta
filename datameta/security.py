@@ -186,9 +186,8 @@ def is_self_user_action(user, target_user):
 def has_group_rights(user, group):
     return user.site_admin or (user.group_admin and user.group.uuid == group.uuid)
 
-def is_authorized_groupname_change(user, group):
-    # Change the group name only if the user is site admin or the admin for the specific group
-    return has_group_rights(user, group)
+def is_authorized_groupname_change(user):
+    return user.site_admin
 
 def is_authorized_group_submission_view(user, group_id):
     # Only members of a group are allowed to view its submissions (what about the site admin??)
