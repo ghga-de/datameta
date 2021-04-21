@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.12.0
+  version: 0.13.0
   title: DataMeta
 
 servers:
@@ -848,6 +848,23 @@ paths:
         '500':
           description: Internal Server Error
 
+  /server:
+    get:
+      summary: Get DataMeta server information
+      description: Get information about the DataMeta server serving this API
+      tags:
+        - Server
+      operationId: GetServerInfo
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInfoResponse"
+        "500":
+          description: Internal Server Error
+
   /appsettings/{id}:
     put:
       summary: Update a specific appsetting. This is an administrative Endpoint that is not accessible for regular users.
@@ -1285,6 +1302,18 @@ components:
           - isFile
           - isSubmissionUnique
           - isSiteUnique
+      additionalProperties: false
+
+    ServerInfoResponse:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+        datametaVersion:
+          type: string
+      required:
+        - apiVersion
+        - datametaVersion
       additionalProperties: false
 
     AppSettingsResponse:
