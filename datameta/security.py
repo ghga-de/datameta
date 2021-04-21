@@ -219,10 +219,10 @@ def is_authorized_mds_deletion(user, mdata_set):
 def is_authorized_data_view(user, data_user_id, data_group_id, was_submitted=False):
     # if dataset was already submitted, the group must match
     # if dataset was not yet submitted, the user must match
-    return (
-        (was_submitted and data_group_id == user.group_id) or
+    return any((
+        (was_submitted and data_group_id == user.group_id),
         (not was_submitted and data_user_id == user.id)
-    )
+    ))
 
 def is_authorized_file_view(user, file_obj):
     was_submitted = (
@@ -269,11 +269,11 @@ def is_authorized_grant_groupadmin(user, target_user):
     # group admin can revoke its own group admin status?
     return has_group_rights(user, target_user.group.uuid)
 def is_authorized_status_change(user, target_user):
-    return (
-        has_group_rights(user, target_user.group.id) or 
-        not (not user.site_admin and target_user.site_admin) or
+    return all((
+        has_group_rights(user, target_user.group.id),
+        not (not user.site_admin and target_user.site_admin),
         not is_self_user_action(user.id, target_user.id)
-    )
+    ))
 def is_authorized_name_change(user, target_user):
     return has_group_rights(user, target_user.group.id) or is_self_user_action(user.id, target_user.id)
  
