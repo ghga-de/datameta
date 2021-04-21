@@ -58,7 +58,7 @@ def delete_staged_file_from_db(file_id, db, auth_user):
         raise HTTPNotFound(json=None)
 
     # Check if requesting user has access to the file
-    if db_file.user_id != auth_user.id:
+    if not security.is_authorized_file_deletion(auth_user, db_file):
         raise HTTPForbidden(json=None)
 
     if db_file.metadatumrecord is not None:
@@ -70,6 +70,8 @@ def delete_staged_file_from_db(file_id, db, auth_user):
     db.delete(db_file)
 
     return user_uuid, file_uuid, storage_uri
+
+
 
 
 @view_config(
@@ -153,21 +155,6 @@ def post(request: Request) -> FileUploadResponse:
             )
 
 
-def check_file_access(file_obj:models.File, user:models.User):
-    if (
-        file_obj.content_uploaded and 
-        file_obj.metadatumrecord and  
-        file_obj.metadatumrecord.metadataset.submission_id 
-    ):
-        # if file was already submitted, the group must match
-        return (
-            file_obj.metadatumrecord.metadataset.submission.group_id == user.group_id
-        )
-    else:
-        # if file was not yet submitted, the user must match
-        return file_obj.user_id == user.id
-
-
 @view_config(
     route_name="files_id",
     renderer="json",
@@ -196,7 +183,7 @@ def get_file(request: Request) -> FileResponse:
         raise HTTPNotFound(json=None)
 
     # Check if requesting user has access to the file
-    if not check_file_access(db_file, auth_user):
+    if not security.is_authorized_file_view(auth_user, db_file):
         raise HTTPForbidden(json=None)
 
     # Return details
@@ -227,7 +214,7 @@ def update_file(request: Request) -> HTTPOk:
     db_file = resource.resource_by_id(db, models.File, request.matchdict['id'])
     if db_file is None:
         raise HTTPNotFound(json=None) # 404
-    if db_file.user_id != auth_user.id:
+    if not security.is_authorized_file_update(auth_user, db_file):
         raise HTTPForbidden(json=None) # 403
     # We only allow modifications before the file is committed (uploaded)
     if db_file.content_uploaded:
