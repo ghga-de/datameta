@@ -59,7 +59,7 @@ def delete_staged_file_from_db(file_id, db, auth_user):
         raise HTTPNotFound(json=None)
 
     # Check if requesting user has access to the file
-    if not authz.is_authorized_file_deletion(auth_user, db_file):
+    if not authz.file_deletion(auth_user, db_file):
         raise HTTPForbidden(json=None)
 
     if db_file.metadatumrecord is not None:
@@ -184,7 +184,7 @@ def get_file(request: Request) -> FileResponse:
         raise HTTPNotFound(json=None)
 
     # Check if requesting user has access to the file
-    if not authz.is_authorized_file_view(auth_user, db_file):
+    if not authz.file_view(auth_user, db_file):
         raise HTTPForbidden(json=None)
 
     # Return details
@@ -215,7 +215,7 @@ def update_file(request: Request) -> HTTPOk:
     db_file = resource.resource_by_id(db, models.File, request.matchdict['id'])
     if db_file is None:
         raise HTTPNotFound(json=None) # 404
-    if not authz.is_authorized_file_update(auth_user, db_file):
+    if not authz.file_update(auth_user, db_file):
         raise HTTPForbidden(json=None) # 403
     # We only allow modifications before the file is committed (uploaded)
     if db_file.content_uploaded:

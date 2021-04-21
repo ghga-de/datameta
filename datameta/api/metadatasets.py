@@ -72,7 +72,7 @@ def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
         raise HTTPNotFound()
 
     # Check if user owns this metadataset
-    if not authz.is_authorized_mds_deletion(auth_user, mdata_set):
+    if not authz.mds_deletion(auth_user, mdata_set):
         raise HTTPForbidden()
 
     # Check if the metadataset was already submitted
@@ -168,7 +168,7 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     if not mdata_set:
         raise HTTPNotFound()
 
-    if not authz.is_authorized_mds_view(auth_user, mdata_set):
+    if not authz.mds_view(auth_user, mdata_set):
         raise HTTPForbidden()
 
     return MetaDataSetResponse(

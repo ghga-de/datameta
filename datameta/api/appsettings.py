@@ -50,7 +50,7 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
     appsettings = db.query(ApplicationSettings)
 
     # User has to be site admin to access these settings
-    if not authz.is_authorized_appsettings_view(auth_user):
+    if not authz.appsettings_view(auth_user):
         raise HTTPForbidden()
 
     settings = []
@@ -82,7 +82,7 @@ def put(request:Request):
     settings_id = request.matchdict["id"]
 
     # Only site admins can change site settings
-    if not authz.is_authorized_appsettings_update(auth_user):
+    if not authz.appsettings_update(auth_user):
          raise HTTPForbidden()
 
     target_setting = resource_by_id(db, ApplicationSettings, settings_id)
