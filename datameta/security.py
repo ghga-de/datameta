@@ -229,11 +229,13 @@ def is_authorized_file_view(user, file_obj):
         file_obj.metadatumrecord and  
         file_obj.metadatumrecord.metadataset.submission_id 
     )
-    return is_authorized_data_view(user, file_obj.user_id, file_obj.metadatumrecord.metadataset.submission.group_id, was_submitted=was_submitted)
+    group_id = file_obj.metadatumrecord.metadataset.submission.group_id if was_submitted else None
+    return is_authorized_data_view(user, file_obj.user_id, group_id, was_submitted=was_submitted)
     
 def is_authorized_mds_view(user, mds_obj):
-    was_submitted = bool(metadataset_obj.submission_id)
-    return is_authorized_data_view(user, mds_obj.user_id, mds_obj.submission.group_id, was_submitted=was_submitted)
+    was_submitted = bool(mds_obj.submission_id)
+    group_id = mds_obj.submission.group_id if was_submitted else None
+    return is_authorized_data_view(user, mds_obj.user_id, group_id, was_submitted=was_submitted)
     
 
 def is_authorized_apikey_view(user, target_user):
