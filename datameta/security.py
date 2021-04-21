@@ -180,15 +180,15 @@ def revalidate_admin(request):
         return user
     raise HTTPUnauthorized()
 
-def is_self_user_action(user_id, target_user_id):
-    return user_id == target_user_id
+def is_self_user_action(user, target_user):
+    return user.uuid == target_user.uuid
 
-def has_group_rights(user, group_id):
-    return user.site_admin or (user.group_admin and user.group.uuid == group_id)
+def has_group_rights(user, group):
+    return user.site_admin or (user.group_admin and user.group.uuid == group.uuid)
 
-def is_authorized_groupname_change(user, group_id):
+def is_authorized_groupname_change(user, group):
     # Change the group name only if the user is site admin or the admin for the specific group
-    return has_group_rights(user, group_id)
+    return has_group_rights(user, group)
 
 def is_authorized_group_submission_view(user, group_id):
     # Only members of a group are allowed to view its submissions (what about the site admin??)
@@ -248,9 +248,9 @@ def check_metadata_access(metadataset_obj:MetaDataSet, user:User):
         return metadataset_obj.user_id == user.id
 
 def is_authorized_apikey_view(user, target_user):
-    return is_self_user_action(user.id, target_user.id)
+    return is_self_user_action(user, target_user)
 def is_authorized_apikey_deletion(user, target_user):
-    return is_self_user_action(user.id, target_user.id)
+    return is_self_user_action(user, target_user)
 
 def is_authorized_appsettings_view(user):
     return user.site_admin
@@ -258,26 +258,26 @@ def is_authorized_appsettings_update(user):
     return user.site_admin
 
 def is_authorized_password_change(user, target_user):
-    return is_self_user_action(user.id, target_user.id)
+    return is_self_user_action(user, target_user)
 
 
 def is_authorized_group_change(user):
     return user.site_admin
 def is_authorized_grant_siteadmin(user, target_user):
-    return user.site_admin and not is_self_user_action(user.id, target_user.id)
+    return user.site_admin and not is_self_user_action(user, target_user)
 def is_authorized_grant_groupadmin(user, target_user):
     # group admin can revoke its own group admin status?
-    return has_group_rights(user, target_user.group.uuid)
+    return has_group_rights(user, target_user.group)
 def is_authorized_status_change(user, target_user):
     return all((
-        has_group_rights(user, target_user.group.id),
+        has_group_rights(user, target_user.group),
         not is_power_grab(user, target_user),
-        not is_self_user_action(user.id, target_user.id)
+        not is_self_user_action(user, target_user)
     ))
 def is_authorized_name_change(user, target_user):
     return any((
-        has_group_rights(user, target_user.group.id),
-        is_self_user_action(user.id, target_user.id)
+        has_group_rights(user, target_user.group),
+        is_self_user_action(user, target_user)
     ))
     # not (has_admin_rights or edit_own_user):
 
