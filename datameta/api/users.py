@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from . import DataHolderBase
 from ..models import User, Group
 from .. import security, errors, resource
+from ..security import authz
 from ..resource import resource_by_id, get_identifier
 
 @dataclass
@@ -91,23 +92,23 @@ def put(request: Request):
     # First, check, if the user has the rights to perform all the changes they want
 
     # The user has to be site admin to change another users group
-    if group_id and not security.is_authorized_group_change(auth_user):
+    if group_id and not authz.is_authorized_group_change(auth_user):
         raise HTTPForbidden()
 
     # The user has to be site admin to make another user site admin
-    if site_admin is not None and not security.is_authorized_grant_siteadmin(auth_user, target_user):
+    if site_admin is not None and not authz.is_authorized_grant_siteadmin(auth_user, target_user):
         raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to make another user group admin
-    if group_admin is not None and not security.is_authorized_grant_groupadmin(auth_user, target_user):
+    if group_admin is not None and not authz.is_authorized_grant_groupadmin(auth_user, target_user):
         raise HTTPForbidden()
 
     # The user has to be site admin or group admin of the users group to enable or disable a user
-    if enabled is not None and not security.is_authorized_status_change(auth_user, target_user):
+    if enabled is not None and not authz.is_authorized_status_change(auth_user, target_user):
         raise HTTPForbidden()
 
     # The user can change their own name or be site admin or group admin of the users group to change the name of another user
-    if name is not None and not security.is_authorized_name_change(auth_user, target_user):
+    if name is not None and not authz.is_authorized_name_change(auth_user, target_user):
         raise HTTPForbidden()
 
     # Now, make the corresponding changes

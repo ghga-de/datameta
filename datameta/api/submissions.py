@@ -22,6 +22,7 @@ from typing import List
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import joinedload
 from .. import errors, siteid, security, resource, linting
+from ..security import authz
 from ..models import MetaDatum, MetaDatumRecord, MetaDataSet, Submission, File
 from . import DataHolderBase
 
@@ -46,13 +47,13 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
     Raises:
         400 HTTPBadRequest
     """
-    auth_f = security.is_authorized_file_submission
+    auth_f = authz.is_authorized_file_submission
     # Collect missing files
     val_errors = [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Not found") for file_id, db_file in db_files.items() if db_file is None ]
     # Collect authorization issues
     val_errors += [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Access denied") for file_id, db_file in db_files.items() if db_file is not None and not auth_f(auth_user, db_file) ]
 
-    auth_f = security.is_authorized_mds_submission
+    auth_f = authz.is_authorized_mds_submission
     # Collect missing metadatasets
     val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Not found") for mset_id, db_mset in db_msets.items() if db_mset is None ]
     # Collect authorization issues

@@ -20,6 +20,7 @@ from . import DataHolderBase
 from .. import models
 from ..models import Group
 from .. import security, errors
+from ..security import authz
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
@@ -94,7 +95,7 @@ def get_all_submissions(request: Request) -> GroupSubmissions:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
     # check if user is part of the target group:
-    if not security.is_authorized_group_submission_view(auth_user, group_id):
+    if not authz.is_authorized_group_submission_view(auth_user, group_id):
         raise HTTPForbidden()
 
     return GroupSubmissions(
@@ -129,7 +130,7 @@ def put(request: Request):
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
-    if security.is_authorized_groupname_change(auth_user):
+    if authz.is_authorized_groupname_change(auth_user):
         try:
             target_group.name = new_group_name
             db.flush()
