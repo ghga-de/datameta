@@ -271,13 +271,19 @@ def is_authorized_grant_groupadmin(user, target_user):
 def is_authorized_status_change(user, target_user):
     return all((
         has_group_rights(user, target_user.group.id),
-        not (not user.site_admin and target_user.site_admin),
+        not is_power_grab(user, target_user),
         not is_self_user_action(user.id, target_user.id)
     ))
 def is_authorized_name_change(user, target_user):
-    return has_group_rights(user, target_user.group.id) or is_self_user_action(user.id, target_user.id)
- 
+    return any((
+        has_group_rights(user, target_user.group.id),
+        is_self_user_action(user.id, target_user.id)
+    ))
+    # not (has_admin_rights or edit_own_user):
 
+
+def is_power_grab(user, target_user):
+    return not user.site_admin and target_user.site_admin
 
     #has_admin_rights
 
