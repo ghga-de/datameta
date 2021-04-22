@@ -28,7 +28,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             f"{file_uuid}__{file_checksum}"
         )
 
-        return os.path.exists(expected_file_path)
+        file_exists = os.path.exists(expected_file_path)
 
         if file_exists and compare_checksum:
             return file_checksum == calc_checksum(expected_file_path)
