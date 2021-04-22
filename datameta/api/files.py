@@ -123,7 +123,7 @@ def post(request: Request) -> FileUploadResponse:
     req_checksum = request.openapi_validated.body["checksum"]
 
     if not req_name:
-        raise errors.get_validation_error(message=["File names cannot be empty."])
+        raise errors.get_validation_error(["File names cannot be empty."])
 
     # Create the corresponding database object
     db_file = models.File(
