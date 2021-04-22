@@ -565,12 +565,10 @@ DataMeta.submit.deleteSelectedMeta = function() {
                 DataMeta.submit.setLock(false);
             });
         } else {
-            error.json().then(function(json){
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + json.message, "danger")
-                console.log(error);
-                DataMeta.submit.refresh();
-                DataMeta.submit.setLock(false);
-            });
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + error.message, "danger")
+            console.log(error.message);
+            DataMeta.submit.refresh();
+            DataMeta.submit.setLock(false);
         }
     });
 }
