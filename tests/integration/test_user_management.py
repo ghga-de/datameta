@@ -72,22 +72,22 @@ class TestUserManagement(BaseIntegrationTest):
         self.process_name_change_request(testname, user, target_user, new_name, expected_response)
 
     @parameterized.expand([
-        ("self_group_change", "user_a", "", "group_y", 403),
-        ("self_group_change_by_group_admin", "group_x_admin", "", "group_y", 403),
-        ("other_group_change_by_group_admin", "group_x_admin", "user_a", "group_y", 403),
-        ("other_group_change_by_other_group_admin", "group_x_admin", "user_c", "group_x", 403),
-        ("self_group_change_by_admin", "admin", "", "group_y", 204),
+        ("self_group_change"                         , "user_a"          , None       , "group_y"   , 403),
+        ("self_group_change_by_group_admin"          , "group_x_admin"   , None       , "group_y"   , 403),
+        ("other_group_change_by_group_admin"         , "group_x_admin"   , "user_a"   , "group_y"   , 403),
+        ("other_group_change_by_other_group_admin"   , "group_x_admin"   , "user_c"   , "group_x"   , 403),
+        ("self_group_change_by_admin"                , "admin"           , None       , "group_y"   , 204),
     ])
     def test_group_change(self, testname:str, executing_user:str, target_user:str, new_group:str, expected_response:int):
-        user = self.users[executing_user]
-        target_user = self.users[target_user] if target_user else user
+        user : models.User             = self.users[executing_user]
+        db_target_user : models.User   = self.users[target_user] if target_user else user
+        new_group_uuid                 = str(get_group_by_name(self.session_factory, new_group))
+        current_group_uuid             = str(get_group_by_name(self.session_factory, db_target_user.groupname))
 
-        new_group_uuid = str(get_group_by_name(self.session_factory, new_group))
-        current_group_uuid = str(get_group_by_name(self.session_factory, target_user.groupname))
-        self.process_group_change_request(testname, user, target_user, new_group_uuid, expected_response)
+        self.process_group_change_request(testname, user, db_target_user, new_group_uuid, expected_response)
 
         if expected_response == 204:
-            self.process_group_change_request(testname, user, target_user, current_group_uuid, expected_response)
+            self.process_group_change_request(testname, user, db_target_user, current_group_uuid, expected_response)
         
     @parameterized.expand([
         ("self_regular_user_grant_site_admin", "user_a", "", ("+siteAdmin",), 403),
