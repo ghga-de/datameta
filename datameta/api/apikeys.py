@@ -32,7 +32,7 @@ class UserSession(DataHolderBase):
     user_id: str
     token: str
     label: str
-    expires: Optional[datetime]
+    expires: Optional[str]
 
 class ApiKeyLabels:
     """ApiKeyLabels container for OpenApi communication"""
@@ -50,7 +50,7 @@ class ApiKeyLabels:
             for key in user.apikeys
         ]
 
-    def __json__(self, request: Request) -> dict:
+    def __json__(self, request: Request) -> List[dict]:
         return self.apikeys
 
 
@@ -155,7 +155,7 @@ def post(request:Request) -> UserSession:
     request_method="GET",
     openapi=True
 )
-def get_user_keys(request:Request) -> UserSession:
+def get_user_keys(request:Request) -> ApiKeyLabels:
     """Get all ApiKeys from a user"""
 
     auth_user = security.revalidate_user(request)

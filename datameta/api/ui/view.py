@@ -19,6 +19,7 @@ from pyramid.httpexceptions import HTTPBadRequest, HTTPOk
 from pyramid.request import Request
 from pyramid.view import view_config
 from dataclasses import dataclass
+from typing import Optional
 import shlex
 import webob
 import logging
@@ -37,8 +38,8 @@ log = logging.getLogger(__name__)
 @dataclass
 class ViewTableResponse(MetaDataSetResponse):
     """Data class representing the JSON response returned by POST:/api/ui/view"""
-    submission_label : str = None
-    group_id : dict = None
+    submission_label : Optional[str] = None
+    group_id : Optional[dict] = None
 
 def metadata_index_to_name(db, idx):
     name = db.query(MetaDatum.name).order_by(MetaDatum.order).limit(1).offset(idx).scalar()
