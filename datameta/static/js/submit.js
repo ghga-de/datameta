@@ -171,30 +171,7 @@ Refreshes the data displayed by the `submit` view
 DEPRECATED
 */
 DataMeta.submitRefresh = function() {
-    alert("DataMeta.submitRefresh() is deprectated");
-}
-
-DataMeta.delete_pending = function() {
-    var xhr = new XMLHttpRequest();
-
-    var data = new FormData();
-    data.set("action", "delete_pending");
-
-    xhr.onreadystatechange = function(){
-        var error = false;
-        if (xhr.readyState === 4){
-            if (xhr.status === 200) {
-                var json = JSON.parse(xhr.responseText);
-                error = !json.success;
-            } else error = 1;
-            if (error) DataMeta.new_alert("Deletion failed. Please try again.", "danger");
-            DataMeta.submitRefresh();
-            document.getElementById("del_pending_btn").disabled = false;
-        }
-    };
-
-    xhr.open('POST', '/submit/action');
-    xhr.send(data);
+    alert("DataMeta.submitRefresh() is deprecated");
 }
 
 /*
@@ -365,8 +342,10 @@ DataMeta.submit.visualizeErrors = function(errors, noselect, rootElement) {
 
     if (errors.length || noselect) {
         document.getElementById("commit_btn").style.display="none";
+        document.getElementById("commit_label").style.display="none";
     } else {
         document.getElementById("commit_btn").style.display="block";
+        document.getElementById("commit_label").style.display="block";
     }
 
     errors.forEach(function(error) {
@@ -401,10 +380,10 @@ DataMeta.submit.visualizeErrors = function(errors, noselect, rootElement) {
 }
 
 DataMeta.submit.checkboxChange = function(event) {
-    document.getElementById("masterfset").disabled = true;
+    DataMeta.submit.setLock(true);
     DataMeta.submit.unchecked[event.target.getAttribute('data-datameta-uuid')] = ! event.target.checked;
     DataMeta.submit.submit(true);
-    document.getElementById("masterfset").disabled = false;
+    DataMeta.submit.setLock(false);
 }
 
 DataMeta.submit.submit = function(validateOnly) {
@@ -412,6 +391,8 @@ DataMeta.submit.submit = function(validateOnly) {
     var file_uuids = Array.from(document.querySelectorAll("input.datameta-entity-check[data-datameta-type='file']:checked"), input => input.getAttribute("data-datameta-uuid"));
     var mset_uuids = Array.from(document.querySelectorAll("input.datameta-entity-check[data-datameta-type='meta']:checked"), input => input.getAttribute("data-datameta-uuid"));
 
+    // Collect Label
+    var label = document.querySelector("#commit_label").value; 
 
     if (!file_uuids.length && !mset_uuids.length) {
         DataMeta.submit.visualizeErrors([], true, document.getElementById("masterfset"))
@@ -426,7 +407,8 @@ DataMeta.submit.submit = function(validateOnly) {
         {
             method : "POST", body:JSON.stringify({
                 metadatasetIds : mset_uuids,
-                fileIds : file_uuids
+                fileIds : file_uuids,
+                label: label
             }),
             headers: {
                 'Content-Type': 'application/json'
@@ -524,21 +506,165 @@ DataMeta.submit.renderMetadataHelp = function() {
     });
 }
 
+DataMeta.submit.checkBoxes = function(table, checked) {
+    DataMeta.submit.setLock(true);
+    var checkboxes = document.querySelectorAll("input.datameta-entity-check[data-datameta-type='"+ table +"']")
+    checkboxes.forEach(function(box) {
+        box.checked = checked;
+        DataMeta.submit.unchecked[box.getAttribute('data-datameta-uuid')] = ! checked;
+    })
+
+    DataMeta.submit.submit(true);
+    DataMeta.submit.setLock(false);
+}
+
+DataMeta.submit.deleteSelectedMeta = function() {
+
+    DataMeta.submit.setLock(true);
+
+    // Get checked metadatasets
+    var metadatasetIds = Array.from(document.querySelectorAll("input.datameta-entity-check[data-datameta-type='meta']:checked"), input => input.getAttribute("data-datameta-uuid"));
+
+    // Delete all checked metadatasets
+    fetch(DataMeta.api('rpc/delete-metadatasets'),
+    {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body:  JSON.stringify({metadatasetIds})
+    }).then(function(response) {
+        if (response.ok) {
+            DataMeta.submit.refresh();
+            DataMeta.submit.setLock(false);
+            return;
+        }
+
+        if (response.status==400) throw new DataMeta.AnnotatedError(response)
+        
+        var message;
+
+        if (response.status==401) {
+            message = "Unauthenticated."
+        } else if (response.status==403) {
+            message = "Access denied."
+        } else if (response.status==404) {
+            message = "File not found."
+        } else {
+            message = "Unknown error."
+        }
+
+        throw new Error(message);
+    }).catch(function(error) {
+        if (error instanceof DataMeta.AnnotatedError) {
+            error.json().then(function(json){
+                DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + json[0].message, "danger");
+                console.log(error);
+                DataMeta.submit.refresh();
+                DataMeta.submit.setLock(false);
+            });
+        } else {
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the records failed: " + error.message, "danger")
+            console.log(error.message);
+            DataMeta.submit.refresh();
+            DataMeta.submit.setLock(false);
+        }
+    });
+}
+
+DataMeta.submit.deleteSelectedFiles = function() {
+    
+    DataMeta.submit.setLock(true);
+
+    // Get checked files
+    var fileIds = Array.from(document.querySelectorAll("input.datameta-entity-check[data-datameta-type='file']:checked"), input => input.getAttribute("data-datameta-uuid"));
+
+    // Delete all checked files
+    fetch(DataMeta.api('rpc/delete-files'),
+    {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({fileIds})
+    }).then(function(response) {
+        if (response.ok) {
+            DataMeta.submit.refresh();
+            DataMeta.submit.setLock(false);
+            return;
+        }
+
+        if (response.status==400) throw new DataMeta.AnnotatedError(response)
+        
+        var message;
+
+        if (response.status==401) {
+            message = "Unauthenticated."
+        } else if (response.status==403) {
+            message = "Access denied."
+        } else if (response.status==404) {
+            message = "File not found."
+        } else {
+            message = "Unknown error."
+        }
+
+        throw new Error(message);
+    }).catch(function(error) {
+        if (error instanceof DataMeta.AnnotatedError) {
+            error.json().then(function(json){
+                DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: " + json[0].message, "danger");
+                console.log(error);
+                DataMeta.submit.refresh();
+                DataMeta.submit.setLock(false);
+            });
+        } else {
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: " + error.message, "danger")
+            console.log(error.message);
+            DataMeta.submit.refresh();
+            DataMeta.submit.setLock(false);
+        }
+    });
+}
+
 window.addEventListener("load", function() {
     DataMeta.submit.renderMetadataHelp();
     DataMeta.submit.refresh();
 
     document.getElementById("commit_btn").addEventListener("click", function(event) {
-            DataMeta.submit.submit();
-        });
+        DataMeta.submit.submit();
+    });
 
-    document.getElementById("del_pending_btn").addEventListener("click", function(event) {
-            event.target.disabled = true;
-            DataMeta.delete_pending();
-        });
+    document.getElementById("select_all_metadate_btn").addEventListener("click", function(event) {
+        var table = "meta";
+        DataMeta.submit.checkBoxes(table, true);
+    });
+
+    document.getElementById("deselect_all_metadata_btn").addEventListener("click", function(event) {
+        var table = "meta";
+        DataMeta.submit.checkBoxes(table, false);
+    });
+
+    document.getElementById("delete_selected_metadata_btn").addEventListener("click", function(event) {
+        DataMeta.submit.deleteSelectedMeta();
+    });
+
+    document.getElementById("select_all_files_btn").addEventListener("click", function(event) {
+        var table = "file";
+        DataMeta.submit.checkBoxes(table, true);
+    });
+
+    document.getElementById("deselect_all_files_btn").addEventListener("click", function(event) {
+        var table = "file";
+        DataMeta.submit.checkBoxes(table, false);
+    });
+
+    document.getElementById("delete_selected_files_btn").addEventListener("click", function(event) {
+        DataMeta.submit.deleteSelectedFiles();
+    });
 
     document.getElementById("btn_close_card_failed").addEventListener("click", event => document.getElementById("card_failed").classList.add("d-none"));
     document.getElementById("dismiss_meta_help").addEventListener("click", event => $("#row_explain_meta").slideUp())
     document.getElementById("show_meta_help").addEventListener("click", event => $("#row_explain_meta").slideToggle())
 });
-
