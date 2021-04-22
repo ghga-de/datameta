@@ -102,7 +102,7 @@
                 <a class="col ms-2 btn btn-outline-dark" href="/submit"><i class="bi bi-file-earmark-plus"></i> Submit Data</a>
                 <a class="col ms-2 btn btn-outline-dark" href="/view"><i class="bi bi-search"></i> View Data</a>
                 <a class="col ms-2 btn btn-outline-dark" href="/account"><i class="bi bi-person"></i> Account</a>
-                <a class="col ms-2 btn btn-outline-dark" href="/api"><i class="bi bi-code"></i> API</a>
+                <a class="col ms-2 btn btn-outline-dark" href="/api" target="_blank"><i class="bi bi-code"></i> API</a>
                 <a id="admin_view_button" class="col ms-2 btn btn-outline-danger" href="/admin" style="display: none"><i class="bi bi-gear"></i> Admin</a>
                 <a class="col ms-2 btn btn-outline-danger" href="/login"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </nav>
