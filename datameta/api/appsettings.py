@@ -105,7 +105,7 @@ def put(request:Request):
 
     elif value_type == 'float':
         try:
-            value_float_float = float(value)
+            value_float = float(value)
         except ValueError:
             err = {
                 "exception": "ValidationError",
