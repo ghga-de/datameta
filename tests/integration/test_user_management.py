@@ -101,6 +101,9 @@ class TestUserManagement(BaseIntegrationTest):
         ("self_enable_regular_user", "user_a", "", ("+enabled",), 403),
         ("other_disable_regular_user", "group_x_admin", "user_a", ("-enabled",), 204),
         ("other_disable_regular_user_other_group", "group_x_admin", "user_c", ("-enabled",), 403),
+        ("self_regular_user_grant_site_read", "user_a", "", ("+siteRead",), 403),
+        ("other_group_admin_grant_site_read_to_regular", "group_x_admin", "user_a", ("+siteRead",), 403),
+        ("other_site_admin_grant_site_read_to_regular", "admin", "user_a", ("+siteRead",), 204),
     ])
     def test_status_changes(self, testname:str, executing_user:str, target_user:str, actions:tuple, expected_response:int):
         user = self.users[executing_user]

@@ -37,7 +37,7 @@ def get_user_by_uuid(
         assert user_obj, f"I don't know this user: {str(user_uuid)}"
 
         user_vals = dict()
-        for attr in ("fullname", "enabled", "site_admin", "group_admin"):
+        for attr in ("fullname", "enabled", "site_admin", "group_admin", "site_read"):
             json_val = "".join(item.capitalize() if i else item for i, item in enumerate(attr.split("_")))
             user_vals[json_val] = getattr(user_obj, attr)
         user_vals["group_uuid"] = str(user_obj.group.uuid)

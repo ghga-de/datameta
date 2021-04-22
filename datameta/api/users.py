@@ -31,6 +31,7 @@ class UserUpdateRequest(DataHolderBase):
     groupAdmin: bool
     siteAdmin: bool
     enabled: bool
+    siteRead: bool
 
 @dataclass
 class UserResponseElement(DataHolderBase):
