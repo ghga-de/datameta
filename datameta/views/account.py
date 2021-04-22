@@ -24,8 +24,3 @@ from .. import security
 def my_view(request):
     security.revalidate_user_or_login(request)
     return {}
-
-@view_config(route_name='account', renderer='../templates/account.pt')
-def my_view(request):
-    user = security.revalidate_user_or_login(request)
-    return {'user' : { 'uuid' : user.uuid } }
