@@ -4,7 +4,7 @@ metadatasets and files.
 
 from . import BaseIntegrationTest, default_users
 from .fixtures import UserFixture, AuthFixture, calc_checksum
-from typing import Optional, List
+from typing import Optional, List, Any, Dict
 import transaction
 import os
 
@@ -80,7 +80,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             # check if response record contains same keys
             # as expected record (values might have changed
             # due to backend side processing):
-            assert expected_record.keys() == response.json["record"].keys()
+            assert expected_record is not None and expected_record.keys() == response.json["record"].keys()
 
             return response.json
 
@@ -200,7 +200,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         status:int=200
     ):
         # request params:
-        request_body = {}
+        request_body : Dict[str, Any] = {}
         if name:
             request_body["name"] = name
         if checksum:
