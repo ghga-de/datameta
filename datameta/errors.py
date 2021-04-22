@@ -37,7 +37,7 @@ def get_error(
 
     response_body = []
     for idx, msg in enumerate(messages):
-        err = {
+        err : dict = {
             "exception": exception_label,
         }
         if entities is not None and entities[idx] is not None:
