@@ -82,7 +82,7 @@ def put(request:Request):
     metadata_id = request.matchdict["id"]
 
     # Only site admins can change metadata
-    if not authz.metadatum_update(auth_user):
+    if not authz.update_metadatum(auth_user):
          raise HTTPForbidden()
 
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
@@ -114,7 +114,7 @@ def post(request:Request):
     auth_user = security.revalidate_user(request)
 
     # Only site admins can post new metadata
-    if not authz.metadatum_creation(auth_user):
+    if not authz.create_metadatum(auth_user):
          raise HTTPForbidden()
 
     body = request.openapi_validated.body

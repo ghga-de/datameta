@@ -95,7 +95,7 @@ def get_all_submissions(request: Request) -> GroupSubmissions:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
     # check if user is part of the target group:
-    if not authz.group_submission_view(auth_user, group_id):
+    if not authz.view_group_submissions(auth_user, group_id):
         raise HTTPForbidden()
 
     return GroupSubmissions(
@@ -130,7 +130,7 @@ def put(request: Request):
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
-    if authz.groupname_change(auth_user):
+    if authz.change_groupname(auth_user):
         try:
             target_group.name = new_group_name
             db.flush()
@@ -139,5 +139,3 @@ def put(request: Request):
         
         return HTTPNoContent()
     raise HTTPForbidden() # 403 Not authorized to change this group name
-
-

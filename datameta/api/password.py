@@ -65,7 +65,7 @@ def put(request):
             raise HTTPForbidden() # 403 User ID not found, hidden from the user intentionally
 
         # Only changing the user's own password is allowed
-        if not authz.password_change(auth_user, target_user) or not security.check_password_by_hash(request_credential, auth_user.pwhash):
+        if not authz.change_password(auth_user, target_user) or not security.check_password_by_hash(request_credential, auth_user.pwhash):
             raise HTTPForbidden() # 403 Not authorized to change this user's password
 
     # Verify the password quality

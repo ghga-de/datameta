@@ -47,13 +47,20 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
     Raises:
         400 HTTPBadRequest
     """
-    auth_f = authz.file_submission
     # Collect missing files
-    val_errors = [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Not found") for file_id, db_file in db_files.items() if db_file is None ]
+    val_errors = [ 
+        ({ 'site' : file_id, 'uuid' : file_id }, None, "Not found") 
+        for file_id, db_file in db_files.items()
+        if db_file is None 
+    ]
     # Collect authorization issues
-    val_errors += [ ({ 'site' : file_id, 'uuid' : file_id }, None, "Access denied") for file_id, db_file in db_files.items() if db_file is not None and not auth_f(auth_user, db_file) ]
+    val_errors += [ 
+        ({ 'site' : file_id, 'uuid' : file_id }, None, "Access denied")
+        for file_id, db_file in db_files.items()
+        if db_file is not None and not authz.submit_file(auth_user, db_file)
+    ]
 
-    auth_f = authz.mds_submission
+    auth_f = authz.submit_mset
     # Collect missing metadatasets
     val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Not found") for mset_id, db_mset in db_msets.items() if db_mset is None ]
     # Collect authorization issues
