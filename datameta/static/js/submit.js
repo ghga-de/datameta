@@ -622,12 +622,10 @@ DataMeta.submit.deleteSelectedFiles = function() {
                 DataMeta.submit.setLock(false);
             });
         } else {
-            error.json().then(function(json){
-                DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: " + json.message, "danger")
-                console.log(error);
-                DataMeta.submit.refresh();
-                DataMeta.submit.setLock(false);
-            });
+            DataMeta.new_alert("<strong>ERROR</strong> Deleting the files failed: " + error.message, "danger")
+            console.log(error.message);
+            DataMeta.submit.refresh();
+            DataMeta.submit.setLock(false);
         }
     });
 }
@@ -672,4 +670,3 @@ window.addEventListener("load", function() {
     document.getElementById("dismiss_meta_help").addEventListener("click", event => $("#row_explain_meta").slideUp())
     document.getElementById("show_meta_help").addEventListener("click", event => $("#row_explain_meta").slideToggle())
 });
-
