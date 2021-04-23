@@ -130,7 +130,7 @@ def put(request: Request):
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
-    if authz.change_groupname(auth_user):
+    if authz.update_group_name(auth_user):
         try:
             target_group.name = new_group_name
             db.flush()

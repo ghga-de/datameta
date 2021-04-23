@@ -55,7 +55,7 @@ def view_file(user, file_obj):
     group_id = file_obj.metadatumrecord.metadataset.submission.group_id if was_submitted else None
     return has_data_access(user, file_obj.user_id, group_id, was_submitted=was_submitted)
 
-def change_groupname(user):
+def update_group_name(user):
     return user.site_admin
 
 def view_group_submissions(user, group_id):
@@ -81,29 +81,29 @@ def view_mset(user, mds_obj):
     group_id = mds_obj.submission.group_id if was_submitted else None
     return has_data_access(user, mds_obj.user_id, data_group_id=group_id, was_submitted=was_submitted)
     
-def change_password(user, target_user):
+def update_user_password(user, target_user):
     return user_is_target(user, target_user)
 
-def change_group(user):
+def update_user_group(user):
     return user.site_admin
 
-def grant_or_revoke_siteread(user):
+def update_user_siteread(user):
     return user.site_admin
 
-def grant_or_revoke_siteadmin(user, target_user):
+def update_user_siteadmin(user, target_user):
     return user.site_admin and not user_is_target(user, target_user)
 
-def grant_or_revoke_groupadmin(user, target_user):
+def update_user_groupadmin(user, target_user):
     return has_group_rights(user, target_user.group)
 
-def change_status(user, target_user):
+def update_user_status(user, target_user):
     return all((
         has_group_rights(user, target_user.group),
         not is_power_grab(user, target_user),
         not user_is_target(user, target_user)
     ))
 
-def change_name(user, target_user):
+def update_user_name(user, target_user):
     return any((
         has_group_rights(user, target_user.group),
         user_is_target(user, target_user)
