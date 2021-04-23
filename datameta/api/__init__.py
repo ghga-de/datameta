@@ -62,6 +62,8 @@ def includeme(config: Configurator) -> None:
     config.add_route("groups_id", base_url + "/groups/{id}")
     config.add_route("rpc_delete_files", base_url + "/rpc/delete-files")
     config.add_route("rpc_delete_metadatasets", base_url + "/rpc/delete-metadatasets")
+    config.add_route("rpc_get_file_url", base_url + "/rpc/get-file-url/{id}")
+    config.add_route("rpc_download_token", base_url + "/rpc/download/{token}")
 
     # Endpoint outside of openapi
     config.add_route("upload", base_url + "/upload/{id}")
