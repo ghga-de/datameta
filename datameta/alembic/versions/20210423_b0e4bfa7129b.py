@@ -1,7 +1,7 @@
 """make apikey.value unique
 
 Revision ID: b0e4bfa7129b
-Revises: 8399f5ae0845
+Revises: 68a28d6ed9cb
 Create Date: 2021-04-23 10:05:40.721355
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'b0e4bfa7129b'
-down_revision = '8399f5ae0845'
+down_revision = '68a28d6ed9cb'
 branch_labels = None
 depends_on = None
 
