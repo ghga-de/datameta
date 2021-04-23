@@ -238,6 +238,16 @@ DataMeta.admin.initUserTable = function() {
                 }
                 return Boolean(data);
             }},
+            { title: "Site Read", data: "site_read", render:function(data, type, row) {
+                if ( type === 'display' || type === 'filter' ) {
+                    if(data) {
+                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleSiteRead(event);"><i class="bi bi-check2"></i></button>'
+                    } else {
+                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleSiteRead(event)";><i class="bi bi-x"></i></button>'
+                    }
+                }
+                return Boolean(data);
+            }},
             { title: "Is Group Admin", data: "group_admin", render:function(data, type, row) {
                 if ( type === 'display' || type === 'filter' ) {
                     if(data) {
@@ -709,11 +719,11 @@ function toggleGroupAdmin(event) {
 
     if(enabled) {
         if(confirm("Do you want to remove the user " + name + " as admin of " + group + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, false, undefined, undefined);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, false, undefined, undefined, undefined);
         }
     } else {
         if(confirm("Do you want to make the user " + name + " admin of " + group + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, true, undefined, undefined);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, true, undefined, undefined, undefined);
         }
     }
 }
@@ -738,11 +748,11 @@ function toggleSiteAdmin(event) {
 
     if(enabled) {
         if(confirm("Do you want to remove the user " + name + " as site admin?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, false, undefined);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, false, undefined, undefined);
         }
     } else {
         if(confirm("Do you want to make the user " + name + " site admin?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, true, undefined);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, true, undefined, undefined);
         }
     }
 }
@@ -767,11 +777,40 @@ function toggleUserEnabled(event) {
 
     if(enabled) {
         if(confirm("Do you want to deactivate the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, false);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, false, undefined);
         }
     } else {
         if(confirm("Do you want to activate the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, true);
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, true, undefined);
+        }
+    }
+}
+
+/**
+ * Toggles the site_read setting for a user
+ */
+ function toggleSiteRead(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // Change the location to the button if the picture was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var row = button.parentNode.parentNode;
+    var name = row.children[1].children[0].getAttribute('data');
+
+    var enabled = button.classList.contains("enabled");
+
+    if(enabled) {
+        if(confirm("Do you want to remove Site Read priviledges from the user " + name + "?")) {
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, undefined, false);
+        }
+    } else {
+        if(confirm("Do you want to give Site Read priviledges to the user " + name + "?")) {
+            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, undefined, true);
         }
     }
 }
@@ -1046,7 +1085,7 @@ function show_settings_alert(text) {
 }
 
 // API call to change user name, group, admin and enabled settings
-DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, enabled) {
+DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, enabled, siteRead) {
     fetch(DataMeta.api('users/' + id),
     {
         method: 'PUT',
@@ -1059,7 +1098,8 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
             groupId,
             groupAdmin,
             siteAdmin,
-            enabled
+            enabled,
+            siteRead
         })
     })
     .then(function (response) {

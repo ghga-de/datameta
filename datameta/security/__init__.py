@@ -19,7 +19,7 @@ from random import choice
 from string import ascii_letters, digits
 from sqlalchemy import and_
 
-from .models import User, ApiKey, PasswordToken, Session
+from ..models import User, ApiKey, PasswordToken, Session
 
 import bcrypt
 import hashlib

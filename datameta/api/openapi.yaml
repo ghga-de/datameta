@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.13.0
+  version: 0.14.0
   title: DataMeta
 
 servers:
@@ -1223,6 +1223,8 @@ components:
           type: boolean
         siteAdmin:
           type: boolean
+        siteRead:
+          type: boolean
         email:
           type: string
         group:
@@ -1237,6 +1239,7 @@ components:
         - name
         - groupAdmin
         - siteAdmin
+        - siteRead
         - email
         - group
       additionalProperties: false
@@ -1252,6 +1255,8 @@ components:
         groupAdmin:
           type: boolean
         siteAdmin:
+          type: boolean
+        siteRead:
           type: boolean
         enabled:
           type: boolean

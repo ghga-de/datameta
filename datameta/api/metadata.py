@@ -19,6 +19,7 @@ from pyramid.view import view_config
 from . import DataHolderBase
 from ..models import MetaDatum
 from .. import resource, security, siteid
+from ..security import authz
 from ..resource import resource_by_id, get_identifier
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 
@@ -75,13 +76,13 @@ def get(request:Request) -> List[MetaDataResponseElement]:
     openapi=True
 )
 def put(request:Request):
-    """Change a metadataset"""
+    """Change a metadatum"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
     metadata_id = request.matchdict["id"]
 
-    # Only site admins can change metadatasets
-    if not auth_user.site_admin:
+    # Only site admins can change metadata
+    if not authz.update_metadatum(auth_user):
          raise HTTPForbidden()
 
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
@@ -109,11 +110,11 @@ def put(request:Request):
     openapi=True
 )
 def post(request:Request):
-    """POST a new metadataset"""
+    """POST a new metadatum"""
     auth_user = security.revalidate_user(request)
 
-    # Only site admins can post new metadatasets
-    if not auth_user.site_admin:
+    # Only site admins can post new metadata
+    if not authz.create_metadatum(auth_user):
          raise HTTPForbidden()
 
     body = request.openapi_validated.body

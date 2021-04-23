@@ -18,6 +18,7 @@ from pyramid.request import Request
 from typing import Optional, List
 from .. import models
 from .. import security
+from ..security import authz
 from pyramid.httpexceptions import HTTPOk, HTTPUnauthorized, HTTPForbidden
 from ..resource import resource_by_id, get_identifier
 from ..errors import get_validation_error
@@ -162,10 +163,11 @@ def get_user_keys(request:Request) -> ApiKeyLabels:
 
     db = request.dbsession
     target_user = resource_by_id(db, models.User, request.matchdict['id'])
-    if not target_user or auth_user.id!=target_user.id:
+    if not target_user or not authz.view_apikey(auth_user, target_user):
         raise HTTPForbidden()
 
     return ApiKeyLabels(auth_user)
+
 
 
 @view_config(
@@ -180,9 +182,10 @@ def delete_key(request:Request) -> UserSession:
 
     db = request.dbsession
     target_key = resource_by_id(db, models.ApiKey, request.matchdict['id'])
-    if not target_key or auth_user.id!=target_key.user.id:
+    if not target_key or not authz.delete_apikey(auth_user, target_key.user):
         raise HTTPForbidden()
 
     db.delete(target_key)
 
     return HTTPOk()
+

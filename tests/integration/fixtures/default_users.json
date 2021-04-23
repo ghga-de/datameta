@@ -7,7 +7,8 @@
         "groupname": "admin",
         "group_admin": true,
         "site_admin": true,
-        "enabled": true
+        "enabled": true,
+        "site_read": true
     },
     "group_x_admin": {
         "email": "group_x_admin@user.group_x",
@@ -17,7 +18,8 @@
         "groupname": "group_x",
         "group_admin": true,
         "site_admin": false,
-        "enabled": true
+        "enabled": true,
+        "site_read": false
     },
     "user_a": {
         "email": "user_a@user.group_x",
@@ -27,7 +29,8 @@
         "groupname": "group_x",
         "group_admin": false,
         "site_admin": false,
-        "enabled": true
+        "enabled": true,
+        "site_read": false
     },
     "user_b": {
         "email": "user_b@user.group_x",
@@ -37,7 +40,8 @@
         "groupname": "group_x",
         "group_admin": false,
         "site_admin": false,
-        "enabled": true
+        "enabled": true,
+        "site_read": false
     },
     "group_y_admin": {
         "email": "group_y_admin@user.group_y",
@@ -47,7 +51,8 @@
         "groupname": "group_y",
         "group_admin": true,
         "site_admin": false,
-        "enabled": true
+        "enabled": true,
+        "site_read": false
     },
     "user_c": {
         "email": "user_c@user.group_y",
@@ -57,6 +62,7 @@
         "groupname": "group_y",
         "group_admin": false,
         "site_admin": false,
-        "enabled": true
+        "enabled": true,
+        "site_read": false
     }
 }

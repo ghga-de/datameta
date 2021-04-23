@@ -44,6 +44,7 @@ class UserFixture():
     groupname:str
     group_admin:bool
     site_admin:bool
+    site_read:bool
     enabled:bool
     # will be set once added to db:
     auth: Optional[AuthFixture] = None
