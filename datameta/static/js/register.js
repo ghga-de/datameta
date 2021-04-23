@@ -26,9 +26,9 @@ DataMeta.register.populateUsageAgreement = function(usageAgreement) {
     if(usageAgreement == "") {
 
     } else {
-        // Enabled Usage Agreement
+        // Show Usage Agreement
         // Put text in Textarea
-
+        
     }
 }
 
@@ -41,6 +41,7 @@ window.addEventListener("load", function() {
 
     document.getElementById("regform").addEventListener("submit", function(event) {
         var data = new FormData(event.target);
+        DataMeta.data = data;
         var fieldset = document.getElementById("regfieldset");
         fieldset.disabled = true;
 
@@ -59,7 +60,7 @@ window.addEventListener("load", function() {
                         document.getElementById("regform").style.display="none"
                         document.getElementById("success").style.display="block"
                     } else {
-                        var keys = ["name", "email", "org_select", "org_new_name"];
+                        var keys = ["name", "email", "org_select", "org_new_name", "check_user_agreement"];
                         keys.forEach(function(key) {
                             if (key in json.errors) {
                                 document.getElementById(key).classList.remove("is-valid");

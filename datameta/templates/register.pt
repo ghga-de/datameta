@@ -96,7 +96,7 @@
                     </div>
                 </div>
                 <div id="org_new" style="display:none">
-                    <div class="input-group mb-3" id="org_new">
+                    <div class="input-group mb-3">
                         <span class="input-group-text" id="desc_input_neworg">
                             <i class="bi bi-building"></i>
                         </span>
@@ -109,19 +109,20 @@
                         <label class="form-check-label" for="toggle_new_org">Create a new organization</label>
                     </div>
                 </div>
-				<div id="usageAgreementDiv" style="display:block; text-align:left">
-					<div class="form-check mb-3">
-						<label class="form-check-label mb-2" for="usageAgreement">
-							Usage Agreement:
+
+				<div id="user_agreement_container" style="display:block; text-align:left">
+					<div class="mb-3">
+						<label class="form-check-label mb-2" for="user_agreement">
+							User Agreement:
 						</label>
-						<textarea class="form-control mb-3" id="usageAgreement" style="resize: none; height: 250px" disabled></textarea>
-						<input class="form-check-input" type="checkbox" value="" id="flexCheckUsage">
-						<label class="form-check-label" for="flexCheckUsage">
-							Accept Usage Agreement
+						<textarea class="form-control mb-3" id="user_agreement" style="resize: none; height: 250px" disabled>1234</textarea>
+						<input class="form-check-input me-1" type="checkbox" value="" id="check_user_agreement">
+						<label class="form-check-label" for="check_user_agreement">
+							Accept User Agreement
 						</label>
 						<div class="invalid-feedback">
-                            You have to accept the Usage Agreement in oder to register!
-                        </div>
+							You have to accept the User Agreement in oder to register!
+						</div>
 					</div>
 				</div>
                 <div class="input-group mb-3">
