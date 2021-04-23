@@ -90,7 +90,7 @@ def v_admin_put_request(request):
             db.add(new_user)
             db.flush() # We need an ID
         except IntegrityError:
-            raise errors.get_validation_error("A group with that name already exists.")
+            raise errors.get_validation_error(["A group with that name already exists."])
 
         # Delete the request
         db.delete(reg_req)
