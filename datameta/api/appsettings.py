@@ -21,6 +21,7 @@ from . import DataHolderBase
 from typing import List, Dict
 from ..models import ApplicationSettings
 from .. import resource, security, errors
+from ..security import authz
 from ..resource import resource_by_id
 from ..settings import get_setting_value_type
 import datetime
@@ -49,7 +50,7 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
     appsettings = db.query(ApplicationSettings)
 
     # User has to be site admin to access these settings
-    if not auth_user.site_admin:
+    if not authz.view_appsettings(auth_user):
         raise HTTPForbidden()
 
     settings = []
@@ -81,7 +82,7 @@ def put(request:Request):
     settings_id = request.matchdict["id"]
 
     # Only site admins can change site settings
-    if not auth_user.site_admin:
+    if not authz.update_appsettings(auth_user):
          raise HTTPForbidden()
 
     target_setting = resource_by_id(db, ApplicationSettings, settings_id)

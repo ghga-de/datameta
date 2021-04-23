@@ -20,6 +20,7 @@ from . import DataHolderBase
 from .. import models
 from ..models import Group
 from .. import security, errors
+from ..security import authz
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
@@ -94,14 +95,13 @@ def get_all_submissions(request: Request) -> GroupSubmissions:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
     # check if user is part of the target group:
-    if not group_id in [auth_user.group.uuid, auth_user.group.site_id]:
+    if not authz.view_group_submissions(auth_user, group_id):
         raise HTTPForbidden()
 
     return GroupSubmissions(
         request=request,
         group_id=group_id
     )
-
 
 @dataclass
 class ChangeGroupName(DataHolderBase):
@@ -130,9 +130,7 @@ def put(request: Request):
     if target_group is None:
         raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
 
-    # Change the group name only if the user is site admin or the admin for the specific group
-    if auth_user.site_admin or (auth_user.group_admin and auth_user.group.uuid == group_id):
-
+    if authz.update_group_name(auth_user):
         try:
             target_group.name = new_group_name
             db.flush()
