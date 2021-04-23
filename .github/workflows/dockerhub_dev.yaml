@@ -3,7 +3,7 @@ name: Push to Dockerhub (dev)
 on:
   push:
     branches:
-      - 'main'
+      - 'develop'
 
 jobs:
   docker_dev:
