@@ -60,11 +60,17 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
         if db_file is not None and not authz.submit_file(auth_user, db_file)
     ]
 
-    auth_f = authz.submit_mset
     # Collect missing metadatasets
-    val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Not found") for mset_id, db_mset in db_msets.items() if db_mset is None ]
+    val_errors += [
+        ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Not found")
+        for mset_id, db_mset in db_msets.items()
+        if db_mset is None
+    ]
     # Collect authorization issues
-    val_errors += [ ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Access denied") for mset_id, db_mset in db_msets.items() if db_mset is not None and not auth_f(auth_user, db_mset) ]
+    val_errors += [
+        ({ 'site' : mset_id, 'uuid' : mset_id }, None, "Access denied")
+        for mset_id, db_mset in db_msets.items()
+        if db_mset is not None and not authz.submit_mset(auth_user, db_mset) ]
 
     # If we collected any val_errors so far, raise 400 to avoid exposing internals
     # about data the user should not be able to access
