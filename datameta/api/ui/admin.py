@@ -19,8 +19,9 @@ import bcrypt
 
 from ...models import User, Group, RegRequest
 from ...settings import get_setting
-from ... import email, security, siteid
+from ... import email, security, siteid, errors
 from ...resource import resource_by_id, get_identifier
+from sqlalchemy.exc import IntegrityError
 
 import logging
 log = logging.getLogger(__name__)
@@ -85,9 +86,11 @@ def v_admin_put_request(request):
                 site_admin = False,
                 group_admin = newuser_make_admin,
                 pwhash = '!')
-
-        db.add(new_user)
-        db.flush() # We need an ID
+        try:
+            db.add(new_user)
+            db.flush() # We need an ID
+        except IntegrityError:
+            raise errors.get_validation_error("A group with that name already exists.")
 
         # Delete the request
         db.delete(reg_req)
