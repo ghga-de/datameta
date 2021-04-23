@@ -83,7 +83,7 @@ class ApiKey(Base):
     id               = Column(Integer, primary_key=True)
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
-    value            = Column(String(64), nullable=False)
+    value            = Column(String(64), nullable=False, unique=True)
     label            = Column(String(200))
     expires          = Column(DateTime, nullable=True)
     # Relationships
