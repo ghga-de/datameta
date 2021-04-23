@@ -40,9 +40,7 @@ def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dic
             # if field is not contained in record, add it as None to the record:
             record_rendered[field] = None
             continue
-        elif field is None:
-            continue
-        elif mdatum[field].datetimefmt:
+        elif record_rendered[field] and mdatum[field].datetimefmt:
             # if MetaDatum is a datetime field, render the value in isoformat
             record_rendered[field] = datetime.datetime.strptime(
                     record_rendered[field],
@@ -52,7 +50,7 @@ def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dic
     return record_rendered
 
 def formatted_mrec_value(mrec):
-    if mrec.metadatum.datetimefmt is not None:
+    if mrec.value and mrec.metadatum.datetimefmt is not None:
         return datetime.datetime.fromisoformat(mrec.value).strftime(mrec.metadatum.datetimefmt)
     else:
         return mrec.value
