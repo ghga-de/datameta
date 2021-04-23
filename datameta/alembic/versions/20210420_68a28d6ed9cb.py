@@ -1,7 +1,7 @@
 """add new field users.site_read
 
 Revision ID: 68a28d6ed9cb
-Revises: 8399f5ae0845
+Revises: b0e4bfa7129b
 Create Date: 2021-04-20 22:46:36.169743
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '68a28d6ed9cb'
-down_revision = '8399f5ae0845'
+down_revision = 'b0e4bfa7129b'
 branch_labels = None
 depends_on = None
 
