@@ -14,6 +14,29 @@
 # limitations under the License.
 */
 
+DataMeta.register = {}
+
+DataMeta.register.populateGroupSelector = function(groups) {
+}
+
+
+DataMeta.register.populateUsageAgreement = function(usageAgreement) {
+
+    // Hide Usage Agreement, if it was null (should already be hidden)
+    if(usageAgreement == "") {
+
+    } else {
+        // Enabled Usage Agreement
+        // Put text in Textarea
+
+    }
+}
+
+DataMeta.register.getRegistrationDetails = function() {
+
+
+}
+
 window.addEventListener("load", function() {
 
     document.getElementById("regform").addEventListener("submit", function(event) {
