@@ -14,8 +14,31 @@
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk, HTTPTemporaryRedirect
-from .. import security
-from . import base_url
+from pyramid.request import Request
+from datetime import datetime, timedelta
+from .. import security, models, resource
+from . import base_url, DataHolderBase
+from .files import access_file_by_user
+
+
+def generate_download_token(request:Request, file:models.File, expires_after:int):
+    """
+    Generate a Download Token and store unsalted hash in db.
+    """
+    token = security.generate_token()
+    token_hash = security.hash_token(token)
+    expires = datetime.now() + timedelta(minutes=float(expires_after))
+
+    db = request.dbsession
+    download_token = models.DownloadToken(
+        file_id = file.id,
+        value = token_hash,
+        expires = expires
+    )
+    db.add(download_token)
+
+    return token
+
 
 @view_config(
     route_name = "rpc_get_file_url",
@@ -27,21 +50,24 @@ def get_file_url(request) -> HTTPTemporaryRedirect:
     """Redirects to a temporary, pre-sign HTTP-URL for downloading a file.
     """
     file_id = request.openapi_validated.parameters.path['id']
-    expires = request.openapi_validated.parameters.query['expires'] 
-
+    expires_after = request.openapi_validated.parameters.query['expires'] 
     auth_user = security.revalidate_user(request)
 
-    # check if file exists and get file object:
-    pass
-
-    # check if user is allowed to access file:
-    pass
+    # get file from db:
+    db_file = access_file_by_user(
+        request,
+        user = auth_user,
+        file_id = file_id
+    )
 
     # create temporary download token:
-    pass
-    download_token = "test_token"
+    download_token = generate_download_token(
+        request=request,
+        file=db_file,
+        expires_after=expires_after
+    )
 
-    raise HTTPTemporaryRedirect(f"{base_url}/rpc/download/{download_token}", )
+    raise HTTPTemporaryRedirect(f"{base_url}/rpc/download/{download_token}")
 
 
 @view_config(
@@ -53,9 +79,16 @@ def get_file_url(request) -> HTTPTemporaryRedirect:
 def download_by_token(request) -> HTTPOk:
     """Download a file using a file download token.
     """
-    download_token = request.matchdict['token']
+    token = request.matchdict['token']
+    hashed_token = security.hash_token(token)
+
+    db = request.dbsession
+    db_token = db.query(models.DownloadToken).filter(
+        models.DownloadToken.value==hashed_token
+    ).one_or_none()
+
   
     # serve file:
     pass
-    
+
     return HTTPOk()

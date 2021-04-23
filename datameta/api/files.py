@@ -73,7 +73,23 @@ def delete_staged_file_from_db(file_id, db, auth_user):
     return user_uuid, file_uuid, storage_uri
 
 
+def access_file_by_user(
+    request:Request,
+    user: models.User,
+    file_id: str
+) -> models.File:
+    db = request.dbsession
+    db_file = resource.resource_by_id(db, models.File, file_id)
 
+    # Check if file could be found
+    if db_file is None:
+        raise HTTPNotFound(json=None)
+
+    # Check if requesting user has access to the file
+    if not check_file_access(db_file, user):
+        raise HTTPForbidden(json=None)
+
+    return db_file
 
 @view_config(
     route_name      = "rpc_delete_files",
@@ -174,18 +190,12 @@ def get_file(request: Request) -> FileResponse:
     # Check authentication and raise 401 if unavailable
     auth_user = security.revalidate_user(request)
 
-    db = request.dbsession
-
     # Obtain file from database
-    db_file = resource.resource_by_id(db, models.File, request.matchdict['id'])
-
-    # Check if file could be found
-    if db_file is None:
-        raise HTTPNotFound(json=None)
-
-    # Check if requesting user has access to the file
-    if not authz.view_file(auth_user, db_file):
-        raise HTTPForbidden(json=None)
+    db_file = access_file_by_user(
+        request,
+        user = auth_user,
+        file_id = request.matchdict['id']
+    )
 
     # Return details
     return FileResponse(
