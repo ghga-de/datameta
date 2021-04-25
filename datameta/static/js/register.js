@@ -14,34 +14,58 @@
 # limitations under the License.
 */
 
-DataMeta.register = {}
+'use strict';
 
-DataMeta.register.populateGroupSelector = function(groups) {
+//Get usage agreement as well as a list of all groups from a custom endpoint
+function getGroupsAndUsageAgreement() {
+    fetch(DataMeta.api("register/groups_and_agreement"),
+    {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }).then(function(response) {
+        if(response.ok) {
+            return response.json()
+        }   else {
+            throw new Error()
+        }
+    }).then((json) => {
+        DataMeta.register.populateUserAgreement(json.userAgreement);
+        DataMeta.register.populateGroupSelector(json.groups);
+    }).catch((error) => {
+        alert("An unknown error occured.");
+    });
 }
 
+function populateGroupSelector(groups) {
+    var orgSelect = document.getElementById("org_select");
 
-DataMeta.register.populateUsageAgreement = function(usageAgreement) {
+    groups.forEach(group => {
+        var option = document.createElement('option')
+        option.value = group.id.uuid;
+        option.innerHTML = group.name;
+        orgSelect.appendChild(option)
+    })
+}
 
-    // Hide Usage Agreement, if it was null (should already be hidden)
-    if(usageAgreement == "") {
+function populateUserAgreement(userAgreement) {
 
+    if(userAgreement) {
+        document.getElementById("user_agreement_container").style.display="block";
+        document.getElementById("user_agreement").innerHTML = userAgreement;
     } else {
-        // Show Usage Agreement
-        // Put text in Textarea
-        
+        // Hide Usage Agreement, if it was null or empty (should already be hidden)
+        document.getElementById("user_agreement_container").style.display="none";
     }
 }
 
-DataMeta.register.getRegistrationDetails = function() {
-
-
-}
-
 window.addEventListener("load", function() {
+    getGroupsAndUsageAgreement();
 
     document.getElementById("regform").addEventListener("submit", function(event) {
         var data = new FormData(event.target);
-        DataMeta.data = data;
         var fieldset = document.getElementById("regfieldset");
         fieldset.disabled = true;
 
@@ -61,6 +85,7 @@ window.addEventListener("load", function() {
                         document.getElementById("success").style.display="block"
                     } else {
                         var keys = ["name", "email", "org_select", "org_new_name", "check_user_agreement"];
+
                         keys.forEach(function(key) {
                             if (key in json.errors) {
                                 document.getElementById(key).classList.remove("is-valid");

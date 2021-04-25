@@ -12,5 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pyramid.view import view_config
+from pyramid.request import Request
+from pyramid.httpexceptions import HTTPNotFound
+
 from dataclasses import dataclass
 from ..models import Group, ApplicationSettings
+from .. import resource
+from . import DataHolderBase
+from ..resource import resource_by_id, get_identifier
+
+@dataclass
+class RegisterOptionsResponse(DataHolderBase):
+    groups: list
+    user_agreement: str
+
+@view_config(
+    route_name="register_groups_and_agreement",
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get(request: Request) -> RegisterOptionsResponse:
+
+    db = request.dbsession
+
+    user_agreement = db.query(ApplicationSettings).filter(ApplicationSettings.key == "user_agreement")
+    groups = db.query(Group)
+
+    return RegisterOptionsResponse(
+        groups = [ {"id": resource.get_identifier(group), "name": group.name} for group in groups ],
+        user_agreement  = user_agreement
+    )

@@ -913,6 +913,23 @@ paths:
         "500":
           description: Internal Server Error
 
+  /register/groups_and_agreement:
+    get:
+      summary: Get details for the registration view
+      description: Get all available groups and the user agreement for the registration view
+      tags:
+        - Server
+      operationId: GetRegisterGroupsAndAgreement
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterGroupsAndAgreementResponse"
+        "500":
+          description: Internal Server Error
+
   /appsettings/{id}:
     put:
       summary: Update a specific appsetting. This is an administrative Endpoint that is not accessible for regular users.
@@ -1371,6 +1388,27 @@ components:
         - apiVersion
         - datametaVersion
       additionalProperties: false
+
+    RegisterGroupsAndAgreementResponse:
+      type: object
+      properties:
+        userAgreement:
+          type: string
+        groups:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                 $ref: "#/components/schemas/Identifier"
+              name:
+                type: string
+      required:
+        - groups
+        - userAgreement
+      additionalProperties: false
+
+              
 
     AppSettingsResponse:
       type: object

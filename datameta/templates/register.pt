@@ -110,18 +110,20 @@
                     </div>
                 </div>
 
-				<div id="user_agreement_container" style="display:block; text-align:left">
+				<div id="user_agreement_container" style="display:none; text-align:left">
 					<div class="mb-3">
-						<label class="form-check-label mb-2" for="user_agreement">
+						<label class="form-control-label mb-2" for="user_agreement">
 							User Agreement:
 						</label>
-						<textarea class="form-control mb-3" id="user_agreement" style="resize: none; height: 250px" disabled>1234</textarea>
-						<input class="form-check-input me-1" type="checkbox" value="" id="check_user_agreement">
-						<label class="form-check-label" for="check_user_agreement">
-							Accept User Agreement
-						</label>
-						<div class="invalid-feedback">
-							You have to accept the User Agreement in oder to register!
+						<textarea class="form-control mb-3" id="user_agreement" style="resize: none; height: 250px" disabled></textarea>
+						<div class="form-check">
+							<input class="form-check-input me-1" type="checkbox" id="check_user_agreement" name="check_user_agreement" value="true">
+							<label class="form-check-label" for="check_user_agreement">
+								Accept User Agreement
+							</label>
+							<div class="invalid-feedback">
+							You have to accept the User Agreement in order to register!
+							</div>
 						</div>
 					</div>
 				</div>
@@ -131,6 +133,6 @@
             </fieldset>
 	</form>
 
-	<script src="${request.static_url('datameta:static/js/register.js')}"></script>
+	<script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/register.js')}"></script>
 </main>
 </metal:block>

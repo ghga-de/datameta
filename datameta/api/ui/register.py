@@ -48,9 +48,14 @@ def v_register_submit(request):
         org_select = request.POST['org_select']
         org_create = request.POST.get('org_create') is not None
         org_new_name = request.POST.get('org_new_name')
+        check_user_agreement = bool(request.POST.get('check_user_agreement'))
     except (KeyError, ValueError) as e:
         log.info(f"Malformed request at /api/ui/register: {e}")
         raise HTTPBadRequest()
+
+    # Check, if the user accepted the user agreement
+    if not check_user_agreement:
+        errors['check_user_agreement'] = True
 
     # Basic validity check for email
     if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
