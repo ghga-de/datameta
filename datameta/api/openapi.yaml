@@ -1394,6 +1394,7 @@ components:
       properties:
         userAgreement:
           type: string
+          nullable: True
         groups:
           type: array
           items:

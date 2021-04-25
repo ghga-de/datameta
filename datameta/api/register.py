@@ -36,28 +36,13 @@ def get(request: Request) -> RegisterOptionsResponse:
 
     db = request.dbsession
 
-    user_agreement = db.query(ApplicationSettings).filter(ApplicationSettings.key == "user_agreement")
-    groups = db.query(Group)
-
-    return RegisterOptionsResponse(
-        user_agreement = user_agreement,
-        groups = [ {"id": get_identifier(group), "name": group.name} for group in groups ]
-    )
-
-@view_config(
-    route_name="register_groups_and_agreement",
-    renderer='json', 
-    request_method="GET", 
-    openapi=True
-)
-def get(request: Request) -> RegisterOptionsResponse:
-
-    db = request.dbsession
-
     user_agreement = db.query(ApplicationSettings).filter(ApplicationSettings.key == "user_agreement").first()
     groups = db.query(Group)
 
+    if not user_agreement == None:
+        user_agreement = str(user_agreement.str_value)
+
     return RegisterOptionsResponse(
-        user_agreement = str(user_agreement.str_value),
+        user_agreement = user_agreement,
         groups = [ {"id": get_identifier(group), "name": group.name} for group in groups ]
     )
