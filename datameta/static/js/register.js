@@ -32,8 +32,8 @@ function getGroupsAndUsageAgreement() {
             throw new Error()
         }
     }).then((json) => {
-        DataMeta.register.populateUserAgreement(json.userAgreement);
-        DataMeta.register.populateGroupSelector(json.groups);
+        populateUserAgreement(json.userAgreement);
+        populateGroupSelector(json.groups);
     }).catch((error) => {
         alert("An unknown error occured.");
     });
