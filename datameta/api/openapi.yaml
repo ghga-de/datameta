@@ -1400,7 +1400,7 @@ components:
             type: object
             properties:
               id:
-                 $ref: "#/components/schemas/Identifier"
+                $ref: "#/components/schemas/Identifier"
               name:
                 type: string
       required:

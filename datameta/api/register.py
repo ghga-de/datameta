@@ -18,14 +18,13 @@ from pyramid.httpexceptions import HTTPNotFound
 
 from dataclasses import dataclass
 from ..models import Group, ApplicationSettings
-from .. import resource
 from . import DataHolderBase
-from ..resource import resource_by_id, get_identifier
+from ..resource import get_identifier
 
 @dataclass
 class RegisterOptionsResponse(DataHolderBase):
-    groups: list
     user_agreement: str
+    groups: list
 
 @view_config(
     route_name="register_groups_and_agreement",
@@ -41,6 +40,6 @@ def get(request: Request) -> RegisterOptionsResponse:
     groups = db.query(Group)
 
     return RegisterOptionsResponse(
-        groups = [ {"id": resource.get_identifier(group), "name": group.name} for group in groups ],
-        user_agreement  = user_agreement
+        user_agreement = user_agreement,
+        groups = [ {"id": get_identifier(group), "name": group.name} for group in groups ]
     )
