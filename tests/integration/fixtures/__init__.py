@@ -56,8 +56,8 @@ class UserFixture():
 default_users_json = os.path.join(base_dir, "default_users.json")
 with open(default_users_json, "r") as json_:
     default_users = {
-        name: UserFixture(**user)
-        for name, user in json.load(json_).items()
+        user["site_id"]: UserFixture(**user)
+        for user in json.load(json_)
     }
 
 # read default metadatum.json:
