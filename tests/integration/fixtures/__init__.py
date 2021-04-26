@@ -51,7 +51,7 @@ class UserFixture():
     expired_auth: Optional[AuthFixture] = None
     uuid:Optional[str] = None 
     group_site_id:Optional[str] = None 
-    group_uuid_id:Optional[str] = None 
+    group_uuid_id:Optional[str] = None
 
 default_users_json = os.path.join(base_dir, "default_users.json")
 with open(default_users_json, "r") as json_:
@@ -103,7 +103,8 @@ class MetaDataSetFixture():
     site_id: str
     user: str
     record: dict
-    uuid: Optional[str] = None
+    uuid: Optional[str] = None 
+    submitted:bool = False
 
 
 default_metadatasets_json = os.path.join(base_dir, "default_metadatasets.json")
@@ -159,7 +160,8 @@ class FileFixture():
         # additional parameters for default files:
         self.site_id = site_id
         self.user = user
-        self.uui = None # will be set once added to the database
+        self.uui = None # will be set once added to the database 
+        self.submitted = False
 
 test_files = [
     FileFixture(name) 
@@ -170,31 +172,6 @@ test_files = [
 
 # read default files:
 # Default files will be added to the database
-def calc_checksum(file_path:str):
-    with open(file_path, "rb") as file_:
-        byte_content = file_.read()
-        return hashlib.md5(byte_content).hexdigest()
-
-class FileFixture():
-    """Container for File fixtures"""
-    def __init__(self, name, site_id=None, user=None):
-        self.name = name
-
-        # set path:
-        self.path = os.path.join(base_dir, name)
-        
-        # set content: 
-        with open(self.path, "r") as test_file:
-            self.content = test_file.read()
-        
-        # set md5 sum
-        self.checksum = calc_checksum(self.path)
-
-        # additional parameters for default files:
-        self.site_id = site_id
-        self.user = user
-        self.uui = None # will be set once added to the database
-
 default_files_json = os.path.join(base_dir, "default_files.json")
 with open(default_files_json, "r") as json_:
     default_files = {
