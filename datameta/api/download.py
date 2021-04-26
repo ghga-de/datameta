@@ -61,6 +61,8 @@ def get_file_url(request) -> HTTPTemporaryRedirect:
 )
 def download_by_token(request) -> HTTPOk:
     """Download a file using a file download token.
+
+    Usage: /download/{download_token}?file_id={ID_of_file_to_download}
     """
     token = request.matchdict['token']
     hashed_token = security.hash_token(token)
