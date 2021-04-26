@@ -94,7 +94,6 @@ def download_by_token(request) -> HTTPOk:
         request=request,
         content_type='application/octet-stream'
     )
-    file_name = f"{db_file.site_id}_{db_file.name}"
-    response.content_disposition = f"attachment; filename=\"{file_name}\""
+    response.content_disposition = f"attachment; filename=\"{db_file.name}\""
 
     return response
