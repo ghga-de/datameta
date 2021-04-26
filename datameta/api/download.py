@@ -67,7 +67,7 @@ def get_file_url(request) -> HTTPTemporaryRedirect:
         expires_after=expires_after
     )
 
-    raise HTTPTemporaryRedirect(f"{base_url}/rpc/download/{download_token}")
+    return HTTPTemporaryRedirect(f"{base_url}/rpc/download/{download_token}")
 
 
 @view_config(
