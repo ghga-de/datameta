@@ -24,7 +24,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         compare_checksum:bool=True
     ):
         expected_file_path = os.path.join(
-            self.storage_path.name,
+            self.storage_path,
             f"{file_uuid}__{file_checksum}"
         )
 
