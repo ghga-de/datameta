@@ -149,7 +149,7 @@ def freeze(request, db_file):
 def _get_download_url_local(request:Request, db_file:models.File, expires_after:Optional[int]=None):
     if expires_after is None:
         expires_after = 1
-        
+
     token = security.generate_token()
     token_hash = security.hash_token(token)
     expires = datetime.now() + timedelta(minutes=float(expires_after))
@@ -162,7 +162,7 @@ def _get_download_url_local(request:Request, db_file:models.File, expires_after:
     )
     db.add(download_token)
 
-    return f"{base_url}/rpc/download/{token}?file_id={db_file.site_id}"
+    return f"{base_url}/download/{token}?file_id={db_file.site_id}"
 
 def _get_download_url_s3(request:Request, db_file:models.File, expires_after:Optional[int]=None):
     # TODO

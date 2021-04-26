@@ -52,10 +52,9 @@ def get_file_url(request) -> HTTPTemporaryRedirect:
 
 
 @view_config(
-    route_name = "rpc_download_token",
+    route_name = "download_by_token",
     renderer        = "json",
-    request_method  = "GET",
-    openapi         = True
+    request_method  = "GET"
 )
 def download_by_token(request) -> HTTPOk:
     """Download a file using a file download token.
