@@ -20,5 +20,16 @@
             "FileR1": "test_file_3.txt", 
             "FileR2": "test_file_4.txt"    
         }
+    },
+    {
+        "site_id": "metadataset_03",
+        "user": "user_a",
+        "record": {
+            "#ID": "MD03", 
+            "Date": "2021-03-05", 
+            "ZIP Code": "456", 
+            "FileR1": "test_file_5.txt", 
+            "FileR2": "test_file_6.txt"    
+        }
     }
 ]
