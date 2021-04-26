@@ -16,28 +16,9 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk, HTTPTemporaryRedirect
 from pyramid.request import Request
 from datetime import datetime, timedelta
-from .. import security, models, resource
-from . import base_url, DataHolderBase
+from .. import security, models, storage
+from . import base_url
 from .files import access_file_by_user
-
-
-def generate_download_token(request:Request, file:models.File, expires_after:int):
-    """
-    Generate a Download Token and store unsalted hash in db.
-    """
-    token = security.generate_token()
-    token_hash = security.hash_token(token)
-    expires = datetime.now() + timedelta(minutes=float(expires_after))
-
-    db = request.dbsession
-    download_token = models.DownloadToken(
-        file_id = file.id,
-        value = token_hash,
-        expires = expires
-    )
-    db.add(download_token)
-
-    return token
 
 
 @view_config(
@@ -60,14 +41,14 @@ def get_file_url(request) -> HTTPTemporaryRedirect:
         file_id = file_id
     )
 
-    # create temporary download token:
-    download_token = generate_download_token(
+    # retrieve URL:
+    url = storage.get_download_url(
         request=request,
-        file=db_file,
+        db_file=db_file,
         expires_after=expires_after
     )
 
-    return HTTPTemporaryRedirect(f"{base_url}/rpc/download/{download_token}")
+    return HTTPTemporaryRedirect(url)
 
 
 @view_config(

@@ -16,7 +16,11 @@ import os
 import shutil
 import logging
 import hashlib
-from . import security
+from datetime import datetime, timedelta
+from pyramid.request import Request
+from typing import Optional
+from . import security, models
+from .api import base_url
 
 log = logging.getLogger(__name__)
 
@@ -141,3 +145,43 @@ def freeze(request, db_file):
     if db_file.storage_uri.startswith("s3://"):
         return _freeze_s3(request, db_file)
     raise NotImplementedError()
+
+def _get_download_url_local(request:Request, db_file:models.File, expires_after:Optional[int]=None):
+    if expires_after is None:
+        expires_after = 1
+        
+    token = security.generate_token()
+    token_hash = security.hash_token(token)
+    expires = datetime.now() + timedelta(minutes=float(expires_after))
+
+    db = request.dbsession
+    download_token = models.DownloadToken(
+        file_id = db_file.id,
+        value = token_hash,
+        expires = expires
+    )
+    db.add(download_token)
+
+    return f"{base_url}/rpc/download/{token}?file_id={db_file.site_id}"
+
+def _get_download_url_s3(request:Request, db_file:models.File, expires_after:Optional[int]=None):
+    # TODO
+    raise NotImplementedError()
+
+def get_download_url(request:Request, db_file:models.File, expires_after:Optional[int]=None):
+    """Get a presigned URL to download a file
+
+    Args:
+        request (Request): The calling HTTP request 
+        db_file (models.File): The database 'File' object
+        expires_after (Optional[int]): Number of minutes after which the URL will expire
+    """
+    if db_file.storage_uri is None:
+        raise NoDataError() # No data has been uploaded yet
+    if db_file.storage_uri.startswith("file://"):
+        return _get_download_url_local(request, db_file, expires_after=expires_after)
+    if db_file.storage_uri.startswith("s3://"):
+        return _get_download_url_s3(request, db_file, expires_after=expires_after)
+    raise NotImplementedError()
+
+
