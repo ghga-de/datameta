@@ -5,7 +5,7 @@ from typing import Optional
 from dataclasses import dataclass
 import transaction
 from copy import deepcopy
-from .fixtures import UserFixture, MetaDatumFixture, AuthFixture
+from .fixtures import UserFixture, MetaDatumFixture, AuthFixture, FileFixture
 from datetime import datetime, timedelta
 
 from datameta import models, security
@@ -89,7 +89,7 @@ def create_metadataset(
 def create_file(
     session_factory,
     storage_path,
-    file_fixture,
+    file_fixture:FileFixture,
     site_id,
     user
 ):
@@ -103,7 +103,7 @@ def create_file(
             checksum=file_fixture.checksum,
             storage_uri=f"file://{file_fixture.name}",
             site_id=site_id,
-            content_uploaded=False,
+            content_uploaded=True,
             user=user_obj
         )
         
