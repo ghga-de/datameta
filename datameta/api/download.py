@@ -62,16 +62,10 @@ def get_file_url(request) -> HTTPTemporaryRedirect:
 def download_by_token(request) -> HTTPOk:
     """Download a file using a file download token.
 
-    Usage: /download/{download_token}?file_id={ID_of_file_to_download}
+    Usage: /download/{download_token}
     """
     token = request.matchdict['token']
     hashed_token = security.hash_token(token)
-    query_params = urllib.parse.parse_qs(request.query_string)
-
-    # check whether requests contains file_id as query parameter:
-    if "file_id" not in query_params.keys():
-        raise get_validation_error(messages=["No query parameter 'file_id' in URL."])
-    file_id = query_params["file_id"][0]
 
     # get download token from db
     db = request.dbsession

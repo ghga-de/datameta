@@ -162,7 +162,7 @@ def _get_download_url_local(request:Request, db_file:models.File, expires_after:
     )
     db.add(download_token)
 
-    return f"{base_url}/download/{token}?file_id={db_file.site_id}"
+    return f"{base_url}/download/{token}"
 
 def _get_download_url_s3(request:Request, db_file:models.File, expires_after:Optional[int]=None):
     # TODO
