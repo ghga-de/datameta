@@ -13,12 +13,15 @@
 # limitations under the License.
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPOk, HTTPTemporaryRedirect
+from pyramid.httpexceptions import HTTPNotFound, HTTPOk, HTTPTemporaryRedirect
 from pyramid.request import Request
+from pyramid.response import FileResponse
 from datetime import datetime, timedelta
+import urllib.parse
 from .. import security, models, storage
 from . import base_url
 from .files import access_file_by_user
+from ..errors import get_validation_error
 
 
 @view_config(
@@ -61,14 +64,35 @@ def download_by_token(request) -> HTTPOk:
     """
     token = request.matchdict['token']
     hashed_token = security.hash_token(token)
+    query_params = urllib.parse.parse_qs(request.query_string)
 
+    # check whether requests contains file_id as query parameter:
+    if "file_id" not in query_params.keys():
+        raise get_validation_error(messages=["No query parameter 'file_id' in URL."])
+    file_id = query_params["file_id"][0]
+
+    # get download token from db
     db = request.dbsession
     db_token = db.query(models.DownloadToken).filter(
         models.DownloadToken.value==hashed_token
     ).one_or_none()
 
-  
+    if db_token is None:
+        raise HTTPNotFound()
+    
+    # check whether file_id of the download token object
+    # matches the user-defined file_id:
+    db_file = db_token.file
+    if not file_id in [db_file.site_id, db_file.uuid]:
+        raise HTTPNotFound()
+      
     # serve file:
-    pass
+    response = FileResponse(
+        storage.get_local_storage_path(request, db_file.storage_uri),
+        request=request,
+        content_type='application/octet-stream'
+    )
+    file_name = f"{db_file.site_id}_{db_file.name}"
+    response.content_disposition = f"attachment; filename=\"{file_name}\""
 
-    return HTTPOk()
+    return response
