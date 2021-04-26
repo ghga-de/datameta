@@ -127,7 +127,7 @@ class File(Base):
     # Relationships
     metadatumrecord  = relationship('MetaDatumRecord', back_populates='file', uselist=False)
     user             = relationship('User', back_populates='files')
-    download_tokens  = relationship('DownloadToken', back_populates='file')
+    downloadtokens  = relationship('DownloadToken', back_populates='file')
 
 class DownloadToken(Base):
     __tablename__    = 'downloadtokens'
@@ -137,7 +137,7 @@ class DownloadToken(Base):
     value            = Column(Text, nullable=False, unique=True)
     expires          = Column(DateTime, nullable=False)
     # Relationships
-    file             = relationship('File', back_populates='download_tokens')
+    file             = relationship('File', back_populates='downloadtokens')
 
 class Submission(Base):
     __tablename__    = 'submissions'
