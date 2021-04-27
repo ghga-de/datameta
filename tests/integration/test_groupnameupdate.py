@@ -26,7 +26,7 @@ class GroupNameUpdate(BaseIntegrationTest):
         }
         if executing_user:
             executing_user, *is_expired = executing_user.split(":")
-            user = self.users[executing_user]
+            user = self.default_users[executing_user]
             req_json["headers"] = user.expired_auth.header if is_expired else user.auth.header
 
         response = self.testapp.put_json(

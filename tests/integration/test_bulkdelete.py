@@ -10,7 +10,7 @@ from .utils import create_file, create_metadataset
 class BulkDeletionTest(BaseIntegrationTest):
 
     def test_file_deletion(self):
-        user = self.users["user_a"]
+        user = self.default_users["user_a"]
 
         file_ids = [
             site_id 
@@ -26,7 +26,7 @@ class BulkDeletionTest(BaseIntegrationTest):
         )
 
     def test_mds_deletion(self):
-        user = self.users["user_a"]
+        user = self.default_users["user_a"]
         
         metadataset_ids = [
             site_id

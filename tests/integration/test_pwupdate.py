@@ -26,13 +26,13 @@ class TestPasswordUpdate(BaseIntegrationTest):
             credential = token
             auth_header = None
         else:
-            user = self.users[executing_user]
+            user = self.default_users[executing_user]
             credential = user.password
             auth_header = user.expired_auth.header if expired_auth else user.auth.header
             if not target_user:
                 user_id = user.site_id
             else:
-                user_id = self.users[target_user].site_id if self.users.get(target_user) else target_user
+                user_id = self.default_users[target_user].site_id if self.default_users.get(target_user) else target_user
 
         request_body = {
             "passwordChangeCredential": credential,
@@ -57,7 +57,7 @@ class TestPasswordUpdate(BaseIntegrationTest):
         Expected Response:
             HTTP 410
         """
-        user = self.users["user_a"]
+        user = self.default_users["user_a"]
         pwtoken = create_pwtoken(self.session_factory, user, expires=datetime.now() + timedelta(minutes=-1))
 
         request_body = {
@@ -77,7 +77,7 @@ class TestPasswordUpdate(BaseIntegrationTest):
         Expected Response:
             HTTP 204
         """
-        user = self.users["user_b"]
+        user = self.default_users["user_b"]
         pwtoken = create_pwtoken(self.session_factory, user)
 
         request_body = {

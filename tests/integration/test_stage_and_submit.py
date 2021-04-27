@@ -307,7 +307,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
     def test_main_submission_senario(self):
         """Tests the standard usage senario for staging and 
         submitting files and metadata."""
-        user = self.users["user_a"]
+        user = self.default_users["user_a"]
         
         # post metadataset:
         metadataset_ids = [
@@ -456,7 +456,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         """Test whether staged metadatasets can be deleted
         after staging"""
         metadata_record = self.metadata_records[0]
-        user = self.users["user_a"]
+        user = self.default_users["user_a"]
 
         # post metadataset:
         metadataset_id = self.post_metadata(
@@ -483,7 +483,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         """Test whether staged metadatasets can be deleted
         after staging"""
         test_file = self.test_files[0]
-        user = self.users["user_a"]
+        user = self.default_users["user_a"]
 
         # announce file:
         file_upload_response = self.post_file(

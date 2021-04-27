@@ -58,7 +58,7 @@ class BaseIntegrationTest(unittest.TestCase):
         Base.metadata.create_all(self.engine)
         
         # create default users:
-        self.users = {
+        self.default_users = {
             site_id: create_user(self.session_factory, user)
             for site_id, user in default_users.items()
         }
