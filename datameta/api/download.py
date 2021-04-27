@@ -75,7 +75,7 @@ def download_by_token(request) -> HTTPOk:
 
     if db_token is None:
         raise HTTPNotFound()
-    
+
     # serve file:
     response = FileResponse(
         storage.get_local_storage_path(request, db_token.file.storage_uri),
