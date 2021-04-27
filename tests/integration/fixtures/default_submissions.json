@@ -4,12 +4,6 @@
         "label": "subission_01",
         "date": "2021-03-04", 
         "group": "group_x",
-        "metadataset_ids": ["metadataset_01", "metadataset_02"],
-        "files": [
-            "test_file_1.txt",
-            "test_file_2.txt",
-            "test_file_3.txt",
-            "test_file_4.txt"
-        ]
+        "metadataset_ids": ["metadataset_01", "metadataset_02"]
     }
 ]

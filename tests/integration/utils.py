@@ -11,7 +11,7 @@ from .fixtures import (
     AuthFixture, 
     FileFixture,
     MetaDataSetFixture,
-    SubmissionFixture,
+    SubmissionFixture, 
 )
 from datetime import datetime, timedelta
 
@@ -165,6 +165,62 @@ def create_file(
         file_updated.uuid = str(file_obj.uuid)
 
         return file_updated
+
+
+def create_submission(
+    session_factory,
+    submission:SubmissionFixture,
+    # optional arguments to overwrite properties if file fixture:
+    site_id:Optional[str]=None,
+    group:Optional[str]=None
+):
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        
+        submission_updated = deepcopy(submission)
+        if site_id:
+            submission_updated.site_id = site_id
+        if group:
+            submission_updated.group = group
+        
+        group_obj = session.query(models.Group).filter(
+            models.Group.name==submission_updated.group
+        ).one_or_none()
+        
+        # create submission object in db:
+        submission_obj = models.Submission(
+            site_id=submission_updated.site_id,
+            label=submission.label,
+            date=datetime.now(),
+            group_id=group_obj.id
+        )
+
+        session.add(submission_obj)
+        session.flush()
+
+        submission_updated.uuid = str(submission_obj.uuid)
+        
+        # update metadatasets:
+        files = []
+        for mset_id in submission.metadataset_ids:
+            mset_obj = session.query(models.MetaDataSet).filter(
+                    models.MetaDataSet.site_id==mset_id
+            ).one_or_none()
+            mset_obj.submission_id = submission_obj.id
+            for rec_obj in mset_obj.metadatumrecords:
+                if rec_obj.metadatum.isfile:
+                    file_obj = session.query(models.File).filter(
+                        models.File.name==rec_obj.value,
+                        models.File.metadatumrecord==None
+                    ).one_or_none()
+                    assert file_obj, f"No unique match found for file: {rec_obj.value}"
+                    files.append(file_obj.site_id)
+                    rec_obj.file_id = file_obj.id
+        
+        submission_updated.uuid = str(submission_obj.uuid)
+        submission_updated.files = files
+
+        return submission_updated
 
 
 def create_user(

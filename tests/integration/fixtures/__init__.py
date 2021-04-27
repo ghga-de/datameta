@@ -60,6 +60,7 @@ with open(default_users_json, "r") as json_:
         for user in json.load(json_)
     }
 
+
 # read default metadatum.json:
 @dataclass
 class MetaDatumFixture():
@@ -115,26 +116,6 @@ with open(default_metadatasets_json, "r") as json_:
     }
 
 
-# read in default submissions:
-@dataclass
-class SubmissionFixture():
-    """A container for Submissions."""
-    site_id: str
-    label: str
-    date: str
-    group: str
-    metadataset_ids: List[str]
-    files: List[str]
-    uuid: Optional[str] = None
-
-default_submissions_json = os.path.join(base_dir, "default_submissions.json")
-with open(default_submissions_json, "r") as json_:
-    default_submissions = {
-        sub["site_id"]: SubmissionFixture(**sub)
-        for sub in json.load(json_)
-    }
-
-
 # read test files:
 # Test files will not be added to the database by default
 def calc_checksum(file_path:str):
@@ -144,7 +125,7 @@ def calc_checksum(file_path:str):
 
 class FileFixture():
     """Container for File fixtures"""
-    def __init__(self, name, site_id=None, user=None):
+    def __init__(self, name, site_id=None, user=None, submitted=False):
         self.name = name
 
         # set path:
@@ -161,7 +142,7 @@ class FileFixture():
         self.site_id = site_id
         self.user = user
         self.uui = None # will be set once added to the database 
-        self.submitted = False
+        self.submitted = submitted
 
 test_files = [
     FileFixture(name) 
@@ -177,4 +158,24 @@ with open(default_files_json, "r") as json_:
     default_files = {
         file["site_id"]: FileFixture(**file)
         for file in json.load(json_)
+    }
+
+
+# read in default submissions:
+@dataclass
+class SubmissionFixture():
+    """A container for Submissions."""
+    site_id: str
+    label: str
+    date: str
+    group: str
+    metadataset_ids: List[str]
+    files: Optional[List[str]] = None
+    uuid: Optional[str] = None
+
+default_submissions_json = os.path.join(base_dir, "default_submissions.json")
+with open(default_submissions_json, "r") as json_:
+    default_submissions = {
+        sub["site_id"]: SubmissionFixture(**sub)
+        for sub in json.load(json_)
     }

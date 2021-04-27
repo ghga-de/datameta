@@ -20,7 +20,7 @@ from datameta.models import (
 )
 from datameta.models.meta import Base
 
-from .utils import create_file, create_metadataset, create_user, create_metadatum, set_application_settings
+from .utils import create_file, create_metadataset, create_submission, create_user, create_metadatum, set_application_settings
 from .fixtures import (
     db_url, 
     memcached_url, 
@@ -79,6 +79,12 @@ class BaseIntegrationTest(unittest.TestCase):
         self.default_files = {
             site_id: create_file(self.session_factory, self.storage_path, file)
             for site_id, file in default_files.items()
+        }
+
+        # add default files to the database:
+        self.default_submissions = {
+            site_id: create_submission(self.session_factory, submission)
+            for site_id, submission in default_submissions.items()
         }
 
         # add application settings:
