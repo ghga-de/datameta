@@ -141,7 +141,7 @@ class FileFixture():
         # additional parameters for default files:
         self.site_id = site_id
         self.user = user
-        self.uui = None # will be set once added to the database 
+        self.uuid = None # will be set once added to the database 
         self.submitted = submitted
 
 test_files = [
