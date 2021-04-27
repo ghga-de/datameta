@@ -75,13 +75,13 @@ def download_by_token(request) -> HTTPOk:
 
     if db_token is None:
         raise HTTPNotFound()
-      
+    
     # serve file:
     response = FileResponse(
-        storage.get_local_storage_path(request, db_file.storage_uri),
+        storage.get_local_storage_path(request, db_token.file.storage_uri),
         request=request,
         content_type='application/octet-stream'
     )
-    response.content_disposition = f"attachment; filename=\"{db_file.name}\""
+    response.content_disposition = f"attachment; filename=\"{db_token.file.name}\""
 
     return response
