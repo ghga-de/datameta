@@ -75,12 +75,6 @@ def download_by_token(request) -> HTTPOk:
 
     if db_token is None:
         raise HTTPNotFound()
-    
-    # check whether file_id of the download token object
-    # matches the user-defined file_id:
-    db_file = db_token.file
-    if not file_id in [db_file.site_id, db_file.uuid]:
-        raise HTTPNotFound()
       
     # serve file:
     response = FileResponse(
