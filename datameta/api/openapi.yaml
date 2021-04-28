@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.15.0
+  version: 0.16.0
   title: DataMeta
 
 servers:
@@ -1096,8 +1096,11 @@ components:
         record:
           type: object
           additionalProperties: true
-          # a free-form object,
-          # any property is allowed
+          # a free-form object, any property is allowed
+        fileIds:
+          type: object
+          additionalProperties: true
+          # a free-form object mapping the field names to file IDs
         id:
           $ref: "#/components/schemas/Identifier"
         submissionId:   

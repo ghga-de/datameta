@@ -30,6 +30,8 @@ def has_data_access(user, data_user_id, data_group_id=None, was_submitted=False)
         (not was_submitted and data_user_id and data_user_id == user.id)
     ))
 
+def view_mset_any(user):
+    return user.site_read
 
 def view_apikey(user, target_user):
     return user_is_target(user, target_user)

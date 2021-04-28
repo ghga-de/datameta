@@ -2,4 +2,13 @@
     color: inherit;
     text-decoration: inherit;
 }
+.text-accent {
+    color:#dc3545 !important;
+}
+.background-accent {
+    color:#ffc107 !important;
+}
+.border-accent {
+    border-color:#ffc107 !important;
+}
 

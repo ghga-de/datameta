@@ -19,13 +19,21 @@
 DataMeta.view = {}
 
 DataMeta.view.buildColumns = function(mdata_names) {
-  return mdata_names.map(function(mdata_name) {
-    return {
-      title : mdata_name,
-      data : null,
-      render : mdataset => mdataset.record[mdata_name] ? mdataset.record[mdata_name] : "<em>empty</em>"
-    };
-  });
+    return mdata_names.map(function(mdata_name) {
+        return {
+            title : mdata_name,
+            data : null,
+            render : function(mdataset, type, row, meta) {
+                console.log(mdataset)
+                // Special case NULL
+                if (mdataset.record[mdata_name] === null) return '<span class="text-black-50"><i>empty</i></span>';
+                // Speical case file
+                if (mdataset.fileIds[mdata_name]) return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdata_name].site) +'"><i class="bi bi-cloud-arrow-down-fill"></i> '+mdataset.record[mdata_name]+'</a>';
+                // All other cases
+                return mdataset.record[mdata_name];
+            }
+        };
+    });
 }
 
 DataMeta.view.initTable = function() {
@@ -44,11 +52,17 @@ DataMeta.view.initTable = function() {
     var mdata_names = json.map(record => record.name);
 
     var columns = [
-        { title: "Submission", data: "submissionId.site", className: "id_col"},
-        { title: "Label", data: "submissionLabel", className: "id_col"},
-        { title: "User", data: "userId.site", className: "id_col"},
-        { title: "Group", data: "groupId.site", className: "id_col"},
-        { title: "Metadataset", data: "id.site", className: "id_col"}
+        { title: "Submission", data: null, className: "id_col", render: function(data) {
+            var label = data.submissionLabel ? data.submissionLabel : '<span class="text-black-50"><i>empty</i></span>';
+            return '<div> <div class="large-super">' + label + '</div><div class="text-accent small-sub">' + data.submissionId.site + '</div></div>'
+        }},
+        { title: "User", data: null, className: "id_col", render: data =>
+            '<div> <div class="large-super">'+data.userName+'</div><div class="text-accent small-sub">'+data.userId.site+'</div></div>'
+        },
+        { title: "Group", data: null, className: "id_col", render: data =>
+            '<div> <div class="large-super">'+data.groupName+'</div><div class="text-accent small-sub">'+data.groupId.site+'</div></div>'
+        },
+        { title: "Metadataset", data: "id.site", className: "id_col", render: data => '<span class="text-accent">' + data + '</span>'}
       ].concat(DataMeta.view.buildColumns(mdata_names))
 
     // Build table based on field names
