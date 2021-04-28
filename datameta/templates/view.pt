@@ -10,7 +10,16 @@
     <link href="${request.static_url('datameta:static/css/dataTables.bootstrap5.css')}" rel="stylesheet">
     <style>
     td.id_col {
-        background-color: #f7d4da;
+        padding-bottom:0pt;
+    }
+    .large-super {
+        line-height: 1.0;
+        margin-top: .25rem;
+    }
+    .small-sub {
+        line-height: 1.0;
+        font-size:6pt;
+        margin-top:0.1rem;
     }
     </style>
     </metal:block>

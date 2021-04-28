@@ -24,6 +24,12 @@ def get_identifier(db_obj):
         pass
     return ids
 
+def get_identifier_or_none(db_obj):
+    """Given a database object, return the identifying IDs as a dictionary or None if the objecft is None"""
+    if db_obj is None:
+        return None
+    return get_identifier(db_obj)
+
 def resource_query_by_id(db, model, idstring):
     """Returns a database query that returns an entity based on it's uuid or
     site_id as specified by idstring.
