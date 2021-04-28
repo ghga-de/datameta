@@ -95,9 +95,11 @@ def post(request: Request):
     and_filters = [
             # This clause joins the EXISTS subquery with the main query
             MetaDataSet.id==MetaDataSetFilter.id,
-            # This clause restricts the results to submissions of the user's group
-            Submission.group_id == auth_user.group_id
             ]
+
+    # This clause restricts the results to submissions of the user's group
+    if not authz.view_mset_any(auth_user):
+        and_filters.append(Submission.group_id == auth_user.group_id)
 
     # Additionally, if a search pattern was requested, we create a clause
     # implementing the the search and add it to the AND clause
