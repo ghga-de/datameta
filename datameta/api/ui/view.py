@@ -27,7 +27,8 @@ import datetime
 
 import pandas as pd
 
-from ... import security, samplesheet, errors
+from ... import security, samplesheet, errors, resource
+from ...security import authz
 from ...resource import get_identifier
 from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, User, Group, Submission
 
@@ -40,6 +41,8 @@ class ViewTableResponse(MetaDataSetResponse):
     """Data class representing the JSON response returned by POST:/api/ui/view"""
     submission_label : Optional[str] = None
     group_id : Optional[dict] = None
+    group_name: Optional[str] = None
+    user_name: Optional[str] = None
 
 def metadata_index_to_name(db, idx):
     name = db.query(MetaDatum.name).order_by(MetaDatum.order).limit(1).offset(idx).scalar()
@@ -116,7 +119,7 @@ def post(request: Request):
         # search term with the metadataset and submission site_ids, the
         # submission label and the MetaDatumRecord value, using the table alias
         # that was constructed for the search term before.
-        search_clauses = [ or_(*( field.ilike(f"%{search}%") for field in [ User.site_id, Group.site_id, MetaDataSetFilter.site_id, Submission.site_id, Submission.label, MetaDatumRecordFilter.value ])) for search, MetaDatumRecordFilter in searches ]
+        search_clauses = [ or_(*( field.ilike(f"%{search}%") for field in [ User.site_id, User.fullname, Group.site_id, Group.name, MetaDataSetFilter.site_id, Submission.site_id, Submission.label, MetaDatumRecordFilter.value ])) for search, MetaDatumRecordFilter in searches ]
         and_filters += search_clauses
 
     # Finally, the filter query, which will be added to the main query as a
@@ -144,18 +147,16 @@ def post(request: Request):
 
     MetaDatumRecordOrder = aliased(MetaDatumRecord)
     mdata_name = None
-    if   sort_idx == 0: # The submission site ID
-        mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.site_id))
-    elif sort_idx == 1: # The submission label
+    if   sort_idx == 0: # The submission label
         mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.label))
-    elif sort_idx == 2: # The metadataset user site ID
-        mdatasets_base_query = mdatasets_base_query.join(User).order_by(direction(User.site_id))
-    elif sort_idx == 3: # The submission group site ID
-        mdatasets_base_query = mdatasets_base_query.join(Submission).join(Group).order_by(direction(Group.site_id))
-    elif sort_idx == 4: # The metadataset site ID
+    elif sort_idx == 1: # The user full name
+        mdatasets_base_query = mdatasets_base_query.join(User).order_by(direction(User.fullname)) # TODO FIX
+    elif sort_idx == 2: # The submission group name
+        mdatasets_base_query = mdatasets_base_query.join(Submission).join(Group).order_by(direction(Group.site_id)) # TODO FIX
+    elif sort_idx == 3: # The metadataset site ID
         mdatasets_base_query = mdatasets_base_query.order_by(direction(MetaDataSet.site_id))
     else: # Sorting by a metadatum value
-        mdata_name = metadata_index_to_name(db, sort_idx - 5)
+        mdata_name = metadata_index_to_name(db, sort_idx - 4)
         # [WARNING] The following JOIN assumes that an inner join between MetaDatumRecord
         # and MetaDatum does not result in a loss of rows if the JOIN is restricted to one
         # particular MetaDatum.name. Put differently, this query requires that we always
@@ -196,12 +197,15 @@ def post(request: Request):
     # Build the 'data' response
     data = [
             ViewTableResponse(
-                id               = get_identifier(mdata_set),
-                record           = get_record_from_metadataset(mdata_set),
-                user_id          = get_identifier(mdata_set.user),
-                group_id         = get_identifier(mdata_set.submission.group),
-                submission_id    = get_identifier(mdata_set.submission) if mdata_set.submission else None,
-                submission_label = mdata_set.submission.label
+                id                 = get_identifier(mdata_set),
+                record             = get_record_from_metadataset(mdata_set),
+                file_ids           = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
+                user_id            = get_identifier(mdata_set.user),
+                user_name          = mdata_set.user.fullname,
+                group_id           = get_identifier(mdata_set.submission.group),
+                group_name         = mdata_set.submission.group.name,
+                submission_id      = get_identifier(mdata_set.submission) if mdata_set.submission else None,
+                submission_label   = mdata_set.submission.label
                 )
             for mdata_set, _ in mdata_sets
             ]
