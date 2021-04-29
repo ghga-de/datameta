@@ -1,0 +1,9 @@
+[
+    {
+        "site_id": "submission_01", 
+        "label": "subission_01",
+        "date": "2021-03-04", 
+        "group": "group_x",
+        "metadataset_ids": ["metadataset_01", "metadataset_02"]
+    }
+]

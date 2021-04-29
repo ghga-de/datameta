@@ -1,11 +1,10 @@
 """Test to check APIKey-related endpoint.
 """
 
-from . import BaseIntegrationTest, default_users
+from . import BaseIntegrationTest
 from .fixtures import AuthFixture
 from typing import Optional
 
-from datameta import models
 from datameta.api import base_url
 
 class TestApiKeyUsageSenario(BaseIntegrationTest):
@@ -77,7 +76,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
 
     def test_create_get_delete_apikey(self):
         # set initial state:
-        user = self.users["user_a"]
+        user = self.default_users["user_a"]
 
         # create apikey:
         user_session = self.post_key(user.email, user.password)

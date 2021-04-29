@@ -2,9 +2,9 @@ import os
 import json
 from dataclasses import dataclass, field
 import hashlib
-from typing import Optional, Union
+from typing import Optional, List
 
-from datameta.models.db import DateTimeMode
+from datameta.models.db import DateTimeMode, File
 
 # get URL to test db from environment variable:
 db_url = os.getenv("SQLALCHEMY_TEST_URL")
@@ -51,14 +51,15 @@ class UserFixture():
     expired_auth: Optional[AuthFixture] = None
     uuid:Optional[str] = None 
     group_site_id:Optional[str] = None 
-    group_uuid_id:Optional[str] = None 
+    group_uuid_id:Optional[str] = None
 
 default_users_json = os.path.join(base_dir, "default_users.json")
 with open(default_users_json, "r") as json_:
     default_users = {
-        name: UserFixture(**user)
-        for name, user in json.load(json_).items()
+        user["site_id"]: UserFixture(**user)
+        for user in json.load(json_)
     }
+
 
 # read default metadatum.json:
 @dataclass
@@ -95,17 +96,36 @@ metadata_records_json = os.path.join(base_dir, "metadata_records.json")
 with open(metadata_records_json, "r") as json_:
     metadata_records = json.load(json_)
 
+
+# read in default metadatasets:
+@dataclass
+class MetaDataSetFixture():
+    """A container for Metadatasets."""
+    site_id: str
+    user: str
+    record: dict
+    uuid: Optional[str] = None 
+    submitted:bool = False
+
+
+default_metadatasets_json = os.path.join(base_dir, "default_metadatasets.json")
+with open(default_metadatasets_json, "r") as json_:
+    default_metadatasets = {
+        mset["site_id"]: MetaDataSetFixture(**mset)
+        for mset in json.load(json_)
+    }
+
+
 # read test files:
+# Test files will not be added to the database by default
 def calc_checksum(file_path:str):
     with open(file_path, "rb") as file_:
         byte_content = file_.read()
         return hashlib.md5(byte_content).hexdigest()
 
-
-
 class FileFixture():
     """Container for File fixtures"""
-    def __init__(self, name):
+    def __init__(self, name, site_id=None, user=None, submitted=False):
         self.name = name
 
         # set path:
@@ -118,9 +138,44 @@ class FileFixture():
         # set md5 sum
         self.checksum = calc_checksum(self.path)
 
+        # additional parameters for default files:
+        self.site_id = site_id
+        self.user = user
+        self.uuid = None # will be set once added to the database 
+        self.submitted = submitted
 
 test_files = [
     FileFixture(name) 
     for name in os.listdir(base_dir)
     if "test_file_" in name
 ]
+
+
+# read default files:
+# Default files will be added to the database
+default_files_json = os.path.join(base_dir, "default_files.json")
+with open(default_files_json, "r") as json_:
+    default_files = {
+        file["site_id"]: FileFixture(**file)
+        for file in json.load(json_)
+    }
+
+
+# read in default submissions:
+@dataclass
+class SubmissionFixture():
+    """A container for Submissions."""
+    site_id: str
+    label: str
+    date: str
+    group: str
+    metadataset_ids: List[str]
+    files: Optional[List[str]] = None
+    uuid: Optional[str] = None
+
+default_submissions_json = os.path.join(base_dir, "default_submissions.json")
+with open(default_submissions_json, "r") as json_:
+    default_submissions = {
+        sub["site_id"]: SubmissionFixture(**sub)
+        for sub in json.load(json_)
+    }
