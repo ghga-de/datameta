@@ -75,7 +75,7 @@ window.addEventListener("load", function() {
         var xhr = new XMLHttpRequest();
 
         xhr.onreadystatechange = function(){
-            elem_alert = document.getElementById("alert")
+            var elem_alert = document.getElementById("alert")
             if (xhr.readyState === 4){
                 if (xhr.status === 200) {
                     var json = JSON.parse(xhr.responseText);
