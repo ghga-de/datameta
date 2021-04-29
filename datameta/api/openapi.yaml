@@ -913,20 +913,49 @@ paths:
         "500":
           description: Internal Server Error
 
-  /register/groups_and_agreement:
-    get:
-      summary: Get details for the registration view
-      description: Get all available groups and the user agreement for the registration view
+  /register/submit:
+    post:
+      summary: Request the Registration of a new User
+      description: Request the Registration of a new User
       tags:
-        - Server
-      operationId: GetRegisterGroupsAndAgreement
+        - User
+      operationId: PostRegistration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RegisterGroupsAndAgreementResponse"
+                $ref: "#/components/schemas/RegistrationResponse"
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        "500":
+          description: Internal Server Error
+
+
+  /register/settings:
+    get:
+      summary: Get details for the registration view
+      description: Get all available groups and the user agreement for the registration view
+      tags:
+        - User
+      operationId: GetRegisterSettings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterSettingsResponse"
         "500":
           description: Internal Server Error
 
@@ -1389,7 +1418,46 @@ components:
         - datametaVersion
       additionalProperties: false
 
-    RegisterGroupsAndAgreementResponse:
+    RegistrationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+      additionalProperties: true
+
+    RegistrationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        org_select:
+          type: string
+          nullable: true
+        org_create:
+          type: string
+          nullable: true
+        org_new_name:
+          type: string
+          nullable: true
+        check_user_agreement:
+          type: boolean
+          nullable: true
+      required:
+        - name
+        - email
+        - org_select
+        - org_create
+        - org_new_name
+        - check_user_agreement
+      additionalProperties: false
+
+    RegisterSettingsResponse:
       type: object
       properties:
         userAgreement:
@@ -1407,9 +1475,7 @@ components:
       required:
         - groups
         - userAgreement
-      additionalProperties: false
-
-              
+      additionalProperties: false      
 
     AppSettingsResponse:
       type: object

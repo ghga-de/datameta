@@ -117,7 +117,7 @@
 						</label>
 						<textarea class="form-control mb-3" id="user_agreement" style="resize: none; height: 250px" disabled></textarea>
 						<div class="form-check">
-							<input class="form-check-input me-1" type="checkbox" id="check_user_agreement" name="check_user_agreement" value="true">
+							<input class="form-check-input me-1" type="checkbox" id="check_user_agreement" name="check_user_agreement">
 							<label class="form-check-label" for="check_user_agreement">
 								Accept User Agreement
 							</label>
