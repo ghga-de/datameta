@@ -321,7 +321,8 @@ DataMeta.admin.initSiteTable = function() {
                 { title: "Key", data: "key"},
                 { title: "Value Type", data: "valueType"},
                 { title: "Value", data: "value", render:function(data) {
-                    return '<div id="settings_data">' + data +'</div><button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
+                    return  '<div id="settings_data">' + $.fn.DataTable.render.text().display(data) +
+                            '</div><button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableSettingsEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
                 }},
             ]
         });
