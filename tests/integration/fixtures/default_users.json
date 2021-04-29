@@ -63,6 +63,17 @@
         "group_admin": false,
         "site_admin": false,
         "enabled": true,
-        "site_read": false
+        "site_read": true
+    },
+    "user_sr": {
+        "email": "user_sr@user.group_y",
+        "password": "user_sr",
+        "fullname": "user_sr",
+        "site_id": "user_sr",
+        "groupname": "group_y",
+        "group_admin": false,
+        "site_admin": false,
+        "enabled": true,
+        "site_read": true
     }
 }
