@@ -192,7 +192,7 @@ paths:
 
   /rpc/get-file-url/{id}:
     get:
-      summary: "[Not RESTful]: Redirects to a temporary, pre-sign HTTP-URL for downloading a file."
+      summary: "[Not RESTful]: Redirects to a temporary, pre-signed HTTP-URL for downloading a file."
       description: >-
         For the file with the given ID, this enpoint will redirect to a pre-signed HTTP URL for
         downloading the requested file. The pre-signed URL times out after a certain amount of
