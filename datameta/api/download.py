@@ -22,6 +22,7 @@ from .. import security, models, storage
 from . import base_url
 from .files import access_file_by_user
 from ..errors import get_validation_error
+from sqlalchemy import and_
 
 
 @view_config(
