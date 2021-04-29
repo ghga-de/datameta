@@ -127,6 +127,17 @@ class File(Base):
     # Relationships
     metadatumrecord  = relationship('MetaDatumRecord', back_populates='file', uselist=False)
     user             = relationship('User', back_populates='files')
+    downloadtokens  = relationship('DownloadToken', back_populates='file')
+
+class DownloadToken(Base):
+    __tablename__    = 'downloadtokens'
+    id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    file_id          = Column(Integer, ForeignKey('files.id'), nullable=False)
+    value            = Column(Text, nullable=False, unique=True)
+    expires          = Column(DateTime, nullable=False)
+    # Relationships
+    file             = relationship('File', back_populates='downloadtokens')
 
 class Submission(Base):
     __tablename__    = 'submissions'

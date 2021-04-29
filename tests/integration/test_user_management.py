@@ -66,8 +66,8 @@ class TestUserManagement(BaseIntegrationTest):
         ("other_name_change_by_admin", "admin", "user_a", "changed_by_admin", 204),
     ])
     def test_name_change(self, testname:str, executing_user:str, target_user:str, new_name:str, expected_response:int):
-        user = self.users[executing_user]
-        target_user = self.users[target_user] if target_user else user
+        user = self.default_users[executing_user]
+        target_user = self.default_users[target_user] if target_user else user
 
         self.process_name_change_request(testname, user, target_user, new_name, expected_response)
 
@@ -79,8 +79,8 @@ class TestUserManagement(BaseIntegrationTest):
         ("self_group_change_by_admin"                , "admin"           , None       , "group_y"   , 204),
     ])
     def test_group_change(self, testname:str, executing_user:str, target_user:str, new_group:str, expected_response:int):
-        user : models.User             = self.users[executing_user]
-        db_target_user : models.User   = self.users[target_user] if target_user else user
+        user : models.User             = self.default_users[executing_user]
+        db_target_user : models.User   = self.default_users[target_user] if target_user else user
         new_group_uuid                 = str(get_group_by_name(self.session_factory, new_group))
         current_group_uuid             = str(get_group_by_name(self.session_factory, db_target_user.groupname))
 
@@ -106,8 +106,8 @@ class TestUserManagement(BaseIntegrationTest):
         ("other_site_admin_grant_site_read_to_regular", "admin", "user_a", ("+siteRead",), 204),
     ])
     def test_status_changes(self, testname:str, executing_user:str, target_user:str, actions:tuple, expected_response:int):
-        user = self.users[executing_user]
-        target_user = self.users[target_user] if target_user else user
+        user = self.default_users[executing_user]
+        target_user = self.default_users[target_user] if target_user else user
         self.process_status_change_request(testname, user, target_user, actions, expected_response)
 
         if expected_response == 204:
@@ -115,9 +115,9 @@ class TestUserManagement(BaseIntegrationTest):
         
 
     def test_edgecase_status_changes(self):
-        admin = self.users["admin"]
-        user_b = self.users["user_b"]
-        group_x_admin = self.users["group_x_admin"]
+        admin = self.default_users["admin"]
+        user_b = self.default_users["user_b"]
+        group_x_admin = self.default_users["group_x_admin"]
 
         """admin: make user_b a site_admin"""
         self.do_request(user_b.uuid, status=204, headers=admin.auth.header, params={"siteAdmin": True})

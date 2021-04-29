@@ -35,7 +35,8 @@
 		"alexcvzz.vscode-sqlite",
 		"njpwerner.autodocstring",
 		"arjun.swagger-viewer",
-		"ms-azuretools.vscode-docker"
+		"ms-azuretools.vscode-docker",
+		"ms-toolsai.jupyter"
 	]
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
