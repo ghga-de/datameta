@@ -70,7 +70,10 @@ def download_by_token(request) -> HTTPOk:
     # get download token from db
     db = request.dbsession
     db_token = db.query(models.DownloadToken).filter(
-        models.DownloadToken.value==hashed_token
+        and_(
+            models.DownloadToken.value==hashed_token,
+            models.DownloadToken.expires>datetime.now()
+        )
     ).one_or_none()
 
     if db_token is None:
