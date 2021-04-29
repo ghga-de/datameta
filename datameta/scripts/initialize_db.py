@@ -66,7 +66,8 @@ def create_initial_user(request, email, fullname, password, groupname):
                 fullname=fullname,
                 group=init_group,
                 group_admin=True,
-                site_admin=True
+                site_admin=True,
+                site_read=True
                 )
         db.add(root)
 
