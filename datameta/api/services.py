@@ -30,6 +30,12 @@ def post(request: Request):
 
     auth_user = security.revalidate_user(request)
 
+    #Who has the rights to add a service?
+
+    # Parse the name
+    # Create a new row in the service table
+    # Probably check for name uniqueness?
+
 
 
 
