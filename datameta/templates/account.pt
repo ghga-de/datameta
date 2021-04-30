@@ -31,7 +31,7 @@
 
                     <div id="success" class="alert alert-success collapse alert-dismissible fade" role="alert">
                         The new password has been set successfully!
-                        <button type="button" class="btn-close" data-bs-dismiss="success" aria-label="Close" id="dismiss_success"></button>
+                        <button type="button" class="btn-close" onclick="DataMeta.account.clear_alerts()" id="dismiss_success"></button>
                     </div>
 
                     <form action="#" id="change_password_form">

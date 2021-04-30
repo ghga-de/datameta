@@ -14,6 +14,8 @@
 # limitations under the License.
 */
 
+DataMeta.account = {};
+
 window.addEventListener("dmready", function() {
 
     function view_success() {
@@ -23,7 +25,7 @@ window.addEventListener("dmready", function() {
 
     function show_alert(text) {
         var al = document.getElementById("alert");
-        al.innerHTML = text;
+        al.innerHTML = text +  '\n <button type="button" class="btn-close" id="dismiss_alert" onclick="DataMeta.account.clear_alerts()"></button>';
         new bootstrap.Collapse(al, { show: true });
     }
 
@@ -33,14 +35,14 @@ window.addEventListener("dmready", function() {
         document.getElementById("change_password_form").reset();
     }
 
-    function clear_alerts() {
+    DataMeta.account.clear_alerts = function() {
         document.getElementById("alert").classList.remove("show");
         document.getElementById("success").classList.remove("show");
     }
 
     document.getElementById("change_password_tab").addEventListener("click", function() {
         clear_form();
-        clear_alerts();
+        DataMeta.account.clear_alerts();
     });
 
     document.getElementById("change_password_form").addEventListener("submit", function(event) {  
@@ -48,7 +50,7 @@ window.addEventListener("dmready", function() {
         // Prevent form submission
         event.preventDefault();
 
-        clear_alerts();
+        DataMeta.account.clear_alerts();
 
         var form = event.target;
 
@@ -101,16 +103,16 @@ window.addEventListener("dmready", function() {
     });
 
     function show_api_alert(text) {
-        clear_api_alerts();        
+        DataMeta.account.clear_api_alerts();        
         var al = document.getElementById("api_alert");
-        al.innerHTML = text;
+        al.innerHTML = text + '\n <button type="button" class="btn-close" onclick="DataMeta.account.clear_api_alerts()" id="dismiss_api_alert"></button>';
         new bootstrap.Collapse(al, { show: true });
     }
 
     function show_api_success(text) {
-        clear_api_alerts();        
+        DataMeta.account.clear_api_alerts();        
         var success = document.getElementById("api_success");
-        success.innerHTML = text;
+        success.innerHTML = text + '\n <button type="button" class="btn-close" onclick="DataMeta.account.clear_api_alerts()" id="dismiss_api_success"></button>';
         new bootstrap.Collapse(success, { show: true });
     }
 
@@ -176,7 +178,7 @@ window.addEventListener("dmready", function() {
     }
 
     // Clears the success and alert boxes
-    function clear_api_alerts() {
+    DataMeta.account.clear_api_alerts = function() {
         document.getElementById("api_alert").classList.remove("show");
         document.getElementById("api_success").classList.remove("show");
     }
@@ -215,7 +217,7 @@ window.addEventListener("dmready", function() {
     });
 
     document.getElementById("api_keys_tab").addEventListener("click", function() {
-        clear_api_alerts();
+        DataMeta.account.clear_api_alerts();
         clear_api_form();
     }); 
 
