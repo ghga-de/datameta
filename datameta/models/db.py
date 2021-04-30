@@ -24,7 +24,8 @@ from sqlalchemy import (
     Date,
     Time,
     DateTime,
-    String
+    String,
+    Table
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -47,6 +48,11 @@ class DateTimeMode(enum.Enum):
             return datetime.datetime
         if self.value == 2:
             return datetime.time
+
+user_service_table = Table('service_user', Base.metadata,
+    Column('user_id', Integer, ForeignKey('users.id')),
+    Column('service_id', Integer, ForeignKey('services.id'))
+)
 
 class Group(Base):
     __tablename__    = 'groups'
@@ -78,6 +84,9 @@ class User(Base):
     files            = relationship('File', back_populates='user')
     passwordtokens   = relationship('PasswordToken', back_populates='user')
     apikeys          = relationship('ApiKey', back_populates='user')
+    services         = relationship('Service',
+                    secondary=user_service_table,
+                    back_populates='users')
 
 class ApiKey(Base):
     __tablename__    = 'apikeys'
@@ -167,6 +176,7 @@ class MetaDatum(Base):
     isfile             = Column(Boolean(create_constraint=False), nullable=False)
     submission_unique  = Column(Boolean(create_constraint=False), nullable=False)
     site_unique        = Column(Boolean(create_constraint=False), nullable=False)
+    service_id         = Column(Integer, ForeignKey('services.id'), nullable=True)
     # Relationships
     metadatumrecords   = relationship('MetaDatumRecord', back_populates='metadatum')
 
@@ -206,3 +216,22 @@ class ApplicationSettings(Base):
     float_value  = Column(Float, nullable=True)
     date_value   = Column(Date, nullable=True)
     time_value   = Column(Time, nullable=True)
+
+class Service(Base):
+    __tablename__ = 'services'
+    id           = Column(Integer, primary_key=True)
+    uuid         = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    site_id      = Column(String(50), unique=True, nullable=False, index=True)
+    name         = Column(Text, nullable=True)
+    # Relationships
+    users        = relationship('User',
+                    secondary=user_service_table,
+                    back_populates='services')
+
+class ServiceExecution(Base):
+    __tablename__    = 'serviceecexution'
+    id               = Column(Integer, primary_key=True) 
+    service_id       = Column(Integer, ForeignKey('services.id'), nullable=False)    
+    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
+    metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
+    datetime         = Column(DateTime, nullable=False)
