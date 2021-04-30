@@ -84,9 +84,9 @@ class User(Base):
     files            = relationship('File', back_populates='user')
     passwordtokens   = relationship('PasswordToken', back_populates='user')
     apikeys          = relationship('ApiKey', back_populates='user')
-    services         = relationship("Service",
+    services         = relationship('Service',
                     secondary=user_service_table,
-                    back_populates="users")
+                    back_populates='users')
 
 class ApiKey(Base):
     __tablename__    = 'apikeys'
@@ -218,18 +218,18 @@ class ApplicationSettings(Base):
     time_value   = Column(Time, nullable=True)
 
 class Service(Base):
-    __tablename__ = "services"
+    __tablename__ = 'services'
     id           = Column(Integer, primary_key=True)
     uuid         = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     site_id      = Column(String(50), unique=True, nullable=False, index=True)
     name         = Column(Text, nullable=True)
     # Relationships
-    users        = relationship("User",
+    users        = relationship('User',
                     secondary=user_service_table,
-                    back_populates="services")
+                    back_populates='services')
 
 class ServiceExecution(Base):
-    __tablename__    = "serviceecexution"
+    __tablename__    = 'serviceecexution'
     id               = Column(Integer, primary_key=True) 
     service_id       = Column(Integer, ForeignKey('services.id'), nullable=False)    
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
