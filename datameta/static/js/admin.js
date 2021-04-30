@@ -1048,7 +1048,7 @@ DataMeta.admin.getMetadata = function () {
 function show_user_alert(text) {
     var al = document.getElementById("user_alert");
     al.classList.remove("show");
-    al.innerHTML = text;
+    al.innerHTML = text + '<button type="button" class="btn-close" id="dismiss_user_alert" onclick="DataMeta.admin.clearAlerts()"></button>';
     new bootstrap.Collapse(al, { show: true });
 }
 
@@ -1056,7 +1056,7 @@ function show_user_alert(text) {
 function show_group_alert(text) {
     var al = document.getElementById("group_alert");
     al.classList.remove("show");
-    al.innerHTML = text;
+    al.innerHTML = text + '<button type="button" class="btn-close" id="dismiss_group_alert" onclick="DataMeta.admin.clearAlerts()"></button>';
     new bootstrap.Collapse(al, { show: true });
 }
 
@@ -1064,7 +1064,7 @@ function show_group_alert(text) {
 function show_request_alert(text) {
     var al = document.getElementById("request_alert");
     al.classList.remove("show");
-    al.innerHTML = text;
+    al.innerHTML = text + '<button type="button" class="btn-close" id="dismiss_request_alert" onclick="DataMeta.admin.clearAlerts()"></button>';
     new bootstrap.Collapse(al, { show: true });
 }
 
@@ -1072,7 +1072,7 @@ function show_request_alert(text) {
 function show_metadata_alert(text) {
     var al = document.getElementById("metadata_alert");
     al.classList.remove("show");
-    al.innerHTML = text;
+    al.innerHTML = text + '<button type="button" class="btn-close" id="dismiss_metadata_alert" onclick="DataMeta.admin.clearAlerts()"></button>';
     new bootstrap.Collapse(al, { show: true });
 }
 
@@ -1080,7 +1080,7 @@ function show_metadata_alert(text) {
 function show_settings_alert(text) {
     var al = document.getElementById("site_alert");
     al.classList.remove("show");
-    al.innerHTML = text;
+    al.innerHTML = text + '<button type="button" class="btn-close" id="dismiss_site_alert" onclick="DataMeta.admin.clearAlerts()"></button>';
     new bootstrap.Collapse(al, { show: true });
 }
 
@@ -1125,7 +1125,7 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
     });
 }
 
-function clearAlerts () {
+DataMeta.admin.clearAlerts = function() {
     document.getElementById("group_alert").classList.remove("show");
     document.getElementById("user_alert").classList.remove("show");
     document.getElementById("request_alert").classList.remove("show");
@@ -1140,11 +1140,11 @@ window.addEventListener("dmready", function() {
     DataMeta.admin.initGroupTable();
     DataMeta.admin.reload();
 
-    document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
-    document.getElementById("nav-metadata-tab").addEventListener("click", clearAlerts);
-    document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);
-    document.getElementById("nav-users-tab").addEventListener("click", clearAlerts);
-    document.getElementById("nav-requests-tab").addEventListener("click", clearAlerts);
+    document.getElementById("nav-site-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-metadata-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-groups-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-users-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-requests-tab").addEventListener("click", DataMeta.admin.clearAlerts);
 });
 
 window.addEventListener("load", function() {
