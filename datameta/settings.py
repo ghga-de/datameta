@@ -14,7 +14,6 @@
 
 from .models import ApplicationSettings
 
-
 def get_setting(db, key):
     return db.query(ApplicationSettings).filter(ApplicationSettings.key==key).one_or_none()
 
