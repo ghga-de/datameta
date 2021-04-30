@@ -11,3 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from pyramid.view import view_config
+from pyramid.request import Request
+from pyramid.httpexceptions import HTTPNoContent
+
+
+@view_config(
+    route_name="",
+    renderer='json', 
+    request_method="POST", 
+    openapi=True
+)
+def post(request: Request):
+    """POST a new service"""
+
+    db = request.dbsession
+
+    auth_user = security.revalidate_user(request)
+
+
+
+
+    return HTTPNoContent()
