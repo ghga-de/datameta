@@ -24,6 +24,7 @@ from ..resource import get_identifier, resource_by_id
 from sqlalchemy import or_, and_
 from ..settings import get_setting
 import re
+from typing import Optional
 
 import logging
 log = logging.getLogger(__name__)
@@ -107,14 +108,15 @@ def post(request) -> HTTPOk:
             errors['req_exists'] = True
 
     # Check whether the selected organization is valid
-    group = None
     if org_create:
         if not org_new_name:
             errors["org_new_name"] = True
     else:
-        group = resource_by_id(db, Group, org_select)
-        if group is None:
+        group_ : Optional[Group] = resource_by_id(db, Group, org_select)
+        if group_ is None:
             errors['org_select'] = True
+        else:
+            group : Group = group_
 
     # Check whether a name was specified
     if not name:
