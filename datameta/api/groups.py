@@ -65,7 +65,7 @@ class GroupSubmissions:
             file_records = [
                 rec 
                 for rec in mset.metadatumrecords 
-                if rec.metadatum.isfile
+                if rec.metadatum.isfile and rec.value
             ]
             file_ids.extend(
                 [get_identifier(rec.file) for rec in file_records]
