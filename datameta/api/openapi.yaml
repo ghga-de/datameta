@@ -913,10 +913,10 @@ paths:
         "500":
           description: Internal Server Error
 
-  /register/submit:
+  /registrations:
     post:
-      summary: Request the Registration of a new User
-      description: Request the Registration of a new User
+      summary: Create a new user registration request
+      description: Create a new user registration request
       tags:
         - User
       operationId: PostRegistration
@@ -942,13 +942,13 @@ paths:
           description: Internal Server Error
 
 
-  /register/settings:
+  /registrationsettings:
     get:
       summary: Get details for the registration view
       description: Get all available groups and the user agreement for the registration view
       tags:
         - User
-      operationId: GetRegisterSettings
+      operationId: GetRegistrationSettings
       responses:
         "200":
           description: OK

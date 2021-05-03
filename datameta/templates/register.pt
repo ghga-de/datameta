@@ -113,16 +113,16 @@
 				<div id="user_agreement_container" style="display:none; text-align:left">
 					<div class="mb-3">
 						<label class="form-control-label mb-2" for="user_agreement">
-							User Agreement:
+							Terms and Conditions:
 						</label>
 						<div class="form-control overflow-auto mb-3" id="user_agreement" style="resize: none; height: 250px" disabled></div>
 						<div class="form-check">
 							<input class="form-check-input me-1" type="checkbox" id="check_user_agreement" name="check_user_agreement">
 							<label class="form-check-label" for="check_user_agreement">
-								Accept User Agreement
+								I agree to the Terms and Conditions
 							</label>
 							<div class="invalid-feedback">
-							You have to accept the User Agreement in order to register!
+							You have to accept the Terms and Conditions in order to register!
 							</div>
 						</div>
 					</div>

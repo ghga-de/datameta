@@ -76,16 +76,12 @@ def post(request) -> HTTPOk:
 
     db = request.dbsession
     errors = {}
-    try:
-        name = request.openapi_validated.body['name']
-        req_email = request.openapi_validated.body['email']
-        req_email = req_email.lower() # Convert separately to maintain KeyError
-        org_select = request.openapi_validated.body['org_select']
-        org_create = request.openapi_validated.body['org_create'] is not None
-        org_new_name = request.openapi_validated.body['org_new_name']
-        check_user_agreement = request.openapi_validated.body['check_user_agreement']
-    except (KeyError, ValueError) as e:
-        raise HTTPBadRequest(e)
+    name = request.openapi_validated.body['name']
+    req_email = request.openapi_validated.body['email'].lower()
+    org_select = request.openapi_validated.body['org_select']
+    org_create = request.openapi_validated.body['org_create'] is not None
+    org_new_name = request.openapi_validated.body['org_new_name']
+    check_user_agreement = request.openapi_validated.body['check_user_agreement']
 
     # check, if a user agreement exists
     user_agreement = db.query(ApplicationSettings).filter(ApplicationSettings.key == "user_agreement").first()
