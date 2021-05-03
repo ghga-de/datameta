@@ -226,14 +226,14 @@ class Service(Base):
     id           = Column(Integer, primary_key=True)
     uuid         = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     site_id      = Column(String(50), unique=True, nullable=False, index=True)
-    name         = Column(Text, nullable=True)
+    name         = Column(Text, nullable=True, unique=True)
     # Relationships
     users        = relationship('User',
                     secondary=user_service_table,
                     back_populates='services')
 
 class ServiceExecution(Base):
-    __tablename__    = 'serviceecexution'
+    __tablename__    = 'serviceexecution'
     id               = Column(Integer, primary_key=True) 
     service_id       = Column(Integer, ForeignKey('services.id'), nullable=False)    
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
