@@ -16,6 +16,8 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent
 
+from .. import security,
+
 
 @view_config(
     route_name="",
@@ -30,8 +32,7 @@ def post(request: Request):
 
     auth_user = security.revalidate_user(request)
 
-    #Who has the rights to add a service?
-
+    if not auth_
     # Parse the name
     # Create a new row in the service table
     # Probably check for name uniqueness?
