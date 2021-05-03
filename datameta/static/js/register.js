@@ -18,7 +18,7 @@
 
 //Get usage agreement as well as a list of all groups from a custom endpoint
 function getGroupsAndUsageAgreement() {
-    fetch(DataMeta.api("register/settings"),
+    fetch(DataMeta.api("registrationsettings"),
     {
         method: 'GET',
         headers: {
@@ -74,7 +74,7 @@ window.addEventListener("load", function() {
 
         var elem_alert = document.getElementById("alert")
 
-        fetch(DataMeta.api('register/submit'),
+        fetch(DataMeta.api('registrations'),
         {
             method: 'POST',
             headers: {
