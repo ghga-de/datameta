@@ -26,11 +26,12 @@
                 <div class="position-absolute form-small">    
                     <h5 class="card-title mb-4">Change Password</h5>
 
-                    <div id="alert" class="alert alert-danger collapse" role="alert">
+                    <div id="alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
                     </div>
 
-                    <div id="success" class="alert alert-success collapse" role="alert">
+                    <div id="success" class="alert alert-success collapse alert-dismissible fade" role="alert">
                         The new password has been set successfully!
+                        <button type="button" class="btn-close" onclick="DataMeta.account.clear_alerts()" id="dismiss_success"></button>
                     </div>
 
                     <form action="#" id="change_password_form">
@@ -69,10 +70,10 @@
             </div>
             <div class="card-body tab-pane fade" id="nav-api-keys" role="tabpanel" aria-labelledby="nav-home-tab">
                 <h5 class="card-title mb-4">Manage API Keys</h5>
-                    <div id="api_alert" class="alert alert-danger collapse" role="alert">
+                    <div id="api_alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
                     </div>
 
-                    <div id="api_success" class="alert alert-success collapse" role="alert">
+                    <div id="api_success" class="alert alert-success collapse alert-dismissible fade" role="alert">
                     </div>
                 <div class="form-small ms-0">
                     
