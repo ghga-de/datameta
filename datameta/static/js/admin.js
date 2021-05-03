@@ -162,7 +162,7 @@ DataMeta.admin.subnav = function() {
             document.getElementById("acc_collapse_"+showreq).classList.add("show");
             document.getElementById("acc_collapse_"+showreq).scrollIntoView({behavior: "smooth", block: "end"});
         } else {
-            show_request_alert("The request you are looking for does not exist or was already answered.");
+            showAlert("request_alert", "The request you are looking for does not exist or was already answered.");
         }
 
     }
@@ -423,17 +423,17 @@ function saveSettings(event) {
             DataMeta.admin.getAppSettings();
 
             // Remove any alerts there still are
-            document.getElementById("metadata_alert").classList.remove("show");
+            document.getElementById("site_alert").classList.remove("show");
         } else  if (response.status == "400") {
             response.json().then((json) => {
-                show_settings_alert(json[0].message);
+                showAlert("site_alert", json[0].message);
             });
         } else if (response.status == "401") {
-            show_settings_alert("You have to be logged in to perform this action.");
+            showAlert("site_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_settings_alert("You do not have the rights to perform this action.");
+            showAlert("site_alert", "You do not have the rights to perform this action.");
         } else {
-            show_settings_alert("An unknown error occurred. Please try again later.");
+            showAlert("site_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -506,7 +506,7 @@ DataMeta.admin.newMetaDatumRow = function() {
     // Check, if there is already a new row
     for (row in rows) {
         if (row.id == "-1") {
-            show_metadata_alert("You can only create one new metadatum at a time.")
+            showAlert("metadata_alert", "You can only create one new metadatum at a time.")
             return;
         }
     }
@@ -575,7 +575,7 @@ function saveMetaDatum(event) {
     var isSiteUnique = row.children[10].querySelector('input').checked;
 
     if(isNaN(order)) {
-        show_metadata_alert("Please specify an int in the 'order' field.");
+        showAlert("metadata_alert", "Please specify an int in the 'order' field.");
         return;
     }
 
@@ -609,14 +609,14 @@ function saveMetaDatum(event) {
             document.getElementById("metadata_alert").classList.remove("show");
         } else  if (response.status == "400") {
             response.json().then((json) => {
-                show_metadata_alert(json[0].message);
+                showAlert("metadata_alert", json[0].message);
             });
         } else if (response.status == "401") {
-            show_metadata_alert("You have to be logged in to perform this action.");
+            showAlert("metadata_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_metadata_alert("You do not have the rights to perform this action.");
+            showAlert("metadata_alert", "You do not have the rights to perform this action.");
         } else {
-            show_metadata_alert("An unknown error occurred. Please try again later.");
+            showAlert("metadata_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -649,7 +649,7 @@ function addMetaDatum(event) {
     var isSiteUnique = row.children[10].querySelector('input').checked;
 
     if(isNaN(order)) {
-        show_metadata_alert("Please specify an int in the 'order' field.");
+        showAlert("metadata_alert", "Please specify an int in the 'order' field.");
         return;
     }
 
@@ -683,14 +683,14 @@ function addMetaDatum(event) {
             document.getElementById("metadata_alert").classList.remove("show");
         } else  if (response.status == "400") {
             response.json().then((json) => {
-                show_metadata_alert(json[0].message);
+                showAlert("metadata_alert", json[0].message);
             });
         } else if (response.status == "401") {
-            show_metadata_alert("You have to be logged in to perform this action.");
+            showAlert("metadata_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_metadata_alert("You do not have the rights to perform this action.");
+            showAlert("metadata_alert", "You do not have the rights to perform this action.");
         } else {
-            show_metadata_alert("An unknown error occurred. Please try again later.");
+            showAlert("metadata_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -955,14 +955,14 @@ DataMeta.admin.updateGroup = function (group_id, name) {
             DataMeta.admin.reload();
         } else  if (response.status == "400") {
             response.json().then((json) => {
-                show_group_alert(json[0].message);
+                showAlert("group_alert", json[0].message);
             });
         } else if (response.status == "401") {
-            show_group_alert("You have to be logged in to perform this action.");
+            showAlert("group_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_group_alert("You do not have the rights to perform this action.");
+            showAlert("group_alert", "You do not have the rights to perform this action.");
         } else {
-            show_group_alert("An unknown error occurred. Please try again later.");
+            showAlert("group_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -991,14 +991,14 @@ DataMeta.admin.getAppSettings = function () {
             });
         } else if (response.status == "400") {
             response.json().then((json) => {
-                show_group_alert(json.message);
+                showAlert("site_alert", json.message);
             });
         } else if (response.status == "401") {
-            show_group_alert("You have to be logged in to perform this action.");
+            showAlert("site_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_group_alert("You do not have the rights to perform this action.");
+            showAlert("site_alert", "You do not have the rights to perform this action.");
         } else {
-            show_group_alert("An unknown error occurred. Please try again later.");
+            showAlert("site_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -1028,14 +1028,14 @@ DataMeta.admin.getMetadata = function () {
             });
         } else  if (response.status == "400") {
             response.json().then((json) => {
-                show_group_alert(json.message);
+                showAlert("metadata_alert", json.message);
             });
         } else if (response.status == "401") {
-            show_group_alert("You have to be logged in to perform this action.");
+            showAlert("metadata_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_group_alert("You do not have the rights to perform this action.");
+            showAlert("metadata_alert", "You do not have the rights to perform this action.");
         } else {
-            show_group_alert("An unknown error occurred. Please try again later.");
+            showAlert("metadata_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -1043,44 +1043,11 @@ DataMeta.admin.getMetadata = function () {
     });
 }
 
-
-// Alert in the user Tab for 4** - HTTP Responses
-function show_user_alert(text) {
-    var al = document.getElementById("user_alert");
+// Show alert boxes for a error messages in the individual tabs
+function showAlert(alertName, text) {
+    var al = document.getElementById(alertName);
     al.classList.remove("show");
-    al.innerHTML = text;
-    new bootstrap.Collapse(al, { show: true });
-}
-
-// Alert in the group Tab for 4** - HTTP Responses
-function show_group_alert(text) {
-    var al = document.getElementById("group_alert");
-    al.classList.remove("show");
-    al.innerHTML = text;
-    new bootstrap.Collapse(al, { show: true });
-}
-
-// Alert in the request Tab
-function show_request_alert(text) {
-    var al = document.getElementById("request_alert");
-    al.classList.remove("show");
-    al.innerHTML = text;
-    new bootstrap.Collapse(al, { show: true });
-}
-
-// Alert in the metadata Tab
-function show_metadata_alert(text) {
-    var al = document.getElementById("metadata_alert");
-    al.classList.remove("show");
-    al.innerHTML = text;
-    new bootstrap.Collapse(al, { show: true });
-}
-
-// Alert in the metadata Tab
-function show_settings_alert(text) {
-    var al = document.getElementById("site_alert");
-    al.classList.remove("show");
-    al.innerHTML = text;
+    al.innerHTML = text + '<button type="button" class="btn-close" id="dismiss_' + alertName + '" onclick="DataMeta.admin.clearAlerts()"></button>';
     new bootstrap.Collapse(al, { show: true });
 }
 
@@ -1108,16 +1075,16 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
             DataMeta.admin.reload();
         } else if (response.status == "400") {
             response.json().then((json) => {
-                show_user_alert(json[0].message);
+                showAlert("user_alert", json[0].message);
             });
         } else if (response.status == "401") {
-            show_user_alert("You have to be logged in to perform this action.");
+            showAlert("user_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            show_user_alert("You do not have the rights to perform this action.");
+            showAlert("user_alert", "You do not have the rights to perform this action.");
         } else if (response.status == "404") {
-            show_user_alert("The user or group you are referring to does not exist.");
+            showAlert("user_alert", "The user or group you are referring to does not exist.");
         } else {
-            show_user_alert("An unknown error occurred. Please try again later.");
+            showAlert("user_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -1125,7 +1092,7 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
     });
 }
 
-function clearAlerts () {
+DataMeta.admin.clearAlerts = function() {
     document.getElementById("group_alert").classList.remove("show");
     document.getElementById("user_alert").classList.remove("show");
     document.getElementById("request_alert").classList.remove("show");
@@ -1140,11 +1107,11 @@ window.addEventListener("dmready", function() {
     DataMeta.admin.initGroupTable();
     DataMeta.admin.reload();
 
-    document.getElementById("nav-site-tab").addEventListener("click", clearAlerts);
-    document.getElementById("nav-metadata-tab").addEventListener("click", clearAlerts);
-    document.getElementById("nav-groups-tab").addEventListener("click", clearAlerts);
-    document.getElementById("nav-users-tab").addEventListener("click", clearAlerts);
-    document.getElementById("nav-requests-tab").addEventListener("click", clearAlerts);
+    document.getElementById("nav-site-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-metadata-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-groups-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-users-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-requests-tab").addEventListener("click", DataMeta.admin.clearAlerts);
 });
 
 window.addEventListener("load", function() {
