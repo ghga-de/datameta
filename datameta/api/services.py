@@ -32,7 +32,8 @@ def post(request: Request):
 
     auth_user = security.revalidate_user(request)
 
-    if not auth_
+    if not auth_user.side_admin
+        pass
     # Parse the name
     # Create a new row in the service table
     # Probably check for name uniqueness?
