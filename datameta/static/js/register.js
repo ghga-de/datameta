@@ -14,7 +14,61 @@
 # limitations under the License.
 */
 
+'use strict';
+
+//Get usage agreement as well as a list of all groups from a custom endpoint
+function getGroupsAndUsageAgreement() {
+    fetch(DataMeta.api("registrationsettings"),
+    {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }).then(function(response) {
+        if(response.ok) {
+            return response.json()
+        }   else {
+            throw new Error()
+        }
+    }).then((json) => {
+        populateUserAgreement(json.userAgreement);
+        populateGroupSelector(json.groups);
+    }).catch((error) => {
+        alert("An unknown error occured.");
+    });
+}
+
+function populateGroupSelector(groups) {
+    var orgSelect = document.getElementById("org_select");
+
+    groups.forEach(group => {
+        var option = document.createElement('option')
+        option.value = group.id.uuid;
+        option.innerHTML = group.name;
+        orgSelect.appendChild(option)
+    })
+}
+
+function populateUserAgreement(userAgreement) {
+
+    if(userAgreement) {
+        document.getElementById("user_agreement_container").style.display="block";
+        document.getElementById("user_agreement").innerHTML = userAgreement;
+    } else {
+        // Hide Usage Agreement, if it was null or empty (should already be hidden)
+        document.getElementById("user_agreement_container").style.display="none";
+    }
+}
+
+function clearAlert() {
+    var elem_alert = document.getElementById("alert")
+    elem_alert.style.display="none";
+}
+
 window.addEventListener("load", function() {
+
+    getGroupsAndUsageAgreement();
 
     document.getElementById("regform").addEventListener("submit", function(event) {
         var data = new FormData(event.target);
@@ -24,47 +78,66 @@ window.addEventListener("load", function() {
         // Prevent form submission
         event.preventDefault();
 
-        var xhr = new XMLHttpRequest();
+        var elem_alert = document.getElementById("alert")
+        var closeAlertButton = '<button type="button" class="btn-close" id="dismiss_alert" onclick="clearAlert()"></button>'
 
-        xhr.onreadystatechange = function(){
-            elem_alert = document.getElementById("alert")
-            if (xhr.readyState === 4){
-                if (xhr.status === 200) {
-                    var json = JSON.parse(xhr.responseText);
-                    if (json.success) {
-                        elem_alert.style.display="none"
-                        document.getElementById("regform").style.display="none"
-                        document.getElementById("success").style.display="block"
-                    } else {
-                        var keys = ["name", "email", "org_select", "org_new_name"];
-                        keys.forEach(function(key) {
-                            if (key in json.errors) {
-                                document.getElementById(key).classList.remove("is-valid");
-                                document.getElementById(key).classList.add("is-invalid");
-                            } else {
-                                document.getElementById(key).classList.remove("is-invalid");
-                                document.getElementById(key).classList.add("is-valid");
-                            }
-                        });
-                        // User exists
-                        if ("user_exists" in json.errors) {
-                            elem_alert.innerHTML = 'This email address is already registered. Please use the <a href="/login">login</a> page.';
-                            elem_alert.style.display="block";
-                        } else if ("req_exists" in json.errors) {
-                            elem_alert.innerHTML = 'Your request is already being reviewed. You will be contacted shortly.';
-                            elem_alert.style.display="block";
+        fetch(DataMeta.api('registrations'),
+        {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name:                   data.get('name'),
+                email:                  data.get('email'),
+                org_select:             data.get('org_select'),
+                org_create:             data.get('org_create'),
+                org_new_name:           data.get('org_new_name'),
+                check_user_agreement:   data.get("check_user_agreement") == "on"
+            })
+        })
+        .then((response) => {
+            if (response.status === 204) {
+                elem_alert.style.display="none"
+                document.getElementById("regform").style.display="none"
+                document.getElementById("success").style.display="block"
+                return;
+            } else if(response.status === 400) {
+                response.json().then((json) => {
+                    var errorFields = json.map(error => error.field);
+
+                    var keys = ["name", "email", "org_select", "org_new_name", "check_user_agreement"];
+
+                    keys.forEach(function(key) {
+                        if (errorFields.includes(key)) {
+                            document.getElementById(key).classList.remove("is-valid");
+                            document.getElementById(key).classList.add("is-invalid");
+                        } else {
+                            document.getElementById(key).classList.remove("is-invalid");
+                            document.getElementById(key).classList.add("is-valid");
                         }
+                    });
+                    // User exists
+                    if (errorFields.includes("user_exists")) {
+                        elem_alert.innerHTML = 'This email address is already registered. Please use the <a href="/login">login</a> page. ' + closeAlertButton;
+                        document.getElementById("email").classList.remove("is-valid");
+                        document.getElementById("email").classList.add("is-invalid");
+                        elem_alert.style.display="block";
+                    } else if (errorFields.includes("req_exists")) {
+                        elem_alert.innerHTML = 'Your request is already being reviewed. You will be contacted shortly. ' + closeAlertButton;
+                        elem_alert.style.display="block";
                     }
-                } else {
-                    elem_alert.innerHTML = 'An unknown error occurred. Please try again later.';
-                    elem_alert.style.display="block";
-                }
+                    fieldset.disabled = false;
+                });
+            } else {
+                throw new Error();
+            }      
+        }).catch((error) => {
+            elem_alert.innerHTML = 'An unknown error occurred. Please try again later. ' + closeAlertButton;
+            elem_alert.style.display="block";
             fieldset.disabled = false;
-            }
-        };
-
-        xhr.open('POST', '/api/ui/register');
-        xhr.send(data);
+        });
     });
 
     document.getElementById("toggle_new_org").addEventListener("change", function(event) {

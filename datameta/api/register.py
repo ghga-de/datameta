@@ -12,18 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlalchemy import or_, and_
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from pyramid.view import view_config
-from ...resource import resource_by_id
-from ...models import User, Group, RegRequest
-from ... import email
-from ...settings import get_setting
+from pyramid.request import Request
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTPNoContent
+
+from dataclasses import dataclass
+from ..models import Group, ApplicationSettings, User, RegRequest
+from . import DataHolderBase
+from .. import email, errors
+from ..resource import get_identifier, resource_by_id
+from sqlalchemy import or_, and_
+from ..settings import get_setting
+import re
+from typing import Optional
 
 import logging
 log = logging.getLogger(__name__)
 
-import re
+@dataclass
+class RegisterOptionsResponse(DataHolderBase):
+    user_agreement: str
+    groups: list
+
+@view_config(
+    route_name="register_settings",
+    renderer='json', 
+    request_method="GET", 
+    openapi=True
+)
+def get(request: Request) -> RegisterOptionsResponse:
+
+    db = request.dbsession
+
+    user_agreement = db.query(ApplicationSettings).filter(ApplicationSettings.key == "user_agreement").first()
+    groups = db.query(Group)
+
+    if not user_agreement == None:
+        user_agreement = str(user_agreement.str_value)
+
+    return RegisterOptionsResponse(
+        user_agreement = user_agreement,
+        groups = [ {"id": get_identifier(group), "name": group.name} for group in groups ]
+    )
 
 def get_authorative_admins(db, reg_request):
     """Identifies administrative users that are authorative for a given
@@ -36,49 +66,61 @@ def get_authorative_admins(db, reg_request):
             and_(User.group_admin==True, User.group_id == reg_request.group_id)
             )).all()
 
-@view_config(route_name='register_submit', renderer='json')
-def v_register_submit(request):
+@view_config(
+    route_name='register_submit',
+    renderer='json', 
+    request_method="POST", 
+    openapi=True
+)
+def post(request):
 
     db = request.dbsession
-    errors = {}
-    try:
-        name = request.POST['name']
-        req_email = request.POST['email']
-        req_email = req_email.lower() # Convert separately to maintain KeyError
-        org_select = request.POST['org_select']
-        org_create = request.POST.get('org_create') is not None
-        org_new_name = request.POST.get('org_new_name')
-    except (KeyError, ValueError) as e:
-        log.info(f"Malformed request at /api/ui/register: {e}")
-        raise HTTPBadRequest()
+    error_fields = []
+    name = request.openapi_validated.body['name']
+    req_email = request.openapi_validated.body['email'].lower()
+    org_select = request.openapi_validated.body['org_select']
+    org_create = request.openapi_validated.body['org_create'] is not None
+    org_new_name = request.openapi_validated.body['org_new_name']
+    check_user_agreement = request.openapi_validated.body['check_user_agreement']
+
+    # check, if a user agreement exists
+    user_agreement = db.query(ApplicationSettings).filter(ApplicationSettings.key == "user_agreement").first()
+
+    if str(user_agreement.str_value) == '':
+        check_user_agreement = True
+
+    # Check, if the user accepted the user agreement
+    if not check_user_agreement:
+        error_fields.append('check_user_agreement')
 
     # Basic validity check for email
     if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
-        errors['email'] = True
+        error_fields.append('email')
     else:
         # Check if the user already exists
         if db.query(User).filter(User.email==req_email).one_or_none() is not None:
-            errors['user_exists'] = True
+            error_fields.append('user_exists')
         elif db.query(RegRequest).filter(RegRequest.email==req_email).one_or_none() is not None:
-            errors['req_exists'] = True
+            error_fields.append('req_exists')
 
     # Check whether the selected organization is valid
-    group = None
     if org_create:
         if not org_new_name:
-            errors["org_new_name"] = True
+            error_fields.append('org_new_name')
     else:
-        group = resource_by_id(db, Group, org_select)
-        if group is None:
-            errors['org_select'] = True
+        group_ : Optional[Group] = resource_by_id(db, Group, org_select)
+        if group_ is None:
+            error_fields.append('org_select')
+        else:
+            group : Group = group_
 
     # Check whether a name was specified
     if not name:
-        errors['name'] = True
+        error_fields.append('name')
 
     # If errors occurred, return them
-    if errors:
-        return { 'success' : False, 'errors' : errors }
+    if error_fields:
+        raise errors.get_validation_error(fields=error_fields, messages=['' for _ in error_fields])
 
     # Store a new registration request in the database
     reg_req = RegRequest(
@@ -111,4 +153,4 @@ def v_register_submit(request):
     else:
         log.info(f"REGISTRATION REQUEST [email='{req_email}', name='{name}', group='{group.name}']")
 
-    return { 'success' : True }
+    return HTTPNoContent()

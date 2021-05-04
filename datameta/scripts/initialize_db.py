@@ -208,6 +208,10 @@ def create_default_site_settings(db):
         key='logo_html',
         str_value = '<p class="h4 my-0 me-md-auto fw-normal" style="font-family: \'Fira Sans\', sans-serif;"><a href="/" class="link-bare"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</a></p>'
         ))
+    db.add(ApplicationSettings(
+        key='user_agreement',
+        str_value = ''
+        ))
 
 def main(argv=sys.argv):
     args = parse_args(argv)

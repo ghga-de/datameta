@@ -66,7 +66,7 @@ window.addEventListener("dmready", function() {
             document.getElementById("new_password_repeat").classList.remove("is-invalid")
         }
         // Talk to the API
-        fetch('/api/v0/users/' + DataMeta.user.id.uuid + '/password',
+        fetch(DataMeta.api('users/' + DataMeta.user.id.uuid + '/password'),
             {
                 method: 'put',
                 headers: {
@@ -147,7 +147,7 @@ window.addEventListener("dmready", function() {
     function delete_api_key(label, id) {
         
         // API call
-        fetch('/api/v0/keys/' + id ,
+        fetch(DataMeta.api('keys/' + id),
         {
             method: 'delete',
             headers: {
@@ -184,7 +184,7 @@ window.addEventListener("dmready", function() {
     }
 
     //Gets all the API keys and adds them to the table
-    fetch('/api/v0/users/' + DataMeta.user.id.uuid + '/keys',
+    fetch(DataMeta.api('users/' + DataMeta.user.id.uuid + '/keys'),
     {
         method: 'get',
         headers: {
@@ -253,7 +253,7 @@ window.addEventListener("dmready", function() {
         } 
 
         // POST API key
-        fetch('/api/v0/keys',
+        fetch(DataMeta.api('keys'),
             {
                 method: 'post',
                 headers: {
