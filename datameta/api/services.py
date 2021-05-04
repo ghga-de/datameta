@@ -16,7 +16,7 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent
 
-from .. import security,
+from .. import security
 
 
 @view_config(
@@ -32,7 +32,7 @@ def post(request: Request):
 
     auth_user = security.revalidate_user(request)
 
-    if not auth_user.side_admin
+    if not auth_user.side_admin:
         pass
     # Parse the name
     # Create a new row in the service table
