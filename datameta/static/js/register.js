@@ -73,6 +73,7 @@ window.addEventListener("load", function() {
         event.preventDefault();
 
         var elem_alert = document.getElementById("alert")
+        var closeAlertButton = + '<button type="button" class="btn-close" id="dismiss_alert" onclick="DataMeta.admin.clearAlerts()"></button>'
 
         fetch(DataMeta.api('registrations'),
         {
@@ -115,11 +116,11 @@ window.addEventListener("load", function() {
                         }
                     });
                     // User exists
-                    if ("user_exists" in errorFields) {
-                        elem_alert.innerHTML = 'This email address is already registered. Please use the <a href="/login">login</a> page.';
+                    if (errorFields.includes("user_exists")) {
+                        elem_alert.innerHTML = 'This email address is already registered. Please use the <a href="/login">login</a> page. ' + closeAlertButton;
                         elem_alert.style.display="block";
-                    } else if ("req_exists" in errorFields) {
-                        elem_alert.innerHTML = 'Your request is already being reviewed. You will be contacted shortly.';
+                    } else if (errorFields.includes("req_exists")) {
+                        elem_alert.innerHTML = 'Your request is already being reviewed. You will be contacted shortly.' + closeAlertButton;
                         elem_alert.style.display="block";
                     }
                     fieldset.disabled = false;
@@ -128,7 +129,7 @@ window.addEventListener("load", function() {
                 throw new Error();
             }      
         }).catch((error) => {
-            elem_alert.innerHTML = 'An unknown error occurred. Please try again later.' + '<button type="button" class="btn-close" id="dismiss_alert" onclick="DataMeta.admin.clearAlerts()"></button>';
+            elem_alert.innerHTML = 'An unknown error occurred. Please try again later.' + closeAlertButton;
             elem_alert.style.display="block";
             fieldset.disabled = false;
         });
