@@ -17,7 +17,7 @@ from pyramid.httpexceptions import HTTPException, HTTPFound
 
 from sqlalchemy.exc import DBAPIError
 
-from ..models import ApplicationSettings
+from ..models import ApplicationSetting
 from .. import security, settings
 
 from pyramid.events import subscriber

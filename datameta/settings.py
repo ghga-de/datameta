@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .models import ApplicationSettings
+from .models import ApplicationSetting
 import transaction
-from .models import ApplicationSettings, get_engine, get_tm_session, get_session_factory
+from .models import ApplicationSetting, get_engine, get_tm_session, get_session_factory
 import pkgutil
 import yaml
 
@@ -48,7 +48,7 @@ def get_setting(db, name):
     """Given a setting name, obtains the corresponding setting from the
     database and returns the value. The return type varies. Returns `None` if
     the setting couldn't be found or no value was set."""
-    setting = db.query(ApplicationSettings).filter(ApplicationSettings.key==name).one_or_none()
+    setting = db.query(ApplicationSetting).filter(ApplicationSetting.key==name).one_or_none()
     if not setting:
         return None
     elif setting.int_value is not None:
@@ -71,8 +71,8 @@ def includeme(config):
     session_factory = get_session_factory(get_engine(settings))
     with transaction.manager:
         db = get_tm_session(session_factory, transaction.manager)
-        existing = [ setting.key for setting in db.query(ApplicationSettings) ]
+        existing = [ setting.key for setting in db.query(ApplicationSetting) ]
         for key, value in defaults.items():
             if key not in existing:
-                db.add(ApplicationSettings(key=key, **value))
+                db.add(ApplicationSetting(key=key, **value))
                 log.info(f"No application setting found for '{key}'. Inserting default value.")

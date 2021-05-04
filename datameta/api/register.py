@@ -17,7 +17,7 @@ from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTPNoContent
 
 from dataclasses import dataclass
-from ..models import Group, ApplicationSettings, User, RegRequest
+from ..models import Group, ApplicationSetting, User, RegRequest
 from . import DataHolderBase
 from .. import email, errors
 from ..resource import get_identifier, resource_by_id
@@ -44,7 +44,7 @@ def get(request: Request) -> RegisterOptionsResponse:
 
     db = request.dbsession
 
-    user_agreement = db.query(ApplicationSettings).filter(ApplicationSettings.key == "user_agreement").first()
+    user_agreement = db.query(ApplicationSetting).filter(ApplicationSetting.key == "user_agreement").first()
     groups = db.query(Group)
 
     if not user_agreement == None:
@@ -84,7 +84,7 @@ def post(request):
     check_user_agreement = request.openapi_validated.body['check_user_agreement']
 
     # check, if a user agreement exists
-    user_agreement = db.query(ApplicationSettings).filter(ApplicationSettings.key == "user_agreement").first()
+    user_agreement = db.query(ApplicationSetting).filter(ApplicationSetting.key == "user_agreement").first()
 
     if str(user_agreement.str_value) == '':
         check_user_agreement = True

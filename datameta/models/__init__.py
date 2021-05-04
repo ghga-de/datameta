@@ -28,7 +28,7 @@ from .db import (
         MetaDatum,
         MetaDatumRecord,
         MetaDataSet,
-        ApplicationSettings,
+        ApplicationSetting,
         DateTimeMode,
         ApiKey,
         DownloadToken
