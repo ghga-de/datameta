@@ -28,7 +28,7 @@ from sqlalchemy import (
     Table
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from .meta import Base
 
@@ -203,12 +203,12 @@ class MetaDataSet(Base):
     submission_id    = Column(Integer, ForeignKey('submissions.id'), nullable=True)
     is_deprecated    = Column(Boolean, default=False)
     deprecated_label = Column(String, nullable=True)
-    replaced_by      = Column(Integer, ForeignKey('metadatasets.id'), nullable=True)
+    replaced_by_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=True)
     # Relationships
     user             = relationship('User', back_populates='metadatasets')
     submission       = relationship('Submission', back_populates='metadatasets')
     metadatumrecords = relationship('MetaDatumRecord', back_populates='metadataset')
-    replacement_mset = relationship('MetaDataSet')
+    replaces         = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
 
 class ApplicationSettings(Base):
     __tablename__ = 'appsettings'
