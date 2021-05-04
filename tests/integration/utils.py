@@ -323,19 +323,3 @@ def create_metadatum(
         metadatum_updated = deepcopy(metadatum_obj)
         metadatum_updated.uuid = str(metadatum_updated.uuid)
         return metadatum_updated
-
-
-def set_application_settings(
-    session_factory
-):
-    """Set application settings in the db."""
-    with transaction.manager:
-        session = get_tm_session(session_factory, transaction.manager)
-        
-        # creat logo_html:
-        logo_html = models.ApplicationSettings(
-            key='logo_html',
-            str_value = '<p></p>'
-        )
-        session.add(logo_html)
-        session.flush()

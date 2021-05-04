@@ -20,7 +20,7 @@ from datameta.models import (
 )
 from datameta.models.meta import Base
 
-from .utils import create_file, create_metadataset, create_submission, create_user, create_metadatum, set_application_settings
+from .utils import create_file, create_metadataset, create_submission, create_user, create_metadatum 
 from .fixtures import (
     db_url, 
     memcached_url, 
@@ -86,9 +86,6 @@ class BaseIntegrationTest(unittest.TestCase):
             site_id: create_submission(self.session_factory, submission)
             for site_id, submission in default_submissions.items()
         }
-
-        # add application settings:
-        set_application_settings(self.session_factory)
 
     def setUp(self):
         """Setup Test Server"""
