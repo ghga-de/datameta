@@ -196,15 +196,19 @@ class MetaDatumRecord(Base):
 class MetaDataSet(Base):
     """A MetaDataSet represents all metadata associated with *one* record"""
     __tablename__  = 'metadatasets'
-    id             = Column(Integer, primary_key=True)
-    site_id        = Column(String(50), unique=True, nullable=False, index=True)
-    uuid           = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
-    user_id        = Column(Integer, ForeignKey('users.id'), nullable=False)
-    submission_id  = Column(Integer, ForeignKey('submissions.id'), nullable=True)
+    id               = Column(Integer, primary_key=True)
+    site_id          = Column(String(50), unique=True, nullable=False, index=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
+    submission_id    = Column(Integer, ForeignKey('submissions.id'), nullable=True)
+    is_deprecated    = Column(Boolean, default=False)
+    deprecated_label = Column(String, nullable=True)
+    replaced_by      = Column(Integer, ForeignKey('metadatasets.id'), nullable=True)
     # Relationships
     user             = relationship('User', back_populates='metadatasets')
     submission       = relationship('Submission', back_populates='metadatasets')
     metadatumrecords = relationship('MetaDatumRecord', back_populates='metadataset')
+    replacement_mset = relationship('MetaDataSet')
 
 class ApplicationSettings(Base):
     __tablename__ = 'appsettings'
