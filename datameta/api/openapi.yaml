@@ -895,7 +895,32 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
-
+  
+  /services:
+    post:
+      summary: Get DataMeta server information
+      description: Get information about the DataMeta server serving this API
+      tags:
+        - Server
+      operationId: PostService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceRequest"
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
   /server:
     get:
       summary: Get DataMeta server information
@@ -1227,6 +1252,15 @@ components:
           type: boolean
         checksum:
           type: string
+      additionalProperties: false
+
+    ServiceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
       additionalProperties: false
 
     StagedFiles:

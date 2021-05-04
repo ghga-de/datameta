@@ -31,7 +31,9 @@ from .db import (
         ApplicationSetting,
         DateTimeMode,
         ApiKey,
-        DownloadToken
+        DownloadToken,
+        Service,
+        ServiceExecution
         ) # flake8: noqa
 
 # run configure_mappers after defining all of the models to ensure
