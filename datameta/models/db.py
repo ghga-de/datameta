@@ -179,6 +179,7 @@ class MetaDatum(Base):
     service_id         = Column(Integer, ForeignKey('services.id'), nullable=True)
     # Relationships
     metadatumrecords   = relationship('MetaDatumRecord', back_populates='metadatum')
+    service            = relationship('Service', back_populates='target_metadata')
 
 class MetaDatumRecord(Base):
     __tablename__    = 'metadatumrecords'
@@ -224,9 +225,9 @@ class Service(Base):
     site_id      = Column(String(50), unique=True, nullable=False, index=True)
     name         = Column(Text, nullable=True)
     # Relationships
-    users        = relationship('User',
-                    secondary=user_service_table,
-                    back_populates='services')
+    users           = relationship('User', secondary=user_service_table, back_populates='services')
+    # unfortunately, 'metadata' is a reserved keyword for sqlalchemy classes
+    target_metadata = relationship('MetaDatum', back_populates='service')
 
 class ServiceExecution(Base):
     __tablename__    = 'serviceecexution'
