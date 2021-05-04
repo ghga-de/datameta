@@ -76,7 +76,7 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
     openapi=True
 )
 def put(request:Request):
-    """Change a metadataset"""
+    """Change an application setting"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
     settings_id = request.matchdict["id"]
