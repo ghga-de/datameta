@@ -13,12 +13,17 @@
 # limitations under the License.
 
 from .models import ApplicationSettings
+import transaction
+from .models import ApplicationSettings, get_engine, get_tm_session, get_session_factory
+import pkgutil
+import yaml
 
-def get_setting(db, key):
-    return db.query(ApplicationSettings).filter(ApplicationSettings.key==key).one_or_none()
+import logging
+log = logging.getLogger(__name__)
 
-# Returns the type of the setting as the first value field that contains a value
 def get_setting_value_type(setting):
+    """Returns the type of the setting as the first value field that contains a
+    value"""
     value_type = None
 
     if setting.int_value is not None:
@@ -38,3 +43,36 @@ def get_setting_value_type(setting):
         value_type = "time"
 
     return value, value_type
+
+def get_setting(db, name):
+    """Given a setting name, obtains the corresponding setting from the
+    database and returns the value. The return type varies. Returns `None` if
+    the setting couldn't be found or no value was set."""
+    setting = db.query(ApplicationSettings).filter(ApplicationSettings.key==name).one_or_none()
+    if not setting:
+        return None
+    elif setting.int_value is not None:
+        return setting.int_value
+    elif setting.str_value is not None:
+        return setting.str_value
+    elif setting.float_value is not None:
+        return float_value
+    elif setting.date_value is not None:
+        return date_value
+    elif setting.time_value is not None:
+        return time_value
+    return None
+
+def includeme(config):
+    """Initializes the default values for applications settings"""
+    # Load the app setting defaults from the packaged yaml file
+    defaults = yaml.safe_load(pkgutil.get_data(__name__, "defaults/appsettings.yaml"))
+    settings = config.get_settings()
+    session_factory = get_session_factory(get_engine(settings))
+    with transaction.manager:
+        db = get_tm_session(session_factory, transaction.manager)
+        existing = [ setting.key for setting in db.query(ApplicationSettings) ]
+        for key, value in defaults.items():
+            if key not in existing:
+                db.add(ApplicationSettings(key=key, **value))
+                log.info(f"No application setting found for '{key}'. Inserting default value.")
