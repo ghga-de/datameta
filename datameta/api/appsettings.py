@@ -19,7 +19,7 @@ from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPBadRequest
 from dataclasses import dataclass
 from . import DataHolderBase
 from typing import List, Dict
-from ..models import ApplicationSettings
+from ..models import ApplicationSetting
 from .. import resource, security, errors
 from ..security import authz
 from ..resource import resource_by_id
@@ -47,7 +47,7 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
     # Authenticate the user
     auth_user = security.revalidate_user(request)
 
-    appsettings = db.query(ApplicationSettings)
+    appsettings = db.query(ApplicationSetting)
 
     # User has to be site admin to access these settings
     if not authz.view_appsettings(auth_user):
@@ -85,7 +85,7 @@ def put(request:Request):
     if not authz.update_appsettings(auth_user):
          raise HTTPForbidden()
 
-    target_setting = resource_by_id(db, ApplicationSettings, settings_id)
+    target_setting = resource_by_id(db, ApplicationSetting, settings_id)
 
     temp, value_type = get_setting_value_type(target_setting)
     value = request.openapi_validated.body["value"]

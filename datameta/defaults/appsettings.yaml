@@ -1,0 +1,87 @@
+# Copyright 2021 Universität Tübingen, DKFZ and EMBL for the German Human Genome-Phenome Archive (GHGA)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+subject_forgot_token:
+  str_value: Your password recovery request
+
+template_forgot_token:
+  str_value: |
+            Dear {fullname},
+
+            a new password was requested for your account. If you did not issue this request, you can safely ignore this email. Otherwise, you can use the following link below to create a new password:
+            
+            {token_url}
+            
+            Best regards,
+            The Support Team
+
+subject_welcome_token:
+  str_value : Your registration was confirmed!
+
+template_welcome_token:
+  str_value : |
+            Dear {fullname},
+            
+            your registration has been confirmed! Please use the following link to set a password for your account:
+            
+            {token_url}
+            
+            If you experience any difficulties logging in, please do not hesitate to contact the support team.
+            
+            Best regards,
+            The Support Team
+            },
+
+subject_reject:
+  str_value : Your registration request was rejected
+
+
+template_reject:
+  str_value : |
+            Dear {fullname},
+            
+            we regret to inform you that your registration request has been rejected.
+            
+            Best regards,
+            The Support Team
+
+subject_reg_notify:
+  str_value : New registration request
+
+template_reg_notify:
+  str_value : |
+            Dear administrator,
+            
+            a new registration request has been issued:
+            
+            Name: {req_fullname}
+            Email: {req_email}
+            Organization: {req_group}
+            
+            Follow the following link to respond to the registration request:
+            
+            {req_url}
+            
+            Best regards,
+            The Support Team
+
+logo_html:
+  str_value : |
+    <p class="h4 my-0 me-md-auto fw-normal" style="font-family: \'Fira Sans\', sans-serif;">
+      <a href="/" class="link-bare"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</a>
+    </p>
+
+user_agreement:
+  str_value: ""
+    

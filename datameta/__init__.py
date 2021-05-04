@@ -39,5 +39,6 @@ def main(global_config, **settings):
         config.include('.routes')
         config.include('.api')
         config.include('.api.ui')
+        config.include('.settings')
         config.scan()
     return config.make_wsgi_app()

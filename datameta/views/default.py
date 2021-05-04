@@ -17,8 +17,8 @@ from pyramid.httpexceptions import HTTPException, HTTPFound
 
 from sqlalchemy.exc import DBAPIError
 
-from ..models import ApplicationSettings
-from .. import security
+from ..models import ApplicationSetting
+from .. import security, settings
 
 from pyramid.events import subscriber
 from pyramid.events import BeforeRender
@@ -28,12 +28,12 @@ log = logging.getLogger(__name__)
 
 @subscriber(BeforeRender)
 def add_global(event):
-    appsetting = event['request'].dbsession.query(ApplicationSettings).filter(ApplicationSettings.key=="logo_html").one_or_none();
+    appsetting = settings.get_setting(event['request'].dbsession, "logo_html")
     if appsetting is None:
-        event['logo_html'] = None
+        event['logo_html'] = ''
         log.error("Missing application settings 'logo_html'")
     else:
-        event['logo_html'] = appsetting.str_value
+        event['logo_html'] = appsetting
 
 @view_config(route_name='root')
 def root_view(request):

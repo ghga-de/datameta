@@ -206,7 +206,7 @@ class MetaDataSet(Base):
     submission       = relationship('Submission', back_populates='metadatasets')
     metadatumrecords = relationship('MetaDatumRecord', back_populates='metadataset')
 
-class ApplicationSettings(Base):
+class ApplicationSetting(Base):
     __tablename__ = 'appsettings'
     id           = Column(Integer, primary_key=True)
     uuid         = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)

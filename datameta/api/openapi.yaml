@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.16.0
+  version: 0.17.0
   title: DataMeta
 
 servers:
@@ -913,6 +913,48 @@ paths:
         "500":
           description: Internal Server Error
 
+  /registrations:
+    post:
+      summary: Create a new user registration request
+      description: Create a new user registration request
+      tags:
+        - User
+      operationId: PostRegistration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationRequest"
+      responses:
+        "204":
+          description: New User Registration Request created
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        "500":
+          description: Internal Server Error
+
+
+  /registrationsettings:
+    get:
+      summary: Get details for the registration view
+      description: Get all available groups and the user agreement for the registration view
+      tags:
+        - User
+      operationId: GetRegistrationSettings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterSettingsResponse"
+        "500":
+          description: Internal Server Error
+
   /appsettings/{id}:
     put:
       summary: Update a specific appsetting. This is an administrative Endpoint that is not accessible for regular users.
@@ -1371,6 +1413,56 @@ components:
         - apiVersion
         - datametaVersion
       additionalProperties: false
+
+    RegistrationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        org_select:
+          type: string
+          nullable: true
+        org_create:
+          type: string
+          nullable: true
+        org_new_name:
+          type: string
+          nullable: true
+        check_user_agreement:
+          type: boolean
+          nullable: true
+      required:
+        - name
+        - email
+        - org_select
+        - org_create
+        - org_new_name
+        - check_user_agreement
+      additionalProperties: false
+
+    RegisterSettingsResponse:
+      type: object
+      properties:
+        userAgreement:
+          type: string
+          nullable: True
+        groups:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                $ref: "#/components/schemas/Identifier"
+              name:
+                type: string
+      required:
+        - groups
+        - userAgreement
+      additionalProperties: false      
 
     AppSettingsResponse:
       type: object

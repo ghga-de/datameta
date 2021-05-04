@@ -21,7 +21,7 @@ from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
 from ..security import hash_password, hash_token
-from ..models import User, Group, MetaDatum, DateTimeMode, ApplicationSettings, ApiKey
+from ..models import User, Group, MetaDatum, DateTimeMode, ApiKey
 
 def parse_args(argv):
     parser = argparse.ArgumentParser()
@@ -119,96 +119,6 @@ def create_example_metadata(dbsession):
                 ]
         dbsession.add_all(metadata)
 
-def create_email_templates(db):
-    keys = [ row[0] for row in db.query(ApplicationSettings.key) ]
-
-    # EMAIL TEMPLATE: FORGOT -> TOKEN
-    if "subject_forgot_token" not in keys:
-        db.add(ApplicationSettings(
-            key = "subject_forgot_token",
-            str_value= "Your password recovery request"))
-
-    if "template_forgot_token" not in keys:
-        db.add(ApplicationSettings(
-            key = "template_forgot_token",
-            str_value=
-"""Dear {fullname},
-
-a new password was requested for your account. If you did not issue this request, you can safely ignore this email. Otherwise, you can use the following link below to create a new password:
-
-{token_url}
-
-Best regards,
-The Support Team"""))
-
-    # EMAIL TEMPLATE: WELCOME -> TOKEN
-    if "subject_welcome_token" not in keys:
-        db.add(ApplicationSettings(
-            key = "subject_welcome_token",
-            str_value= "Your registration was confirmed!"))
-    if "template_welcome_token" not in keys:
-        db.add(ApplicationSettings(
-            key = "template_welcome_token",
-            str_value=
-"""Dear {fullname},
-
-your registration has been confirmed! Please use the following link to set a password for your account:
-
-{token_url}
-
-If you experience any difficulties logging in, please do not hesitate to contact the support team.
-
-Best regards,
-The Support Team"""))
-
-    # EMAIL TEMPLATE: REJECT REGISTRATION
-    if "subject_reject" not in keys:
-        db.add(ApplicationSettings(
-            key = "subject_reject",
-            str_value= "Your registration request was rejected"))
-    if "template_reject" not in keys:
-        db.add(ApplicationSettings(
-            key = "template_reject",
-            str_value=
-"""Dear {fullname},
-
-we regret to inform you that your registration request has been rejected.
-
-Best regards,
-The Support Team"""))
-
-
-    # EMAIL TEMPLATE: NEW REGISTRATION REQUEST ADMIN NOTIFY
-    if "subject_reg_notify" not in keys:
-        db.add(ApplicationSettings(
-            key = "subject_reg_notify",
-            str_value= "New registration request"))
-    if "template_reg_notify" not in keys:
-        db.add(ApplicationSettings(
-            key = "template_reg_notify",
-            str_value=
-"""Dear administrator,
-
-a new registration request has been issued:
-
-Name: {req_fullname}
-Email: {req_email}
-Organization: {req_group}
-
-Follow the following link to respond to the registration request:
-
-{req_url}
-
-Best regards,
-The Support Team"""))
-
-
-def create_default_site_settings(db):
-    db.add(ApplicationSettings(
-        key='logo_html',
-        str_value = '<p class="h4 my-0 me-md-auto fw-normal" style="font-family: \'Fira Sans\', sans-serif;"><a href="/" class="link-bare"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</a></p>'
-        ))
-
 def main(argv=sys.argv):
     args = parse_args(argv)
 
@@ -238,12 +148,6 @@ def main(argv=sys.argv):
 
             # Create example sample sheet columns
             create_example_metadata(dbsession)
-
-            # Create email templates
-            create_email_templates(dbsession)
-
-            # Create default site settings
-            create_default_site_settings(dbsession)
 
     except OperationalError:
         print('''

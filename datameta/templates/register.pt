@@ -56,8 +56,7 @@
 </style>
 <main metal:fill-slot="content" class="form-signin">
         <div tal:replace="structure logo_html"></div>
-	<div id="alert" class="alert alert-danger mt-2" role="alert" style="display:none">
-		A simple danger alert—check it out!
+	<div id="alert" class="alert alert-danger mt-2 alert-dismissible" role="alert" style="display:none">
 	</div>
 	<div id="success" class="alert alert-success mt-2" role="alert" style="display:none">
 		Thank you for your registration! You will be contacted shortly.
@@ -89,9 +88,6 @@
                         </span>
                         <select id="org_select" name="org_select" class="form-control form-select" aria-label="Organization">
                             <option value="-1" selected>Please select your organization...</option>
-                            <tal:block tal:repeat="group groups">
-                            <option tal:content="group.name" tal:attributes="value group.id"></option>
-                            </tal:block>
                         </select>
                         <div class="invalid-feedback">
                             Please provide a valid organization!
@@ -99,7 +95,7 @@
                     </div>
                 </div>
                 <div id="org_new" style="display:none">
-                    <div class="input-group mb-3" id="org_new">
+                    <div class="input-group mb-3">
                         <span class="input-group-text" id="desc_input_neworg">
                             <i class="bi bi-building"></i>
                         </span>
@@ -111,14 +107,31 @@
                         <input name="org_create" class="form-check-input" type="checkbox" id="toggle_new_org" value="1">
                         <label class="form-check-label" for="toggle_new_org">Create a new organization</label>
                     </div>
-
                 </div>
+
+				<div id="user_agreement_container" style="display:none; text-align:left">
+					<div class="mb-3">
+						<label class="form-control-label mb-2" for="user_agreement">
+							Terms and Conditions:
+						</label>
+						<div class="form-control overflow-auto mb-3" id="user_agreement" style="resize: none; height: 250px" disabled></div>
+						<div class="form-check">
+							<input class="form-check-input me-1" type="checkbox" id="check_user_agreement" name="check_user_agreement">
+							<label class="form-check-label" for="check_user_agreement">
+								I agree to the Terms and Conditions
+							</label>
+							<div class="invalid-feedback">
+							You have to accept the Terms and Conditions in order to register!
+							</div>
+						</div>
+					</div>
+				</div>
                 <div class="input-group mb-3">
                     <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Register</button>
                 </div>
             </fieldset>
 	</form>
 
-	<script src="${request.static_url('datameta:static/js/register.js')}"></script>
+	<script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/register.js')}"></script>
 </main>
 </metal:block>
