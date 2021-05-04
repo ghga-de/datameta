@@ -14,13 +14,15 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent
+from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized
 
 from .. import security
+from ..security import authz
+from ..models import Service, ServiceExecution
 
 
 @view_config(
-    route_name="",
+    route_name="services",
     renderer='json', 
     request_method="POST", 
     openapi=True
@@ -28,17 +30,23 @@ from .. import security
 def post(request: Request):
     """POST a new service"""
 
-    db = request.dbsession
+    name = request.openapi_validated.body.get("name")
+
 
     auth_user = security.revalidate_user(request)
 
-    if not auth_user.side_admin:
-        pass
-    # Parse the name
-    # Create a new row in the service table
-    # Probably check for name uniqueness?
+    # Check if the user is authorized to create a service
+    if not authz.create_service(auth_user):
+        raise HTTPUnauthorized
 
+    db = request.dbsession
 
-
+    # Try to create a new service, catch Integrity Error, if a service with that name already exists
+    try:
+        service = Service(name = name)
+        db.add(service)
+        db.flush()
+    except IntegrityError:
+        raise errors.get_validation_error(["A service with that name already exists."])    
 
     return HTTPNoContent()

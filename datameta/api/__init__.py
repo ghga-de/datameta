@@ -65,6 +65,9 @@ def includeme(config: Configurator) -> None:
     config.add_route("rpc_get_file_url", base_url + "/rpc/get-file-url/{id}")
     config.add_route('register_submit', base_url + "/registrations")
     config.add_route("register_settings", base_url + "/registrationsettings")
+    config.add_route("services", base_url + "/services")
+    config.add_route("services_id", base_url + "/services/{id}")
+
 
     # Endpoint outside of openapi
     config.add_route("upload", base_url + "/upload/{id}")
