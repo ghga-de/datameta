@@ -57,7 +57,6 @@
 <main metal:fill-slot="content" class="form-signin">
         <div tal:replace="structure logo_html"></div>
 	<div id="alert" class="alert alert-danger mt-2 alert-dismissible" role="alert" style="display:none">
-		A simple danger alert—check it out!
 	</div>
 	<div id="success" class="alert alert-success mt-2" role="alert" style="display:none">
 		Thank you for your registration! You will be contacted shortly.
