@@ -105,10 +105,7 @@ window.addEventListener("load", function() {
                 return;
             } else if(response.status === 400) {
                 response.json().then((json) => {
-                    var errorFields = [];
-                    json.forEach(function (error) {
-                        errorFields.push(error.field)
-                    })
+                    var errorFields = json.map(error => error.field);
 
                     var keys = ["name", "email", "org_select", "org_new_name", "check_user_agreement"];
 
