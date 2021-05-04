@@ -14,12 +14,12 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTPOk
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTPNoContent
 
 from dataclasses import dataclass
 from ..models import Group, ApplicationSettings, User, RegRequest
 from . import DataHolderBase
-from .. import email
+from .. import email, errors
 from ..resource import get_identifier, resource_by_id
 from sqlalchemy import or_, and_
 from ..settings import get_setting
@@ -72,10 +72,10 @@ def get_authorative_admins(db, reg_request):
     request_method="POST", 
     openapi=True
 )
-def post(request) -> HTTPOk:
+def post(request):
 
     db = request.dbsession
-    errors = {}
+    error_fields = []
     name = request.openapi_validated.body['name']
     req_email = request.openapi_validated.body['email'].lower()
     org_select = request.openapi_validated.body['org_select']
@@ -91,36 +91,36 @@ def post(request) -> HTTPOk:
 
     # Check, if the user accepted the user agreement
     if not check_user_agreement:
-        errors['check_user_agreement'] = True
+        error_fields.append('check_user_agreement')
 
     # Basic validity check for email
     if not re.match(r"[^@]+@[^@]+\.[^@]+", req_email):
-        errors['email'] = True
+        error_fields.append('email')
     else:
         # Check if the user already exists
         if db.query(User).filter(User.email==req_email).one_or_none() is not None:
-            errors['user_exists'] = True
+            error_fields.append('user_exists')
         elif db.query(RegRequest).filter(RegRequest.email==req_email).one_or_none() is not None:
-            errors['req_exists'] = True
+            error_fields.append('req_exists')
 
     # Check whether the selected organization is valid
     if org_create:
         if not org_new_name:
-            errors["org_new_name"] = True
+            error_fields.append('org_new_name')
     else:
         group_ : Optional[Group] = resource_by_id(db, Group, org_select)
         if group_ is None:
-            errors['org_select'] = True
+            error_fields.append('org_select')
         else:
             group : Group = group_
 
     # Check whether a name was specified
     if not name:
-        errors['name'] = True
+        error_fields.append('name')
 
     # If errors occurred, return them
-    if errors:
-        return { 'success' : False, 'errors' : errors }
+    if error_fields:
+        raise errors.get_validation_error(fields=error_fields, messages=['' for _ in error_fields])
 
     # Store a new registration request in the database
     reg_req = RegRequest(
@@ -153,4 +153,4 @@ def post(request) -> HTTPOk:
     else:
         log.info(f"REGISTRATION REQUEST [email='{req_email}', name='{name}', group='{group.name}']")
 
-    return { 'success' : True }
+    return HTTPNoContent()

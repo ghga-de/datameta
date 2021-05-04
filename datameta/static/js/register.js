@@ -91,41 +91,44 @@ window.addEventListener("load", function() {
             })
         })
         .then((response) => {
-            if (response.status === 200) {
-                return response.json()
-            } else {
-                throw new Error();
-            }      
-        }).then((json) => {
-            if (json.success) {
+            if (response.status === 204) {
                 elem_alert.style.display="none"
                 document.getElementById("regform").style.display="none"
                 document.getElementById("success").style.display="block"
-            } else {
-                var keys = ["name", "email", "org_select", "org_new_name", "check_user_agreement"];
+                return;
+            } else if(response.status === 400) {
+                response.json().then((json) => {
+                    var errorFields = [];
+                    json.forEach(function (error) {
+                        errorFields.push(error.field)
+                    })
 
-                keys.forEach(function(key) {
-                    if (key in json.errors) {
-                        document.getElementById(key).classList.remove("is-valid");
-                        document.getElementById(key).classList.add("is-invalid");
-                    } else {
-                        document.getElementById(key).classList.remove("is-invalid");
-                        document.getElementById(key).classList.add("is-valid");
+                    var keys = ["name", "email", "org_select", "org_new_name", "check_user_agreement"];
+
+                    keys.forEach(function(key) {
+                        if (errorFields.includes(key)) {
+                            document.getElementById(key).classList.remove("is-valid");
+                            document.getElementById(key).classList.add("is-invalid");
+                        } else {
+                            document.getElementById(key).classList.remove("is-invalid");
+                            document.getElementById(key).classList.add("is-valid");
+                        }
+                    });
+                    // User exists
+                    if ("user_exists" in errorFields) {
+                        elem_alert.innerHTML = 'This email address is already registered. Please use the <a href="/login">login</a> page.';
+                        elem_alert.style.display="block";
+                    } else if ("req_exists" in errorFields) {
+                        elem_alert.innerHTML = 'Your request is already being reviewed. You will be contacted shortly.';
+                        elem_alert.style.display="block";
                     }
+                    fieldset.disabled = false;
                 });
-                // User exists
-                if ("user_exists" in json.errors) {
-                    elem_alert.innerHTML = 'This email address is already registered. Please use the <a href="/login">login</a> page.';
-                    elem_alert.style.display="block";
-                } else if ("req_exists" in json.errors) {
-                    elem_alert.innerHTML = 'Your request is already being reviewed. You will be contacted shortly.';
-                    elem_alert.style.display="block";
-                }
-            }
-            fieldset.disabled = false;
-      
+            } else {
+                throw new Error();
+            }      
         }).catch((error) => {
-            elem_alert.innerHTML = 'An unknown error occurred. Please try again later.';
+            elem_alert.innerHTML = 'An unknown error occurred. Please try again later.' + '<button type="button" class="btn-close" id="dismiss_alert" onclick="DataMeta.admin.clearAlerts()"></button>';
             elem_alert.style.display="block";
             fieldset.disabled = false;
         });

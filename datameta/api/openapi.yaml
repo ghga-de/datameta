@@ -926,12 +926,8 @@ paths:
             schema:
               $ref: "#/components/schemas/RegistrationRequest"
       responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RegistrationResponse"
+        "204":
+          description: New User Registration Request created
         '400':
           description: Validation Error
           content:
@@ -1417,15 +1413,6 @@ components:
         - apiVersion
         - datametaVersion
       additionalProperties: false
-
-    RegistrationResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-      required:
-        - success
-      additionalProperties: true
 
     RegistrationRequest:
       type: object
