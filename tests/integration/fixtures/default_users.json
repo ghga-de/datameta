@@ -64,5 +64,16 @@
         "site_admin": false,
         "enabled": true,
         "site_read": false
+    },
+    {
+        "email": "site_read@site_read.group_z",
+        "password": "group_z_site_read",
+        "fullname": "group_z_site_read",
+        "site_id": "group_z_site_read",
+        "groupname": "group_z",
+        "group_admin": false,
+        "site_admin": false,
+        "enabled": true,
+        "site_read": true
     }
 ]
