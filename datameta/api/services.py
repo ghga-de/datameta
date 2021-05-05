@@ -28,7 +28,7 @@ from ..resource import get_identifier, resource_by_id
 class ServiceInfoResponse(DataHolderBase):
     id: dict
     name: str
-    users: list
+    user_ids: list
 
 @view_config(
     route_name="services",
@@ -86,12 +86,12 @@ def get(request: Request) -> ServiceInfoResponse:
     for service in db.query(Service):
         users = []
         for user in service.users:
-            users.append(user.uuid)
+            users.append(str(user.uuid))
 
         services.append(ServiceInfoResponse(
             id = resource.get_identifier(service),
             name = service.name,
-            userIds = users
+            user_ids = users
         ))
 
     return services
