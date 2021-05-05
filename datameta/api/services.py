@@ -17,6 +17,7 @@ from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized, HTTPNotFound
 from sqlalchemy.exc import IntegrityError
 from dataclasses import dataclass
+from typing import List
 
 from . import DataHolderBase
 from .. import security, errors, resource, siteid
