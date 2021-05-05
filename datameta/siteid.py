@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 _prefix  = defaultdict(lambda : "UNDEFINED-")
 _digits  = defaultdict(lambda : 10)
 
-for entity in ['users', 'groups', 'submissions', 'metadatasets', 'files']:
+for entity in ['users', 'groups', 'submissions', 'metadatasets', 'files', 'services']:
     try:
         _prefix[entity] = threadlocal.get_current_registry().settings[f'datameta.site_id_prefix.{entity}']
     except Exception as e:
