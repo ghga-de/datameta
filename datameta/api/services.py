@@ -15,10 +15,12 @@
 from pyramid.view import view_config
 from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized
+from sqlalchemy.exc import IntegrityError
 
-from .. import security
+from .. import security, errors
 from ..security import authz
 from ..models import Service, ServiceExecution
+
 
 
 @view_config(
