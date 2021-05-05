@@ -21,8 +21,8 @@ from dataclasses import dataclass
 from . import DataHolderBase
 from .. import security, errors, resource, siteid
 from ..security import authz
-from ..models import Service, ServiceExecution
-from ..resource import get_identifier
+from ..models import Service, ServiceExecution, User
+from ..resource import get_identifier, resource_by_id
 
 @dataclass
 class ServiceInfoResponse(DataHolderBase):
@@ -91,7 +91,53 @@ def get(request: Request) -> ServiceInfoResponse:
         services.append(ServiceInfoResponse(
             id = resource.get_identifier(service),
             name = service.name,
-            users = users
+            userIds = users
         ))
 
     return services
+
+@view_config(
+    route_name="services_id",
+    renderer='json', 
+    request_method="PUT", 
+    openapi=True
+)
+def put(request: Request):
+    """Update a service name and user list"""
+
+    service_id = request.matchdict["id"]
+    name = request.openapi_validated.body.get("name")
+    user_ids = request.openapi_validated.body.get("userIds")
+
+    # Revalidate User
+    auth_user = security.revalidate_user(request)
+
+    # Check if the user is authorized to update a service
+    if not authz.update_service(auth_user):
+        raise HTTPUnauthorized
+
+    # Check if the Service with the give id exists
+    db = request.dbsession
+    service = resource_by_id(db, Service, service_id)
+
+    # Raise HTTPNotFound, if a service with the corresponding id does not exist
+    if service is None:
+        raise HTTPNotFound()
+
+    # Try to update the service, catch Integrity Error, if a service with that name already exists
+    try:
+        service.name = name
+
+        # Delete all users
+        service.users = []
+
+        # Add the new users
+        for user_id in user_ids:
+            user = resource_by_id(db, User, user_id)
+            service.users.append(user)
+
+        db.flush()
+    except IntegrityError:
+        raise errors.get_validation_error(["A service with that name already exists."])    
+
+    return HTTPNoContent()
