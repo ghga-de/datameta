@@ -47,14 +47,11 @@ class TestFileDownload(BaseIntegrationTest):
     ):
         user = self.default_users[user_name]
         file = self.default_files[file_site_id]
-        try:
-            response = self.testapp.get(
-                base_url + f"/rpc/get-file-url/{file.site_id}?expires={expires}",
-                headers=user.auth.header,
-                status=status_get_url
-            )
-        except:
-            assert False, str(user_name) + str(file_site_id)
+        response = self.testapp.get(
+            base_url + f"/rpc/get-file-url/{file.site_id}?expires={expires}",
+            headers=user.auth.header,
+            status=status_get_url
+        )
        
         if status_get_url==307:
             # follow redirect:
