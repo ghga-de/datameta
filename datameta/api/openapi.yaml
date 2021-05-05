@@ -921,6 +921,60 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
+    get:
+      summary: Get Services information
+      description: Get names and IDs for all services
+      tags:
+        - Server
+      operationId: GetServiceInfo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceInfoResponse"
+        '401':
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
+  /services/{id}:
+    put:
+      summary: Update a specific service. 
+      description: >-
+        Update the name and users of this service.
+      tags:
+        - Settings
+      operationId: PutService
+      parameters:
+        - name: id
+          in: path
+          description: ID of the group
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceUpdateRequest"
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '401':
+          description: Unauthorized
+        '404':
+          description: Service does not exist
+        '500':
+          description: Internal Server Error
+
   /server:
     get:
       summary: Get DataMeta server information
@@ -1261,6 +1315,34 @@ components:
           type: string
       required:
         - name
+      additionalProperties: false
+
+    ServiceUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        serviceIds:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - serviceIds
+      additionalProperties: false
+
+    ServiceInfoResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            $ref: "#/components/schemas/Identifier"
+          name:
+            type: string
+        required:
+          - id
+          - name
       additionalProperties: false
 
     StagedFiles:
