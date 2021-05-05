@@ -901,7 +901,7 @@ paths:
       summary: Get DataMeta server information
       description: Get information about the DataMeta server serving this API
       tags:
-        - Server
+        - Services
       operationId: PostService
       requestBody:
         content:
@@ -925,7 +925,7 @@ paths:
       summary: Get Services information
       description: Get names and IDs for all services
       tags:
-        - Server
+        - Services
       operationId: GetServiceInfo
       responses:
         '200':
@@ -945,7 +945,7 @@ paths:
       description: >-
         Update the name and users of this service.
       tags:
-        - Settings
+        - Services
       operationId: PutService
       parameters:
         - name: id
@@ -1340,9 +1340,14 @@ components:
             $ref: "#/components/schemas/Identifier"
           name:
             type: string
+          userIds:
+            type: array
+            items:
+              type: string
         required:
           - id
           - name
+          - userIds
       additionalProperties: false
 
     StagedFiles:
