@@ -1322,13 +1322,13 @@ components:
       properties:
         name:
           type: string
-        serviceIds:
+        userIds:
           type: array
           items:
             type: string
       required:
         - name
-        - serviceIds
+        - userIds
       additionalProperties: false
 
     ServiceInfoResponse:
