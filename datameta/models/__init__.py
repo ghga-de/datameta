@@ -28,9 +28,10 @@ from .db import (
         MetaDatum,
         MetaDatumRecord,
         MetaDataSet,
-        ApplicationSettings,
+        ApplicationSetting,
         DateTimeMode,
-        ApiKey
+        ApiKey,
+        DownloadToken
         ) # flake8: noqa
 
 # run configure_mappers after defining all of the models to ensure

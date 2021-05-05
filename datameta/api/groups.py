@@ -63,9 +63,9 @@ class GroupSubmissions:
         file_ids = []
         for mset in submission.metadatasets:
             file_records = [
-                rec 
-                for rec in mset.metadatumrecords 
-                if rec.metadatum.isfile
+                rec
+                for rec in mset.metadatumrecords
+                if rec.metadatum.isfile and rec.value
             ]
             file_ids.extend(
                 [get_identifier(rec.file) for rec in file_records]
@@ -110,9 +110,9 @@ class ChangeGroupName(DataHolderBase):
     new_group_name: str
 
 @view_config(
-    route_name="groups_id", 
-    renderer='json', 
-    request_method="PUT", 
+    route_name="groups_id",
+    renderer='json',
+    request_method="PUT",
     openapi=True
 )
 def put(request: Request):
@@ -136,6 +136,6 @@ def put(request: Request):
             db.flush()
         except IntegrityError:
             raise errors.get_validation_error(["A group with that name already exists."])
-        
+
         return HTTPNoContent()
     raise HTTPForbidden() # 403 Not authorized to change this group name

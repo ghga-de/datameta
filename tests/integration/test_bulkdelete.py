@@ -10,35 +10,33 @@ from .utils import create_file, create_metadataset
 class BulkDeletionTest(BaseIntegrationTest):
 
     def test_file_deletion(self):
-
-        user = self.users["admin"]
+        user = self.default_users["user_a"]
 
         file_ids = [
-            str(create_file(self.session_factory, self.storage_path.name, f, i, user))
-            for i, f in enumerate(self.test_files)
+            site_id 
+            for site_id, file in self.default_files.items() 
+            if not file.submitted
         ]
-        
-        req_args = {
-            "params": {"fileIds": file_ids},
-            "headers": user.auth.header,
-            "status": 204
-        }
 
         response = self.testapp.post_json(
             f"{base_url}/rpc/delete-files",
-            **req_args
+            params={"fileIds": file_ids},
+            headers=user.auth.header,
+            status=204
         )
 
     def test_mds_deletion(self):
-        user = self.users["admin"]
-
-        mds_ids = [
-            str(create_metadataset(self.session_factory, i, user))
-            for i, _ in enumerate(self.metadata_records)
+        user = self.default_users["user_a"]
+        
+        metadataset_ids = [
+            site_id
+            for site_id, mset in self.default_metadatasets.items()
+            if not mset.submitted
         ]
 
-        req_args = {
-            "params": {"metadatasetIds": mds_ids},
-            "headers": user.auth.header,
-            "status": 204
-        }
+        response = self.testapp.post_json(
+            f"{base_url}/rpc/delete-metadatasets",
+            params={"metadatasetIds": metadataset_ids},
+            headers=user.auth.header,
+            status=204
+        )

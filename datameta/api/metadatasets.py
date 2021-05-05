@@ -18,7 +18,7 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from typing import Optional, Dict
 from ..linting import validate_metadataset_record
-from .. import security, siteid, models
+from .. import security, siteid, models, resource
 from ..security import authz
 import datetime
 from ..resource import resource_by_id, get_identifier
@@ -29,25 +29,25 @@ from .. import errors
 class MetaDataSetResponse(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
     id: dict
-    record: dict
+    record: Dict[str, Optional[str]]
+    file_ids: Dict[str, Optional[Dict[str, str]]]
     user_id: str
     submission_id: Optional[str] = None
 
-def render_record_values(mdatum:Dict[str, models.MetaDatum], record:dict) -> dict:
+def render_record_values(metadata:Dict[str, models.MetaDatum], record:dict) -> dict:
     """Renders values of a metadataset record. Please note: the record should already have passed validation."""
     record_rendered = record.copy()
-    for field in mdatum:
+    for field in metadata:
         if not field in record_rendered.keys():
             # if field is not contained in record, add it as None to the record:
             record_rendered[field] = None
             continue
-        elif record_rendered[field] and mdatum[field].datetimefmt:
+        elif record_rendered[field] and metadata[field].datetimefmt:
             # if MetaDatum is a datetime field, render the value in isoformat
             record_rendered[field] = datetime.datetime.strptime(
                     record_rendered[field],
-                    mdatum[field].datetimefmt
+                    metadata[field].datetimefmt
                 ).isoformat()
-
     return record_rendered
 
 def formatted_mrec_value(mrec):
@@ -59,9 +59,9 @@ def formatted_mrec_value(mrec):
 def get_record_from_metadataset(mdata_set:models.MetaDataSet) -> dict:
     """ Construct a dict containing all records of that MetaDataSet"""
     return {
-        rec.metadatum.name: formatted_mrec_value(rec)
-        for rec in mdata_set.metadatumrecords
-    }
+            rec.metadatum.name : formatted_mrec_value(rec)
+            for rec in mdata_set.metadatumrecords
+            }
 
 def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
     # Find the requested metadataset
@@ -124,8 +124,8 @@ def post(request:Request) -> MetaDataSetResponse:
     mdatum_query = db.query(models.MetaDatum).order_by(
         models.MetaDatum.order
     ).all()
-    mdatum = {mdat.name: mdat for mdat in mdatum_query }
-    record = render_record_values(mdatum, record)
+    metadata = {mdat.name: mdat for mdat in mdatum_query }
+    record = render_record_values(metadata, record)
 
     # construct new MetaDataSet:
     mdata_set = models.MetaDataSet(
@@ -139,18 +139,19 @@ def post(request:Request) -> MetaDataSetResponse:
     # construct new MetaDatumRecords
     for name, value in record.items():
         mdatum_rec = models.MetaDatumRecord(
-            metadatum_id = mdatum[name].id,
-            metadataset_id = mdata_set.id,
-            file_id = None,
-            value = value
+            metadatum_id     = metadata[name].id,
+            metadataset_id   = mdata_set.id,
+            file_id          = None,
+            value            = value
         )
         db.add(mdatum_rec)
 
     return MetaDataSetResponse(
-        id             = get_identifier(mdata_set),
-        record         = record,
-        user_id        = get_identifier(mdata_set.user),
-        submission_id  = get_identifier(mdata_set.submission) if mdata_set.submission else None,
+        id              = get_identifier(mdata_set),
+        record          = record,
+        file_ids        = { name : None for name, metadatum in metadata.items() if metadatum.isfile },
+        user_id         = get_identifier(mdata_set.user),
+        submission_id   = get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
 
 @view_config(
@@ -160,7 +161,7 @@ def post(request:Request) -> MetaDataSetResponse:
     openapi=True
 )
 def get_metadataset(request:Request) -> MetaDataSetResponse:
-    """Create new metadataset"""
+    """Get a metadataset by ID"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
     mdata_set = resource_by_id(db, models.MetaDataSet, request.matchdict['id'])
@@ -172,10 +173,11 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
         raise HTTPForbidden()
 
     return MetaDataSetResponse(
-        id=get_identifier(mdata_set),
-        record=get_record_from_metadataset(mdata_set),
-        user_id=get_identifier(mdata_set.user),
-        submission_id=get_identifier(mdata_set.submission) if mdata_set.submission else None,
+        id              = get_identifier(mdata_set),
+        record          = get_record_from_metadataset(mdata_set),
+        file_ids        = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
+        user_id         = get_identifier(mdata_set.user),
+        submission_id   = get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
 
 @view_config(

@@ -20,7 +20,7 @@ from datameta.models import (
 )
 from datameta.models.meta import Base
 
-from .utils import create_user, create_metadatum, set_application_settings
+from .utils import create_file, create_metadataset, create_submission, create_user, create_metadatum 
 from .fixtures import (
     db_url, 
     memcached_url, 
@@ -28,7 +28,10 @@ from .fixtures import (
     default_users,
     default_metadata,
     metadata_records,
-    test_files
+    test_files,
+    default_files,
+    default_metadatasets,
+    default_submissions
 )
 
 class BaseIntegrationTest(unittest.TestCase):
@@ -55,9 +58,9 @@ class BaseIntegrationTest(unittest.TestCase):
         Base.metadata.create_all(self.engine)
         
         # create default users:
-        self.users = {
-            name: create_user(self.session_factory, user)
-            for name, user in default_users.items()
+        self.default_users = {
+            site_id: create_user(self.session_factory, user)
+            for site_id, user in default_users.items()
         }
 
         # create default metadata:
@@ -66,16 +69,32 @@ class BaseIntegrationTest(unittest.TestCase):
             for name, mdatum in default_metadata.items()
         }
 
-        # add application settings:
-        set_application_settings(self.session_factory)
+        # add default metadatasets to the database:
+        self.default_metadatasets = {
+            site_id: create_metadataset(self.session_factory, metadataset)
+            for site_id, metadataset in default_metadatasets.items()
+        }
+
+        # add default files to the database:
+        self.default_files = {
+            site_id: create_file(self.session_factory, self.storage_path, file)
+            for site_id, file in default_files.items()
+        }
+
+        # add default files to the database:
+        self.default_submissions = {
+            site_id: create_submission(self.session_factory, submission)
+            for site_id, submission in default_submissions.items()
+        }
 
     def setUp(self):
         """Setup Test Server"""
         self.settings = default_settings
         
         # setup temporary storage location:
-        self.storage_path = tempfile.TemporaryDirectory()
-        self.settings["datameta.storage_path"] = self.storage_path.name
+        self.storage_path_obj = tempfile.TemporaryDirectory()
+        self.storage_path = self.storage_path_obj.name
+        self.settings["datameta.storage_path"] = self.storage_path
 
         # initialize DB and provide metadata and file fixtures
         self.initDb()
@@ -91,7 +110,7 @@ class BaseIntegrationTest(unittest.TestCase):
         transaction.abort()
         Base.metadata.drop_all(self.engine)
         del self.testapp
-        self.storage_path.cleanup()
+        self.storage_path_obj.cleanup()
 
     def _steps(self):
         """

@@ -5,7 +5,14 @@ from typing import Optional
 from dataclasses import dataclass
 import transaction
 from copy import deepcopy
-from .fixtures import UserFixture, MetaDatumFixture, AuthFixture
+from .fixtures import (
+    UserFixture, 
+    MetaDatumFixture, 
+    AuthFixture, 
+    FileFixture,
+    MetaDataSetFixture,
+    SubmissionFixture, 
+)
 from datetime import datetime, timedelta
 
 from datameta import models, security
@@ -25,6 +32,7 @@ def get_group_by_name(
         assert group_obj, f"I don't know this group: {group_name}"
 
         return group_obj.uuid
+
 
 def get_user_by_uuid(
     session_factory,
@@ -66,54 +74,154 @@ def create_pwtoken(
 
         return token
 
+
 def create_metadataset(
     session_factory,
-    site_id,
-    user
+    metadataset:MetaDataSetFixture,
+    # optional arguments to overwrite properties if file fixture:
+    site_id:Optional[str]=None,
+    user:Optional[str]=None
 ):
     with transaction.manager:
         session = get_tm_session(session_factory, transaction.manager)
         
-        user_obj = session.query(models.User).filter(models.User.uuid==user.uuid).one_or_none()
+        metadataset_updated = deepcopy(metadataset)
+        if site_id:
+            metadataset_updated.site_id = site_id
+        if user:
+            metadataset_updated.user = user
+        
+        user_obj = session.query(models.User).filter(
+            models.User.site_id==metadataset_updated.user
+        ).one_or_none()
 
-        mds_obj = models.MetaDataSet(
-            site_id=site_id,
-            user=user_obj
+        # create metadataset object in db:
+        metadataset_obj = models.MetaDataSet(
+            submission_id=None,
+            site_id=metadataset_updated.site_id,
+            user_id=user_obj.id
         )
 
-        session.add(mds_obj)
+        session.add(metadataset_obj)
         session.flush()
 
-        return mds_obj.site_id
+        metadataset_updated.uuid = str(metadataset_obj.uuid)
+
+        # create metadatum records in db:
+        for name, value in metadataset_updated.record.items():
+            metadatum_obj = session.query(models.MetaDatum).filter(
+                models.MetaDatum.name==name
+            ).one_or_none()
+
+            assert metadataset_obj, f"No matching MetaDatum record found: {name}"
+
+            mdatumrec_obj = models.MetaDatumRecord(
+                metadatum_id=metadatum_obj.id,
+                metadataset_id=metadataset_obj.id,
+                value=value
+            )
+
+            session.add(mdatumrec_obj)
+            session.flush()
+
+        return metadataset_updated
+
 
 def create_file(
     session_factory,
-    storage_path,
-    file_fixture,
-    site_id,
-    user
+    storage_path:str,
+    file:FileFixture,
+    # optional arguments to overwrite properties if file fixture:
+    site_id:Optional[str]=None,
+    user:Optional[str]=None
 ):
     with transaction.manager:
         session = get_tm_session(session_factory, transaction.manager)
+        file_updated = deepcopy(file)
+        if site_id:
+            file_updated.site_id = site_id
+        if user:
+            file_updated.user = user
         
-        user_obj = session.query(models.User).filter(models.User.uuid==user.uuid).one_or_none()
+        user_obj = session.query(models.User).filter(
+            models.User.site_id==file_updated.user
+        ).one_or_none()
 
         file_obj = models.File(
-            name=file_fixture.name,
-            checksum=file_fixture.checksum,
-            storage_uri=f"file://{file_fixture.name}",
-            site_id=site_id,
-            content_uploaded=False,
-            user=user_obj
+            name=file_updated.name,
+            checksum=file_updated.checksum,
+            storage_uri=f"file://{file.name}",
+            site_id=file_updated.site_id,
+            content_uploaded=True,
+            user_id=user_obj.id
         )
         
         import shutil
-        shutil.copy(file_fixture.path, storage_path)
+        shutil.copy(file.path, storage_path)
 
         session.add(file_obj)
         session.flush()
 
-        return file_obj.site_id
+        file_updated.uuid = str(file_obj.uuid)
+
+        return file_updated
+
+
+def create_submission(
+    session_factory,
+    submission:SubmissionFixture,
+    # optional arguments to overwrite properties if file fixture:
+    site_id:Optional[str]=None,
+    group:Optional[str]=None
+):
+    with transaction.manager:
+        session = get_tm_session(session_factory, transaction.manager)
+        
+        submission_updated = deepcopy(submission)
+        if site_id:
+            submission_updated.site_id = site_id
+        if group:
+            submission_updated.group = group
+        
+        group_obj = session.query(models.Group).filter(
+            models.Group.name==submission_updated.group
+        ).one_or_none()
+        
+        # create submission object in db:
+        submission_obj = models.Submission(
+            site_id=submission_updated.site_id,
+            label=submission.label,
+            date=datetime.now(),
+            group_id=group_obj.id
+        )
+
+        session.add(submission_obj)
+        session.flush()
+
+        submission_updated.uuid = str(submission_obj.uuid)
+        
+        # update metadatasets:
+        files = []
+        for mset_id in submission.metadataset_ids:
+            mset_obj = session.query(models.MetaDataSet).filter(
+                    models.MetaDataSet.site_id==mset_id
+            ).one_or_none()
+            mset_obj.submission_id = submission_obj.id
+            for rec_obj in mset_obj.metadatumrecords:
+                if rec_obj.metadatum.isfile:
+                    file_obj = session.query(models.File).filter(
+                        models.File.name==rec_obj.value,
+                        models.File.metadatumrecord==None
+                    ).one_or_none()
+                    assert file_obj, f"No unique match found for file: {rec_obj.value}"
+                    files.append(file_obj.site_id)
+                    rec_obj.file_id = file_obj.id
+        
+        submission_updated.uuid = str(submission_obj.uuid)
+        submission_updated.files = files
+
+        return submission_updated
+
 
 def create_user(
     session_factory,
@@ -215,19 +323,3 @@ def create_metadatum(
         metadatum_updated = deepcopy(metadatum_obj)
         metadatum_updated.uuid = str(metadatum_updated.uuid)
         return metadatum_updated
-
-
-def set_application_settings(
-    session_factory
-):
-    """Set application settings in the db."""
-    with transaction.manager:
-        session = get_tm_session(session_factory, transaction.manager)
-        
-        # creat logo_html:
-        logo_html = models.ApplicationSettings(
-            key='logo_html',
-            str_value = '<p></p>'
-        )
-        session.add(logo_html)
-        session.flush()

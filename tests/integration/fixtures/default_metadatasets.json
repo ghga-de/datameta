@@ -1,0 +1,38 @@
+[
+    {
+        "site_id": "metadataset_01",
+        "user": "user_a",
+        "record": {
+            "#ID": "MD01", 
+            "Date": "2021-03-04", 
+            "ZIP Code": "123", 
+            "FileR1": "default_file_1.txt", 
+            "FileR2": "default_file_2.txt"    
+        },
+        "submitted": true
+    },
+    {
+        "site_id": "metadataset_02",
+        "user": "user_a",
+        "record": {
+            "#ID": "MD02", 
+            "Date": "2021-03-05", 
+            "ZIP Code": "456", 
+            "FileR1": "default_file_3.txt", 
+            "FileR2": "default_file_4.txt"    
+        },
+        "submitted": true
+    },
+    {
+        "site_id": "metadataset_03",
+        "user": "user_a",
+        "record": {
+            "#ID": "MD03", 
+            "Date": "2021-03-05", 
+            "ZIP Code": "456", 
+            "FileR1": "default_file_5.txt", 
+            "FileR2": "default_file_6.txt"    
+        },
+        "submitted": false
+    }
+]

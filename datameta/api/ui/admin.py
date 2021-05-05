@@ -105,8 +105,8 @@ def v_admin_put_request(request):
         # Send the token to the user
         email.send(
                 recipients = (new_user.fullname, new_user.email),
-                subject = get_setting(db, "subject_welcome_token").str_value,
-                template = get_setting(db, "template_welcome_token").str_value,
+                subject = get_setting(db, "subject_welcome_token"),
+                template = get_setting(db, "template_welcome_token"),
                 values={
                     'fullname' : new_user.fullname,
                     'token_url' : token_url
@@ -124,8 +124,8 @@ def v_admin_put_request(request):
         # Inform the user
         email.send(
                 recipients = (reg_req_fullname, reg_req_email),
-                subject = get_setting(db, "subject_reject").str_value,
-                template = get_setting(db, "template_reject").str_value,
+                subject = get_setting(db, "subject_reject"),
+                template = get_setting(db, "template_reject"),
                 values={
                     'fullname' : reg_req_fullname,
                     }

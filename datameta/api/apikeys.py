@@ -90,13 +90,8 @@ def get_expiration_date_from_str(expires_str:Optional[str]):
 
 
 def generate_api_key(request:Request, user:models.User, label:str, expires:Optional[datetime]=None):
-    """For Token Composition:
-    Tokens consist of a core, which is stored as hash in the database,
-    plus a prefix that contains the user and the label of that ApiKey.
-    The user always provides the entire token, which is then split up
-    into prefic and core component. The prefix is used to identify the
-    ApiKey object in the database and the core component is matched
-    against the hash for validating it.
+    """
+    Generate API Token and store unsalted hash in db.
     """
     token = security.generate_token()
     token_hash = security.hash_token(token)

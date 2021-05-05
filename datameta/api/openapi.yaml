@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.14.0
+  version: 0.17.0
   title: DataMeta
 
 servers:
@@ -186,6 +186,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
+        '500':
+          description: Internal Server Error
+
+
+  /rpc/get-file-url/{id}:
+    get:
+      summary: "[Not RESTful]: Redirects to a temporary, pre-signed HTTP-URL for downloading a file."
+      description: >-
+        For the file with the given ID, this enpoint will redirect to a pre-signed HTTP URL for
+        downloading the requested file. The pre-signed URL times out after a certain amount of
+        time which can be configured with the "expires" query string.
+        [Attention this endpoint is not RESTful, the result should not be cached.]
+      tags:
+        - Remote Procedure Calls
+      operationId: GetFileUrl
+      parameters:
+        - name: id
+          in: path
+          description: ID of the file
+          required: true
+          schema:
+            type: string
+        - name: expires
+          in: query
+          description: Minutes until the pre-signed URL will expire, defaults to 1
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '307':
+          description: Redirecting to the pre-signed URL of the file
+          headers:
+            location:
+              description: Location to redirect to
+              schema:
+                type: string
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: The specified file does not exist.
         '500':
           description: Internal Server Error
 
@@ -865,6 +913,48 @@ paths:
         "500":
           description: Internal Server Error
 
+  /registrations:
+    post:
+      summary: Create a new user registration request
+      description: Create a new user registration request
+      tags:
+        - User
+      operationId: PostRegistration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationRequest"
+      responses:
+        "204":
+          description: New User Registration Request created
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        "500":
+          description: Internal Server Error
+
+
+  /registrationsettings:
+    get:
+      summary: Get details for the registration view
+      description: Get all available groups and the user agreement for the registration view
+      tags:
+        - User
+      operationId: GetRegistrationSettings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterSettingsResponse"
+        "500":
+          description: Internal Server Error
+
   /appsettings/{id}:
     put:
       summary: Update a specific appsetting. This is an administrative Endpoint that is not accessible for regular users.
@@ -1048,8 +1138,11 @@ components:
         record:
           type: object
           additionalProperties: true
-          # a free-form object,
-          # any property is allowed
+          # a free-form object, any property is allowed
+        fileIds:
+          type: object
+          additionalProperties: true
+          # a free-form object mapping the field names to file IDs
         id:
           $ref: "#/components/schemas/Identifier"
         submissionId:   
@@ -1320,6 +1413,56 @@ components:
         - apiVersion
         - datametaVersion
       additionalProperties: false
+
+    RegistrationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        org_select:
+          type: string
+          nullable: true
+        org_create:
+          type: string
+          nullable: true
+        org_new_name:
+          type: string
+          nullable: true
+        check_user_agreement:
+          type: boolean
+          nullable: true
+      required:
+        - name
+        - email
+        - org_select
+        - org_create
+        - org_new_name
+        - check_user_agreement
+      additionalProperties: false
+
+    RegisterSettingsResponse:
+      type: object
+      properties:
+        userAgreement:
+          type: string
+          nullable: True
+        groups:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                $ref: "#/components/schemas/Identifier"
+              name:
+                type: string
+      required:
+        - groups
+        - userAgreement
+      additionalProperties: false      
 
     AppSettingsResponse:
       type: object
