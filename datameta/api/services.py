@@ -14,7 +14,7 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized
+from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized, HTTPNotFound
 from sqlalchemy.exc import IntegrityError
 from dataclasses import dataclass
 
@@ -68,7 +68,7 @@ def post(request: Request):
     request_method="GET", 
     openapi=True
 )
-def get(request: Request) -> ServiceInfoResponse:
+def get(request: Request) -> List[ServiceInfoResponse]:
     """POST a new service"""
 
     # Revalidate User
