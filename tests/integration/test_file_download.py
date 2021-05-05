@@ -28,10 +28,13 @@ class TestFileDownload(BaseIntegrationTest):
             ("default_file_5", "user_c", 1, 403, None),
             # side admin not in file-owning group requests submitted and not submitted files:
             ("default_file_1", "admin", 1, 307, 200),
-            ("default_file_5", "admin", 1, 307, 200),
+            ("default_file_5", "admin", 1, 403, None),
             # group admin not in file-owning group requests submitted and not submitted files:
             ("default_file_1", "group_y_admin", 1, 403, None),
             ("default_file_5", "group_y_admin", 1, 403, None),
+            # site_read user not in file-owning group requests submitted and not submitted files:
+            ("default_file_1", "group_z_site_read", 1, 307, 200),
+            ("default_file_5", "group_z_site_read", 1, 403, None),
         ]
     )
     def test_rpc_get_file_url(
@@ -44,12 +47,14 @@ class TestFileDownload(BaseIntegrationTest):
     ):
         user = self.default_users[user_name]
         file = self.default_files[file_site_id]
-
-        response = self.testapp.get(
-            base_url + f"/rpc/get-file-url/{file.site_id}?expires={expires}",
-            headers=user.auth.header,
-            status=status_get_url
-        )
+        try:
+            response = self.testapp.get(
+                base_url + f"/rpc/get-file-url/{file.site_id}?expires={expires}",
+                headers=user.auth.header,
+                status=status_get_url
+            )
+        except:
+            assert False, str(user_name) + str(file_site_id)
        
         if status_get_url==307:
             # follow redirect:
