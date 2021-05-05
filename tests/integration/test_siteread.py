@@ -4,7 +4,6 @@ from . import BaseIntegrationTest
 from datameta.api import base_url
 
 
-
 class SiteReadTest(BaseIntegrationTest):
     def xtest_access_staged_file(self):
         file_ids = [site_id for site_id, f in self.default_files.items() if not f.submitted]
