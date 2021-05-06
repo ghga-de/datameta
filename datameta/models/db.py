@@ -28,7 +28,7 @@ from sqlalchemy import (
     Table
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from .meta import Base
 
@@ -196,15 +196,19 @@ class MetaDatumRecord(Base):
 class MetaDataSet(Base):
     """A MetaDataSet represents all metadata associated with *one* record"""
     __tablename__  = 'metadatasets'
-    id             = Column(Integer, primary_key=True)
-    site_id        = Column(String(50), unique=True, nullable=False, index=True)
-    uuid           = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
-    user_id        = Column(Integer, ForeignKey('users.id'), nullable=False)
-    submission_id  = Column(Integer, ForeignKey('submissions.id'), nullable=True)
+    id               = Column(Integer, primary_key=True)
+    site_id          = Column(String(50), unique=True, nullable=False, index=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
+    submission_id    = Column(Integer, ForeignKey('submissions.id'), nullable=True)
+    is_deprecated    = Column(Boolean, default=False)
+    deprecated_label = Column(String, nullable=True)
+    replaced_by_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=True)
     # Relationships
     user             = relationship('User', back_populates='metadatasets')
     submission       = relationship('Submission', back_populates='metadatasets')
     metadatumrecords = relationship('MetaDatumRecord', back_populates='metadataset')
+    replaces         = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
 
 class ApplicationSetting(Base):
     __tablename__ = 'appsettings'
