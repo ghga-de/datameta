@@ -1,4 +1,4 @@
-"""add new field users.site_read
+"""Added tables Service and ServiceExecution
 
 Revision ID: 6e77c5e9111b
 Revises: 4cf970aec869
