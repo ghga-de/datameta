@@ -49,7 +49,7 @@ def get_session_factory(engine):
     return factory
 
 
-def get_tm_session(session_factory, transaction_manager):
+def get_tm_session(session_factory, transaction_manager, **kwargs):
     """
     Get a ``sqlalchemy.orm.Session`` instance backed by a transaction.
 
@@ -70,7 +70,7 @@ def get_tm_session(session_factory, transaction_manager):
               dbsession = get_tm_session(session_factory, transaction.manager)
 
     """
-    dbsession = session_factory()
+    dbsession = session_factory(**kwargs)
     zope.sqlalchemy.register(
         dbsession, transaction_manager=transaction_manager)
     return dbsession
