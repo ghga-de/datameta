@@ -1,0 +1,70 @@
+# Copyright 2021 Universität Tübingen, DKFZ and EMBL for the German Human Genome-Phenome Archive (GHGA)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+ID:
+  class: MetaDatum
+  attributes:
+    name: ID
+    mandatory: true
+    example: "ID123"
+    order: 100
+    isfile: false
+    submission_unique: false
+    site_unique: true
+
+Date:
+  class: MetaDatum
+  attributes:
+    name: Date
+    datetimefmt: "%Y-%m-%d"
+    mandatory: true
+    example: "2020-10-30"
+    order: 200
+    isfile: false
+    submission_unique: false
+    site_unique: false
+
+ZIP Code:
+  class: MetaDatum
+  attributes:
+    name: ZIP Code
+    mandatory: true
+    example: "123"
+    order: 300
+    isfile: false
+    submission_unique: false
+    site_unique: false
+
+FileR1:
+  class: MetaDatum
+  attributes:
+    name: FileR1
+    mandatory: true
+    example: "file_R1.fastq.gz"
+    order: 400
+    isfile: true
+    submission_unique: false
+    site_unique: false
+
+FileR2:
+  class: MetaDatum
+  attributes:
+    name: FileR2
+    mandatory: true
+    example: "ID123"
+    order: 500
+    isfile: true
+    submission_unique: false
+    site_unique: true
+
