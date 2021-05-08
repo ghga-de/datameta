@@ -1,0 +1,68 @@
+# Copyright 2021 Universität Tübingen, DKFZ and EMBL for the German Human Genome-Phenome Archive (GHGA)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+test_file_7:
+  class: File
+  attributes:
+    site_id: test_file_7
+    name: test_file_7.txt
+    content_uploaded: True
+    checksum: b04083e53e242626595e2b8ea327e525
+    user:
+      fixtureset: users
+      name: user_a
+
+test_file_8:
+  class: File
+  attributes:
+    site_id: test_file_8
+    name: test_file_8.txt
+    content_uploaded: True
+    checksum: 5e40d09fa0529781afd1254a42913847
+    user:
+      fixtureset: users
+      name: user_a
+
+test_file_9:
+  class: File
+  attributes:
+    site_id: test_file_9
+    name: test_file_9.txt
+    content_uploaded: True
+    checksum: 739969b53246b2c727850dbb3490ede6
+    user:
+      fixtureset: users
+      name: user_b
+
+test_file_10:
+  class: File
+  attributes:
+    site_id: test_file_10
+    name: test_file_10.txt
+    content_uploaded: True
+    checksum: c1a8e059bfd1e911cf10b626340c9a54
+    user:
+      fixtureset: users
+      name: user_b
+
+test_file_unreferenced:
+  class: File
+  attributes:
+    site_id: test_file_unreferenced
+    name: test_file_unreferenced.txt
+    content_uploaded: True
+    checksum: 644183ff1383bb8f4c15720e842e7fec
+    user:
+      fixtureset: users
+      name: user_a

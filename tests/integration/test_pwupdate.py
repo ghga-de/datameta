@@ -1,3 +1,17 @@
+# Copyright 2021 Universität Tübingen, DKFZ and EMBL for the German Human Genome-Phenome Archive (GHGA)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Testing password update via API request
 """
 import time
@@ -5,34 +19,49 @@ from datetime import datetime, timedelta
 
 from parameterized import parameterized
 
+from .utils import get_auth_header
 from . import BaseIntegrationTest
 from datameta.api import base_url
-from .utils import create_pwtoken
+from .fixtures import FixtureNotFoundError
 
 class TestPasswordUpdate(BaseIntegrationTest):
 
+    def setUp(self):
+        super().setUp()
+        self.fixture_manager.load_fixtureset('groups')
+        self.fixture_manager.load_fixtureset('users')
+        self.fixture_manager.load_fixtureset('apikeys')
+        self.fixture_manager.load_fixtureset('passwordtokens')
+
     @parameterized.expand([
-        # TEST_NAME                     EXEC_USER    TGT_USER       TOKEN                                    NEW_PW             EXPIRED   RESP
-        ("self_password_update"       , "user_a"   , ""           , ""                                     , "012345678910"   , False   , 204),
-        ("self_expired_auth"          , "user_a"   , ""           , ""                                     , "012345678910"   , True    , 401),
-        ("self_invalid_password"      , "user_a"   , ""           , ""                                     , "*meep*"         , False   , 400),
-        ("self_invalid_reset_token"   , "user_a"   , ""           , "this_token_does_not_exist_for_sure"   , "012345678910"   , False   , 404),
-        ("other_password_update"      , "user_a"   , "user_b"     , ""                                     , "012345678910"   , False   , 403),
-        ("other_password_update"      , "user_a"   , "nihilist"   , ""                                     , "012345678910"   , False   , 403),
+        # TEST_NAME                           EXEC_USER    TGT_USER_ID    TOKEN_FIXTURE                            NEW_PW             EXPIRED   RESP
+        ("self_pw_update_oldpass"           , "user_a"   , None         , None                                   , "012345678910"   , False   , 204), 
+        ("self_pw_update_reset_token"       , "user_a"   , None         , "user_a_reset_token"                   , "012345678910"   , False   , 204), 
+        ("self_pw_update_reset_exp_token"   , "user_a"   , None         , "user_a_reset_token"                   , "012345678910"   , True    , 410), 
+        ("self_expired_auth"                , "user_a"   , None         , None                                   , "012345678910"   , True    , 401), 
+        ("self_invalid_password"            , "user_a"   , None         , None                                   , "*meep*"         , False   , 400), 
+        ("self_invalid_reset_token"         , "user_a"   , None         , "does_not_exist"                       , "012345678910"   , False   , 404), 
+        ("other_password_update"            , "user_a"   , "user_b"     , None                                   , "012345678910"   , False   , 403), 
+        ("other_password_update"            , "user_a"   , "nihilist"   , None                                   , "012345678910"   , False   , 403), 
         ])
-    def test_password_update(self, _, executing_user:str, target_user:str, token:str, new_password:str, expired_auth:bool, expected_response:int):
-        if token:
+    def test_password_update(self, _, executing_user:str, target_user_id:str, token_fixture:str, new_password:str, expired_auth:bool, expected_response:int):
+        if token_fixture:
             user_id = "0"
-            credential = token
+            try:
+                token = self.fixture_manager.get_fixture('passwordtokens', token_fixture + ("_expired" if expired_auth else ""))
+                credential = token.value_plain
+            except FixtureNotFoundError:
+                credential = "invalid_token"
             auth_header = None
         else:
-            user = self.default_users[executing_user]
+            user = self.fixture_manager.get_fixture('users', executing_user)
             credential = user.password
-            auth_header = user.expired_auth.header if expired_auth else user.auth.header
-            if not target_user:
+            apikey = self.fixture_manager.get_fixture('apikeys', executing_user + ("_expired" if expired_auth else ""))
+            auth_header = get_auth_header(apikey.value_plain) 
+            if not target_user_id:
                 user_id = user.site_id
             else:
-                user_id = self.default_users[target_user].site_id if self.default_users.get(target_user) else target_user
+                user_id = target_user_id
 
         request_body = {
             "passwordChangeCredential": credential,
@@ -49,45 +78,4 @@ class TestPasswordUpdate(BaseIntegrationTest):
         response = self.testapp.put_json(
             f"{base_url}/users/{user_id}/password",
             **req_json
-        )
-    
-    def test_failure_expired_reset_token(self, status:int=410):
-        """Testing unsuccessful (self-)password change with expired token.
-
-        Expected Response:
-            HTTP 410
-        """
-        user = self.default_users["user_a"]
-        pwtoken = create_pwtoken(self.session_factory, user, expires=datetime.now() + timedelta(minutes=-1))
-
-        request_body = {
-            "passwordChangeCredential": pwtoken,
-            "newPassword": "012345678910"
-        }
-
-        response = self.testapp.put_json(
-            f"{base_url}/users/0/password",
-            headers = user.auth.header,
-            params = request_body,
-            status = status
-        )
-
-    def test_successful_own_password_reset(self, status:int=204):
-        """Testing successful (self-)password change via reset token.
-        Expected Response:
-            HTTP 204
-        """
-        user = self.default_users["user_b"]
-        pwtoken = create_pwtoken(self.session_factory, user)
-
-        request_body = {
-            "passwordChangeCredential": pwtoken,
-            "newPassword": "012345678910"
-        }
-
-        response = self.testapp.put_json(
-            base_url + f"/users/0/password",
-            headers=user.auth.header,
-            params=request_body,
-            status=status
         )

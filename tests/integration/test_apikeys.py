@@ -2,7 +2,7 @@
 """
 
 from . import BaseIntegrationTest
-from .fixtures import AuthFixture
+from .utils import get_auth_header
 from typing import Optional
 
 from datameta.api import base_url
@@ -46,7 +46,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         """Get a list of all ApiKeys"""
         response = self.testapp.get(
             base_url + f"/users/{user_id}/keys",
-            headers=AuthFixture(apikey=token).header,
+            headers=get_auth_header(token),
             status=status
         )
 
@@ -70,13 +70,18 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         """Delete ApiKey"""
         response = self.testapp.delete(
             base_url + f"/keys/{apikey_id}",
-            headers=AuthFixture(apikey=token).header,
+            headers=get_auth_header(token),
             status=status
         )
 
+    def setUp(self):
+        super().setUp()
+        self.fixture_manager.load_fixtureset('groups')
+        self.fixture_manager.load_fixtureset('users')
+
     def test_create_get_delete_apikey(self):
         # set initial state:
-        user = self.default_users["user_a"]
+        user = self.fixture_manager.get_fixture('users', 'user_a')
 
         # create apikey:
         user_session = self.post_key(user.email, user.password)

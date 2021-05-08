@@ -83,11 +83,11 @@ def access_file_by_user(
 
     # Check if file could be found
     if db_file is None:
-        raise HTTPNotFound()
+        raise HTTPNotFound(json_body=[])
 
     # Check if requesting user has access to the file
     if not authz.view_file(user, db_file):
-        raise HTTPForbidden()
+        raise HTTPForbidden(json_body=[])
 
     return db_file
 
