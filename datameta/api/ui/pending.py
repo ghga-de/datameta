@@ -32,11 +32,20 @@ def get_pending_metadatasets(dbsession, user):
     m_sets = dbsession.query(MetaDataSet).filter(and_(
         MetaDataSet.user==user,
         MetaDataSet.submission==None)
-        ).options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)).all()
+        ).options(
+                joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)
+                ).all()
+
+    metadata_query = dbsession.query(MetaDatum).order_by(
+        MetaDatum.order
+    ).all()
+    metadata = {mdat.name: mdat for mdat in metadata_query }
+
     return [
             MetaDataSetResponse(
                 id             = resource.get_identifier(m_set),
                 record         = get_record_from_metadataset(m_set),
+                file_ids       = { name : None for name, metadatum in metadata.items() if metadatum.isfile },
                 user_id        = resource.get_identifier(m_set.user),
                 submission_id  = resource.get_identifier(m_set.submission) if m_set.submission else None
                 )
