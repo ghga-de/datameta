@@ -21,6 +21,7 @@ from typing import List
 
 from . import DataHolderBase
 from .. import security, errors, resource, siteid
+from ..errors import get_validation_error
 from ..security import authz
 from ..models import Service, ServiceExecution, User
 from ..resource import get_identifier, resource_by_id
@@ -58,7 +59,7 @@ def post(request: Request):
         db.add(service)
         db.flush()
     except IntegrityError:
-        raise errors.get_validation_error(["A service with that name already exists."])    
+        raise get_validation_error(["A service with that name already exists."])    
 
     return HTTPNoContent()
 
