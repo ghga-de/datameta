@@ -20,6 +20,9 @@
                         <li id="nav-site-tab-li" class="nav-item" style="display: none">
                             <a id="nav-site-tab" class="nav-link" aria-current="true" href="#" data-bs-toggle="tab" data-bs-target="#nav-site">Site</a>
                         </li>
+                        <li id="nav-services-tab-li" class="nav-item" style="display: none">
+                            <a id="nav-services-tab" class="nav-link" aria-current="true" href="#" data-bs-toggle="tab" data-bs-target="#nav-services">Services</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="tab-content">
@@ -40,23 +43,33 @@
                             <button class="btn btn-outline-success enabled" type="button" onclick="DataMeta.admin.newMetaDatumRow()">Create new metadatum</button>
                         </div>
                     </div>
+                        <div class="card-body tab-pane fade" id="nav-services" role="tabpanel" aria-labelledby="nav-home-tab" display="none">
+                        <h5 class="card-title">Services</h5>
+                        <div id="services_alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
+                        </div>
+                        <table id="table_services" class="table table-sm table-hover" style="width:100%">
+                        </table>
+                        <div>
+                            <button class="btn btn-outline-success enabled" type="button" onclick="DataMeta.admin.newService()">Create new Service</button>
+                        </div>
+                    </div>
                     <div class="card-body tab-pane fade active show" id="nav-users" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 class="card-title">User Management</h5>
-                        <div id="user_alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
+                        <div id="users_alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
                         </div>
                         <table id="table_users" class="table table-sm table-hover" style="width:100%">
                         </table>
                     </div>
                     <div class="card-body tab-pane fade" id="nav-groups" role="tabpanel" aria-labelledby="nav-home-tab" display="none">
                         <h5 class="card-title">Group Management</h5>
-                        <div id="group_alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
+                        <div id="groups_alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
                         </div>
                         <table id="table_groups" class="table table-sm table-hover" style="width:100%">
                         </table>
                     </div>
                     <div class="card-body tab-pane fade show" id="nav-requests" role="tabpanel" aria-labelledby="nav-home-tab">
                         <h5 id="req_title" class="card-title"></h5>
-                        <div id="request_alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
+                        <div id="requests_alert" class="alert alert-danger collapse alert-dismissible fade" role="alert">
                         </div>
                         <div class="accordion" id="requests">
                             <template id="template_request">
