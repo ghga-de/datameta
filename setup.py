@@ -45,7 +45,7 @@ requires = [
     'openapi-core<0.14',
     'pytest >= 3.7.4',
     'dataclasses-json==0.5.2',
-    "pyaml",
+    "pyyaml",
     "gunicorn==20.0.4",
 ]
 
