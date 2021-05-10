@@ -933,7 +933,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ServiceInfoResponse"
+                $ref: "#/components/schemas/ServiceResponse"
         '401':
           description: Unauthorized
         "500":
@@ -1331,7 +1331,7 @@ components:
         - userIds
       additionalProperties: false
 
-    ServiceInfoResponse:
+    ServiceResponse:
       type: array
       items:
         type: object
@@ -1343,7 +1343,7 @@ components:
           userIds:
             type: array
             items:
-              type: string
+              $ref: "#/components/schemas/Identifier"
         required:
           - id
           - name

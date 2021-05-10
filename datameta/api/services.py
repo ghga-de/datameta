@@ -26,7 +26,7 @@ from ..models import Service, ServiceExecution, User
 from ..resource import get_identifier, resource_by_id
 
 @dataclass
-class ServiceInfoResponse(DataHolderBase):
+class ServiceResponse(DataHolderBase):
     id: dict
     name: str
     user_ids: list
@@ -39,15 +39,14 @@ class ServiceInfoResponse(DataHolderBase):
 )
 def post(request: Request):
     """POST a new service"""
-
-    name = request.openapi_validated.body.get("name")
-
     # Revalidate User
     auth_user = security.revalidate_user(request)
 
     # Check if the user is authorized to create a service
     if not authz.create_service(auth_user):
-        raise HTTPUnauthorized
+        raise HTTPUnauthorized()
+
+    name = request.openapi_validated.body.get("name")
 
     db = request.dbsession
 
@@ -69,15 +68,14 @@ def post(request: Request):
     request_method="GET", 
     openapi=True
 )
-def get(request: Request) -> List[ServiceInfoResponse]:
-    """POST a new service"""
-
+def get(request: Request) -> List[ServiceResponse]:
+    """Get a representation of a service"""
     # Revalidate User
     auth_user = security.revalidate_user(request)
 
     # Check if the user is authorized to view services
     if not authz.view_services(auth_user):
-        raise HTTPUnauthorized
+        raise HTTPUnauthorized()
 
     db = request.dbsession
 
@@ -87,9 +85,9 @@ def get(request: Request) -> List[ServiceInfoResponse]:
     for service in db.query(Service):
         users = []
         for user in service.users:
-            users.append(str(user.uuid))
+            users.append(get_identifier(user))
 
-        services.append(ServiceInfoResponse(
+        services.append(ServiceResponse(
             id = resource.get_identifier(service),
             name = service.name,
             user_ids = users
@@ -106,16 +104,16 @@ def get(request: Request) -> List[ServiceInfoResponse]:
 def put(request: Request):
     """Update a service name and user list"""
 
-    service_id = request.matchdict["id"]
-    name = request.openapi_validated.body.get("name")
-    user_ids = request.openapi_validated.body.get("userIds")
-
     # Revalidate User
     auth_user = security.revalidate_user(request)
 
     # Check if the user is authorized to update a service
     if not authz.update_service(auth_user):
-        raise HTTPUnauthorized
+        raise HTTPUnauthorized()
+
+    service_id = request.matchdict["id"]
+    name = request.openapi_validated.body.get("name")
+    user_ids = request.openapi_validated.body.get("userIds")
 
     # Check if the Service with the give id exists
     db = request.dbsession
@@ -131,11 +129,18 @@ def put(request: Request):
 
         # Delete all users
         service.users = []
+        messages = []
 
         # Add the new users
         for user_id in user_ids:
             user = resource_by_id(db, User, user_id)
+            if user == None:
+                messages.append("User with id " + user_id)
+                
             service.users.append(user)
+
+        if messages:
+            raise get_validation_error(messages)
 
         db.flush()
     except IntegrityError:

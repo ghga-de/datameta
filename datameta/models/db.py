@@ -233,7 +233,7 @@ class Service(Base):
                     back_populates='services')
 
 class ServiceExecution(Base):
-    __tablename__    = 'serviceexecution'
+    __tablename__    = 'serviceexecutions'
     id               = Column(Integer, primary_key=True) 
     service_id       = Column(Integer, ForeignKey('services.id'), nullable=False)    
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
