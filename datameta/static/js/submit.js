@@ -226,7 +226,7 @@ DataMeta.submit.buildKeyColunns = function(fileKeys, keys) {
         if (fileKeys.includes(key)) {
             /* FILE VALUES */
             columns.push({ title:key, data:null, render:function(metadataset) {
-                var str = metadataset.record[key].value === null ? '<span class="text-black-50"><i>empty</i></span>' : metadataset.record[key].value;
+                var str = metadataset.record[key] === null ? '<span class="text-black-50"><i>empty</i></span>' : metadataset.record[key];
                 return '<span data-datameta-class="field-status" data-datameta-uuid="'+metadataset.id.uuid+'" data-datameta-field="'+key+'">' +
                     '<i class="bi bi-hdd-rack-fill text-secondary" data-datameta-class="status-none" style="display:inline"></i>' +
                     '<i class="bi bi-hdd-rack-fill text-danger" data-datameta-class="status-err" style="display:none"></i>' +
@@ -237,7 +237,7 @@ DataMeta.submit.buildKeyColunns = function(fileKeys, keys) {
         } else {
             /* NON-FILE VALUES */
             columns.push({ title:key, data:"record", render: function(record) {
-                var str = record[key].value === null ? '<span class="text-black-50"><i>empty</i></span>' : record[key].value;
+                var str = record[key] === null ? '<span class="text-black-50"><i>empty</i></span>' : record[key];
                 return str;
             }});
         }
