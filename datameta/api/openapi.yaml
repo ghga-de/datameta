@@ -909,8 +909,12 @@ paths:
             schema:
               $ref: "#/components/schemas/ServiceRequest"
       responses:
-        '204':
+        '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceResponse"
         '400':
           description: Validation Error
           content:
@@ -960,8 +964,12 @@ paths:
             schema:
               $ref: "#/components/schemas/ServiceUpdateRequest"
       responses:
-        '204':
+        '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceResponse"
         '400':
           description: Validation Error
           content:

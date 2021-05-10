@@ -61,7 +61,20 @@ def post(request: Request):
     except IntegrityError:
         raise get_validation_error(["A service with that name already exists."])    
 
-    return HTTPNoContent()
+    # Return for the new service the ID, name and all associated Users
+    services = []
+
+    users = []
+    for user in service.users:
+        users.append(get_identifier(user))
+
+    services.append(ServiceResponse(
+        id = resource.get_identifier(service),
+        name = service.name,
+        user_ids = users
+    ))
+
+    return services
 
 @view_config(
     route_name="services",
@@ -145,6 +158,19 @@ def put(request: Request):
 
         db.flush()
     except IntegrityError:
-        raise errors.get_validation_error(["A service with that name already exists."])    
+        raise get_validation_error(["A service with that name already exists."])    
 
-    return HTTPNoContent()
+    # Return for the modified service the ID, name and all associated Users
+    services = []
+
+    users = []
+    for user in service.users:
+        users.append(get_identifier(user))
+
+    services.append(ServiceResponse(
+        id = resource.get_identifier(service),
+        name = service.name,
+        user_ids = users
+    ))
+
+    return services
