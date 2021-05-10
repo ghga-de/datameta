@@ -42,6 +42,7 @@ requires = [
     'transaction',
     'zope.sqlalchemy',
     'pyramid_openapi3',
+    'openapi-core<0.14',
     'pytest >= 3.7.4',
     'dataclasses-json==0.5.2',
     "pyaml",
@@ -58,7 +59,7 @@ tests_require = [
 
 setup(
     name                   = 'datameta',
-    version                = '0.9.2',
+    version                = '0.9.3',
     description            = 'DataMeta - submission server for data and associated metadata',
     long_description       = README + '\n\n' + CHANGES,
     author                 = 'Leon Kuchenbecker',
