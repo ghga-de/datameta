@@ -898,8 +898,8 @@ paths:
   
   /services:
     post:
-      summary: Get DataMeta server information
-      description: Get information about the DataMeta server serving this API
+      summary: Create a new service. 
+      description: Create a new service.
       tags:
         - Services
       operationId: PostService
