@@ -1090,7 +1090,7 @@ DataMeta.admin.updateGroup = function (group_id, name) {
     });
 }
 
-// Adds a User with a specific ID to the user
+// Adds a User with a specific ID to the service
 DataMeta.admin.addServiceUser = function(uuid) {
     
     // Get the new user id
