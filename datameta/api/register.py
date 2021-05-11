@@ -140,9 +140,6 @@ def post(request) -> RegistrationResponse:
     db.add(reg_req)
     db.flush()
 
-    import pdb
-    pdb.set_trace()
-
     # Send out a notification to authorative admins
     admins = get_authorative_admins(db, reg_req)
     email.send(
