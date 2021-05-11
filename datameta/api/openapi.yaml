@@ -923,6 +923,8 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
         '401':
           description: Unauthorized
+        '403':
+          description: Forbidden
         '500':
           description: Internal Server Error
     get:
@@ -947,14 +949,16 @@ paths:
     put:
       summary: Update a specific service. 
       description: >-
-        Update the name and users of this service.
+        Update the name and/or the users of this service. 
+        If the name, or the userIds are omitted, those will not be updated upon request.
+        To remove all users, an empty array must be submitted for userIds.
       tags:
         - Services
       operationId: PutService
       parameters:
         - name: id
           in: path
-          description: ID of the group
+          description: ID of the service
           required: true
           schema:
             type: string
@@ -1053,7 +1057,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the group
+          description: ID of the appsetting
           required: true
           schema:
             type: string
@@ -1330,13 +1334,12 @@ components:
       properties:
         name:
           type: string
+          nullable: true
         userIds:
           type: array
+          nullable: true
           items:
             type: string
-      required:
-        - name
-        - userIds
       additionalProperties: false
 
     ServiceResponse:

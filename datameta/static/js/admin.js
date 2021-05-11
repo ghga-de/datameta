@@ -184,6 +184,7 @@ DataMeta.admin.reload = function() {
             DataMeta.admin.subnav();
             DataMeta.admin.rebuildUsersTable(json.users);
             DataMeta.admin.groups = json.groups;
+            DataMeta.admin.users = json.users;
 
             if (DataMeta.user.siteAdmin) {
                 document.getElementById("nav-groups-tab-li").style.display = "block";
@@ -354,6 +355,52 @@ DataMeta.admin.initServicesTable = function() {
                 { title: "Service Name", data: "name", render:function(data) {
                     return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeServiceName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
                 }},
+                { title: "Users", data: {}, render: function(data) {
+                    // ToDo: Add Drop-Down Menu for all users
+                    var uuid = data.id.uuid;
+                    var length = data.userIds.length;
+
+                    var userString;
+                    if(length == 1) {
+                        userString = "1 User"
+                    } else {
+                        userString = length + " Users"
+                    }
+
+                    /**
+                     * Add an accordion, which includes a list of all users,
+                     * and the possibility to change this user list
+                     */
+                    var returnString =  '<div class="accordion" id="accordion-' + uuid + '">' +
+                        '<div class="accordion-item">' +
+                        '<h2 class="accordion-header" id="heading-' + uuid + '">' +
+                        '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-' + uuid + '" aria-expanded="false" aria-controls="collapse-' + uuid + '">' +
+                        userString + '</button></h2>' +
+                        '<div id="collapse-' + uuid + '" class="accordion-collapse collapse" aria-labelledby="heading-' + uuid + '" data-bs-parent="#accordion-' + uuid + '">' +
+                        '<div class="accordion-body">' +
+                        '<ul class="list-group mb-3">'
+
+                    data.userIds.forEach((userId) => {
+
+                        var userName = "";
+
+                        DataMeta.admin.users.forEach((user) => {
+                            if(userId.uuid == user.id.uuid) {
+                                userName = user.fullname;
+                            } 
+                        })
+
+                        returnString = returnString + '<li class="list-group-item" data-datameta-userid="' + userId.uuid + '">' + userName + '</li>'
+                    })
+
+                    returnString = returnString + '</ul>' +
+                        '<button class="btn btn-sm btn-warning enabled w-100 mb-3" type="button" onclick="DataMeta.admin.editServiceUsers(event, \'' + uuid + '\')">Edit Users</button>' +
+                        '<input id="user-id-input-' + uuid + '" type="text" name="user_id" placeholder=" Enter User ID" class="w-100 mb-2">' +                     
+                        '<button class="btn btn-outline-success enabled w-100" type="button" onclick="DataMeta.admin.addServiceUser(\'' + uuid + '\')">Add User to Service</button>' +
+                        '</div></div></div></div>';
+                    
+                    return returnString;
+                }}
             ]
         });
     }
@@ -648,6 +695,48 @@ function saveMetaDatum(event) {
             showAlert("metadata_alert", "You do not have the rights to perform this action.");
         } else {
             showAlert("metadata_alert", "An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+// Creates a new Service
+DataMeta.admin.newService = function() {
+    var name = document.getElementById('service_label').value;
+
+    fetch(DataMeta.api('services'),
+    {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name,
+        })
+    })
+    .then(function (response) {
+        if(response.status == '200') {
+            // Reload Metadata Table
+            DataMeta.admin.getServices();
+
+            // Remove any alerts there still are
+            document.getElementById("services_alert").classList.remove("show");
+
+            // Remove Label
+            document.getElementById('service_label').value = "";
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                showAlert("services_alert", json[0].message);
+            });
+        } else if (response.status == "401") {
+            showAlert("services_alert", "You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            showAlert("services_alert", "You do not have the rights to perform this action.");
+        } else {
+            showAlert("services_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -950,7 +1039,7 @@ function confirmUserNameChange(event, uuid) {
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
                         '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmGroupNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
 
-    $('#table_groups').DataTable().columns.adjust().draw();
+    $('#table_groups').DataTable().columns.adjust().draw("page");
 }
 
 //Confirms the GroupNameChange and performs the api call
@@ -1001,8 +1090,66 @@ DataMeta.admin.updateGroup = function (group_id, name) {
     });
 }
 
+// Adds a User with a specific ID to the user
+DataMeta.admin.addServiceUser = function(uuid) {
+    
+    // Get the new user id
+    var newUser = document.getElementById('user-id-input-' + uuid).value;
+
+    // Get the ids of the current users of this service
+    var userIds = [];
+    DataMeta.admin.services.forEach((service) => {
+        if(service.id.uuid == uuid) {
+            service.userIds.forEach((userId) => {
+                userIds.push(userId.uuid);
+            })
+        }
+    });
+    userIds.push(newUser);
+
+    // Perform an update of the service with the new list of user ids
+    DataMeta.admin.updateService(uuid, undefined, userIds);
+}
+
+// Enables editing of the Users of one Service
+DataMeta.admin.editServiceUsers = function(event, uuid) {
+    
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // Enable Editing
+    button.parentNode.querySelectorAll('li').forEach((listElement) => {
+        listElement.innerHTML = '<input class="form-check-input me-2" type="checkbox" value="" id="flexCheckDefault">' + listElement.innerHTML;
+    });
+
+    // Rename Button && onclick()
+    button.innerHTML = "Confirm edit";
+    button.setAttribute('onclick', "DataMeta.admin.submitServiceUsersEdit(event, '" + uuid + "')");
+}
+
+// Enables editing of the Users of one Service
+DataMeta.admin.submitServiceUsersEdit = function(event, uuid) {
+    
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    var userIds = []
+
+    // Get List of checked users
+    button.parentNode.querySelectorAll('li').forEach((listElement) => {
+        var checkbox = listElement.querySelector('input[type="checkbox"]')
+
+        if(checkbox.checked) {
+            userIds.push(listElement.getAttribute('data-datameta-userid'));
+        }
+    });
+
+    // Update the service with the new userId List
+    DataMeta.admin.updateService(uuid, undefined, userIds);
+}
+
 // API call to change a service name
-DataMeta.admin.updateService = function (service_id, name, userIds = []) {
+DataMeta.admin.updateService = function (service_id, name, userIds) {
     fetch(DataMeta.api('services/' + service_id),
     {
         method: 'PUT',
@@ -1128,7 +1275,7 @@ DataMeta.admin.getServices = function () {
             response.json().then((json) => {
                 // Rebuild Table with the newly fetched Data
                 DataMeta.admin.rebuildServicesTable(json);
-
+                DataMeta.admin.services = json;
                 // Remove any alerts there still are
                 document.getElementById("services_alert").classList.remove("show");
             });

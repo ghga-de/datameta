@@ -49,8 +49,17 @@
                         </div>
                         <table id="table_services" class="table table-sm table-hover" style="width:100%">
                         </table>
-                        <div>
-                            <button class="btn btn-outline-success enabled" type="button" onclick="DataMeta.admin.newService()">Create new Service</button>
+                        <div class="card col-12">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <input type="text" name="label" id="service_label" placeholder="Enter Service Name" class="w-100 mb-2">                            
+                                        <button class="btn btn-outline-success enabled w-100 " type="button" onclick="DataMeta.admin.newService()">Create new Service</button>
+                                    </div>
+                                    <div class="col-9">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body tab-pane fade active show" id="nav-users" role="tabpanel" aria-labelledby="nav-home-tab">

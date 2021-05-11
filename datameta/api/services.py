@@ -14,7 +14,7 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized, HTTPNotFound
+from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized, HTTPNotFound, HTTPForbidden
 from sqlalchemy.exc import IntegrityError
 from dataclasses import dataclass
 from typing import List
@@ -45,7 +45,7 @@ def post(request: Request):
 
     # Check if the user is authorized to create a service
     if not authz.create_service(auth_user):
-        raise HTTPUnauthorized()
+        raise HTTPForbidden()
 
     name = request.openapi_validated.body.get("name")
 
@@ -89,7 +89,7 @@ def get(request: Request) -> List[ServiceResponse]:
 
     # Check if the user is authorized to view services
     if not authz.view_services(auth_user):
-        raise HTTPUnauthorized()
+        raise HTTPForbidden()
 
     db = request.dbsession
 
@@ -123,7 +123,7 @@ def put(request: Request):
 
     # Check if the user is authorized to update a service
     if not authz.update_service(auth_user):
-        raise HTTPUnauthorized()
+        raise HTTPForbidden()
 
     service_id = request.matchdict["id"]
     name = request.openapi_validated.body.get("name")
@@ -139,28 +139,35 @@ def put(request: Request):
 
     # Try to update the service, catch Integrity Error, if a service with that name already exists
     try:
-        service.name = name
+        # If no name was sent, don't change it
+        if name != None:
+            service.name = name
 
-        # Delete all users
-        service.users = []
-        messages = []
+        # If no userIds were sent, we don't change them
+        if user_ids != None:
+            # Delete all users
+            service.users = []
+            messages = []
 
-        # Add the new users
-        for user_id in user_ids:
-            user = resource_by_id(db, User, user_id)
-            if user == None:
-                messages.append("User with id " + user_id)
-                
-            service.users.append(user)
+            # Add the new users
+            for user_id in user_ids:
+                user = resource_by_id(db, User, user_id)
+                if user == None:
+                    messages.append("User with id " + user_id + " does not exist.")
+                    
+                service.users.append(user)
 
-        if messages:
-            raise get_validation_error(messages)
+            if messages:
+                raise get_validation_error(messages)
 
         db.flush()
     except IntegrityError:
         raise get_validation_error(["A service with that name already exists."])    
 
     # Return for the modified service the ID, name and all associated Users
+
+    service = resource_by_id(db, Service, service_id)
+
     services = []
 
     users = []
