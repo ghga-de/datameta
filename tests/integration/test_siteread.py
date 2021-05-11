@@ -5,7 +5,7 @@ from datameta.api import base_url
 
 
 class SiteReadTest(BaseIntegrationTest):
-    def xtest_access_staged_file(self):
+    def test_access_staged_file(self):
         file_ids = [site_id for site_id, f in self.default_files.items() if not f.submitted]
         user = self.default_users["group_z_site_read"]
 
