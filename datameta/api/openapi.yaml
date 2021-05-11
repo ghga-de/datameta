@@ -926,8 +926,8 @@ paths:
             schema:
               $ref: "#/components/schemas/RegistrationRequest"
       responses:
-        "204":
-          description: New User Registration Request created
+        "200":
+          $ref: "#/components/schemas/RegistrationResponse"
         '400':
           description: Validation Error
           content:
@@ -1442,6 +1442,27 @@ components:
         - org_create
         - org_new_name
         - check_user_agreement
+      additionalProperties: false
+
+    RegistrationResponse:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Identifier"
+        fullname:
+          type: string
+        email:
+          type: string
+        group_id:
+          type: string
+        new_group_name:
+          type: string
+      required:
+        - id
+        - fullname
+        - email
+        - group_id
+        - new_group_name
       additionalProperties: false
 
     RegisterSettingsResponse:

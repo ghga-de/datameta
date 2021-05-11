@@ -32,7 +32,15 @@ log = logging.getLogger(__name__)
 @dataclass
 class RegisterOptionsResponse(DataHolderBase):
     user_agreement: str
-    groups: list
+    groups:         list
+
+@dataclass
+class RegistrationResponse(DataHolderBase):
+    id:             dict
+    fullname:       str
+    email:          str
+    group_id:       str
+    new_group_name: str
 
 @view_config(
     route_name="register_settings",
@@ -72,7 +80,7 @@ def get_authorative_admins(db, reg_request):
     request_method="POST", 
     openapi=True
 )
-def post(request):
+def post(request) -> RegistrationResponse:
 
     db = request.dbsession
     error_fields = []
@@ -132,6 +140,9 @@ def post(request):
     db.add(reg_req)
     db.flush()
 
+    import pdb
+    pdb.set_trace()
+
     # Send out a notification to authorative admins
     admins = get_authorative_admins(db, reg_req)
     email.send(
@@ -153,4 +164,12 @@ def post(request):
     else:
         log.info(f"REGISTRATION REQUEST [email='{req_email}', name='{name}', group='{group.name}']")
 
-    return HTTPNoContent()
+    db.query(db, )
+
+    return RegistrationResponse(
+        id              =   get_identifier(reg_req),
+        fullname        =   reg_req.fullname,
+        email           =   reg_req.email,
+        group_id        =   reg_req.group_id,
+        new_group_name  =   reg_req.new_group_name
+    )
