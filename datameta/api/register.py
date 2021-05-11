@@ -80,7 +80,7 @@ def get_authorative_admins(db, reg_request):
     request_method="POST", 
     openapi=True
 )
-def post(request) -> RegistrationResponse:
+def post(request):
 
     db = request.dbsession
     error_fields = []
