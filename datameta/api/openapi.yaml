@@ -926,8 +926,12 @@ paths:
             schema:
               $ref: "#/components/schemas/RegistrationRequest"
       responses:
-        "200":
-          $ref: "#/components/schemas/RegistrationResponse"
+        '200':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResponse"
         '400':
           description: Validation Error
           content:
