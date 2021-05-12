@@ -24,7 +24,7 @@ from ..resource import get_identifier, resource_by_id
 from sqlalchemy import or_, and_
 from ..settings import get_setting
 import re
-from typing import Optional
+from typing import List, Optional
 
 import logging
 log = logging.getLogger(__name__)
@@ -80,10 +80,10 @@ def get_authorative_admins(db, reg_request):
     request_method="POST", 
     openapi=True
 )
-def post(request):
+def post(request: Request) -> RegistrationResponse:
 
     db = request.dbsession
-    error_fields = []
+    error_fields: List[Optional[str]] = []
     name = request.openapi_validated.body['name']
     req_email = request.openapi_validated.body['email'].lower()
     org_select = request.openapi_validated.body['org_select']

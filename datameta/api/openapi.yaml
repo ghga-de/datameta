@@ -927,7 +927,7 @@ paths:
               $ref: "#/components/schemas/RegistrationRequest"
       responses:
         '200':
-          description: Validation Error
+          description: New User Registration Request created
           content:
             application/json:
               schema:
