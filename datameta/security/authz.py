@@ -25,8 +25,8 @@ def has_data_access(user, data_user_id, data_group_id=None, was_submitted=False)
     # if dataset was already submitted, the group must match, or the user must have site_read priviledges
     # if dataset was not yet submitted, the user must match
     return any((        
-        (was_submitted and (user.site_read or (data_group_id and data_group_id == user.group_id))),
-        (not was_submitted and data_user_id and data_user_id == user.id)
+        (was_submitted and (user.site_read or data_group_id == user.group_id)),
+        (not was_submitted and data_user_id == user.id)
     ))
 
 def view_apikey(user, target_user):
