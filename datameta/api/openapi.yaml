@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.18.0
+  version: 0.19.0
   title: DataMeta
 
 servers:
@@ -1523,6 +1523,8 @@ components:
             type: boolean
           isSiteUnique:
             type: boolean
+          serviceId:
+            $ref: "#/components/schemas/NullableIdentifier"
         required:
           - id
           - name

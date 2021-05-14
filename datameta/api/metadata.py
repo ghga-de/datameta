@@ -22,6 +22,7 @@ from .. import resource, security, siteid
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
+from sqlalchemy.orm import joinedload
 
 @dataclass
 class MetaDataResponseElement(DataHolderBase):
@@ -38,6 +39,7 @@ class MetaDataResponseElement(DataHolderBase):
     example                 :  Optional[str] = None
     reg_exp                 :  Optional[str] = None
     date_time_fmt           :  Optional[str] = None
+    service_id              :  Optional[dict] = None
 
 @view_config(
     route_name="metadata",
@@ -49,7 +51,7 @@ def get(request:Request) -> List[MetaDataResponseElement]:
     """Obtain information for all metadata that are currently configured."""
     auth_user = security.revalidate_user(request)
 
-    metadata = request.dbsession.query(MetaDatum).order_by(MetaDatum.order)
+    metadata = request.dbsession.query(MetaDatum).order_by(MetaDatum.order).options(joinedload(MetaDatum.service))
 
     return [
         MetaDataResponseElement(
@@ -64,7 +66,8 @@ def get(request:Request) -> List[MetaDataResponseElement]:
             order                 =  metadatum.order,
             is_file               =  metadatum.isfile,
             is_submission_unique  =  metadatum.submission_unique,
-            is_site_unique        =  metadatum.site_unique
+            is_site_unique        =  metadatum.site_unique,
+            service_id            =  None if not metadatum.service else get_identifier(metadatum.service)
             )
         for metadatum in metadata
         ]
@@ -100,7 +103,7 @@ def put(request:Request):
     target_metadatum.isfile              = body["isFile"]
     target_metadatum.submission_unique   = body["isSubmissionUnique"]
     target_metadatum.site_unique         = body["isSiteUnique"]
-    
+
     return HTTPNoContent()
 
 @view_config(
