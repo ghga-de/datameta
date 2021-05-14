@@ -24,7 +24,7 @@ default_settings["session.url"] = memcached_url
 @dataclass
 class AuthFixture():
     """A container for token auth information"""
-    apikey:str
+    apikey:Optional[str] = None
     apikey_id:Optional[str] = None
     header:dict = field(default_factory=dict)
 
@@ -47,8 +47,8 @@ class UserFixture():
     site_read:bool
     enabled:bool
     # will be set once added to db:
-    auth: Optional[AuthFixture] = None
-    expired_auth: Optional[AuthFixture] = None
+    auth: AuthFixture = AuthFixture()
+    expired_auth: AuthFixture = AuthFixture()
     uuid:Optional[str] = None 
     group_site_id:Optional[str] = None 
     group_uuid_id:Optional[str] = None

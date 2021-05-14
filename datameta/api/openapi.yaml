@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.17.0
+  version: 0.17.1
   title: DataMeta
 
 servers:
@@ -1208,6 +1208,7 @@ components:
           $ref: "#/components/schemas/Identifier"
         expires:
           type: string
+          nullable: true
       required:
         - name
         - id

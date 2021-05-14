@@ -53,7 +53,7 @@ class FileResponse(FileBase):
 def delete_staged_file_from_db(file_id, db, auth_user):
     # Obtain file from database
     db_file = resource.resource_query_by_id(db, models.File, file_id).one_or_none()
-
+    
     # Check if file could be found
     if db_file is None:
         raise HTTPNotFound(json=None)
@@ -83,11 +83,11 @@ def access_file_by_user(
 
     # Check if file could be found
     if db_file is None:
-        raise HTTPNotFound(json=None)
+        raise HTTPNotFound()
 
     # Check if requesting user has access to the file
     if not authz.view_file(user, db_file):
-        raise HTTPForbidden(json=None)
+        raise HTTPForbidden()
 
     return db_file
 
@@ -190,11 +190,13 @@ def get_file(request: Request) -> FileResponse:
     # Check authentication and raise 401 if unavailable
     auth_user = security.revalidate_user(request)
 
+    test = request.matchdict['id']
+
     # Obtain file from database
     db_file = access_file_by_user(
         request,
         user = auth_user,
-        file_id = request.matchdict['id']
+        file_id = test
     )
 
     # Return details
