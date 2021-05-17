@@ -83,7 +83,7 @@ def post(request: Request):
     openapi=True
 )
 def get(request: Request) -> List[ServiceResponse]:
-    """Get a representation of a service"""
+    """Get a representation of all services"""
     # Revalidate User
     auth_user = security.revalidate_user(request)
 
