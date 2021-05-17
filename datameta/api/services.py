@@ -99,7 +99,7 @@ def get(request: Request) -> List[ServiceResponse]:
         services.append(ServiceResponse(
             id = resource.get_identifier(service),
             name = service.name,
-            user_ids = service.users
+            user_ids = [resource.get_identifier(user) for user in service.users]
         ))
 
     return services
