@@ -93,15 +93,12 @@ def get(request: Request) -> List[ServiceResponse]:
     # Get for all services the ID, name and all associated Users
     services = []
 
-    for service in db.query(Service):
-        users = []
-        for user in service.users:
-            users.append(get_identifier(user))
+    for service in db.query(Service).options(joinedload(Service.users)):
 
         services.append(ServiceResponse(
             id = resource.get_identifier(service),
             name = service.name,
-            user_ids = users
+            user_ids = service.users
         ))
 
     return services
