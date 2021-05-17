@@ -1119,7 +1119,7 @@ DataMeta.admin.editServiceUsers = function(event, uuid) {
 
     // Enable Editing
     button.parentNode.querySelectorAll('li').forEach((listElement) => {
-        listElement.innerHTML = '<input class="form-check-input me-2" type="checkbox" value="" id="flexCheckDefault">' + listElement.innerHTML;
+        listElement.innerHTML = '<input class="form-check-input me-2" type="checkbox" value="" id="flexCheckDefault" checked>' + listElement.innerHTML;
     });
 
     // Rename Button && onclick()
