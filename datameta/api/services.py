@@ -38,7 +38,7 @@ class ServiceResponse(DataHolderBase):
     request_method="POST", 
     openapi=True
 )
-def post(request: Request):
+def post(request: Request) -> ServiceResponse:
     """POST a new service"""
     # Revalidate User
     auth_user = security.revalidate_user(request)
@@ -62,19 +62,16 @@ def post(request: Request):
         raise get_validation_error(["A service with that name already exists."])    
 
     # Return for the new service the ID, name and all associated Users
-    services = []
 
     users = []
     for user in service.users:
         users.append(get_identifier(user))
 
-    services.append(ServiceResponse(
+    return ServiceResponse(
         id = resource.get_identifier(service),
         name = service.name,
         user_ids = users
-    ))
-
-    return services
+    )
 
 @view_config(
     route_name="services",
@@ -115,7 +112,7 @@ def get(request: Request) -> List[ServiceResponse]:
     request_method="PUT", 
     openapi=True
 )
-def put(request: Request):
+def put(request: Request) -> ServiceResponse:
     """Update a service name and user list"""
 
     # Revalidate User
@@ -166,18 +163,12 @@ def put(request: Request):
 
     # Return for the modified service the ID, name and all associated Users
 
-    service = resource_by_id(db, Service, service_id)
-
-    services = []
-
     users = []
     for user in service.users:
         users.append(get_identifier(user))
 
-    services.append(ServiceResponse(
+    return ServiceResponse(
         id = resource.get_identifier(service),
         name = service.name,
         user_ids = users
-    ))
-
-    return services
+    )

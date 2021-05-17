@@ -939,7 +939,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ServiceResponse"
+                $ref: "#/components/schemas/Services"
         '401':
           description: Unauthorized
         "500":
@@ -1342,23 +1342,26 @@ components:
             type: string
       additionalProperties: false
 
-    ServiceResponse:
+    Services:
       type: array
       items:
-        type: object
-        properties:
-          id:
+        $ref: "#/components/schemas/ServiceResponse"
+
+    ServiceResponse:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Identifier"
+        name:
+          type: string
+        userIds:
+          type: array
+          items:
             $ref: "#/components/schemas/Identifier"
-          name:
-            type: string
-          userIds:
-            type: array
-            items:
-              $ref: "#/components/schemas/Identifier"
-        required:
-          - id
-          - name
-          - userIds
+      required:
+        - id
+        - name
+        - userIds
       additionalProperties: false
 
     StagedFiles:
