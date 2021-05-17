@@ -109,3 +109,12 @@ def update_user_name(user, target_user):
         has_group_rights(user, target_user.group),
         user_is_target(user, target_user)
     ))
+
+def create_service(user):
+    return user.site_admin
+
+def update_service(user):
+    return user.site_admin
+
+def view_services(user):
+    return user.site_admin

@@ -162,7 +162,7 @@ DataMeta.admin.subnav = function() {
             document.getElementById("acc_collapse_"+showreq).classList.add("show");
             document.getElementById("acc_collapse_"+showreq).scrollIntoView({behavior: "smooth", block: "end"});
         } else {
-            showAlert("request_alert", "The request you are looking for does not exist or was already answered.");
+            showAlert("requests_alert", "The request you are looking for does not exist or was already answered.");
         }
 
     }
@@ -182,16 +182,19 @@ DataMeta.admin.reload = function() {
 
             DataMeta.admin.reload_requests(json.reg_requests, json.groups);
             DataMeta.admin.subnav();
-            DataMeta.admin.rebuildUserTable(json.users);
+            DataMeta.admin.rebuildUsersTable(json.users);
             DataMeta.admin.groups = json.groups;
+            DataMeta.admin.users = json.users;
 
             if (DataMeta.user.siteAdmin) {
-                document.getElementById("nav-groups-tab-li").style.display = "";
-                document.getElementById("nav-metadata-tab-li").style.display = "";
-                document.getElementById("nav-site-tab-li").style.display = "";
+                document.getElementById("nav-groups-tab-li").style.display = "block";
+                document.getElementById("nav-metadata-tab-li").style.display = "block";
+                document.getElementById("nav-site-tab-li").style.display = "block";
+                document.getElementById("nav-services-tab-li").style.display = "block";
                 DataMeta.admin.getAppSettings();
+                DataMeta.admin.getServices();
                 DataMeta.admin.getMetadata();
-                DataMeta.admin.rebuildGroupTable(json.groups);
+                DataMeta.admin.rebuildGroupsTable(json.groups);
             }
         })
         .catch((error) => {
@@ -201,7 +204,7 @@ DataMeta.admin.reload = function() {
 }
 
 //Rebuilds the user table, based on the Data fetched from the API
-DataMeta.admin.rebuildUserTable = function(users) {
+DataMeta.admin.rebuildUsersTable = function(users) {
     var t = $('#table_users').DataTable();
     t.clear();
     t.rows.add(users);
@@ -209,7 +212,7 @@ DataMeta.admin.rebuildUserTable = function(users) {
 }
 
 //Initializes the user table
-DataMeta.admin.initUserTable = function() {
+DataMeta.admin.initUsersTable = function() {
     $('#table_users').DataTable({
         rowId: 'id.uuid',
         order: [[1, "asc"]],
@@ -273,7 +276,7 @@ DataMeta.admin.initUserTable = function() {
 }
 
 //Rebuilds the group table, based on the Data fetched from the API
-DataMeta.admin.rebuildGroupTable = function(groups) {
+DataMeta.admin.rebuildGroupsTable = function(groups) {
     var t = $('#table_groups').DataTable();
     t.clear();
     t.rows.add(groups);
@@ -281,7 +284,7 @@ DataMeta.admin.rebuildGroupTable = function(groups) {
 }
 
 //Initializes the group table
-DataMeta.admin.initGroupTable = function() {
+DataMeta.admin.initGroupsTable = function() {
     $('#table_groups').DataTable({
         rowId: 'id.uuid',
         order: [[1, "asc"]],
@@ -299,7 +302,7 @@ DataMeta.admin.initGroupTable = function() {
     });
 }
 
-//Rebuilds the group table, based on the Data fetched from the API
+//Rebuilds the site settings table, based on the Data fetched from the API
 DataMeta.admin.rebuildSiteTable = function(settings) {
     var t = $('#table_site').DataTable()
     t.clear();
@@ -329,7 +332,81 @@ DataMeta.admin.initSiteTable = function() {
     }
 }
 
-//Rebuilds the group table, based on the Data fetched from the API
+//Rebuilds the services table, based on the Data fetched from the API
+DataMeta.admin.rebuildServicesTable = function(metadata) {
+    var t = $('#table_services').DataTable()
+    t.clear();
+    t.rows.add(metadata);
+    t.draw();
+}
+
+//Initializes the services table
+DataMeta.admin.initServicesTable = function() {
+    if($('#table_services')) {
+        $('#table_services').DataTable({
+            rowId: 'id.uuid',
+            order: [[1, "asc"]],
+            paging : true,
+            pageLength: 25,
+            searching: false,
+            scrollX: true,
+            columns: [
+                { title: "Service ID", data: "id.site"},
+                { title: "Service Name", data: "name", render:function(data) {
+                    return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="changeServiceName(event);" data="' + data + '">' + data + ' <i class="bi bi-pencil-square"></i></button>';
+                }},
+                { title: "Users", data: {}, render: function(data) {
+                    // ToDo: Add Drop-Down Menu for all users
+                    var uuid = data.id.uuid;
+                    var length = data.userIds.length;
+
+                    var userString;
+                    if(length == 1) {
+                        userString = "1 User"
+                    } else {
+                        userString = length + " Users"
+                    }
+
+                    /**
+                     * Add an accordion, which includes a list of all users,
+                     * and the possibility to change this user list
+                     */
+                    var returnString =  '<div class="accordion" id="accordion-' + uuid + '">' +
+                        '<div class="accordion-item">' +
+                        '<h2 class="accordion-header" id="heading-' + uuid + '">' +
+                        '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-' + uuid + '" aria-expanded="false" aria-controls="collapse-' + uuid + '">' +
+                        userString + '</button></h2>' +
+                        '<div id="collapse-' + uuid + '" class="accordion-collapse collapse" aria-labelledby="heading-' + uuid + '" data-bs-parent="#accordion-' + uuid + '">' +
+                        '<div class="accordion-body">' +
+                        '<ul class="list-group mb-3">'
+
+                    data.userIds.forEach((userId) => {
+
+                        var userName = "";
+
+                        DataMeta.admin.users.forEach((user) => {
+                            if(userId.uuid == user.id.uuid) {
+                                userName = user.fullname;
+                            } 
+                        })
+
+                        returnString = returnString + '<li class="list-group-item" data-datameta-userid="' + userId.uuid + '">' + userName + '</li>'
+                    })
+
+                    returnString = returnString + '</ul>' +
+                        '<button class="btn btn-sm btn-warning enabled w-100 mb-3" type="button" onclick="DataMeta.admin.editServiceUsers(event, \'' + uuid + '\')">Edit Users</button>' +
+                        '<input id="user-id-input-' + uuid + '" type="text" name="user_id" placeholder=" Enter User ID" class="w-100 mb-2">' +                     
+                        '<button class="btn btn-outline-success enabled w-100" type="button" onclick="DataMeta.admin.addServiceUser(\'' + uuid + '\')">Add User to Service</button>' +
+                        '</div></div></div></div>';
+                    
+                    return returnString;
+                }}
+            ]
+        });
+    }
+}
+
+//Rebuilds the metadata table, based on the Data fetched from the API
 DataMeta.admin.rebuildMetadataTable = function(metadata) {
     var t = $('#table_metadata').DataTable()
     t.clear();
@@ -618,6 +695,48 @@ function saveMetaDatum(event) {
             showAlert("metadata_alert", "You do not have the rights to perform this action.");
         } else {
             showAlert("metadata_alert", "An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+// Creates a new Service
+DataMeta.admin.newService = function() {
+    var name = document.getElementById('service_label').value;
+
+    fetch(DataMeta.api('services'),
+    {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name,
+        })
+    })
+    .then(function (response) {
+        if(response.status == '200') {
+            // Reload Metadata Table
+            DataMeta.admin.getServices();
+
+            // Remove any alerts there still are
+            document.getElementById("services_alert").classList.remove("show");
+
+            // Remove Label
+            document.getElementById('service_label').value = "";
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                showAlert("services_alert", json[0].message);
+            });
+        } else if (response.status == "401") {
+            showAlert("services_alert", "You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            showAlert("services_alert", "You do not have the rights to perform this action.");
+        } else {
+            showAlert("services_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -920,7 +1039,7 @@ function confirmUserNameChange(event, uuid) {
                         '<input name="fullname" type="text" aria-label="Full name" class="input_fullname form-control" value="' + name +'">' +
                         '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmGroupNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
 
-    $('#table_groups').DataTable().columns.adjust().draw();
+    $('#table_groups').DataTable().columns.adjust().draw("page");
 }
 
 //Confirms the GroupNameChange and performs the api call
@@ -956,19 +1075,153 @@ DataMeta.admin.updateGroup = function (group_id, name) {
             DataMeta.admin.reload();
         } else  if (response.status == "400") {
             response.json().then((json) => {
-                showAlert("group_alert", json[0].message);
+                showAlert("groups_alert", json[0].message);
             });
         } else if (response.status == "401") {
-            showAlert("group_alert", "You have to be logged in to perform this action.");
+            showAlert("groups_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            showAlert("group_alert", "You do not have the rights to perform this action.");
+            showAlert("groups_alert", "You do not have the rights to perform this action.");
         } else {
-            showAlert("group_alert", "An unknown error occurred. Please try again later.");
+            showAlert("groups_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
         console.log(error);
     });
+}
+
+// Adds a User with a specific ID to the service
+DataMeta.admin.addServiceUser = function(uuid) {
+    
+    // Get the new user id
+    var newUser = document.getElementById('user-id-input-' + uuid).value;
+
+    // Get the ids of the current users of this service
+    var userIds = [];
+    DataMeta.admin.services.forEach((service) => {
+        if(service.id.uuid == uuid) {
+            service.userIds.forEach((userId) => {
+                userIds.push(userId.uuid);
+            })
+        }
+    });
+    userIds.push(newUser);
+
+    // Perform an update of the service with the new list of user ids
+    DataMeta.admin.updateService(uuid, undefined, userIds);
+}
+
+// Enables editing of the Users of one Service
+DataMeta.admin.editServiceUsers = function(event, uuid) {
+    
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // Enable Editing
+    button.parentNode.querySelectorAll('li').forEach((listElement) => {
+        listElement.innerHTML = '<input class="form-check-input me-2" type="checkbox" value="" id="flexCheckDefault" checked>' + listElement.innerHTML;
+    });
+
+    // Rename Button && onclick()
+    button.innerHTML = "Confirm edit";
+    button.setAttribute('onclick', "DataMeta.admin.submitServiceUsersEdit(event, '" + uuid + "')");
+}
+
+// Enables editing of the Users of one Service
+DataMeta.admin.submitServiceUsersEdit = function(event, uuid) {
+    
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    var userIds = []
+
+    // Get List of checked users
+    button.parentNode.querySelectorAll('li').forEach((listElement) => {
+        var checkbox = listElement.querySelector('input[type="checkbox"]')
+
+        if(checkbox.checked) {
+            userIds.push(listElement.getAttribute('data-datameta-userid'));
+        }
+    });
+
+    // Update the service with the new userId List
+    DataMeta.admin.updateService(uuid, undefined, userIds);
+}
+
+// API call to change a service name
+DataMeta.admin.updateService = function (service_id, name, userIds) {
+    fetch(DataMeta.api('services/' + service_id),
+    {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name,
+            userIds
+        })
+    })
+    .then(function (response) {
+        if(response.status == '200') {
+            // Reload Service Table
+            DataMeta.admin.getServices();
+        } else  if (response.status == "400") {
+            response.json().then((json) => {
+                showAlert("services_alert", json[0].message);
+            });
+        } else if (response.status == "401") {
+            showAlert("services_alert", "You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            showAlert("services_alert", "You do not have the rights to perform this action.");
+        } else {
+            showAlert("services_alert", "An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+/**
+ * Change the name of a service
+ */
+ function changeServiceName(event) {
+
+    // The button that triggered the function call
+    var button = event.srcElement;
+
+    // Change the location to the button if an element inside the button was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var cell = button.parentNode
+    var row = cell.parentNode;
+    var name = button.getAttribute('data');
+    var uuid = row.id;
+
+    cell.innerHTML =    '<div class="input-group" style="width:100%"><span class="input-group-text">' +
+                        '<i class="bi bi-gear"></i>' +
+                        '</span>' +
+                        '<input name="service_name" type="text" aria-label="Service name" class="input_fullname form-control" value="' + name +'">' +
+                        '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onClick="confirmServiceNameChange(event, \'' + uuid + '\')"><i class="bi bi-check2"></i></button></div>';
+
+    $('#table_services').DataTable().columns.adjust().draw();
+}
+
+//Confirms the ServiceNameChange and performs the api call
+function confirmServiceNameChange(event, uuid) {
+    var button = event.srcElement;
+
+    // Change the location to the button if an element inside the button was clicked
+    if(button.localName != "button") {
+        button = button.parentNode;
+    }
+
+    var newName = button.parentNode.querySelector("input[name='service_name']").value;
+
+    DataMeta.admin.updateService(uuid, newName, undefined);
 }
 
 // API call to get the AppSettings
@@ -989,6 +1242,42 @@ DataMeta.admin.getAppSettings = function () {
 
                 // Remove any alerts there still are
                 document.getElementById("site_alert").classList.remove("show");
+            });
+        } else if (response.status == "400") {
+            response.json().then((json) => {
+                showAlert("site_alert", json.message);
+            });
+        } else if (response.status == "401") {
+            showAlert("site_alert", "You have to be logged in to perform this action.");
+        } else if (response.status == "403") {
+            showAlert("site_alert", "You do not have the rights to perform this action.");
+        } else {
+            showAlert("site_alert", "An unknown error occurred. Please try again later.");
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
+// API call to get the Services
+DataMeta.admin.getServices = function () {
+    fetch(DataMeta.api('services'),
+    {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(function (response) {
+        if(response.status == '200') {
+            response.json().then((json) => {
+                // Rebuild Table with the newly fetched Data
+                DataMeta.admin.rebuildServicesTable(json);
+                DataMeta.admin.services = json;
+                // Remove any alerts there still are
+                document.getElementById("services_alert").classList.remove("show");
             });
         } else if (response.status == "400") {
             response.json().then((json) => {
@@ -1076,16 +1365,16 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
             DataMeta.admin.reload();
         } else if (response.status == "400") {
             response.json().then((json) => {
-                showAlert("user_alert", json[0].message);
+                showAlert("users_alert", json[0].message);
             });
         } else if (response.status == "401") {
-            showAlert("user_alert", "You have to be logged in to perform this action.");
+            showAlert("users_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
-            showAlert("user_alert", "You do not have the rights to perform this action.");
+            showAlert("users_alert", "You do not have the rights to perform this action.");
         } else if (response.status == "404") {
-            showAlert("user_alert", "The user or group you are referring to does not exist.");
+            showAlert("users_alert", "The user or group you are referring to does not exist.");
         } else {
-            showAlert("user_alert", "An unknown error occurred. Please try again later.");
+            showAlert("users_alert", "An unknown error occurred. Please try again later.");
         }
     })
     .catch((error) => {
@@ -1094,18 +1383,20 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
 }
 
 DataMeta.admin.clearAlerts = function() {
-    document.getElementById("group_alert").classList.remove("show");
-    document.getElementById("user_alert").classList.remove("show");
-    document.getElementById("request_alert").classList.remove("show");
+    document.getElementById("groups_alert").classList.remove("show");
+    document.getElementById("users_alert").classList.remove("show");
+    document.getElementById("requests_alert").classList.remove("show");
     document.getElementById("site_alert").classList.remove("show");
     document.getElementById("metadata_alert").classList.remove("show");
+    document.getElementById("services_alert").classList.remove("show");
 }
 
 window.addEventListener("dmready", function() {
+    DataMeta.admin.initServicesTable();
     DataMeta.admin.initSiteTable();
     DataMeta.admin.initMetadataTable();
-    DataMeta.admin.initUserTable();
-    DataMeta.admin.initGroupTable();
+    DataMeta.admin.initUsersTable();
+    DataMeta.admin.initGroupsTable();
     DataMeta.admin.reload();
 
     document.getElementById("nav-site-tab").addEventListener("click", DataMeta.admin.clearAlerts);
@@ -1113,6 +1404,7 @@ window.addEventListener("dmready", function() {
     document.getElementById("nav-groups-tab").addEventListener("click", DataMeta.admin.clearAlerts);
     document.getElementById("nav-users-tab").addEventListener("click", DataMeta.admin.clearAlerts);
     document.getElementById("nav-requests-tab").addEventListener("click", DataMeta.admin.clearAlerts);
+    document.getElementById("nav-services-tab").addEventListener("click", DataMeta.admin.clearAlerts);
 });
 
 window.addEventListener("load", function() {
@@ -1129,5 +1421,8 @@ window.addEventListener("load", function() {
     });
     document.getElementById("nav-site-tab").addEventListener("shown.bs.tab", function(event) {
         $("#table_site").DataTable().draw("page");
+    });
+    document.getElementById("nav-services-tab").addEventListener("shown.bs.tab", function(event) {
+        $("#table_services").DataTable().draw("page");
     });
 });

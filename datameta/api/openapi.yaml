@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.17.1
+  version: 0.18.0
   title: DataMeta
 
 servers:
@@ -895,6 +895,97 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
         '500':
           description: Internal Server Error
+  
+  /services:
+    post:
+      summary: Create a new service. 
+      description: Create a new service.
+      tags:
+        - Services
+      operationId: PostService
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceResponse"
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+    get:
+      summary: Get Services information
+      description: Get names and IDs for all services
+      tags:
+        - Services
+      operationId: GetServiceInfo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Services"
+        '401':
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
+  /services/{id}:
+    put:
+      summary: Update a specific service. 
+      description: >-
+        Update the name and/or the users of this service. 
+        If the name, or the userIds are omitted, those will not be updated upon request.
+        To remove all users, an empty array must be submitted for userIds.
+      tags:
+        - Services
+      operationId: PutService
+      parameters:
+        - name: id
+          in: path
+          description: ID of the service
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceUpdateRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceResponse"
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '401':
+          description: Unauthorized
+        '404':
+          description: Service does not exist
+        '500':
+          description: Internal Server Error
 
   /server:
     get:
@@ -966,7 +1057,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the group
+          description: ID of the appsetting
           required: true
           schema:
             type: string
@@ -1227,6 +1318,50 @@ components:
           type: boolean
         checksum:
           type: string
+      additionalProperties: false
+
+    ServiceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+      additionalProperties: false
+
+    ServiceUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        userIds:
+          type: array
+          nullable: true
+          items:
+            type: string
+      additionalProperties: false
+
+    Services:
+      type: array
+      items:
+        $ref: "#/components/schemas/ServiceResponse"
+
+    ServiceResponse:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Identifier"
+        name:
+          type: string
+        userIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/Identifier"
+      required:
+        - id
+        - name
+        - userIds
       additionalProperties: false
 
     StagedFiles:
