@@ -16,6 +16,7 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized, HTTPNotFound, HTTPForbidden
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 from dataclasses import dataclass
 from typing import List
 
