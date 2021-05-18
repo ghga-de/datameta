@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-submission_a:
-  class: Submission
+service_0:
+  class: Service
   attributes:
-    site_id: submission_a
-    label: submission_a_label
-    date: 2021-01-01T00:00:00
+    site_id: service_0
+    name: service_0
   references:
-    group:
-      fixtureset: groups
-      name: group_x
+    users:
+      - fixtureset: users
+        name: service_user_0

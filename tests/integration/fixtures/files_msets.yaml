@@ -19,6 +19,7 @@ test_file_7:
     name: test_file_7.txt
     content_uploaded: True
     checksum: b04083e53e242626595e2b8ea327e525
+  references:
     user:
       fixtureset: users
       name: user_a
@@ -30,6 +31,7 @@ test_file_8:
     name: test_file_8.txt
     content_uploaded: True
     checksum: 5e40d09fa0529781afd1254a42913847
+  references:
     user:
       fixtureset: users
       name: user_a
@@ -41,6 +43,7 @@ test_file_9:
     name: test_file_9.txt
     content_uploaded: True
     checksum: 739969b53246b2c727850dbb3490ede6
+  references:
     user:
       fixtureset: users
       name: user_b
@@ -52,6 +55,7 @@ test_file_10:
     name: test_file_10.txt
     content_uploaded: True
     checksum: c1a8e059bfd1e911cf10b626340c9a54
+  references:
     user:
       fixtureset: users
       name: user_b
@@ -63,6 +67,7 @@ test_file_unreferenced:
     name: test_file_unreferenced.txt
     content_uploaded: True
     checksum: 644183ff1383bb8f4c15720e842e7fec
+  references:
     user:
       fixtureset: users
       name: user_a

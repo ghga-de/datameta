@@ -66,7 +66,17 @@ class FixtureManager:
         db_class_name = fixture['class']
         Entity = getattr(models, db_class_name)
 
-        # Check for fixture attributes that require processing
+        #
+        # VALIDATION
+        #
+        regular_attrs = set(fixture['attributes'].keys()) if 'attributes' in fixture else set()
+        ref_attrs = set(fixture['references'].keys()) if 'references' in fixture else set()
+        if not regular_attrs.isdisjoint(ref_attrs):
+            raise RuntimeError(f"The fixture '{fixture}' has conflicting keys specified both under 'attributes' and 'references'")
+
+        #
+        # REGULAR ATTRIBUTES
+        #
         attributes = {}
         fixture_only_attributes = {}
         ref_attributes = {}
@@ -89,25 +99,35 @@ class FixtureManager:
                     func = getattr(import_module(func_mod), func_name) if func_mod else globals()[func_name]
                     attributes[new_name] = func(attr_dict['value'])
                     fixture_only_attributes[attr_name] = attr_dict['value']
-                # This fixture attribute references another fixture that was
-                # already added to the database
-                elif 'fixtureset' in attr_dict:
-                    if database_insert:
-                        try:
-                            ref_fixture = self.fixtures[attr_dict['fixtureset'], attr_dict['name']]
-                        except KeyError:
-                            raise RuntimeError(f"Could not find referenced fixture '{attr_dict['fixtureset']}.{attr_dict['name']}'. You may have to load other fixtures first.")
-                        ref_fixture_id              = ref_fixture.id
-                        RefEntity                   = getattr(import_module('datameta.models'), ref_fixture.__db_class__)
-                        ref_entity                  = db.query(RefEntity).filter(RefEntity.id==ref_fixture_id).one_or_none()
-                        ref_attributes[attr_name]   = ref_entity
-                    fixture_only_attributes[attr_name]       = attr_dict['name']
                 else:
                     raise RuntimeError(f"Failed to parse fixture {fixture}")
             else:
                 attributes[attr_name] = attr_value
 
-        # Create the new entity and add it to the database
+        #
+        # REFERENCE ATTRIBUTES
+        #
+        references = fixture['references'] if 'references' in fixture else {}
+        for attr_name, attr_value in references.items():
+            multiple = isinstance(attr_value, list)
+            references = attr_value if multiple else [ attr_value ]
+            if database_insert:
+                ref_objects = []
+                for reference in references:
+                    try:
+                        ref_fixture = self.fixtures[reference['fixtureset'], reference['name']]
+                    except KeyError:
+                        raise RuntimeError(f"Could not find referenced fixture '{reference['fixtureset']}.{reference['name']}'. You may have to load other fixtures first.")
+                    ref_fixture_id              = ref_fixture.id
+                    RefEntity                   = getattr(import_module('datameta.models'), ref_fixture.__db_class__)
+                    ref_entity                  = db.query(RefEntity).filter(RefEntity.id==ref_fixture_id).one_or_none()
+                    ref_objects.append(ref_entity)
+                ref_attributes[attr_name]       = ref_objects if multiple else ref_objects[0]
+            fixture_only_attributes[attr_name] = attr_value
+
+        #
+        # DATABASE INSERT AND ID CAPTURE
+        #
         e = Entity(**attributes, **ref_attributes)
         if database_insert:
             db.add(e)
@@ -140,13 +160,13 @@ class FixtureManager:
             raise FixtureNotFoundError(f"Could not find fixture set '{fixture_set}'. The fixture set was not loaded or is empty.")
         return res
 
-    def get_fixture(self, fixture_set:str, fixture_name:str) -> dict:
+    def get_fixture(self, fixtureset:str, name:str) -> dict:
         """Returns the fixture object corresponding to a fixture given the
         fixture set name and the fixture name."""
         try:
-            return self.fixtures[fixture_set, fixture_name]
+            return self.fixtures[fixtureset, name]
         except KeyError:
-            raise FixtureNotFoundError(f"Could not find fixture '{fixture_name}' in '{fixture_set}'. The fixture may not exist or the fixture set '{fixture_set}' was not loaded.")
+            raise FixtureNotFoundError(f"Could not find fixture '{name}' in '{fixtureset}'. The fixture may not exist or the fixture set '{fixtureset}' was not loaded.")
 
     def get_fixture_db(self, fixture_set:str, fixture_name:str, *query_options) -> DatabaseModel:
         """Queries and returns the database object corresponding to a fixture
@@ -179,6 +199,10 @@ class FixtureManager:
                     # Link the file if submitted and the fixture was loaded with DB insert (id is set)
                     if fixture.submission is not None and fixture.id is not None:
                         for mdat_name in [ name for name, mdat in metadata.items() if mdat.isfile ]:
+                            # If this metadatum was not specified in the fixture, skip it
+                            if mdat_name not in mdat_records:
+                                continue
+                            # Otherwise, reference the file
                             rec = mdat_records[mdat_name]
                             if rec.value not in files:
                                 raise RuntimeError(f"Could not populate metadataset '{fixture_name}' from fixture set '{fixture_set}': Metadataset is linked to a submission, but referenced files cannot be found. Did you load the necessary file fixtures?")

@@ -20,115 +20,124 @@ admin:
   class: ApiKey
   attributes:
     label: admin
-    user:
-      fixtureset: users
-      name: admin
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: admin__t2pIOmypJU8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2100-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: admin
 
 admin_expired:
   class: ApiKey
   attributes:
     label: admin_expired
-    user:
-      fixtureset: users
-      name: admin
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: admin_expired__JU8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2000-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: admin
 
 group_x_admin:
   class: ApiKey
   attributes:
     label: group_x_admin_valid
-    user:
-      fixtureset: users
-      name: group_x_admin
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: group_x_admin__JU8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2100-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: group_x_admin
 
 group_y_admin:
   class: ApiKey
   attributes:
     label: group_y_admin_valid
-    user:
-      fixtureset: users
-      name: group_y_admin
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: group_y_admin__JU8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2100-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: group_y_admin
 
 user_a:
   class: ApiKey
   attributes:
     label: user_a_valid
-    user:
-      fixtureset: users
-      name: user_a
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: user_a__2pIOmypJU8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2100-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: user_a
 
 user_a_expired:
   class: ApiKey
   attributes:
     label: user_a_expired
-    user:
-      fixtureset: users
-      name: user_a
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: user_a_expired__U8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2000-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: user_a
 
 user_b:
   class: ApiKey
   attributes:
     label: user_b_valid
-    user:
-      fixtureset: users
-      name: user_b
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: user_b__2pIOmypJU8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2100-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: user_b
 
 user_c:
   class: ApiKey
   attributes:
     label: user_c_valid
-    user:
-      fixtureset: users
-      name: user_c
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: user_c__2pIOmypJU8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2100-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: user_c
 
 user_site_read:
   class: ApiKey
   attributes:
     label: user_site_read_valid
-    user:
-      fixtureset: users
-      name: user_site_read
     value_plain:
       func: datameta.security.hash_token
       newname: value
       value: user_site_read__U8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
     expires: 2100-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: user_site_read

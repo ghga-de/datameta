@@ -26,6 +26,7 @@ admin:
     site_admin: true
     site_read: true
     enabled: true
+  references:
     group:
       fixtureset: groups
       name: admin
@@ -40,13 +41,14 @@ group_x_admin:
       value: group_x_admin
     fullname: group_x_admin
     site_id: group_x_admin
-    group:
-      fixtureset: groups
-      name: group_x
     group_admin: true
     site_admin: false
     site_read: false
     enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x
 
 user_a:
   class: User
@@ -58,13 +60,14 @@ user_a:
       value: user_a
     fullname: user_a
     site_id: user_a
-    group:
-      fixtureset: groups
-      name: group_x
     group_admin: false
     site_admin: false
     site_read: false
     enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x
 
 user_b:
   class: User
@@ -76,13 +79,14 @@ user_b:
       value: user_b
     fullname: user_b
     site_id: user_b
-    group:
-      fixtureset: groups
-      name: group_x
     group_admin: false
     site_admin: false
     site_read: false
     enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x
 
 group_y_admin:
   class: User
@@ -94,13 +98,14 @@ group_y_admin:
       value: group_y_admin
     fullname: group_y_admin
     site_id: group_y_admin
-    group:
-      fixtureset: groups
-      name: group_y 
     group_admin: true
     site_admin: false
     site_read: false
     enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_y
 
 user_c:
   class: User
@@ -112,13 +117,14 @@ user_c:
       value: user_c
     fullname: user_c
     site_id: user_c
-    group:
-      fixtureset: groups
-      name: group_y
     group_admin: false
     site_admin: false
     site_read: false
     enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_y
 
 user_site_read:
   class: User
@@ -130,10 +136,30 @@ user_site_read:
       value: user_site_read
     fullname: user_site_read
     site_id: user_site_read
-    group:
-      fixtureset: groups
-      name: group_site_read
     group_admin: false
     site_admin: false
     site_read: true
     enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_site_read
+
+service_user_0:
+  class: User
+  attributes:
+    email: service_user_0@user.group_x
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: service_user_0
+    fullname: service_user_0
+    site_id: service_user_0
+    group_admin: false
+    site_admin: false
+    site_read: false
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x

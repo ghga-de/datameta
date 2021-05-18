@@ -16,9 +16,6 @@ mset_a_1:
   class: MetaDataSet
   attributes:
     site_id: mset_a_1
-    user:
-      fixtureset: users
-      name: user_a
     records:
       ID: MD03
       Date: "2021-03-04"
@@ -27,14 +24,15 @@ mset_a_1:
       FileR2: test_file_8.txt
   fixtureOnly:
     - records
+  references:
+    user:
+      fixtureset: users
+      name: user_a
 
 mset_a_2:
   class: MetaDataSet
   attributes:
     site_id: mset_a_2
-    user:
-      fixtureset: users
-      name: user_a
     records:
       ID: MD04
       Date: "2021-03-05"
@@ -43,3 +41,7 @@ mset_a_2:
       FileR2: test_file_10.txt
   fixtureOnly:
     - records
+  references:
+    user:
+      fixtureset: users
+      name: user_a

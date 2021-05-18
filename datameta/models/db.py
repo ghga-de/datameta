@@ -232,6 +232,9 @@ class Service(Base):
     users           = relationship('User', secondary=user_service_table, back_populates='services')
     # unfortunately, 'metadata' is a reserved keyword for sqlalchemy classes
     target_metadata = relationship('MetaDatum', back_populates='service')
+    users           = relationship('User',
+            secondary=user_service_table,
+            back_populates='services')
 
 class ServiceExecution(Base):
     __tablename__    = 'serviceexecutions'

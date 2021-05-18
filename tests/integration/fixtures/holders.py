@@ -73,12 +73,13 @@ class MetaDatumFixture(Entity):
     submission_unique   : bool
     site_unique         : bool
     datetimefmt         : Optional[str] = None
+    service             : Optional[dict] = None
 
 @dataclass
 class FileFixture(Entity):
     site_id            : str
     name               : str
-    user               : str
+    user               : dict
     content_uploaded   : bool
     checksum           : str
 
@@ -87,4 +88,10 @@ class SubmissionFixture(Entity):
     site_id   : str
     label     : str
     date      : datetime
-    group     : str
+    group     : dict
+
+@dataclass
+class ServiceFixture(Entity):
+    site_id   : str
+    name      : str
+    users     : list
