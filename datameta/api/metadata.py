@@ -24,6 +24,24 @@ from ..resource import resource_by_id, get_identifier
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 from sqlalchemy.orm import joinedload
 
+def get_all_metadata(db, include_service_metadata = True):
+    """Queries all metadata that are currently defined and returns the database
+    objects as a dictionary with the metadata names as keys.
+
+    Arguments:
+        include_service_metadata - If true, include metadata with a service reference,
+        otherwise exclude those
+    """
+    q = db.query(MetaDatum)
+    if not include_service_metadata:
+        q = q.filter(MetaDatum.service_id == None)
+    return { mdata.name : mdata for mdata in q }
+
+def get_service_metadata(db):
+    """Queries all metadata that are currently defined and are service
+    metadata."""
+    return { mdata.name : mdata for mdata in db.query(MetaDatum).filter(MetaDatum.service_id != None) }
+
 @dataclass
 class MetaDataResponseElement(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""

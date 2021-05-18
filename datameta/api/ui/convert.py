@@ -26,6 +26,7 @@ import pandas as pd
 
 from ... import security, samplesheet, errors
 from ...models import MetaDatum, MetaDataSet, MetaDatumRecord
+from ..metadata import get_all_metadata
 
 log = logging.getLogger(__name__)
 
@@ -72,9 +73,9 @@ def convert_samplesheet(db, file_like_obj, filename, user):
         raise samplesheet.SampleSheetReadError("Unable to parse the sample sheet.")
 
     # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
-    metadata              = db.query(MetaDatum).order_by(MetaDatum.order).all() 
-    metadata_names        = [ datum.name for datum in metadata ]
-    metadata_datetimefmt  = { datum.name : datum.datetimefmt for datum in metadata }
+    metadata               = get_all_metadata(db, include_service_metadata = False)
+    metadata_names         = list(metadata.keys())
+    metadata_datetimefmt   = { datum.name : datum.datetimefmt for datum in metadata.values() }
 
     missing_columns  = [ metadata_name for metadata_name in metadata_names if metadata_name not in submitted_metadata.columns ]
     if missing_columns:
@@ -84,7 +85,7 @@ def convert_samplesheet(db, file_like_obj, filename, user):
     submitted_metadata = submitted_metadata[metadata_names].drop_duplicates()
 
     # Convert all data to strings
-    samplesheet.string_conversion(submitted_metadata, metadata)
+    samplesheet.string_conversion(submitted_metadata, list(metadata.values()))
 
     try:
         # Datetimes are converted according to the format string. Empty strings

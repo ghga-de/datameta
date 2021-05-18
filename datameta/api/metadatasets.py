@@ -24,6 +24,7 @@ import datetime
 from ..resource import resource_by_id, get_identifier
 from . import DataHolderBase
 from .. import errors
+from .metadata import get_all_metadata
 
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
@@ -112,19 +113,19 @@ def delete_metadatasets(request: Request) -> HTTPNoContent:
 def post(request:Request) -> MetaDataSetResponse:
     """Create new metadataset"""
     auth_user = security.revalidate_user(request)
+    db = request.dbsession
 
     # Obtain string converted version of the record
     record = { k : str(v) if v is not None else None for k,v in request.openapi_validated.body["record"].items() }
 
-    # prevalidate (raises 400 in case of validation failure):
-    validate_metadataset_record(request, record)
+    # Query the configured metadata. We're only considering and allowing
+    # non-service metadata when creating a new metadataset.
+    metadata = get_all_metadata(db, include_service_metadata=False)
 
-    # render records according to MetaDatum constraints
-    db = request.dbsession
-    mdatum_query = db.query(models.MetaDatum).order_by(
-        models.MetaDatum.order
-    ).all()
-    metadata = {mdat.name: mdat for mdat in mdatum_query }
+    # prevalidate (raises 400 in case of validation failure):
+    validate_metadataset_record(metadata, record)
+
+    # Render records according to MetaDatum constraints.
     record = render_record_values(metadata, record)
 
     # construct new MetaDataSet:

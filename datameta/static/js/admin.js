@@ -419,7 +419,7 @@ DataMeta.admin.initMetadataTable = function() {
     if($('#table_metadata')) {
         $('#table_metadata').DataTable({
             rowId: 'id.uuid',
-            order: [[1, "asc"]],
+            order: [[7, "asc"]],
             paging : true,
             pageLength: 25,
             searching: false,
