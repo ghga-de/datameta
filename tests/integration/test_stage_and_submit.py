@@ -324,6 +324,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('groups')
         self.fixture_manager.load_fixtureset('users')
         self.fixture_manager.load_fixtureset('apikeys')
+        self.fixture_manager.load_fixtureset('services')
         self.fixture_manager.load_fixtureset('metadata')
         self.fixture_manager.load_fixtureset('metadatasets', database_insert=False)
         self.fixture_manager.populate_metadatasets()
@@ -335,7 +336,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('files_msets', database_insert=False)
 
         user               = self.fixture_manager.get_fixture('users', 'user_a')
-        group              = self.fixture_manager.get_fixture('groups', user.group)
+        group              = self.fixture_manager.get_fixture(**user.group)
         metadata_records   = list(self.fixture_manager.get_fixtureset('metadatasets').values())
         auth_headers       = self.apikey_auth(user)
         files              = self.fixture_manager.get_fixtureset('files_msets')

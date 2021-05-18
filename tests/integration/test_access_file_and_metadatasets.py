@@ -71,10 +71,11 @@ class ReadFileAndMetadatasets(BaseIntegrationTest):
 
     def setUp(self):
         super().setUp()
-        self.fixture_manager.load_fixtureset('metadata')
         self.fixture_manager.load_fixtureset('groups')
         self.fixture_manager.load_fixtureset('users')
         self.fixture_manager.load_fixtureset('apikeys')
+        self.fixture_manager.load_fixtureset('services')
+        self.fixture_manager.load_fixtureset('metadata')
         self.fixture_manager.load_fixtureset('files_msets')
         self.fixture_manager.load_fixtureset('submissions')
         self.fixture_manager.load_fixtureset('metadatasets')

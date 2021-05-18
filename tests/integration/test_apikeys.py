@@ -78,6 +78,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         super().setUp()
         self.fixture_manager.load_fixtureset('groups')
         self.fixture_manager.load_fixtureset('users')
+        self.fixture_manager.load_fixtureset('services')
 
     def test_create_get_delete_apikey(self):
         # set initial state:

@@ -123,7 +123,7 @@ class TestUserManagement(BaseIntegrationTest):
         user                 = self.fixture_manager.get_fixture('users', executing_user)
         target_user          = self.fixture_manager.get_fixture('users', target_user_name)
         new_group_uuid       = self.fixture_manager.get_fixture('groups', new_group).uuid
-        current_group_uuid   = self.fixture_manager.get_fixture('groups', target_user.group).uuid
+        current_group_uuid   = self.fixture_manager.get_fixture(**target_user.group).uuid
 
         self.process_group_change_request(testname, user, target_user, new_group_uuid, expected_response)
 

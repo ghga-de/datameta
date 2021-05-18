@@ -68,3 +68,34 @@ FileR2:
     submission_unique: false
     site_unique: true
 
+# Regular mandatory service metadatum
+service_metadatum_0:
+  class: MetaDatum
+  attributes:
+    name: ServiceMeta0
+    mandatory: true
+    example: "result"
+    order: 10000
+    isfile: false
+    submission_unique: false
+    site_unique: false
+  references:
+    service:
+      fixtureset: services
+      name: service_0
+
+# File mandatory service metadatum
+service_metadatum_1:
+  class: MetaDatum
+  attributes:
+    name: ServiceMeta1
+    mandatory: true
+    example: "result"
+    order: 10100
+    isfile: true
+    submission_unique: false
+    site_unique: false
+  references:
+    service:
+      fixtureset: services
+      name: service_0

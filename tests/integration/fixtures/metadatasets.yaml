@@ -17,18 +17,19 @@ mset_a:
   class: MetaDataSet
   attributes:
     site_id: mset_a
-    user:
-      fixtureset: users
-      name: user_a
-    submission:
-      fixtureset: submissions
-      name: submission_a
     records:
       ID: MD03
       Date: "2021-03-04"
       ZIP Code: "123"
       FileR1: test_file_7.txt
       FileR2: test_file_8.txt
+  references:
+    user:
+      fixtureset: users
+      name: user_a
+    submission:
+      fixtureset: submissions
+      name: submission_a
   fixtureOnly:
     - records
 
@@ -37,9 +38,6 @@ mset_b:
   class: MetaDataSet
   attributes:
     site_id: mset_b
-    user:
-      fixtureset: users
-      name: user_b
     records:
       ID: MD04
       Date: "2021-03-05"
@@ -48,3 +46,7 @@ mset_b:
       FileR2: test_file_10.txt
   fixtureOnly:
     - records
+  references:
+    user:
+      fixtureset: users
+      name: user_b

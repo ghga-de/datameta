@@ -19,6 +19,7 @@ user_a_file_1:
     name: user_a_file_1.txt
     content_uploaded: True
     checksum: bbe230ca2f18d04af27f03f7f13631af
+  references:
     user:
       fixtureset: users
       name: user_a
@@ -30,6 +31,7 @@ user_a_file_2:
     name: user_a_file_2.txt
     content_uploaded: True
     checksum: f7a3deca77966ae714b0e9d73402659b
+  references:
     user:
       fixtureset: users
       name: user_a
