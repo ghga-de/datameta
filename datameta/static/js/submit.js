@@ -293,7 +293,7 @@ DataMeta.submit.showMetaErrors = function(metadata, errors) {
         if (response.ok) return response.json()
         throw new Error();
     }).then(function(json) {
-        var keys = json.map(metadatum => metadatum.name);
+        var keys = json.filter(mdatum => mdatum.serviceId === null).map(metadatum => metadatum.name);
         var columns = [ DataMeta.submit.statusColumn ].concat(DataMeta.submit.buildKeyColunns([], keys));
         var card_failed = document.getElementById("card_failed");
         card_failed.classList.remove("d-none");
@@ -477,7 +477,7 @@ DataMeta.submit.renderMetadataHelp = function() {
         if (response.ok) return response.json();
         throw new Error();
     }).then(function(json) {
-        html_chunks = json.map(function(metadatum) {
+        html_chunks = json.filter(mdat => mdat.serviceId === null).map(function(metadatum) {
             var html='<li href="#" class="list-group-item list-group-item-action" aria-current="true" style="background-color:transparent"><div class="d-flex w-100 justify-content-between"><h6 class="mb-1 text-success"><strong>'
             html += metadatum.name
             html += '</strong></h6>';

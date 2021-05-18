@@ -25,6 +25,7 @@ from .. import errors, siteid, security, resource, linting
 from ..security import authz
 from ..models import MetaDatum, MetaDatumRecord, MetaDataSet, Submission, File
 from . import DataHolderBase
+from .metadata import get_all_metadata
 
 @dataclass
 class SubmissionBase(DataHolderBase):
@@ -196,8 +197,9 @@ def validate_submission(request, auth_user):
     msets = { mset_id : { mdatrec.metadatum.name : mdatrec.value for mdatrec in db_mset.metadatumrecords } for mset_id, db_mset in db_msets.items() }
 
     # Validate every metadataset individually
+    metadata = get_all_metadata(db, include_service_metadata = False)
     for mset_id, mset_values in msets.items():
-        mset_errors = linting.validate_metadataset_record(request, mset_values, return_err_message=True, rendered=True)
+        mset_errors = linting.validate_metadataset_record(metadata, mset_values, return_err_message=True, rendered=True)
         val_errors += [ (mset_id, mset_error['field'], mset_error['message']) for mset_error in mset_errors ]
 
     # Validate unique field constraints

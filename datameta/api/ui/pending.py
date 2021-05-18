@@ -22,6 +22,7 @@ from pyramid.view import view_config
 from ... import security, resource
 from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, File
 from ..metadatasets import MetaDataSetResponse, get_record_from_metadataset
+from ..metadata import get_all_metadata
 from ..files import FileResponse
 from .convert import formatted_mrec_value
 
@@ -87,9 +88,9 @@ def get(request: Request) -> HTTPOk:
     auth_user = security.revalidate_user(request)
 
     # Query metadata fields
-    mdats = db.query(MetaDatum).order_by(MetaDatum.order).all()
-    mdat_names = [ mdat.name for mdat in mdats ]
-    mdat_names_files = [ mdat.name for mdat in mdats if mdat.isfile ]
+    metadata = get_all_metadata(db, include_service_metadata = False)
+    mdat_names = list(metadata.keys())
+    mdat_names_files = [ mdat_name for mdat_name, mdat in metadata.items() if mdat.isfile ]
 
     return {
             'metadataKeys'       : mdat_names,

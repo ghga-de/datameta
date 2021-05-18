@@ -18,19 +18,21 @@
 
 DataMeta.view = {}
 
-DataMeta.view.buildColumns = function(mdata_names) {
-    return mdata_names.map(function(mdata_name) {
+DataMeta.view.buildColumns = function(mdata) {
+    return mdata.map(function(mdatum) {
+        console.log(mdatum)
         return {
-            title : mdata_name,
+            title : mdatum.serviceId === null ? mdatum.name : '<i class="bi bi-cpu"></i> '+mdatum.name,
             data : null,
             render : function(mdataset, type, row, meta) {
-                console.log(mdataset)
+                // We don't have access
+                if (!(mdatum.name in mdataset.record)) return '<i class="bi bi-lock-fill text-danger"></i>';
                 // Special case NULL
-                if (mdataset.record[mdata_name] === null) return '<span class="text-black-50"><i>empty</i></span>';
+                if (mdataset.record[mdatum.name] === null) return '<span class="text-black-50"><i>empty</i></span>';
                 // Speical case file
-                if (mdataset.fileIds[mdata_name]) return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdata_name].site) +'"><i class="bi bi-cloud-arrow-down-fill"></i> '+mdataset.record[mdata_name]+'</a>';
+                if (mdataset.fileIds[mdatum.name]) return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdatum.name].site) +'"><i class="bi bi-cloud-arrow-down-fill"></i> '+mdataset.record[mdatum.name]+'</a>';
                 // All other cases
-                return mdataset.record[mdata_name];
+                return mdataset.record[mdatum.name];
             }
         };
     });
@@ -49,7 +51,7 @@ DataMeta.view.initTable = function() {
     }
   }).then(function(json) {
     // Extract field names from the metadata information
-    var mdata_names = json.map(record => record.name);
+    var mdata = json;
 
     var columns = [
         { title: "Submission", data: null, className: "id_col", render: function(data) {
@@ -63,7 +65,7 @@ DataMeta.view.initTable = function() {
             '<div> <div class="large-super">'+data.groupName+'</div><div class="text-accent small-sub">'+data.groupId.site+'</div></div>'
         },
         { title: "Metadataset", data: "id.site", className: "id_col", render: data => '<span class="text-accent">' + data + '</span>'}
-      ].concat(DataMeta.view.buildColumns(mdata_names))
+      ].concat(DataMeta.view.buildColumns(mdata))
 
     // Build table based on field names
     $('#table_view').DataTable({
