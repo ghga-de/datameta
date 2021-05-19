@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.19.0
+  version: 0.20.0
   title: DataMeta
 
 servers:
@@ -1234,6 +1234,15 @@ components:
           type: object
           additionalProperties: true
           # a free-form object mapping the field names to file IDs
+        serviceExecutions:
+          type: object
+          # nullable as a whole for responses to users who cannot see service executions
+          nullable: true
+          additionalProperties:
+            # Maps record field names to service executions. The individual
+            # fields are also nullable for services that haven't been executed
+            # yet.
+            $ref: "#/components/schemas/MetaDataSetServiceExecution"
         id:
           $ref: "#/components/schemas/Identifier"
         submissionId:   
@@ -1243,6 +1252,20 @@ components:
       required:
         - record
       additionalProperties: false
+
+    MetaDataSetServiceExecution:
+      type: object
+      nullable: true
+      properties:
+        serviceExecutionId:
+          $ref: "#/components/schemas/Identifier"
+        executionTime:
+          type: string
+          format: date-time
+        serviceId:
+          $ref: "#/components/schemas/Identifier"
+        userId:
+          $ref: "#/components/schemas/Identifier"
 
     FileAnnouncement:
       type: object

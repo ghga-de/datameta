@@ -16,26 +16,36 @@ from dataclasses import dataclass
 from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent
 from pyramid.view import view_config
 from pyramid.request import Request
-from typing import Optional, Dict
+from sqlalchemy.orm import joinedload
+from typing import Optional, Dict, List
 from ..linting import validate_metadataset_record
-from .. import security, siteid, models, resource
+from .. import security, siteid, resource
+from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord
 from ..security import authz
 import datetime
-from ..resource import resource_by_id, get_identifier
+from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from . import DataHolderBase
 from .. import errors
-from .metadata import get_all_metadata
+from .metadata import get_all_metadata, get_service_metadata, get_metadata_with_access
+
+@dataclass
+class MetaDataSetServiceExecution(DataHolderBase):
+    service_execution_id   : dict
+    execution_time         : str # ISO format
+    service_id             : dict
+    user_id                : dict
 
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
-    id: dict
-    record: Dict[str, Optional[str]]
-    file_ids: Dict[str, Optional[Dict[str, str]]]
-    user_id: str
-    submission_id: Optional[str] = None
+    id                   : dict
+    record               : Dict[str, Optional[str]]
+    file_ids             : Dict[str, Optional[Dict[str, str]]]
+    user_id              : str
+    submission_id        : Optional[str] = None
+    service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
 
-def render_record_values(metadata:Dict[str, models.MetaDatum], record:dict) -> dict:
+def render_record_values(metadata:Dict[str, MetaDatum], record:dict) -> dict:
     """Renders values of a metadataset record. Please note: the record should already have passed validation."""
     record_rendered = record.copy()
     for field in metadata:
@@ -57,16 +67,17 @@ def formatted_mrec_value(mrec):
     else:
         return mrec.value
 
-def get_record_from_metadataset(mdata_set:models.MetaDataSet) -> dict:
+def get_record_from_metadataset(mdata_set:MetaDataSet, metadata:Dict[str, MetaDatum], render = True) -> dict:
     """ Construct a dict containing all records of that MetaDataSet"""
+    mdata_ids = [ mdatum.id for mdatum in metadata.values() ]
     return {
-            rec.metadatum.name : formatted_mrec_value(rec)
-            for rec in mdata_set.metadatumrecords
+            rec.metadatum.name : formatted_mrec_value(rec) if render else rec.value
+            for rec in mdata_set.metadatumrecords if rec.metadatum.id in mdata_ids
             }
 
 def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
     # Find the requested metadataset
-    mdata_set = resource_by_id(db, models.MetaDataSet, mdata_id)
+    mdata_set = resource_by_id(db, MetaDataSet, mdata_id)
 
     # Check if the metadataset exists
     if not mdata_set:
@@ -81,7 +92,7 @@ def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
         raise errors.get_not_modifiable_error()
 
     # Delete the records
-    request.dbsession.query(models.MetaDatumRecord).filter(models.MetaDatumRecord.metadataset_id==mdata_set.id).delete()
+    request.dbsession.query(MetaDatumRecord).filter(MetaDatumRecord.metadataset_id==mdata_set.id).delete()
 
     # Delete the metadataset
     db.delete(mdata_set)
@@ -129,17 +140,28 @@ def post(request:Request) -> MetaDataSetResponse:
     record = render_record_values(metadata, record)
 
     # construct new MetaDataSet:
-    mdata_set = models.MetaDataSet(
-        site_id = siteid.generate(request, models.MetaDataSet),
+    mdata_set = MetaDataSet(
+        site_id = siteid.generate(request, MetaDataSet),
         user_id = auth_user.id,
         submission_id = None
     )
     db.add(mdata_set)
     db.flush()
 
-    # construct new MetaDatumRecords
+    # Add NULL values for service metadata
+    service_metadata = get_service_metadata(db)
+    for s_mdatum in service_metadata.values():
+        mdatum_rec = MetaDatumRecord(
+                metadatum_id     = s_mdatum.id,
+                metadataset_id   = mdata_set.id,
+                file_id          = None,
+                value            = None
+                )
+        db.add(mdatum_rec)
+
+    # Add the non-service metadata as specified in the request body
     for name, value in record.items():
-        mdatum_rec = models.MetaDatumRecord(
+        mdatum_rec = MetaDatumRecord(
             metadatum_id     = metadata[name].id,
             metadataset_id   = mdata_set.id,
             file_id          = None,
@@ -155,6 +177,38 @@ def post(request:Request) -> MetaDataSetResponse:
         submission_id   = get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
 
+def collect_service_executions(metadata_with_access:Dict[str, MetaDatum], mdata_set:MetaDataSet) -> Optional[Dict[str, Optional[MetaDataSetServiceExecution]]]:
+    # Collect service metadata from provided metadata with access
+    service_metadata = { name : mdatum for name, mdatum in metadata_with_access.items() if mdatum.service_id is not None }
+    # If there are service metadata among the metadata with access, we're returning a dict, otherwise None
+    service_executions = None
+    if service_metadata:
+        ids = { mdatum.id for mdatum in service_metadata.values() }
+        service_executions = {}
+        # Collect service executions related to this metadataset and store them
+        # if they relate to the service metadata with access
+        for sexec in mdata_set.service_executions:
+            for s_mdatum in sexec.service.target_metadata:
+                if s_mdatum.id in ids:
+                    service_executions[s_mdatum.name] = sexec
+
+        # Collect all other service metadata for which no service execution
+        # could be found and annotate 'None' for those
+        for s_mdatum_name in service_metadata.keys():
+            if s_mdatum_name not in service_executions:
+                service_executions[s_mdatum_name] = None
+
+        # Transform the ServiceExecution database objects into
+        # MetaDataSetServiceExecution objects
+        service_executions = { name : MetaDataSetServiceExecution(
+            service_execution_id   = get_identifier(sexec),
+            execution_time         = sexec.datetime.isoformat()+'Z', # Assuming UTC datetimes in the database
+            service_id             = get_identifier(sexec.service),
+            user_id                = get_identifier(sexec.user)
+            ) if sexec is not None else None for name, sexec in service_executions.items() }
+    return service_executions
+
+
 @view_config(
     route_name="metadatasets_id",
     renderer='json',
@@ -165,20 +219,41 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     """Get a metadataset by ID"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
-    mdata_set = resource_by_id(db, models.MetaDataSet, request.matchdict['id'])
 
+    # Query the targeted metadataset and join the related entities that we are
+    # going to access
+    mdata_set = resource_query_by_id(db, MetaDataSet, request.matchdict['id'])\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.user))\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.service).joinedload(Service.target_metadata))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.file))\
+            .options(joinedload(MetaDataSet.submission))\
+            .one_or_none()
+
+    # Check if the metadataset exists
     if not mdata_set:
         raise HTTPNotFound()
 
+    # Check if the user is allowed to view this metadataset
     if not authz.view_mset(auth_user, mdata_set):
         raise HTTPForbidden()
 
+    # Check which metadata of this metadataset the user is allowed to view
+    if mdata_set.submission_id is None:
+        metadata_with_access = get_all_metadata(db, include_service_metadata=False)
+    else:
+        metadata_with_access = get_metadata_with_access(db, auth_user)
+
+    service_executions = collect_service_executions(metadata_with_access, mdata_set)
+
+    # Check and annotate service executions
     return MetaDataSetResponse(
-        id              = get_identifier(mdata_set),
-        record          = get_record_from_metadataset(mdata_set),
-        file_ids        = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
-        user_id         = get_identifier(mdata_set.user),
-        submission_id   = get_identifier(mdata_set.submission) if mdata_set.submission else None,
+        id                   = get_identifier(mdata_set),
+        record               = get_record_from_metadataset(mdata_set, metadata_with_access),
+        file_ids             = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
+        user_id              = get_identifier(mdata_set.user),
+        submission_id        = get_identifier(mdata_set.submission) if mdata_set.submission else None,
+        service_executions   = service_executions,
     )
 
 @view_config(

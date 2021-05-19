@@ -66,27 +66,26 @@ class Group(Base):
     regrequests      = relationship('RegRequest', back_populates='group')
 
 class User(Base):
-    __tablename__    = 'users'
-    id               = Column(Integer, primary_key=True)
-    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
-    site_id          = Column(String(50), unique=True, nullable=False, index=True)
-    email            = Column(Text, unique=True)
-    fullname         = Column(Text)
-    pwhash           = Column(String(60))
-    group_id         = Column(Integer, ForeignKey('groups.id'), nullable=False)
-    enabled          = Column(Boolean(create_constraint=False), nullable=False)
-    site_admin       = Column(Boolean(create_constraint=False), nullable=False)
-    group_admin      = Column(Boolean(create_constraint=False), nullable=False)
-    site_read        = Column(Boolean(create_constraint=False), nullable=False)
+    __tablename__        = 'users'
+    id                   = Column(Integer, primary_key=True)
+    uuid                 = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    site_id              = Column(String(50), unique=True, nullable=False, index=True)
+    email                = Column(Text, unique=True)
+    fullname             = Column(Text)
+    pwhash               = Column(String(60))
+    group_id             = Column(Integer, ForeignKey('groups.id'), nullable=False)
+    enabled              = Column(Boolean(create_constraint=False), nullable=False)
+    site_admin           = Column(Boolean(create_constraint=False), nullable=False)
+    group_admin          = Column(Boolean(create_constraint=False), nullable=False)
+    site_read            = Column(Boolean(create_constraint=False), nullable=False)
     # Relationships
-    group            = relationship('Group', back_populates='user')
-    metadatasets     = relationship('MetaDataSet', back_populates='user')
-    files            = relationship('File', back_populates='user')
-    passwordtokens   = relationship('PasswordToken', back_populates='user')
-    apikeys          = relationship('ApiKey', back_populates='user')
-    services         = relationship('Service',
-                    secondary=user_service_table,
-                    back_populates='users')
+    group                = relationship('Group', back_populates='user')
+    metadatasets         = relationship('MetaDataSet', back_populates='user')
+    files                = relationship('File', back_populates='user')
+    passwordtokens       = relationship('PasswordToken', back_populates='user')
+    apikeys              = relationship('ApiKey', back_populates='user')
+    services             = relationship('Service', secondary=user_service_table, back_populates='users')
+    service_executions   = relationship('ServiceExecution', back_populates='user')
 
 class ApiKey(Base):
     __tablename__    = 'apikeys'
@@ -206,10 +205,11 @@ class MetaDataSet(Base):
     deprecated_label = Column(String, nullable=True)
     replaced_by_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=True)
     # Relationships
-    user             = relationship('User', back_populates='metadatasets')
-    submission       = relationship('Submission', back_populates='metadatasets')
-    metadatumrecords = relationship('MetaDatumRecord', back_populates='metadataset')
-    replaces         = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
+    user                 = relationship('User', back_populates='metadatasets')
+    submission           = relationship('Submission', back_populates='metadatasets')
+    metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset')
+    replaces             = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
+    service_executions   = relationship('ServiceExecution', back_populates = 'metadataset')
 
 class ApplicationSetting(Base):
     __tablename__ = 'appsettings'
@@ -231,15 +231,21 @@ class Service(Base):
     # Relationships
     users           = relationship('User', secondary=user_service_table, back_populates='services')
     # unfortunately, 'metadata' is a reserved keyword for sqlalchemy classes
-    target_metadata = relationship('MetaDatum', back_populates='service')
-    users           = relationship('User',
+    service_executions   = relationship('ServiceExecution', back_populates = 'service')
+    target_metadata      = relationship('MetaDatum', back_populates = 'service')
+    users                = relationship('User',
             secondary=user_service_table,
             back_populates='services')
 
 class ServiceExecution(Base):
     __tablename__    = 'serviceexecutions'
     id               = Column(Integer, primary_key=True) 
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     service_id       = Column(Integer, ForeignKey('services.id'), nullable=False)    
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
     datetime         = Column(DateTime, nullable=False)
+    # Relationships
+    metadataset      = relationship('MetaDataSet', back_populates='service_executions')
+    service          = relationship('Service', back_populates='service_executions')
+    user             = relationship('User', back_populates='service_executions')
