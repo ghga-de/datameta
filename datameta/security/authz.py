@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict
+from ..models import MetaDatum, User
+
 def user_is_target(user, target_user):
     return user.id == target_user.id
 
@@ -67,6 +70,16 @@ def update_metadatum(user):
 
 def create_metadatum(user):
     return user.site_admin
+
+def get_readable_metadata(metadata:Dict[str, MetaDatum], user:User) -> Dict[str, MetaDatum]:
+    """Identify metadata for which the specified user has permission to read
+    corresponding records"""
+    # Site-read users can read all metadata
+    if user.site_read:
+        return metadata
+    # Non-site-read users can only read non-service metadata, even for their
+    # own submissions
+    return { mdat_name : mdatum for mdat_name, mdatum in metadata.items() if mdatum.service is None }
 
 def submit_mset(user, mds_obj):
     return has_data_access(user, mds_obj.user_id)

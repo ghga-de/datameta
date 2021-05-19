@@ -26,6 +26,7 @@ from ..security import authz
 from ..models import MetaDatum, MetaDatumRecord, MetaDataSet, Submission, File
 from . import DataHolderBase
 from .metadata import get_all_metadata
+from .metadatasets import get_record_from_metadataset
 
 @dataclass
 class SubmissionBase(DataHolderBase):
@@ -193,14 +194,16 @@ def validate_submission(request, auth_user):
     # Validate file and metadata association and submit status
     fnames, ref_fnames, val_errors = validate_submission_association(db_files, db_msets)
 
+    # Get all non-service metadata definitions
+    metadata = get_all_metadata(db, include_service_metadata = False)
+
     # Convert metadatasets to dictionaries
-    msets = { mset_id : { mdatrec.metadatum.name : mdatrec.value for mdatrec in db_mset.metadatumrecords } for mset_id, db_mset in db_msets.items() }
+    msets = { mset_id : get_record_from_metadataset(db_mset, metadata , False) for mset_id, db_mset in db_msets.items() }
 
     # Validate every metadataset individually
-    metadata = get_all_metadata(db, include_service_metadata = False)
     for mset_id, mset_values in msets.items():
         mset_errors = linting.validate_metadataset_record(metadata, mset_values, return_err_message=True, rendered=True)
-        val_errors += [ (mset_id, mset_error['field'], mset_error['message']) for mset_error in mset_errors ]
+        val_errors += [ (db_msets[mset_id], mset_error['field'], mset_error['message']) for mset_error in mset_errors ]
 
     # Validate unique field constraints
     val_errors += validate_submission_uniquekeys(db, db_files, db_msets)

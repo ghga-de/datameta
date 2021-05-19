@@ -20,13 +20,15 @@ DataMeta.view = {}
 
 DataMeta.view.buildColumns = function(mdata) {
     return mdata.map(function(mdatum) {
-        console.log(mdatum)
         return {
             title : mdatum.serviceId === null ? mdatum.name : '<i class="bi bi-cpu"></i> '+mdatum.name,
             data : null,
             render : function(mdataset, type, row, meta) {
+                console.log(mdataset)
                 // We don't have access
                 if (!(mdatum.name in mdataset.record)) return '<i class="bi bi-lock-fill text-danger"></i>';
+                // Special case NULL and service metadatum with access but not run yet
+                if (mdatum.name in mdataset.serviceExecutions && mdataset.serviceExecutions[mdatum.name]===null) return '<span class="text-black-50"><i class="bi bi-hourglass-split"></i> <i>pending</i></span>';
                 // Special case NULL
                 if (mdataset.record[mdatum.name] === null) return '<span class="text-black-50"><i>empty</i></span>';
                 // Speical case file

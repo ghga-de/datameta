@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict
+
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
@@ -28,7 +30,7 @@ from .convert import formatted_mrec_value
 
 ####################################################################################################
 
-def get_pending_metadatasets(dbsession, user):
+def get_pending_metadatasets(dbsession, user, metadata:Dict[str, MetaDatum]):
     # Query metadatasets that have been no associated submission
     m_sets = dbsession.query(MetaDataSet).filter(and_(
         MetaDataSet.user==user,
@@ -36,16 +38,10 @@ def get_pending_metadatasets(dbsession, user):
         ).options(
                 joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)
                 ).all()
-
-    metadata_query = dbsession.query(MetaDatum).order_by(
-        MetaDatum.order
-    ).all()
-    metadata = {mdat.name: mdat for mdat in metadata_query }
-
     return [
             MetaDataSetResponse(
                 id             = resource.get_identifier(m_set),
-                record         = get_record_from_metadataset(m_set),
+                record         = get_record_from_metadataset(m_set, metadata),
                 file_ids       = { name : None for name, metadatum in metadata.items() if metadatum.isfile },
                 user_id        = resource.get_identifier(m_set.user),
                 submission_id  = resource.get_identifier(m_set.submission) if m_set.submission else None
@@ -95,6 +91,6 @@ def get(request: Request) -> HTTPOk:
     return {
             'metadataKeys'       : mdat_names,
             'metadataKeysFiles'  : mdat_names_files,
-            'metadatasets'       : get_pending_metadatasets(db, auth_user),
+            'metadatasets'       : get_pending_metadatasets(db, auth_user, metadata),
             'files'              : get_pending_files(db, auth_user)
             }

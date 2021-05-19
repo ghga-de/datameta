@@ -17,7 +17,7 @@ from typing import Optional, List
 from pyramid.request import Request
 from pyramid.view import view_config
 from . import DataHolderBase
-from ..models import MetaDatum
+from ..models import MetaDatum, User
 from .. import resource, security, siteid
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
@@ -41,6 +41,12 @@ def get_service_metadata(db):
     """Queries all metadata that are currently defined and are service
     metadata."""
     return { mdata.name : mdata for mdata in db.query(MetaDatum).filter(MetaDatum.service_id != None) }
+
+def get_metadata_with_access(db, user:User):
+    """Queries all metadata that are currently defined and reduces the set
+    according to the specified user's data access rights"""
+    all_metadata = get_all_metadata(db, include_service_metadata = True)
+    return authz.get_readable_metadata(all_metadata, user)
 
 @dataclass
 class MetaDataResponseElement(DataHolderBase):

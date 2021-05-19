@@ -30,9 +30,10 @@ import pandas as pd
 from ... import security, samplesheet, errors, resource
 from ...security import authz
 from ...resource import get_identifier
-from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, User, Group, Submission
+from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, User, Group, Submission, ServiceExecution, Service
 
-from ...api.metadatasets import get_record_from_metadataset, MetaDataSetResponse
+from ..metadata import get_all_metadata
+from ..metadatasets import get_record_from_metadataset, MetaDataSetResponse, collect_service_executions
 
 log = logging.getLogger(__name__)
 
@@ -173,7 +174,12 @@ def post(request: Request):
     # currently being viewed
     mdatasets_base_query = mdatasets_base_query\
             .filter(filter_query.exists())\
-            .options(joinedload(MetaDataSet.submission).joinedload(Submission.group),joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum),joinedload(MetaDataSet.user))\
+            .options(joinedload(MetaDataSet.submission).joinedload(Submission.group))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.file))\
+            .options(joinedload(MetaDataSet.user))\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.user))\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.service).joinedload(Service.target_metadata))\
             .offset(start)\
             .limit(length)\
 
@@ -196,20 +202,27 @@ def post(request: Request):
             .filter(Submission.group_id==auth_user.group_id)\
             .scalar()
 
+    # Check which metadata of this metadataset the user is allowed to view
+    all_metadata           = get_all_metadata(db, include_service_metadata = True)
+    metadata_with_access   = authz.get_readable_metadata(all_metadata, auth_user)
+
+    service_executions_all = [ collect_service_executions(metadata_with_access, mdata_set) for mdata_set, _ in mdata_sets ]
+
     # Build the 'data' response
     data = [
             ViewTableResponse(
                 id                 = get_identifier(mdata_set),
-                record             = get_record_from_metadataset(mdata_set),
+                record             = get_record_from_metadataset(mdata_set, metadata_with_access),
                 file_ids           = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
                 user_id            = get_identifier(mdata_set.user),
                 user_name          = mdata_set.user.fullname,
                 group_id           = get_identifier(mdata_set.submission.group),
                 group_name         = mdata_set.submission.group.name,
                 submission_id      = get_identifier(mdata_set.submission) if mdata_set.submission else None,
-                submission_label   = mdata_set.submission.label
+                submission_label   = mdata_set.submission.label,
+                service_executions = service_executions,
                 )
-            for mdata_set, _ in mdata_sets
+            for (mdata_set, _), service_executions in zip(mdata_sets, service_executions_all)
             ]
 
     # Return the response as specified by the datatables API
