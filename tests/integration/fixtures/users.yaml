@@ -157,7 +157,7 @@ service_user_0:
     site_id: service_user_0
     group_admin: false
     site_admin: false
-    site_read: false
+    site_read: true
     enabled: true
   references:
     group:

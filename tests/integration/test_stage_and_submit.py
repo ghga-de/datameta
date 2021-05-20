@@ -329,6 +329,10 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('metadatasets', database_insert=False)
         self.fixture_manager.populate_metadatasets()
 
+        self.metadatasets                      = [ mset for name, mset in self.fixture_manager.get_fixtureset('metadatasets').items() if name in ['mset_a', 'mset_b'] ]
+        self.non_service_metadata              = { mdat.name for mdat in self.fixture_manager.get_fixtureset('metadata').values() if mdat.service is None }
+        self.non_service_metadataset_records   = [ { k:v for k,v in mset.records.items() if k in self.non_service_metadata } for mset in self.metadatasets ]
+
     def test_main_submission_senario(self):
         """Tests the standard usage senario for staging and
         submitting files and metadata."""
@@ -337,18 +341,18 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
 
         user               = self.fixture_manager.get_fixture('users', 'user_a')
         group              = self.fixture_manager.get_fixture(**user.group)
-        metadata_records   = list(self.fixture_manager.get_fixtureset('metadatasets').values())
         auth_headers       = self.apikey_auth(user)
         files              = self.fixture_manager.get_fixtureset('files_msets')
         files              = [ file_fixture for name, file_fixture in files.items() if name in ['test_file_7', 'test_file_8', 'test_file_9', 'test_file_10']]
+
 
         # post metadataset:
         metadataset_ids = [
             self.post_metadata(
                 headers=auth_headers,
-                metadata_record=mset.records
+                metadata_record=record
             )["id"]["site"]
-            for mset in metadata_records
+            for record in self.non_service_metadataset_records
         ]
 
         # get metadatasets and compare to original records:
@@ -356,9 +360,9 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             self.get_metadata(
                 headers=auth_headers,
                 metadataset_id=m_id,
-                expected_record=metadata_records[idx].records
+                expected_record=record
             )
-            for idx, m_id in enumerate(metadataset_ids)
+            for m_id, record in zip(metadataset_ids, self.non_service_metadataset_records)
         ]
 
         # announce files:
@@ -434,9 +438,9 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             self.get_metadata(
                 headers=auth_headers,
                 metadataset_id=m_id,
-                expected_record=metadata_records[idx].records
+                expected_record=record
             )
-            for idx, m_id in enumerate(metadataset_ids)
+            for m_id, record in zip(metadataset_ids, self.non_service_metadataset_records)
         ]
 
         _ = [
@@ -483,13 +487,13 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         """Test whether staged metadatasets can be deleted
         after staging"""
         user              = self.fixture_manager.get_fixture('users', 'user_a')
-        metadata_record   = self.fixture_manager.get_fixture('metadatasets', 'mset_a')
+        metadata_record   = self.non_service_metadataset_records[0]
         auth_headers      = self.apikey_auth(user)
 
         # post metadataset:
         metadataset_id = self.post_metadata(
             headers           = auth_headers,
-            metadata_record   = metadata_record.records
+            metadata_record   = metadata_record
         )["id"]["uuid"]
 
         # delete metdataset:

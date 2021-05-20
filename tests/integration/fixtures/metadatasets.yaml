@@ -23,6 +23,8 @@ mset_a:
       ZIP Code: "123"
       FileR1: test_file_7.txt
       FileR2: test_file_8.txt
+      ServiceMeta0: null
+      ServiceMeta1: null
   references:
     user:
       fixtureset: users
@@ -44,9 +46,55 @@ mset_b:
       ZIP Code: "456"
       FileR1: test_file_9.txt
       FileR2: test_file_10.txt
+      ServiceMeta0: null
+      ServiceMeta1: null
   fixtureOnly:
     - records
   references:
     user:
       fixtureset: users
       name: user_b
+
+mset_a_sexec:
+  class: MetaDataSet
+  attributes:
+    site_id: mset_a_sexec
+    records:
+      ID: MD100
+      Date: "2021-03-04"
+      ZIP Code: "123"
+      FileR1: test_file_11.txt
+      FileR2: test_file_12.txt
+      ServiceMeta0: 42
+      ServiceMeta1: test_file_service_0.txt
+  references:
+    user:
+      fixtureset: users
+      name: user_a
+    submission:
+      fixtureset: submissions
+      name: submission_a
+  fixtureOnly:
+    - records
+
+mset_b_sexec:
+  class: MetaDataSet
+  attributes:
+    site_id: mset_b_sexec
+    records:
+      ID: MD101
+      Date: "2021-03-04"
+      ZIP Code: "123"
+      FileR1: test_file_13.txt
+      FileR2: test_file_14.txt
+      ServiceMeta0: 42
+      ServiceMeta1: test_file_service_1.txt
+  references:
+    user:
+      fixtureset: users
+      name: user_b
+    submission:
+      fixtureset: submissions
+      name: submission_b
+  fixtureOnly:
+    - records

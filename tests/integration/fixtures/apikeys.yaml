@@ -141,3 +141,17 @@ user_site_read:
     user:
       fixtureset: users
       name: user_site_read
+
+service_user_0:
+  class: ApiKey
+  attributes:
+    label: service_user_0_valid
+    value_plain:
+      func: datameta.security.hash_token
+      newname: value
+      value: service_user_0__U8gQg0xHRFUwsz8t2Tv4PaKdrG2ylS9slQ4OKAFblHSZkOvF
+    expires: 2100-01-01T00:00:00
+  references:
+    user:
+      fixtureset: users
+      name: service_user_0
