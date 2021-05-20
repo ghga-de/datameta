@@ -204,9 +204,10 @@ class FixtureManager:
                                 continue
                             # Otherwise, reference the file
                             rec = mdat_records[mdat_name]
-                            if rec.value not in files:
-                                raise RuntimeError(f"Could not populate metadataset '{fixture_name}' from fixture set '{fixture_set}': Metadataset is linked to a submission, but referenced files cannot be found. Did you load the necessary file fixtures?")
-                            rec.file_id = files[rec.value].id
+                            if rec.value is not None:
+                                if rec.value not in files:
+                                    raise RuntimeError(f"Could not populate metadataset '{fixture_name}' from fixture set '{fixture_set}': Metadataset is linked to a submission, but referenced files cannot be found. Did you load the necessary file fixtures?")
+                                rec.file_id = files[rec.value].id
                     db.add_all(mdat_records.values())
 
     def copy_files_to_storage(self):

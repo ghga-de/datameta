@@ -95,3 +95,10 @@ class ServiceFixture(Entity):
     site_id   : str
     name      : str
     users     : list
+
+@dataclass
+class ServiceExecutionFixture(Entity):
+    service       : dict
+    user          : dict
+    metadataset   : dict
+    datetime      : datetime

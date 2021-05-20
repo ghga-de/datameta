@@ -60,6 +60,78 @@ test_file_10:
       fixtureset: users
       name: user_b
 
+test_file_11:
+  class: File
+  attributes:
+    site_id: test_file_11
+    name: test_file_11.txt
+    content_uploaded: True
+    checksum: 16189c6e7f4dfc5236ca90b7a0a73cd9
+  references:
+    user:
+      fixtureset: users
+      name: user_a
+
+test_file_12:
+  class: File
+  attributes:
+    site_id: test_file_12
+    name: test_file_12.txt
+    content_uploaded: True
+    checksum: da72c6fd1700435f2a0fccf9038bbf8a
+  references:
+    user:
+      fixtureset: users
+      name: user_a
+
+test_file_13:
+  class: File
+  attributes:
+    site_id: test_file_13
+    name: test_file_13.txt
+    content_uploaded: True
+    checksum: f680d695a819690ff8992795e055b982
+  references:
+    user:
+      fixtureset: users
+      name: user_b
+
+test_file_14:
+  class: File
+  attributes:
+    site_id: test_file_14
+    name: test_file_14.txt
+    content_uploaded: True
+    checksum: bb165a802cd804a3e37a6a690e35cf00
+  references:
+    user:
+      fixtureset: users
+      name: user_b
+
+test_file_service_0:
+  class: File
+  attributes:
+    site_id: test_file_service_0
+    name: test_file_service_0.txt
+    content_uploaded: True
+    checksum: 16f1b1f2f66c3c2cc590d148a935c151
+  references:
+    user:
+      fixtureset: users
+      name: user_a
+
+test_file_service_1:
+  class: File
+  attributes:
+    site_id: test_file_service_1
+    name: test_file_service_1.txt
+    content_uploaded: True
+    checksum: 42ae3ee8162c6e6e0df8a18063234a08
+  references:
+    user:
+      fixtureset: users
+      name: user_b
+
 test_file_unreferenced:
   class: File
   attributes:
