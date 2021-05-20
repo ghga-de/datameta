@@ -13,16 +13,18 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent
+from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent, HTTPException
 from pyramid.view import view_config
 from pyramid.request import Request
 from sqlalchemy.orm import joinedload
+from sqlalchemy import and_
 from typing import Optional, Dict, List
 from ..linting import validate_metadataset_record
 from .. import security, siteid, resource
-from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord
+from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord, Submission
 from ..security import authz
 import datetime
+from datetime import timezone
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from . import DataHolderBase
 from .. import errors
@@ -202,12 +204,87 @@ def collect_service_executions(metadata_with_access:Dict[str, MetaDatum], mdata_
         # MetaDataSetServiceExecution objects
         service_executions = { name : MetaDataSetServiceExecution(
             service_execution_id   = get_identifier(sexec),
-            execution_time         = sexec.datetime.isoformat()+'Z', # Assuming UTC datetimes in the database
+            execution_time         = sexec.datetime.isoformat()+'+00:00', # Assuming UTC datetimes in the database
             service_id             = get_identifier(sexec.service),
             user_id                = get_identifier(sexec.user)
             ) if sexec is not None else None for name, sexec in service_executions.items() }
     return service_executions
 
+@view_config(
+    route_name="metadatasets",
+    renderer='json',
+    request_method="GET",
+    openapi=True
+)
+def get_metadatasets(request:Request) -> List[MetaDataSetResponse]:
+    """Query metadatasets according to filtering critera"""
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+
+    # GET parameters
+    submitted_after = request.openapi_validated.parameters.query.get('submittedAfter')
+    submitted_before = request.openapi_validated.parameters.query.get('submittedBefore')
+    awaiting_service = request.openapi_validated.parameters.query.get('awaitingService')
+
+    # Query metadata sets and join entities that we are going to use.
+    # NOTE: JOINing 'Submission' reduces to submitted metadatasets and enables
+    # filtering on Submission attributes
+    query = db.query(MetaDataSet)\
+            .join(Submission)\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.user))\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.service).joinedload(Service.target_metadata))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.file))\
+            .options(joinedload(MetaDataSet.submission))
+
+    # Check which metadata of this metadataset the user is allowed to view
+    metadata_with_access = get_metadata_with_access(db, auth_user)
+
+    # Collect services of service metadata the user is allowed to read
+    readable_services = { metadatum.service for metadatum in metadata_with_access.values() if metadatum.service is not None }
+    readable_services_by_id = {}
+    for service in readable_services:
+        readable_services_by_id[service.uuid]      = service
+        readable_services_by_id[service.site_id]   = service
+
+    # Check whether we need to filter for the user's group
+    if not authz.view_mset_any(auth_user):
+        query = query.filter(Submission.group_id == auth_user.group_id)
+
+    # Apply query filters
+    if submitted_after is not None:
+        query = query.filter(Submission.date > submitted_after.astimezone(timezone.utc))
+    if submitted_before is not None:
+        query = query.filter(Submission.date < submitted_before.astimezone(timezone.utc))
+    if awaiting_service is not None:
+        if awaiting_service not in readable_services_by_id:
+            raise errors.get_validation_error(messages=['Invalid service ID specified'], fields=['awaitingServices'])
+        query = query.outerjoin(ServiceExecution, and_(
+            MetaDataSet.id == ServiceExecution.metadataset_id,
+            ServiceExecution.service_id == readable_services_by_id[awaiting_service].id
+            )).filter(ServiceExecution.id == None)
+
+    # Execute the query
+    mdata_sets = query.all()
+
+    # No results? Return 404
+    if not mdata_sets:
+        raise HTTPNotFound()
+
+    # Collect service executions related to the result, restricted to service metadata with access
+    service_executions_all = [ collect_service_executions(metadata_with_access, mdata_set) for mdata_set in mdata_sets ]
+
+    return [
+            MetaDataSetResponse(
+                id                 = get_identifier(mdata_set),
+                record             = get_record_from_metadataset(mdata_set, metadata_with_access),
+                file_ids           = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
+                user_id            = get_identifier(mdata_set.user),
+                submission_id      = get_identifier(mdata_set.submission) if mdata_set.submission else None,
+                service_executions = service_executions,
+                )
+            for mdata_set, service_executions in zip(mdata_sets, service_executions_all)
+            ]
 
 @view_config(
     route_name="metadatasets_id",
