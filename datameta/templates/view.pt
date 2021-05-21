@@ -28,6 +28,7 @@
     <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/node_modules/jquery/dist/jquery.js')}"></script>
     <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/jquery.dataTables.min.js')}"></script>
     <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/dataTables.bootstrap5.min.js')}"></script>
+    <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/node_modules/moment/min/moment.min.js')}"></script>
     <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/view.js')}"></script>
     </metal:block>
 </div>

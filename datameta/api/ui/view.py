@@ -41,6 +41,7 @@ log = logging.getLogger(__name__)
 class ViewTableResponse(MetaDataSetResponse):
     """Data class representing the JSON response returned by POST:/api/ui/view"""
     submission_label : Optional[str] = None
+    submission_datetime : Optional[str] = None # ISO
     group_id : Optional[dict] = None
     group_name: Optional[str] = None
     user_name: Optional[str] = None
@@ -152,14 +153,16 @@ def post(request: Request):
     mdata_name = None
     if   sort_idx == 0: # The submission label
         mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.label))
-    elif sort_idx == 1: # The user full name
+    elif sort_idx == 1: # The submission time
+        mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.date))
+    elif sort_idx == 2: # The user full name
         mdatasets_base_query = mdatasets_base_query.join(User).order_by(direction(User.fullname)) # TODO FIX
-    elif sort_idx == 2: # The submission group name
+    elif sort_idx == 3: # The submission group name
         mdatasets_base_query = mdatasets_base_query.join(Submission).join(Group).order_by(direction(Group.site_id)) # TODO FIX
-    elif sort_idx == 3: # The metadataset site ID
+    elif sort_idx == 4: # The metadataset site ID
         mdatasets_base_query = mdatasets_base_query.order_by(direction(MetaDataSet.site_id))
     else: # Sorting by a metadatum value
-        mdata_name = metadata_index_to_name(db, sort_idx - 4)
+        mdata_name = metadata_index_to_name(db, sort_idx - 5)
         # [WARNING] The following JOIN assumes that an inner join between MetaDatumRecord
         # and MetaDatum does not result in a loss of rows if the JOIN is restricted to one
         # particular MetaDatum.name. Put differently, this query requires that we always
@@ -211,16 +214,17 @@ def post(request: Request):
     # Build the 'data' response
     data = [
             ViewTableResponse(
-                id                 = get_identifier(mdata_set),
-                record             = get_record_from_metadataset(mdata_set, metadata_with_access),
-                file_ids           = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
-                user_id            = get_identifier(mdata_set.user),
-                user_name          = mdata_set.user.fullname,
-                group_id           = get_identifier(mdata_set.submission.group),
-                group_name         = mdata_set.submission.group.name,
-                submission_id      = get_identifier(mdata_set.submission) if mdata_set.submission else None,
-                submission_label   = mdata_set.submission.label,
-                service_executions = service_executions,
+                id                    = get_identifier(mdata_set),
+                record                = get_record_from_metadataset(mdata_set, metadata_with_access),
+                file_ids              = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
+                user_id               = get_identifier(mdata_set.user),
+                user_name             = mdata_set.user.fullname,
+                group_id              = get_identifier(mdata_set.submission.group),
+                group_name            = mdata_set.submission.group.name,
+                submission_id         = get_identifier(mdata_set.submission) if mdata_set.submission else None,
+                submission_datetime   = mdata_set.submission.date.isoformat(),
+                submission_label      = mdata_set.submission.label,
+                service_executions    = service_executions,
                 )
             for (mdata_set, _), service_executions in zip(mdata_sets, service_executions_all)
             ]

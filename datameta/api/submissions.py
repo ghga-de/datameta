@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from collections import Counter, defaultdict
 from pyramid.view import view_config
@@ -275,7 +275,7 @@ def post(request: Request) -> SubmissionResponse:
     submission = Submission(
             site_id = siteid.generate(request, Submission),
             label = label,
-            date = datetime.datetime.now(),
+            date = datetime.now(tz=timezone.utc),
             metadatasets = list(db_msets.values()),
             group_id = auth_user.group.id
             )
