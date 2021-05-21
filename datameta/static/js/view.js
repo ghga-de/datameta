@@ -24,7 +24,6 @@ DataMeta.view.buildColumns = function(mdata) {
             title : mdatum.serviceId === null ? mdatum.name : '<i class="bi bi-cpu"></i> '+mdatum.name,
             data : null,
             render : function(mdataset, type, row, meta) {
-                console.log(mdataset)
                 // We don't have access
                 if (!(mdatum.name in mdataset.record)) return '<i class="bi bi-lock-fill text-danger"></i>';
                 // Special case NULL and service metadatum with access but not run yet
@@ -56,17 +55,22 @@ DataMeta.view.initTable = function() {
     var mdata = json;
 
     var columns = [
-        { title: "Submission", data: null, className: "id_col", render: function(data) {
+        { title: '<i class="bi bi-house-door"></i> Submission', data: null, className: "id_col", render: function(data) {
             var label = data.submissionLabel ? data.submissionLabel : '<span class="text-black-50"><i>empty</i></span>';
             return '<div> <div class="large-super">' + label + '</div><div class="text-accent small-sub">' + data.submissionId.site + '</div></div>'
         }},
-        { title: "User", data: null, className: "id_col", render: data =>
+        { title: '<i class="bi bi-house-door"></i> Submission Time', data: null, className: "id_col", render: function(data) {
+            var d = moment(new Date(data.submissionDatetime));
+            return '<div> <div class="large-super">' + d.format('YYYY-MM-DD HH:mm:ss') +
+                '</div><div class="text-accent small-sub">' + 'GMT' + d.format('ZZ') + '</div></div>'
+        }},
+        { title: '<i class="bi bi-house-door"></i> User', data: null, className: "id_col", render: data =>
             '<div> <div class="large-super">'+data.userName+'</div><div class="text-accent small-sub">'+data.userId.site+'</div></div>'
         },
-        { title: "Group", data: null, className: "id_col", render: data =>
+        { title: '<i class="bi bi-house-door"></i> Group', data: null, className: "id_col", render: data =>
             '<div> <div class="large-super">'+data.groupName+'</div><div class="text-accent small-sub">'+data.groupId.site+'</div></div>'
         },
-        { title: "Metadataset", data: "id.site", className: "id_col", render: data => '<span class="text-accent">' + data + '</span>'}
+        { title: '<i class="bi bi-house-door"></i> ID', data: "id.site", className: "id_col", render: data => '<span class="text-accent">' + data + '</span>'}
       ].concat(DataMeta.view.buildColumns(mdata))
 
     // Build table based on field names
