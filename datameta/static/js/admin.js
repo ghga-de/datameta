@@ -784,6 +784,7 @@ function addMetaDatum(event) {
     var isFile = row.children[8].querySelector('input').checked;
     var isSubmissionUnique = row.children[9].querySelector('input').checked;
     var isSiteUnique = row.children[10].querySelector('input').checked;
+    var serviceId = row.children[11].querySelector('input').value;
 
     if(isNaN(order)) {
         showAlert("metadata_alert", "Please specify an int in the 'order' field.");
@@ -808,11 +809,12 @@ function addMetaDatum(event) {
             order,
             isFile,
             isSubmissionUnique,
-            isSiteUnique
+            isSiteUnique,
+            serviceId
         })
     })
     .then(function (response) {
-        if(response.status == '204') {
+        if(response.status == '200') {
             // Reload Metadata Table
             DataMeta.admin.getMetadata();
 
