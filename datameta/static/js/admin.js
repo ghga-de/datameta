@@ -333,10 +333,10 @@ DataMeta.admin.initSiteTable = function() {
 }
 
 //Rebuilds the services table, based on the Data fetched from the API
-DataMeta.admin.rebuildServicesTable = function(metadata) {
+DataMeta.admin.rebuildServicesTable = function(services) {
     var t = $('#table_services').DataTable()
     t.clear();
-    t.rows.add(metadata);
+    t.rows.add(services);
     t.draw();
 }
 
@@ -436,6 +436,7 @@ DataMeta.admin.initMetadataTable = function() {
                 { orderable:false, title: "isFile", data: "isFile"},
                 { orderable:false, title: "isSubmissionUnique", data: "isSubmissionUnique"},
                 { orderable:false, title: "isSiteUnique", data: "isSiteUnique"},
+                { orderable:false, title: "serviceId", data: "serviceId.site"},
                 { orderable:false, title: "Edit", render:function() {
                     return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableMetaDatumEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
                 }}
