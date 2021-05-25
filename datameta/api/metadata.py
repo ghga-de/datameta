@@ -17,7 +17,7 @@ from typing import Optional, List
 from pyramid.request import Request
 from pyramid.view import view_config
 from . import DataHolderBase
-from ..models import MetaDatum, User
+from ..models import MetaDatum, User, Service
 from .. import resource, security, siteid
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
@@ -102,19 +102,19 @@ def get(request:Request) -> List[MetaDataResponseElement]:
     request_method="PUT",
     openapi=True
 )
-def put(request:Request):
+def put(request:Request) -> MetaDataResponseElement:
     """Change a metadatum"""
     auth_user = security.revalidate_user(request)
-    db = request.dbsession
     metadata_id = request.matchdict["id"]
 
     # Only site admins can change metadata
     if not authz.update_metadatum(auth_user):
          raise HTTPForbidden()
 
-    target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
-
     body = request.openapi_validated.body
+    db = request.dbsession 
+    target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
+    service = resource_by_id(db, Service, body["serviceId"])
 
     target_metadatum.name                = body["name"]
     target_metadatum.short_description   = body["regexDescription"] if body["regexDescription"] else None
@@ -127,8 +127,25 @@ def put(request:Request):
     target_metadatum.isfile              = body["isFile"]
     target_metadatum.submission_unique   = body["isSubmissionUnique"]
     target_metadatum.site_unique         = body["isSiteUnique"]
+    target_metadatum.service_id          = None if not service else service.id
 
-    return HTTPNoContent()
+    db.flush()
+
+    return MetaDataResponseElement(
+        id                    =  resource.get_identifier(target_metadatum),
+        name                  =  target_metadatum.name,
+        regex_description     =  target_metadatum.short_description,
+        long_description      =  target_metadatum.long_description,
+        example               =  target_metadatum.example,
+        reg_exp               =  target_metadatum.regexp,
+        date_time_fmt         =  target_metadatum.datetimefmt,
+        is_mandatory          =  target_metadatum.mandatory,
+        order                 =  target_metadatum.order,
+        is_file               =  target_metadatum.isfile,
+        is_submission_unique  =  target_metadatum.submission_unique,
+        is_site_unique        =  target_metadatum.site_unique,
+        service_id            =  None if not target_metadatum.service else get_identifier(target_metadatum.service)
+    )
 
 @view_config(
     route_name="metadata",
@@ -136,7 +153,7 @@ def put(request:Request):
     request_method="POST",
     openapi=True
 )
-def post(request:Request):
+def post(request:Request) -> MetaDataResponseElement:
     """POST a new metadatum"""
     auth_user = security.revalidate_user(request)
 
@@ -145,6 +162,8 @@ def post(request:Request):
          raise HTTPForbidden()
 
     body = request.openapi_validated.body
+    db = request.dbsession
+    service = resource_by_id(db, Service, body["serviceId"])
 
     metadatum = MetaDatum(
         name                = body["name"],
@@ -158,9 +177,24 @@ def post(request:Request):
         isfile              = body["isFile"],
         submission_unique   = body["isSubmissionUnique"],
         site_unique         = body["isSiteUnique"],
+        service_id          = None if not service else service.id
     )
 
-    db = request.dbsession
     db.add(metadatum)
+    db.flush()
 
-    return HTTPNoContent()
+    return MetaDataResponseElement(
+        id                    =  resource.get_identifier(metadatum),
+        name                  =  metadatum.name,
+        regex_description     =  metadatum.short_description,
+        long_description      =  metadatum.long_description,
+        example               =  metadatum.example,
+        reg_exp               =  metadatum.regexp,
+        date_time_fmt         =  metadatum.datetimefmt,
+        is_mandatory          =  metadatum.mandatory,
+        order                 =  metadatum.order,
+        is_file               =  metadatum.isfile,
+        is_submission_unique  =  metadatum.submission_unique,
+        is_site_unique        =  metadatum.site_unique,
+        service_id            =  None if not metadatum.service else get_identifier(metadatum.service)
+    )
