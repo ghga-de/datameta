@@ -436,7 +436,13 @@ DataMeta.admin.initMetadataTable = function() {
                 { orderable:false, title: "isFile", data: "isFile"},
                 { orderable:false, title: "isSubmissionUnique", data: "isSubmissionUnique"},
                 { orderable:false, title: "isSiteUnique", data: "isSiteUnique"},
-                { orderable:false, title: "serviceId", data: "serviceId.site"},
+                { orderable:false, title: "serviceId", data: "serviceId", render:function(data) {
+                    if(data) {
+                        return data.site
+                    } else {
+                        return '<span class="text-black-50"><i>empty</i></span>' 
+                    }
+                }},
                 { orderable:false, title: "Edit", render:function() {
                     return '<button type="button" class="py-0 px-1 btn btn-sm enabled" onclick="enableMetaDatumEditMode(event);"><i class="bi bi-pencil-square"></i></button>';
                 }}
@@ -570,7 +576,13 @@ function enableMetaDatumEditMode(event) {
     checked = ((innerHTML == "true") ? "checked": "")
     row.children[10].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
 
-    row.children[11].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
+    innerHTML = row.children[11].innerHTML;
+    if(innerHTML.includes('empty')) {
+        innerHTML = '';
+    }
+    row.children[11].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
+
+    row.children[12].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
                                  '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
 
     $('#table_metadata').DataTable().columns.adjust().draw();
@@ -603,7 +615,8 @@ DataMeta.admin.newMetaDatumRow = function() {
         order: "0",
         isFile: "",
         isSubmissionUnique: "",
-        isSiteUnique: ""}];
+        isSiteUnique: "",
+        serviceId: ""}];
 
     // add the new row to the table
     table.rows.add(row);
@@ -623,7 +636,8 @@ DataMeta.admin.newMetaDatumRow = function() {
     row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
     row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
     row.children[10].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
-    row.children[11].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="addMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
+    row.children[11].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+    row.children[12].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="addMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
                                  '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
 }
 
@@ -652,6 +666,7 @@ function saveMetaDatum(event) {
     var isFile = row.children[8].querySelector('input').checked;
     var isSubmissionUnique = row.children[9].querySelector('input').checked;
     var isSiteUnique = row.children[10].querySelector('input').checked;
+    var serviceId = row.children[11].querySelector('input').value;
 
     if(isNaN(order)) {
         showAlert("metadata_alert", "Please specify an int in the 'order' field.");
@@ -676,11 +691,12 @@ function saveMetaDatum(event) {
             order,
             isFile,
             isSubmissionUnique,
-            isSiteUnique
+            isSiteUnique,
+            serviceId
         })
     })
     .then(function (response) {
-        if(response.status == '204') {
+        if(response.status == '200') {
             // Reload Metadata Table
             DataMeta.admin.getMetadata();
 

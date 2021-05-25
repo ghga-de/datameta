@@ -21,7 +21,7 @@ from ..models import MetaDatum, User, Service
 from .. import resource, security, siteid
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 from sqlalchemy.orm import joinedload
 
 def get_all_metadata(db, include_service_metadata = True):
@@ -114,7 +114,6 @@ def put(request:Request) -> MetaDataResponseElement:
     body = request.openapi_validated.body
     db = request.dbsession 
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
-    service = resource_by_id(db, Service, body["serviceId"])
 
     target_metadatum.name                = body["name"]
     target_metadatum.short_description   = body["regexDescription"] if body["regexDescription"] else None
@@ -127,8 +126,15 @@ def put(request:Request) -> MetaDataResponseElement:
     target_metadatum.isfile              = body["isFile"]
     target_metadatum.submission_unique   = body["isSubmissionUnique"]
     target_metadatum.site_unique         = body["isSiteUnique"]
-    target_metadatum.service_id          = None if not service else service.id
 
+    service_id = body["serviceId"]
+    if service_id:
+        service = resource_by_id(db, Service, service_id)
+        if service is not None:
+            target_metadatum.service_id = service.id
+        else:
+            raise HTTPNotFound() # 404 Service ID not found
+    else: target_metadatum.service_id = None
     db.flush()
 
     return MetaDataResponseElement(
