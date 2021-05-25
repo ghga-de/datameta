@@ -202,5 +202,5 @@ def post(request:Request) -> MetaDataResponseElement:
         is_file               =  metadatum.isfile,
         is_submission_unique  =  metadatum.submission_unique,
         is_site_unique        =  metadatum.site_unique,
-        service_id            =  None if not metadatum.service else get_identifier(metadatum.service)
+        service               =  None if not metadatum.service else get_identifier(metadatum.service)
     )

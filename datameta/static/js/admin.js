@@ -436,9 +436,15 @@ DataMeta.admin.initMetadataTable = function() {
                 { orderable:false, title: "isFile", data: "isFile"},
                 { orderable:false, title: "isSubmissionUnique", data: "isSubmissionUnique"},
                 { orderable:false, title: "isSiteUnique", data: "isSiteUnique"},
-                { orderable:false, title: "serviceId", data: "serviceId", render:function(data) {
+                { orderable:false, title: "Service", data: "serviceId", render:function(data) {
                     if(data) {
-                        return data.site
+                        var name;
+                        DataMeta.admin.services.forEach((service) => {
+                            if(service.id.uuid == data.uuid) {
+                                name = service.name
+                            }
+                        });
+                        return name
                     } else {
                         return '<span class="text-black-50"><i>empty</i></span>' 
                     }
