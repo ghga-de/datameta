@@ -584,7 +584,7 @@ function enableMetaDatumEditMode(event) {
 
     row.children[11].innerHTML =    
         '<select class="form-select">' +
-            '<option selected value="">Select new Service</option>' +
+            '<option selected value="">No Service</option>' +
         '</select>'
 
     var serviceSelect = row.children[11].querySelector(".form-select");
@@ -654,7 +654,7 @@ DataMeta.admin.newMetaDatumRow = function() {
 
     row.children[11].innerHTML =    
         '<select class="form-select">' +
-            '<option selected value="">Select new Service</option>' +
+            '<option selected value="">No Service</option>' +
         '</select>'
 
     var serviceSelect = row.children[11].querySelector(".form-select");

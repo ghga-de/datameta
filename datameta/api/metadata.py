@@ -135,7 +135,6 @@ def put(request:Request) -> MetaDataResponseElement:
         else:
             raise HTTPNotFound() # 404 Service ID not found
     else: target_metadatum.service_id = None
-    db.flush()
 
     return MetaDataResponseElement(
         id                    =  resource.get_identifier(target_metadatum),
