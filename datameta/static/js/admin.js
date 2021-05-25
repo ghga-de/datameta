@@ -576,11 +576,20 @@ function enableMetaDatumEditMode(event) {
     checked = ((innerHTML == "true") ? "checked": "")
     row.children[10].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value="" '+ checked +'></div>';
 
-    innerHTML = row.children[11].innerHTML;
-    if(innerHTML.includes('empty')) {
-        innerHTML = '';
+    row.children[11].innerHTML =    
+        '<select class="form-select">' +
+            '<option selected value="">Select new Service</option>' +
+        '</select>'
+
+    var serviceSelect = row.children[11].querySelector(".form-select");
+    var services = DataMeta.admin.services;
+
+    for (var i = 0; i < DataMeta.admin.services.length; i++) {
+        var option = document.createElement("option")
+        option.setAttribute('value', services[i].id.uuid);
+        serviceSelect.appendChild(option);
+        option.innerHTML = services[i].name;
     }
-    row.children[11].innerHTML = '<div class="input-group"><input type="text" class="form-control" value="' + innerHTML +'"></div>';
 
     row.children[12].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="saveMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
                                  '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
@@ -636,7 +645,22 @@ DataMeta.admin.newMetaDatumRow = function() {
     row.children[8].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
     row.children[9].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
     row.children[10].innerHTML = '<div class="form-check"><input class="form-check-input" type="checkbox" value=""></div>';
-    row.children[11].innerHTML = '<div class="input-group"><input type="text" class="form-control" value=""></div>';
+
+    row.children[11].innerHTML =    
+        '<select class="form-select">' +
+            '<option selected value="">Select new Service</option>' +
+        '</select>'
+
+    var serviceSelect = row.children[11].querySelector(".form-select");
+    var services = DataMeta.admin.services;
+
+    for (var i = 0; i < DataMeta.admin.services.length; i++) {
+        var option = document.createElement("option")
+        option.setAttribute('value', services[i].id.uuid);
+        serviceSelect.appendChild(option);
+        option.innerHTML = services[i].name;
+    }
+
     row.children[12].innerHTML = '<div style="width:70px"><button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-success enabled" onclick="addMetaDatum(event);"><i class="bi bi-check2"></i></button>' +
                                  '<button type="button" class="py-0 px-1 mx-1 btn btn-sm btn-outline-danger enabled" onclick="DataMeta.admin.getMetadata();"><i class="bi bi-x"></i></button></div>'
 }
@@ -666,7 +690,7 @@ function saveMetaDatum(event) {
     var isFile = row.children[8].querySelector('input').checked;
     var isSubmissionUnique = row.children[9].querySelector('input').checked;
     var isSiteUnique = row.children[10].querySelector('input').checked;
-    var serviceId = row.children[11].querySelector('input').value;
+    var serviceId = row.children[11].querySelector('select').value;
 
     if(isNaN(order)) {
         showAlert("metadata_alert", "Please specify an int in the 'order' field.");
@@ -710,6 +734,8 @@ function saveMetaDatum(event) {
             showAlert("metadata_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
             showAlert("metadata_alert", "You do not have the rights to perform this action.");
+        } else if (response.status == "404") {
+            showAlert("metadata_alert", "The service you wanted to assign does not exist.");
         } else {
             showAlert("metadata_alert", "An unknown error occurred. Please try again later.");
         }
@@ -784,7 +810,7 @@ function addMetaDatum(event) {
     var isFile = row.children[8].querySelector('input').checked;
     var isSubmissionUnique = row.children[9].querySelector('input').checked;
     var isSiteUnique = row.children[10].querySelector('input').checked;
-    var serviceId = row.children[11].querySelector('input').value;
+    var serviceId = row.children[11].querySelector('select').value;
 
     if(isNaN(order)) {
         showAlert("metadata_alert", "Please specify an int in the 'order' field.");
@@ -828,6 +854,8 @@ function addMetaDatum(event) {
             showAlert("metadata_alert", "You have to be logged in to perform this action.");
         } else if (response.status == "403") {
             showAlert("metadata_alert", "You do not have the rights to perform this action.");
+        } else if (response.status == "404") {
+            showAlert("metadata_alert", "The service you wanted to assign does not exist.");
         } else {
             showAlert("metadata_alert", "An unknown error occurred. Please try again later.");
         }
