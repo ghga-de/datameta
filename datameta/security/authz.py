@@ -131,3 +131,6 @@ def update_service(user):
 
 def view_services(user):
     return user.site_admin
+
+def execute_service(user, service):
+    return user.id in (service_user.id for service_user in service.users )

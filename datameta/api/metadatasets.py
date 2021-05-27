@@ -13,15 +13,15 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent, HTTPException
+from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent
 from pyramid.view import view_config
 from pyramid.request import Request
 from sqlalchemy.orm import joinedload
 from sqlalchemy import and_
 from typing import Optional, Dict, List
 from ..linting import validate_metadataset_record
-from .. import security, siteid, resource
-from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord, Submission
+from .. import security, siteid, resource, validation
+from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord, Submission, File
 from ..security import authz
 import datetime
 from datetime import timezone
@@ -46,6 +46,33 @@ class MetaDataSetResponse(DataHolderBase):
     user_id              : str
     submission_id        : Optional[str] = None
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
+
+
+    @staticmethod
+    def from_metadataset(metadataset:MetaDataSet, metadata_with_access:Dict[str, MetaDatum]):
+        """Creates a MetaDataSetResponse from a metadataset database object and
+        a dictionary of metadata [MetaDatum.name, MetaDatum] that the receiving
+        user has read access to."""
+
+        # Identify file ids associated with this metadataset for metadata with access
+        file_ids = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file)
+                for mdrec in metadataset.metadatumrecords
+                if mdrec.metadatum.isfile and mdrec.metadatum.name in metadata_with_access}
+        # Build the metadataset response
+        return MetaDataSetResponse(
+                id                 = get_identifier(metadataset),
+                record             = get_record_from_metadataset(metadataset, metadata_with_access),
+                file_ids           = file_ids,
+                user_id            = get_identifier(metadataset.user),
+                submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
+                service_executions = collect_service_executions(metadata_with_access, metadataset)
+                )
+
+def record_to_strings(record:Dict[str,str]):
+    return {
+        k: str(v) if v is not None else None
+        for k, v in record.items()
+    }
 
 def render_record_values(metadata:Dict[str, MetaDatum], record:dict) -> dict:
     """Renders values of a metadataset record. Please note: the record should already have passed validation."""
@@ -117,6 +144,8 @@ def delete_metadatasets(request: Request) -> HTTPNoContent:
     return HTTPNoContent()
 
 
+
+
 @view_config(
     route_name="metadatasets",
     renderer='json',
@@ -129,7 +158,7 @@ def post(request:Request) -> MetaDataSetResponse:
     db = request.dbsession
 
     # Obtain string converted version of the record
-    record = { k : str(v) if v is not None else None for k,v in request.openapi_validated.body["record"].items() }
+    record = record_to_strings(request.openapi_validated.body["record"])
 
     # Query the configured metadata. We're only considering and allowing
     # non-service metadata when creating a new metadataset.
@@ -204,7 +233,7 @@ def collect_service_executions(metadata_with_access:Dict[str, MetaDatum], mdata_
         # MetaDataSetServiceExecution objects
         service_executions = { name : MetaDataSetServiceExecution(
             service_execution_id   = get_identifier(sexec),
-            execution_time         = sexec.datetime.isoformat()+'+00:00', # Assuming UTC datetimes in the database
+            execution_time         = sexec.datetime.isoformat() + '+00:00',
             service_id             = get_identifier(sexec.service),
             user_id                = get_identifier(sexec.user)
             ) if sexec is not None else None for name, sexec in service_executions.items() }
@@ -271,19 +300,9 @@ def get_metadatasets(request:Request) -> List[MetaDataSetResponse]:
     if not mdata_sets:
         raise HTTPNotFound()
 
-    # Collect service executions related to the result, restricted to service metadata with access
-    service_executions_all = [ collect_service_executions(metadata_with_access, mdata_set) for mdata_set in mdata_sets ]
-
     return [
-            MetaDataSetResponse(
-                id                 = get_identifier(mdata_set),
-                record             = get_record_from_metadataset(mdata_set, metadata_with_access),
-                file_ids           = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
-                user_id            = get_identifier(mdata_set.user),
-                submission_id      = get_identifier(mdata_set.submission) if mdata_set.submission else None,
-                service_executions = service_executions,
-                )
-            for mdata_set, service_executions in zip(mdata_sets, service_executions_all)
+            MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
+            for mdata_set in mdata_sets
             ]
 
 @view_config(
@@ -324,14 +343,7 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
     service_executions = collect_service_executions(metadata_with_access, mdata_set)
 
     # Check and annotate service executions
-    return MetaDataSetResponse(
-        id                   = get_identifier(mdata_set),
-        record               = get_record_from_metadataset(mdata_set, metadata_with_access),
-        file_ids             = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
-        user_id              = get_identifier(mdata_set.user),
-        submission_id        = get_identifier(mdata_set.submission) if mdata_set.submission else None,
-        service_executions   = service_executions,
-    )
+    return MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
 
 @view_config(
     route_name="metadatasets_id",
@@ -348,3 +360,95 @@ def delete_metadataset(request:Request) -> HTTPNoContent:
     delete_staged_metadataset_from_db(request.matchdict['id'], db, auth_user, request)
 
     return HTTPNoContent()
+
+
+@view_config(
+    route_name="service_execution",
+    renderer='json',
+    request_method="POST",
+    openapi=True
+)
+def set_metadata_via_service(request:Request) -> MetaDataSetResponse:
+    """Endpoint for the submission of results of a service execution."""
+
+    # Check authentication or raise 401
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+
+    # Query the specified resources
+    metadataset = resource.resource_query_by_id(db, MetaDataSet, request.matchdict['metadatasetId'])\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.service))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum))\
+            .one_or_none()
+
+    service = resource.resource_query_by_id(db, Service, request.matchdict['serviceId'])\
+            .options(joinedload(Service.target_metadata))\
+            .options(joinedload(Service.users))\
+            .one_or_none()
+
+    service_metadata = { mdatum.name : mdatum for mdatum in service.target_metadata }
+
+    service_records = { rec.metadatum.name : rec for rec in metadataset.metadatumrecords if rec.metadatum.name in service_metadata }
+
+    # Return 404 if a resource could not be found
+    if metadataset is None or service is None:
+        raise HTTPNotFound()
+
+    # Return 403 if the user has no permission to execute this service or the
+    # service has already been executed for this metadataset
+    if service.id in (sexec.service_id for sexec in metadataset.service_executions):
+        raise HTTPForbidden(json_body={})
+
+    if not authz.execute_service(auth_user, service):
+        raise HTTPForbidden(json_body={})
+
+    # Try to associate all metadata in the request body with the service metadata
+    records = record_to_strings(request.openapi_validated.body["record"])
+    val_errors = [] # tuples (message, field)
+    for mdatum_name in records:
+        if mdatum_name not in (target_metadatum.name for target_metadatum in service.target_metadata):
+            val_errors.append(("Metadatum unknown or not associated with the specified service.", mdatum_name))
+
+    # If there were any validation errors until here, return 400
+    if val_errors:
+        messages, fields = zip(*val_errors)
+        raise errors.get_validation_error(messages, fields)
+
+    # Collect files, drop duplicates
+    file_ids = set(request.openapi_validated.body['fileIds'])
+    db_files = { file_id : resource.resource_query_by_id(db, File, file_id).options(joinedload(File.metadatumrecord)).one_or_none() for file_id in file_ids }
+
+    # Valide submission access to the specified files
+    validation.validate_submission_access(db, db_files, {}, auth_user)
+
+    # Validate the associations between files and records
+    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { metadataset.site_id : metadataset })
+
+    # Validate the provided records
+    validate_metadataset_record(service_metadata, records, return_err_message=False, rendered=False)
+
+    # Update the metadatum records
+    records = render_record_values(service_metadata, records)
+    for record_name, record_value in records.items():
+        db_rec = service_records[record_name]
+        db_rec.value = record_value
+        db.add(db_rec)
+
+    # Associate the files with the metadata
+    for fname, mdatrec in ref_fnames.items():
+        mdatrec.file = fnames[fname]
+
+    # Create a service execution
+    sexec = ServiceExecution(
+            service       = service,
+            metadataset   = metadataset,
+            user          = auth_user,
+            datetime      = datetime.datetime.utcnow()
+            )
+
+    db.add(sexec)
+
+    # Check which metadata of this metadataset the user is allowed to view
+    metadata_with_access = get_metadata_with_access(db, auth_user)
+
+    return MetaDataSetResponse.from_metadataset(metadataset, metadata_with_access)

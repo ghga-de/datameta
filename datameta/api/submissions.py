@@ -97,7 +97,7 @@ def post(request: Request) -> SubmissionResponse:
     submission = Submission(
             site_id = siteid.generate(request, Submission),
             label = label,
-            date = datetime.now(tz=timezone.utc),
+            date = datetime.utcnow(),
             metadatasets = list(db_msets.values()),
             group_id = auth_user.group.id
             )
