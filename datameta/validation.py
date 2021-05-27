@@ -16,11 +16,12 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import or_, and_
 from collections import defaultdict, Counter
 
-from . import resource, linting
+from . import resource, linting, errors
 from .models import File, MetaDataSet, MetaDatumRecord, MetaDatum
 from .security import authz
 from .api.metadata import get_all_metadata
 from .utils import get_record_from_metadataset
+
 
 def validate_submission_access(db, db_files, db_msets, auth_user):
     """Validates a submission with regard to
@@ -62,6 +63,7 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
         entities, fields, messages = zip(*val_errors)
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
+
 def validate_submission_association(db_files, db_msets):
     """Validates a submission with regard to
 
@@ -76,7 +78,7 @@ def validate_submission_association(db_files, db_msets):
     """
     errors = []
     # Collect files with no data associated
-    errors += [ (db_file, None, "No data uploaded") for file_id, db_file in db_files.items() if db_file.content_uploaded==False ]
+    errors += [ (db_file, None, "No data uploaded") for file_id, db_file in db_files.items() if not db_file.content_uploaded ]
     # Collect files which already have other metadata associated
     errors += [ (db_file, None, "Already submitted") for file_id, db_file in db_files.items() if db_file.metadatumrecord is not None ]
     # Collect metadatasets that were already submitted
@@ -116,13 +118,14 @@ def validate_submission_association(db_files, db_msets):
 
     return f_names_obj, ref_fnames, errors
 
+
 def validate_submission_uniquekeys(db, db_files, db_msets):
     errors = []
 
     # Submission unique keys (includes those that are globally unique)
-    keys_submission_unique  = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique==True, MetaDatum.site_unique==True)) ]
+    keys_submission_unique  = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique.is_(True), MetaDatum.site_unique.is_(True))) ]
     # Globally unique keys
-    keys_site_unique        = [ md.name for md in db.query(MetaDatum).filter(MetaDatum.site_unique==True) ]
+    keys_site_unique        = [ md.name for md in db.query(MetaDatum).filter(MetaDatum.site_unique.is_(True)) ]
 
     # Validate the set of metadatasets with regard to submission unique key constraints
     for key in keys_submission_unique:
@@ -130,7 +133,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         # Associate all values for that key with the metadatasets it occurs in
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
-                if mdatrec.metadatum.name==key:
+                if mdatrec.metadatum.name == key:
                     value_msets[mdatrec.value].append(db_mset)
         # Reduce to those values that occur in more than one metadatast
         value_msets = { k: v for k, v in value_msets.items() if len(v) > 1 }
@@ -143,7 +146,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         # Associate all values for that key with the metadatasets it occurs in
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
-                if mdatrec.metadatum.name==key:
+                if mdatrec.metadatum.name == key:
                     value_msets[mdatrec.value].append(db_mset)
 
         # Query the database for the supplied values
@@ -151,8 +154,8 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
                 .join(MetaDataSet)\
                 .join(MetaDatum)\
                 .filter(and_(
-                    MetaDataSet.submission_id != None,
-                    MetaDatum.name==key,
+                    MetaDataSet.submission_id.isnot(None),
+                    MetaDatum.name == key,
                     MetaDatumRecord.value.in_(value_msets.keys())
                     ))
 
@@ -160,6 +163,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         errors += [ (db_mset, key, "Violation of global unique constraint") for value, msets in value_msets.items() if value in db_values for db_mset in msets ]
 
     return errors
+
 
 def validate_submission(request, auth_user):
     db = request.dbsession
@@ -199,6 +203,6 @@ def validate_submission(request, auth_user):
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
     # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
-    fnames = { k : v[0] for k,v in fnames.items() }
+    fnames = { k : v[0] for k, v in fnames.items() }
 
     return fnames, ref_fnames, db_files, db_msets

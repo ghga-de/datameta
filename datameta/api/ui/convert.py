@@ -17,17 +17,16 @@ from pyramid.request import Request
 from pyramid.view import view_config
 import webob
 import logging
-import datetime
 import csv
 
 import pandas as pd
 
 from ... import security, samplesheet, errors
-from ...models import MetaDatum, MetaDataSet, MetaDatumRecord
 from ...utils import formatted_mrec_value_str
 from ..metadata import get_all_metadata
 
 log = logging.getLogger(__name__)
+
 
 def get_samplesheet_reader(file_like_obj):
     """Given a file with tabular data which is either in delimited plain text

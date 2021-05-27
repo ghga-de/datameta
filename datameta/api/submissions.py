@@ -12,21 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime, timezone
+from datetime import datetime
 from dataclasses import dataclass
-from collections import Counter, defaultdict
 from pyramid.view import view_config
 from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent
 from typing import List
-from sqlalchemy import and_, or_
-from sqlalchemy.orm import joinedload
-from .. import errors, siteid, security, resource, linting, validation
-from ..security import authz
-from ..models import MetaDatum, MetaDatumRecord, MetaDataSet, Submission, File
-from ..utils import get_record_from_metadataset
+from .. import security, resource, validation, siteid
+from ..models import Submission
 from . import DataHolderBase
-from .metadata import get_all_metadata
 
 
 @dataclass
@@ -100,7 +94,7 @@ def post(request: Request) -> SubmissionResponse:
     submission = Submission(
             site_id = siteid.generate(request, Submission),
             label = label,
-            date = datetime.now(tz=timezone.utc),
+            date = datetime.utcnow(),
             metadatasets = list(db_msets.values()),
             group_id = auth_user.group.id
             )
