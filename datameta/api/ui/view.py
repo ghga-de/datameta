@@ -27,9 +27,10 @@ from ... import security, errors, resource
 from ...security import authz
 from ...resource import get_identifier
 from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, User, Group, Submission, ServiceExecution, Service
+from ...utils import get_record_from_metadataset
 
 from ..metadata import get_all_metadata
-from ..metadatasets import get_record_from_metadataset, MetaDataSetResponse, collect_service_executions
+from ..metadatasets import MetaDataSetResponse, collect_service_executions
 
 log = logging.getLogger(__name__)
 
