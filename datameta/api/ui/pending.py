@@ -23,7 +23,8 @@ from pyramid.view import view_config
 
 from ... import security, resource
 from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, File
-from ..metadatasets import MetaDataSetResponse, get_record_from_metadataset
+from ..metadatasets import MetaDataSetResponse
+from ...utils import get_record_from_metadataset
 from ..metadata import get_all_metadata
 from ..files import FileResponse
 

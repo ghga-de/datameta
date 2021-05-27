@@ -26,6 +26,7 @@ from ..security import authz
 import datetime
 from datetime import timezone
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
+from ..utils import get_record_from_metadataset
 from . import DataHolderBase
 from .. import errors
 from .metadata import get_all_metadata, get_service_metadata, get_metadata_with_access
@@ -65,23 +66,6 @@ def render_record_values(metadata: Dict[str, MetaDatum], record: dict) -> dict:
                     metadata[field].datetimefmt
                     ).isoformat()
     return record_rendered
-
-
-def formatted_mrec_value(mrec):
-    if mrec.value and mrec.metadatum.datetimefmt is not None:
-        return datetime.datetime.fromisoformat(mrec.value).strftime(mrec.metadatum.datetimefmt)
-    else:
-        return mrec.value
-
-
-def get_record_from_metadataset(mdata_set: MetaDataSet, metadata: Dict[str, MetaDatum], render = True) -> dict:
-    """ Construct a dict containing all records of that MetaDataSet"""
-    mdata_ids = [ mdatum.id for mdatum in metadata.values() ]
-    return {
-            rec.metadatum.name : formatted_mrec_value(rec) if render else rec.value
-            for rec in mdata_set.metadatumrecords if rec.metadatum.id in mdata_ids
-            }
-
 
 def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
     # Find the requested metadataset
