@@ -67,6 +67,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("register_settings", base_url + "/registrationsettings")
     config.add_route("services", base_url + "/services")
     config.add_route("services_id", base_url + "/services/{id}")
+    config.add_route("service_execution", base_url + "/service-execution/{serviceId}/{metadatasetId}")
 
     # Endpoint outside of openapi
     config.add_route("upload", base_url + "/upload/{id}")

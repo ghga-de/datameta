@@ -15,10 +15,10 @@
 from typing import Dict, Optional
 from datetime import datetime
 
-from . import resource, linting
 from .models import MetaDataSet, MetaDatum, MetaDatumRecord
 
-def formatted_mrec_value(mrec:MetaDatumRecord) -> str:
+
+def formatted_mrec_value(mrec: MetaDatumRecord) -> str:
     """Returns the formatted value of a metadatum record. That is, in case the
     corresponding metadatum has a datetimefmt set, it will apply the format to
     the value of the metadatum and return the result, otherwise the value of
@@ -32,7 +32,8 @@ def formatted_mrec_value(mrec:MetaDatumRecord) -> str:
     else:
         return mrec.value
 
-def formatted_mrec_value_str(value:str, datetimefmt:str) -> str:
+
+def formatted_mrec_value_str(value: str, datetimefmt: str) -> str:
     """Returns the formatted value of a metadatum record. That is, in case the
     corresponding metadatum has a datetimefmt set, it will apply the format to
     the value of the metadatum and return the result, otherwise the value of
@@ -49,10 +50,11 @@ def formatted_mrec_value_str(value:str, datetimefmt:str) -> str:
             pass
     return value
 
-def get_record_from_metadataset(mdata_set:MetaDataSet, metadata:Dict[str, MetaDatum], render = True) -> Dict[str, Optional[str]]:
+
+def get_record_from_metadataset(mdata_set: MetaDataSet, metadata: Dict[str, MetaDatum], render = True) -> Dict[str, Optional[str]]:
     """ Construct a dict containing all records of that MetaDataSet"""
     mdata_ids = [ mdatum.id for mdatum in metadata.values() ]
     return {
-            rec.metadatum.name : formatted_mrec_value(rec) if render else rec.value
+            rec.metadatum.name: formatted_mrec_value(rec) if render else rec.value
             for rec in mdata_set.metadatumrecords if rec.metadatum.id in mdata_ids
             }
