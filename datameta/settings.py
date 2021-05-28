@@ -34,13 +34,13 @@ def get_setting_value_type(setting):
         value = setting.str_value
         value_type = "string"
     elif setting.float_value is not None:
-        value = float_value
+        value = setting.float_value
         value_type = "float"
     elif setting.date_value is not None:
-        value = date_value
+        value = setting.date_value
         value_type = "date"
     elif setting.time_value is not None:
-        value = time_value
+        value = setting.time_value
         value_type = "time"
 
     return value, value_type
@@ -58,11 +58,11 @@ def get_setting(db, name):
     elif setting.str_value is not None:
         return setting.str_value
     elif setting.float_value is not None:
-        return float_value
+        return setting.float_value
     elif setting.date_value is not None:
-        return date_value
+        return setting.date_value
     elif setting.time_value is not None:
-        return time_value
+        return setting.time_value
     return None
 
 

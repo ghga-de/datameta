@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from typing import List
 
 from . import DataHolderBase
-from .. import security, resource
+from .. import security, resource, siteid
 from ..errors import get_validation_error
 from ..security import authz
 from ..models import Service, User
