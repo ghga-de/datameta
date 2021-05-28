@@ -16,6 +16,8 @@ import pandas as pd
 import pandas.api.types as pdtypes
 import datetime
 
+import logging
+log = logging.getLogger(__name__)
 
 class SampleSheetReadError(RuntimeError):
     pass

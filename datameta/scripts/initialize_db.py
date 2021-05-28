@@ -35,7 +35,7 @@ def parse_args(argv):
 
 def create_api_key(request, key):
     db = request.dbsession
-    user = db.query(User).one_or_none();
+    user = db.query(User).one_or_none()
     assert user, "No or multiple users found in database, cannot create API key"
 
     api_key = ApiKey(
