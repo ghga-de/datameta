@@ -19,13 +19,10 @@ metadatasets and files.
 from . import BaseIntegrationTest
 from .utils import get_file_path
 from typing import Optional, List, Any, Dict
-import transaction
 import os
 import hashlib
 
-from datameta import models
 from datameta.api import base_url
-from datameta.models import get_tm_session
 
 def calc_checksum(file_path:str):
     with open(file_path, "rb") as file_:

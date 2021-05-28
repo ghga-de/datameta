@@ -14,7 +14,7 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTPNoContent
+from pyramid.httpexceptions import HTTPNoContent
 
 from dataclasses import dataclass
 from ..models import Group, ApplicationSetting, User, RegRequest

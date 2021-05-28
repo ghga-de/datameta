@@ -14,9 +14,6 @@
 
 """Testing password update via API request
 """
-import time
-from datetime import datetime, timedelta
-
 from parameterized import parameterized
 
 from .utils import get_auth_header

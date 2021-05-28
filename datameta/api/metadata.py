@@ -18,10 +18,10 @@ from pyramid.request import Request
 from pyramid.view import view_config
 from . import DataHolderBase
 from ..models import MetaDatum, User, Service
-from .. import resource, security, siteid
+from .. import resource, security
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
+from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound
 from sqlalchemy.orm import joinedload
 
 def get_all_metadata(db, include_service_metadata = True):

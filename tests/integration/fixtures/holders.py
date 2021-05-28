@@ -14,7 +14,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from datameta.models.meta import Base as DatabaseModel
 from typing import Optional
 
 @dataclass

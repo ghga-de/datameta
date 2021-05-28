@@ -12,12 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datameta.models import MetaDataSet, MetaDatum, File
 from .errors import get_validation_error
-from sqlalchemy import and_
-from pyramid.request import Request
 
-from collections import Counter
 import re
 import datetime
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent, HTTPException
+from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent
 from pyramid.view import view_config
 from pyramid.request import Request
 from sqlalchemy.orm import joinedload

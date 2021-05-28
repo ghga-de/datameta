@@ -1,7 +1,5 @@
 """Testing bulk deletion via API request
 """
-from parameterized import parameterized
-
 from . import BaseIntegrationTest
 from datameta.api import base_url
 

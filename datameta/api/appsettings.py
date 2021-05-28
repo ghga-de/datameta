@@ -14,11 +14,11 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPBadRequest
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 
 from dataclasses import dataclass
 from . import DataHolderBase
-from typing import List, Dict
+from typing import List
 from ..models import ApplicationSetting
 from .. import resource, security, errors
 from ..security import authz

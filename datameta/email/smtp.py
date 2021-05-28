@@ -14,12 +14,10 @@
 
 import email
 from email.mime.base import MIMEBase
-from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import parseaddr, formataddr, formatdate
+from email.utils import formataddr, formatdate
 import smtplib
-import ssl
 
 class SMTPClient:
 
@@ -30,6 +28,7 @@ class SMTPClient:
             password = None,
             tls = False,
             rec_header_only=False):
+
         self.hostname = hostname
         self.port     = port
         self.user     = user

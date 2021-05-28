@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound, HTTPUnauthorized, HTTPNoContent, HTTPForbidden
+from pyramid.httpexceptions import HTTPBadRequest, HTTPNotFound, HTTPUnauthorized, HTTPNoContent
 from pyramid.view import view_config
-
-import bcrypt
 
 from ...models import User, Group, RegRequest
 from ...settings import get_setting

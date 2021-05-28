@@ -14,7 +14,7 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from typing import Optional, Dict, List
+from typing import List
 from dataclasses import dataclass
 from . import DataHolderBase
 from .. import models
@@ -25,7 +25,7 @@ from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 
-from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 
 
 class GroupSubmissions:

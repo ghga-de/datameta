@@ -16,8 +16,8 @@ import logging
 from dataclasses import dataclass
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPOk, HTTPNotFound, HTTPForbidden, HTTPConflict, HTTPBadRequest, HTTPNoContent
-from typing import Optional, Dict
+from pyramid.httpexceptions import HTTPOk, HTTPNotFound, HTTPForbidden, HTTPConflict, HTTPNoContent
+from typing import Optional
 from datetime import datetime, timedelta
 from .. import models, siteid, security, storage, resource, errors
 from ..security import authz

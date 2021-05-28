@@ -22,8 +22,6 @@ from dataclasses_json import dataclass_json, LetterCase
 import os
 import yaml
 
-import datameta
-
 openapi_spec_path = os.path.join(os.path.dirname(__file__), "openapi.yaml")
 # read base url from openapi.yaml:
 with open(openapi_spec_path, "r") as spec_file:

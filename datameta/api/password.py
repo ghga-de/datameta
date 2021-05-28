@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
+from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPGone
 
-from sqlalchemy import and_
 from pyramid.view import view_config
 
 from .. import security, errors
 from ..security import authz
-from ..models import User, PasswordToken
-from uuid import UUID
+from ..models import User
 from datetime import datetime
 
 from ..resource import resource_by_id

@@ -19,7 +19,7 @@ from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 from dataclasses import dataclass
 from . import DataHolderBase
 from ..models import User, Group
-from .. import security, errors, resource
+from .. import security
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
 
@@ -55,13 +55,13 @@ def get_whoami(request: Request) -> UserResponseElement:
     auth_user = security.revalidate_user(request)
 
     return UserResponseElement(
-        id              =   resource.get_identifier(auth_user),
+        id              =   get_identifier(auth_user),
         name            =   auth_user.fullname,
         group_admin     =   auth_user.group_admin,
         site_admin      =   auth_user.site_admin,
         site_read       =   auth_user.site_read,
         email           =   auth_user.email,
-        group           =   {"id": resource.get_identifier(auth_user.group), "name": auth_user.group.name}
+        group           =   {"id": get_identifier(auth_user.group), "name": auth_user.group.name}
     )
 
 @view_config(

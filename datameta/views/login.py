@@ -15,9 +15,6 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-import datameta
-
-from datameta.models import User
 from .. import security
 
 import logging

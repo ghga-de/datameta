@@ -15,13 +15,8 @@
 import os
 import transaction
 import json
-from dataclasses import dataclass, field
-import hashlib
 import yaml
 from importlib import import_module
-from typing import Optional, List
-from collections import defaultdict
-from copy import deepcopy
 import shutil
 
 import datetime
@@ -29,7 +24,6 @@ import datetime
 from datameta.models import get_tm_session
 from datameta.models.meta import Base as DatabaseModel
 from datameta.models import MetaDatum, MetaDatumRecord, File
-from . import holders
 from ..utils import get_file_path
 
 class FixtureNotFoundError(RuntimeError):

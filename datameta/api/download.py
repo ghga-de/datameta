@@ -16,12 +16,9 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound, HTTPOk, HTTPTemporaryRedirect
 from pyramid.request import Request
 from pyramid.response import FileResponse
-from datetime import datetime, timedelta
-import urllib.parse
+from datetime import datetime
 from .. import security, models, storage
-from . import base_url
 from .files import access_file_by_user
-from ..errors import get_validation_error
 from sqlalchemy import and_
 
 
@@ -31,7 +28,7 @@ from sqlalchemy import and_
     request_method  = "GET",
     openapi         = True
 )
-def get_file_url(request) -> HTTPTemporaryRedirect:
+def get_file_url(request:Request) -> HTTPTemporaryRedirect:
     """Redirects to a temporary, pre-sign HTTP-URL for downloading a file.
     """
     file_id = request.openapi_validated.parameters.path['id']
@@ -60,7 +57,7 @@ def get_file_url(request) -> HTTPTemporaryRedirect:
     renderer        = "json",
     request_method  = "GET"
 )
-def download_by_token(request) -> HTTPOk:
+def download_by_token(request:Request) -> HTTPOk:
     """Download a file using a file download token.
 
     Usage: /download/{download_token}

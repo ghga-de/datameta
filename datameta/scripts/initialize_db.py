@@ -14,8 +14,6 @@
 
 import argparse
 import sys
-import random
-import uuid
 
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
