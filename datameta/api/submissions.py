@@ -98,7 +98,7 @@ def validate_submission_association(db_files, db_msets):
     """
     errors = []
     # Collect files with no data associated
-    errors += [ (db_file, None, "No data uploaded") for file_id, db_file in db_files.items() if db_file.content_uploaded == False ]
+    errors += [ (db_file, None, "No data uploaded") for file_id, db_file in db_files.items() if db_file.content_uploaded is False ]
     # Collect files which already have other metadata associated
     errors += [ (db_file, None, "Already submitted") for file_id, db_file in db_files.items() if db_file.metadatumrecord is not None ]
     # Collect metadatasets that were already submitted
@@ -140,9 +140,9 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
     errors = []
 
     # Submission unique keys (includes those that are globally unique)
-    keys_submission_unique  = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique == True, MetaDatum.site_unique == True)) ]
+    keys_submission_unique  = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique.is_(True), MetaDatum.site_unique.is_(True))) ]
     # Globally unique keys
-    keys_site_unique        = [ md.name for md in db.query(MetaDatum).filter(MetaDatum.site_unique == True) ]
+    keys_site_unique        = [ md.name for md in db.query(MetaDatum).filter(MetaDatum.site_unique.is_(True)) ]
 
     # Validate the set of metadatasets with regard to submission unique key constraints
     for key in keys_submission_unique:
@@ -171,7 +171,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
                 .join(MetaDataSet)\
                 .join(MetaDatum)\
                 .filter(and_(
-                    MetaDataSet.submission_id != None,
+                    MetaDataSet.submission_id.isnot(None),
                     MetaDatum.name == key,
                     MetaDatumRecord.value.in_(value_msets.keys())
                     ))
@@ -241,8 +241,6 @@ def post_pre(request: Request) -> HTTPNoContent:
     """
     # Check authentication and raise 401 if unavailable
     auth_user = security.revalidate_user(request)
-
-    db = request.dbsession
 
     # Raises 400 in case of any validation issues
     validate_submission(request, auth_user)

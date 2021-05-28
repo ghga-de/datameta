@@ -22,7 +22,7 @@ class BulkDeletionTest(BaseIntegrationTest):
 
         file_ids = [ file.site_id for file in files.values() ]
 
-        response = self.testapp.post_json(
+        self.testapp.post_json(
             f"{base_url}/rpc/delete-files",
             params={"fileIds": file_ids},
             headers=auth_headers,
@@ -38,7 +38,7 @@ class BulkDeletionTest(BaseIntegrationTest):
 
         metadataset_ids = [ mset.site_id for mset in msets.values() ]
 
-        response = self.testapp.post_json(
+        self.testapp.post_json(
             f"{base_url}/rpc/delete-metadatasets",
             params={"metadatasetIds": metadataset_ids},
             headers=auth_headers,

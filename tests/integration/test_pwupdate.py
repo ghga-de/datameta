@@ -73,7 +73,7 @@ class TestPasswordUpdate(BaseIntegrationTest):
         if auth_header:
             req_json["headers"] = auth_header
 
-        response = self.testapp.put_json(
+        self.testapp.put_json(
             f"{base_url}/users/{user_id}/password",
             **req_json
         )

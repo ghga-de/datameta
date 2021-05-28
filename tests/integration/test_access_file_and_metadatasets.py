@@ -24,14 +24,14 @@ import hashlib
 class ReadFileAndMetadatasets(BaseIntegrationTest):
 
     def read_file(self, file: FileFixture, user: UserFixture, status: int = 200):
-        response = self.testapp.get(
+        self.testapp.get(
             f"{base_url}/files/{file.site_id}",
             headers = self.apikey_auth(user),
             status = status
         )
 
     def read_metadataset(self, metadataset: MetaDataSetFixture, user: UserFixture, status: int = 200):
-        response = self.testapp.get(
+        self.testapp.get(
             f"{base_url}/metadatasets/{metadataset.site_id}",
             headers = self.apikey_auth(user),
             status = status

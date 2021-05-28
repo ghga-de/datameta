@@ -32,7 +32,7 @@ def get_pending_metadatasets(dbsession, user, metadata: Dict[str, MetaDatum]):
     # Query metadatasets that have been no associated submission
     m_sets = dbsession.query(MetaDataSet).filter(and_(
         MetaDataSet.user == user,
-        MetaDataSet.submission == None)
+        MetaDataSet.submission.is_(None))
         ).options(
                 joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)
                 ).all()
@@ -50,7 +50,7 @@ def get_pending_metadatasets(dbsession, user, metadata: Dict[str, MetaDatum]):
 
 def get_pending_files(dbsession, user):
     # Find files that have not yet been associated with metadata
-    db_files = dbsession.query(File).filter(and_(File.user_id == user.id, File.metadatumrecord == None, File.content_uploaded == True)).order_by(File.id.desc())
+    db_files = dbsession.query(File).filter(and_(File.user_id == user.id, File.metadatumrecord.is_(None), File.content_uploaded.is_(True))).order_by(File.id.desc())
     return [
             FileResponse(
                 id                = resource.get_identifier(db_file),

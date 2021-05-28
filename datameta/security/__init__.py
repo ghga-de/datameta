@@ -67,7 +67,7 @@ def get_new_password_reset_token_from_email(db: Session, email: str):
         - cleartext token for user notification
     Raises:
         KeyError - if user not found/not enabled"""
-    user = db.query(User).filter(User.enabled == True, User.email == email).one_or_none()
+    user = db.query(User).filter(User.enabled.is_(True), User.email == email).one_or_none()
 
     # User not found or disabled
     if not user:
@@ -110,7 +110,7 @@ def hash_token(token):
 def get_user_by_credentials(request, email: str, password: str):
     """Check a combination of email and password, returns a user object if valid"""
     db = request.dbsession
-    user = db.query(User).filter(and_(User.email == email, User.enabled == True)).one_or_none()
+    user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
     if user and check_password_by_hash(password, user.pwhash):
         return user
     return None
@@ -125,7 +125,7 @@ def get_bearer_token(request):
             method, content = auth.split(" ")
             if method == "Bearer":
                 return content
-        except:
+        except Exception:
             pass
     return None
 
@@ -137,7 +137,7 @@ def get_password_reset_token(db: Session, token: str):
     checks are not performed"""
     return db.query(PasswordToken).join(User).filter(and_(
         PasswordToken.value == hash_token(token),
-        User.enabled == True
+        User.enabled.is_(True)
         )).one_or_none()
 
 
@@ -151,7 +151,7 @@ def revalidate_user(request):
         token_hash = hash_token(token)
         apikey = db.query(ApiKey).join(User).filter(and_(
             ApiKey.value == token_hash,
-            User.enabled == True
+            User.enabled.is_(True)
             )).one_or_none()
         if apikey is not None:
             if check_expiration(apikey.expires):
@@ -166,7 +166,7 @@ def revalidate_user(request):
         raise HTTPUnauthorized()
     user = request.dbsession.query(User).filter(and_(
         User.id == request.session['user_uid'],
-        User.enabled == True
+        User.enabled.is_(True)
         )).one_or_none()
     # Check if the user still exists and their group hasn't changed
     if user is None or user.group_id != request.session['user_gid']:

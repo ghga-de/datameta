@@ -34,7 +34,7 @@ class TestUserManagement(BaseIntegrationTest):
         return response
 
     def process_name_change_request(self, testname, user, target_user, new_name, expected_response):
-        response = self.do_request(
+        self.do_request(
                 user_uuid   = target_user.uuid,
                 status      = expected_response,
                 headers     = self.apikey_auth(user),
@@ -50,7 +50,7 @@ class TestUserManagement(BaseIntegrationTest):
         assert expected_outcome, f"{testname} failed"
 
     def process_group_change_request(self, testname, user, target_user, new_group_uuid, expected_response):
-        response = self.do_request(
+        self.do_request(
                 target_user.uuid,
                 status=expected_response,
                 headers=self.apikey_auth(user),
@@ -65,7 +65,8 @@ class TestUserManagement(BaseIntegrationTest):
             assert db_user.group.uuid != new_group_uuid
 
     def process_status_change_request(self, testname, user, target_user, actions, expected_response, revert=False):
-        camel_to_snake = lambda name : re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+        def camel_to_snake(name):
+            return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
 
         # Build the request parameters
         params = dict()
@@ -75,7 +76,7 @@ class TestUserManagement(BaseIntegrationTest):
 
         # Make the PUT request and store the state of the user before and after the request
         db_user_before   = self.fixture_manager.get_fixture_db('users', target_user.site_id)
-        response         = self.do_request(target_user.uuid, status=expected_response, headers=self.apikey_auth(user), params=params)
+        self.do_request(target_user.uuid, status=expected_response, headers=self.apikey_auth(user), params=params)
         db_user_after    = self.fixture_manager.get_fixture_db('users', target_user.site_id)
 
         # Check if changes were made if expected

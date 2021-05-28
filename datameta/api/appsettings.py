@@ -97,9 +97,6 @@ def put(request: Request):
         try:
             value_int = int(value)
         except ValueError:
-            err = {
-                "exception": "ValidationError",
-            }
             raise errors.get_validation_error(["You have to provide an integer."])
 
         target_setting.int_value = value_int
@@ -111,9 +108,6 @@ def put(request: Request):
         try:
             value_float = float(value)
         except ValueError:
-            err = {
-                "exception": "ValidationError",
-            }
             raise errors.get_validation_error(["You have to provide a float."])
 
         target_setting.float_value = value_float
@@ -122,9 +116,6 @@ def put(request: Request):
         try:
             datetime.datetime.strptime(value, "%Y-%m-%d")
         except ValueError:
-            err = {
-                "exception": "ValidationError",
-            }
             raise errors.get_validation_error(["The date value has to specified in the form '%Y-%m-%d'."])
 
         target_setting.date_value = value
@@ -133,9 +124,6 @@ def put(request: Request):
         try:
             datetime.datetime.strptime(value, "%H:%M:%S")
         except ValueError:
-            err = {
-                "exception": "ValidationError",
-            }
             raise errors.get_validation_error(["The time value has to specified in the form '%H:%M:%S'."])
 
         target_setting.date_value = value

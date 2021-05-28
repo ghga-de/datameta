@@ -66,7 +66,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         }
 
         response = self.testapp.post_json(
-            base_url + f"/metadatasets",
+            base_url + "/metadatasets",
             headers = headers,
             params = request_body,
             status = status
@@ -107,7 +107,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         metadataset_id: str,
         status: int = 204
     ):
-        response = self.testapp.delete(
+        self.testapp.delete(
             base_url + f"/metadatasets/{metadataset_id}",
             headers = headers,
             status = status
@@ -126,7 +126,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         }
 
         response = self.testapp.post_json(
-            base_url + f"/files",
+            base_url + "/files",
             headers = headers,
             params = request_body,
             status = status
@@ -159,7 +159,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         file_checksum: str,
         status: int = 204
     ):
-        response = self.testapp.post(
+        self.testapp.post(
             url_to_upload,
             headers = headers,
             upload_files = [("file", file_path)],
@@ -184,7 +184,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         file_checksum: Optional[str] = None,
         status: int = 204
     ):
-        response = self.testapp.delete(
+        self.testapp.delete(
             base_url + f"/files/{file_id}",
             headers = headers,
             status = status
@@ -253,8 +253,8 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
             "label": label
         }
 
-        response = self.testapp.post_json(
-            base_url + f"/presubvalidation",
+        self.testapp.post_json(
+            base_url + "/presubvalidation",
             headers = headers,
             params = request_body,
             status = status
@@ -276,7 +276,7 @@ class TestStageAndSubmitSenario(BaseIntegrationTest):
         }
 
         response = self.testapp.post_json(
-            base_url + f"/submissions",
+            base_url + "/submissions",
             headers = headers,
             params = request_body,
             status = status

@@ -24,7 +24,6 @@ log = logging.getLogger(__name__)
 @view_config(route_name='login', renderer='../templates/login.pt')
 def my_view(request):
     request.session.invalidate()
-    db = request.dbsession
     if request.POST:
         try:
             # Obtain submitted data
