@@ -36,6 +36,7 @@ import datetime
 import uuid
 import enum
 
+
 class DateTimeMode(enum.Enum):
     DATE      = 0
     DATETIME  = 1
@@ -49,10 +50,12 @@ class DateTimeMode(enum.Enum):
         if self.value == 2:
             return datetime.time
 
+
 user_service_table = Table('service_user', Base.metadata,
     Column('user_id', Integer, ForeignKey('users.id')),
     Column('service_id', Integer, ForeignKey('services.id'))
 )
+
 
 class Group(Base):
     __tablename__    = 'groups'
@@ -64,6 +67,7 @@ class Group(Base):
     user             = relationship('User', back_populates='group')
     submissions      = relationship('Submission', back_populates='group')
     regrequests      = relationship('RegRequest', back_populates='group')
+
 
 class User(Base):
     __tablename__        = 'users'
@@ -87,6 +91,7 @@ class User(Base):
     services             = relationship('Service', secondary=user_service_table, back_populates='users')
     service_executions   = relationship('ServiceExecution', back_populates='user')
 
+
 class ApiKey(Base):
     __tablename__    = 'apikeys'
     id               = Column(Integer, primary_key=True)
@@ -98,6 +103,7 @@ class ApiKey(Base):
     # Relationships
     user             = relationship('User', back_populates='apikeys')
 
+
 class PasswordToken(Base):
     __tablename__    = 'passwordtokens'
     id               = Column(Integer, primary_key=True)
@@ -107,6 +113,7 @@ class PasswordToken(Base):
     expires          = Column(DateTime, nullable=False)
     # Relationships
     user             = relationship('User', back_populates='passwordtokens')
+
 
 class RegRequest(Base):
     __tablename__    = 'regrequests'
@@ -118,6 +125,7 @@ class RegRequest(Base):
     new_group_name   = Column(Text)
     # Relationships
     group            = relationship('Group', back_populates='regrequests')
+
 
 class File(Base):
     __tablename__    = 'files'
@@ -137,6 +145,7 @@ class File(Base):
     user             = relationship('User', back_populates='files')
     downloadtokens  = relationship('DownloadToken', back_populates='file')
 
+
 class DownloadToken(Base):
     __tablename__    = 'downloadtokens'
     id               = Column(Integer, primary_key=True)
@@ -146,6 +155,7 @@ class DownloadToken(Base):
     expires          = Column(DateTime, nullable=False)
     # Relationships
     file             = relationship('File', back_populates='downloadtokens')
+
 
 class Submission(Base):
     __tablename__    = 'submissions'
@@ -158,6 +168,7 @@ class Submission(Base):
     # Relationships
     metadatasets     = relationship('MetaDataSet', back_populates='submission')
     group            = relationship('Group', back_populates='submissions')
+
 
 class MetaDatum(Base):
     __tablename__      = 'metadata'
@@ -180,6 +191,7 @@ class MetaDatum(Base):
     metadatumrecords   = relationship('MetaDatumRecord', back_populates='metadatum')
     service            = relationship('Service', back_populates='target_metadata')
 
+
 class MetaDatumRecord(Base):
     __tablename__    = 'metadatumrecords'
     id               = Column(Integer, primary_key=True)
@@ -192,6 +204,7 @@ class MetaDatumRecord(Base):
     metadatum        = relationship('MetaDatum', back_populates='metadatumrecords')
     metadataset      = relationship('MetaDataSet', back_populates='metadatumrecords')
     file             = relationship('File', back_populates='metadatumrecord')
+
 
 class MetaDataSet(Base):
     """A MetaDataSet represents all metadata associated with *one* record"""
@@ -211,6 +224,7 @@ class MetaDataSet(Base):
     replaces             = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
     service_executions   = relationship('ServiceExecution', back_populates = 'metadataset')
 
+
 class ApplicationSetting(Base):
     __tablename__ = 'appsettings'
     id           = Column(Integer, primary_key=True)
@@ -221,6 +235,7 @@ class ApplicationSetting(Base):
     float_value  = Column(Float, nullable=True)
     date_value   = Column(Date, nullable=True)
     time_value   = Column(Time, nullable=True)
+
 
 class Service(Base):
     __tablename__ = 'services'
@@ -237,11 +252,12 @@ class Service(Base):
             secondary=user_service_table,
             back_populates='services')
 
+
 class ServiceExecution(Base):
     __tablename__    = 'serviceexecutions'
-    id               = Column(Integer, primary_key=True) 
+    id               = Column(Integer, primary_key=True)
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
-    service_id       = Column(Integer, ForeignKey('services.id'), nullable=False)    
+    service_id       = Column(Integer, ForeignKey('services.id'), nullable=False)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
     datetime         = Column(DateTime, nullable=False)

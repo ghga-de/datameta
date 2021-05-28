@@ -21,6 +21,7 @@ from sqlalchemy.exc import OperationalError
 from ..security import hash_password, hash_token
 from ..models import User, Group, MetaDatum, DateTimeMode, ApiKey
 
+
 def parse_args(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config_uri', required=True, help='Configuration file, e.g., development.ini')
@@ -30,6 +31,7 @@ def parse_args(argv):
     parser.add_argument('-g', '--initial-group', required=True, type=str, help='Name of the initial group')
     parser.add_argument('-ak', '--initial-api-key', required=False, type=str, help='Initial API key for testing purposes')
     return parser.parse_args(argv[1:])
+
 
 def create_api_key(request, key):
     db = request.dbsession
@@ -43,6 +45,7 @@ def create_api_key(request, key):
             expires = None
             )
     db.add(api_key)
+
 
 def create_initial_user(request, email, fullname, password, groupname):
     from .. import siteid
@@ -68,6 +71,7 @@ def create_initial_user(request, email, fullname, password, groupname):
                 site_read=True
                 )
         db.add(root)
+
 
 def create_example_metadata(dbsession):
     if dbsession.query(MetaDatum).first() is None:
@@ -117,6 +121,7 @@ def create_example_metadata(dbsession):
                 ]
         dbsession.add_all(metadata)
 
+
 def main(argv=sys.argv):
     args = parse_args(argv)
 
@@ -133,7 +138,7 @@ def main(argv=sys.argv):
                 sys.exit(0)
 
             # Check that specified defaults aren't empty strings (e.g. from the shipped compose file)
-            for arg in ['initial_user_fullname','initial_user_email','initial_user_pass','initial_group']:
+            for arg in ['initial_user_fullname', 'initial_user_email', 'initial_user_pass', 'initial_group']:
                 if not vars(args)[arg]:
                     sys.exit(f"Please specify a valid string for '{arg}'!")
 

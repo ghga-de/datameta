@@ -17,17 +17,18 @@ from .errors import get_validation_error
 import re
 import datetime
 
+
 def validate_metadataset_record(
-        metadata:dict,
-        record:dict,
-        return_err_message:bool=False,
-        rendered:bool=False # set to true if values have already
+        metadata: dict,
+        record: dict,
+        return_err_message: bool = False,
+        rendered: bool = False  # set to true if values have already
         # been rendered (e.g. datetime fields
         # already in isoformat)
 ):
     """Validate single metadataset in isolation"""
-    errors = [] # list of errors
-                # empty means success
+    # list of errors, empty means success
+    errors = []
 
     if metadata.get("isFile") and not metadata.get("name"):
         errors.append({

@@ -28,11 +28,11 @@ from sqlalchemy import and_
     request_method  = "GET",
     openapi         = True
 )
-def get_file_url(request:Request) -> HTTPTemporaryRedirect:
+def get_file_url(request: Request) -> HTTPTemporaryRedirect:
     """Redirects to a temporary, pre-sign HTTP-URL for downloading a file.
     """
     file_id = request.openapi_validated.parameters.path['id']
-    expires_after = request.openapi_validated.parameters.query['expires'] 
+    expires_after = request.openapi_validated.parameters.query['expires']
     auth_user = security.revalidate_user(request)
 
     # get file from db:
@@ -57,7 +57,7 @@ def get_file_url(request:Request) -> HTTPTemporaryRedirect:
     renderer        = "json",
     request_method  = "GET"
 )
-def download_by_token(request:Request) -> HTTPOk:
+def download_by_token(request: Request) -> HTTPOk:
     """Download a file using a file download token.
 
     Usage: /download/{download_token}
@@ -69,8 +69,8 @@ def download_by_token(request:Request) -> HTTPOk:
     db = request.dbsession
     db_token = db.query(models.DownloadToken).filter(
         and_(
-            models.DownloadToken.value==hashed_token,
-            models.DownloadToken.expires>datetime.now()
+            models.DownloadToken.value == hashed_token,
+            models.DownloadToken.expires > datetime.now()
         )
     ).one_or_none()
 

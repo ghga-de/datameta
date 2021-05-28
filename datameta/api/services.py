@@ -27,16 +27,18 @@ from ..security import authz
 from ..models import Service, User
 from ..resource import get_identifier, resource_by_id
 
+
 @dataclass
 class ServiceResponse(DataHolderBase):
     id: dict
     name: str
     user_ids: list
 
+
 @view_config(
     route_name="services",
-    renderer='json', 
-    request_method="POST", 
+    renderer='json',
+    request_method="POST",
     openapi=True
 )
 def post(request: Request) -> ServiceResponse:
@@ -60,7 +62,7 @@ def post(request: Request) -> ServiceResponse:
         db.add(service)
         db.flush()
     except IntegrityError:
-        raise get_validation_error(["A service with that name already exists."])    
+        raise get_validation_error(["A service with that name already exists."])
 
     # Return for the new service the ID, name and all associated Users
 
@@ -74,10 +76,11 @@ def post(request: Request) -> ServiceResponse:
         user_ids = users
     )
 
+
 @view_config(
     route_name="services",
-    renderer='json', 
-    request_method="GET", 
+    renderer='json',
+    request_method="GET",
     openapi=True
 )
 def get(request: Request) -> List[ServiceResponse]:
@@ -104,10 +107,11 @@ def get(request: Request) -> List[ServiceResponse]:
 
     return services
 
+
 @view_config(
     route_name="services_id",
-    renderer='json', 
-    request_method="PUT", 
+    renderer='json',
+    request_method="PUT",
     openapi=True
 )
 def put(request: Request) -> ServiceResponse:
@@ -149,7 +153,7 @@ def put(request: Request) -> ServiceResponse:
                 user = resource_by_id(db, User, user_id)
                 if user == None:
                     messages.append("User with id " + user_id + " does not exist.")
-                    
+
                 service.users.append(user)
 
             if messages:
@@ -157,7 +161,7 @@ def put(request: Request) -> ServiceResponse:
 
         db.flush()
     except IntegrityError:
-        raise get_validation_error(["A service with that name already exists."])    
+        raise get_validation_error(["A service with that name already exists."])
 
     # Return for the modified service the ID, name and all associated Users
 

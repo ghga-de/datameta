@@ -20,15 +20,17 @@ from . import DataHolderBase, api_version
 
 import datameta
 
+
 @dataclass
 class ServerInfoResponse(DataHolderBase):
     api_version: str
     datameta_version: str
 
+
 @view_config(
     route_name="server",
-    renderer='json', 
-    request_method="GET", 
+    renderer='json',
+    request_method="GET",
     openapi=True
 )
 def get(request: Request) -> ServerInfoResponse:

@@ -24,6 +24,7 @@ from ..resource import resource_by_id, get_identifier
 from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound
 from sqlalchemy.orm import joinedload
 
+
 def get_all_metadata(db, include_service_metadata = True):
     """Queries all metadata that are currently defined and returns the database
     objects as a dictionary with the metadata names as keys.
@@ -37,33 +38,37 @@ def get_all_metadata(db, include_service_metadata = True):
         q = q.filter(MetaDatum.service_id == None)
     return { mdata.name : mdata for mdata in q }
 
+
 def get_service_metadata(db):
     """Queries all metadata that are currently defined and are service
     metadata."""
     return { mdata.name : mdata for mdata in db.query(MetaDatum).filter(MetaDatum.service_id != None) }
 
-def get_metadata_with_access(db, user:User):
+
+def get_metadata_with_access(db, user: User):
     """Queries all metadata that are currently defined and reduces the set
     according to the specified user's data access rights"""
     all_metadata = get_all_metadata(db, include_service_metadata = True)
     return authz.get_readable_metadata(all_metadata, user)
 
+
 @dataclass
 class MetaDataResponseElement(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
-    id                      :  dict
-    name                    :  str
-    is_mandatory            :  bool
-    order                   :  int
-    is_file                 :  bool
-    is_submission_unique    :  bool
-    is_site_unique          :  bool
-    regex_description       :  Optional[str] = None
-    long_description        :  Optional[str] = None
-    example                 :  Optional[str] = None
-    reg_exp                 :  Optional[str] = None
-    date_time_fmt           :  Optional[str] = None
-    service_id              :  Optional[dict] = None
+    id                      : dict
+    name                    : str
+    is_mandatory            : bool
+    order                   : int
+    is_file                 : bool
+    is_submission_unique    : bool
+    is_site_unique          : bool
+    regex_description       : Optional[str] = None
+    long_description        : Optional[str] = None
+    example                 : Optional[str] = None
+    reg_exp                 : Optional[str] = None
+    date_time_fmt           : Optional[str] = None
+    service_id              : Optional[dict] = None
+
 
 @view_config(
     route_name="metadata",
@@ -71,7 +76,7 @@ class MetaDataResponseElement(DataHolderBase):
     request_method="GET",
     openapi=True
 )
-def get(request:Request) -> List[MetaDataResponseElement]:
+def get(request: Request) -> List[MetaDataResponseElement]:
     """Obtain information for all metadata that are currently configured."""
     auth_user = security.revalidate_user(request)
 
@@ -96,23 +101,24 @@ def get(request:Request) -> List[MetaDataResponseElement]:
         for metadatum in metadata
         ]
 
+
 @view_config(
     route_name="metadata_id",
     renderer='json',
     request_method="PUT",
     openapi=True
 )
-def put(request:Request) -> MetaDataResponseElement:
+def put(request: Request) -> MetaDataResponseElement:
     """Change a metadatum"""
     auth_user = security.revalidate_user(request)
     metadata_id = request.matchdict["id"]
 
     # Only site admins can change metadata
     if not authz.update_metadatum(auth_user):
-         raise HTTPForbidden()
+        raise HTTPForbidden()
 
     body = request.openapi_validated.body
-    db = request.dbsession 
+    db = request.dbsession
     target_metadatum = resource_by_id(db, MetaDatum, metadata_id)
 
     target_metadatum.name                = body["name"]
@@ -133,8 +139,9 @@ def put(request:Request) -> MetaDataResponseElement:
         if service is not None:
             target_metadatum.service_id = service.id
         else:
-            raise HTTPNotFound() # 404 Service ID not found
-    else: target_metadatum.service_id = None
+            raise HTTPNotFound()  # 404 Service ID not found
+    else:
+        target_metadatum.service_id = None
 
     return MetaDataResponseElement(
         id                    =  resource.get_identifier(target_metadatum),
@@ -152,19 +159,20 @@ def put(request:Request) -> MetaDataResponseElement:
         service_id            =  None if not target_metadatum.service else get_identifier(target_metadatum.service)
     )
 
+
 @view_config(
     route_name="metadata",
     renderer='json',
     request_method="POST",
     openapi=True
 )
-def post(request:Request) -> MetaDataResponseElement:
+def post(request: Request) -> MetaDataResponseElement:
     """POST a new metadatum"""
     auth_user = security.revalidate_user(request)
 
     # Only site admins can post new metadata
     if not authz.create_metadatum(auth_user):
-         raise HTTPForbidden()
+        raise HTTPForbidden()
 
     body = request.openapi_validated.body
     db = request.dbsession

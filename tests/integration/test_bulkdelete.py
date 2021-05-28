@@ -3,6 +3,7 @@
 from . import BaseIntegrationTest
 from datameta.api import base_url
 
+
 class BulkDeletionTest(BaseIntegrationTest):
 
     def setUp(self):

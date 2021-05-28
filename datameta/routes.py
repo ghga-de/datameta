@@ -14,7 +14,7 @@
 
 def includeme(config):
 
-    #Ui view endpoints
+    # Ui view endpoints
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('root', '/')
     config.add_route('login', '/login')
@@ -26,5 +26,3 @@ def includeme(config):
     config.add_route('account', '/account')
     config.add_route('view', '/view')
     config.add_route('admin', '/admin')
-
-

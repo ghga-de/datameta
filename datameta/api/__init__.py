@@ -29,12 +29,14 @@ with open(openapi_spec_path, "r") as spec_file:
 base_url = openapi_spec["servers"][0]["url"]
 api_version = openapi_spec["info"]["version"]
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class DataHolderBase:
     """Base class for data classes intended to be used as API response bodies"""
     def __json__(self, request):
         return self.to_dict()
+
 
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""

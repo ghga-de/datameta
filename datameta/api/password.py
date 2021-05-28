@@ -23,6 +23,7 @@ from datetime import datetime
 
 from ..resource import resource_by_id
 
+
 @view_config(
     route_name="SetUserPassword",
     renderer='json',
@@ -38,15 +39,15 @@ def put(request):
 
     # Case A: Password reset token
     token = None
-    if request_id=='0':
+    if request_id == '0':
         # Try to find the token
         token = security.get_password_reset_token(db, request_credential)
         if token is None:
-            raise HTTPNotFound() # 404 Token not found
+            raise HTTPNotFound()  # 404 Token not found
 
         # Check if token expired
         if token is not None and token.expires < datetime.now():
-            raise HTTPGone() # 410 Token expired
+            raise HTTPGone()  # 410 Token expired
 
         # Fetch the user corresponding to the token
         auth_user = token.user
@@ -54,17 +55,17 @@ def put(request):
     # Case B: Authenticated user changing their own password
     else:
         # Obtain authorized user
-        auth_user = security.revalidate_user(request) # raises 401 if unauthorizezd
+        auth_user = security.revalidate_user(request)  # raises 401 if unauthorizezd
 
         # Try to identify the target user by UUID
         target_user = resource_by_id(db, User, request_id)
 
         if target_user is None:
-            raise HTTPForbidden() # 403 User ID not found, hidden from the user intentionally
+            raise HTTPForbidden()  # 403 User ID not found, hidden from the user intentionally
 
         # Only changing the user's own password is allowed
         if not authz.update_user_password(auth_user, target_user) or not security.check_password_by_hash(request_credential, auth_user.pwhash):
-            raise HTTPForbidden() # 403 Not authorized to change this user's password
+            raise HTTPForbidden()  # 403 Not authorized to change this user's password
 
     # Verify the password quality
     error = security.verify_password(request_newPassword)
@@ -78,4 +79,4 @@ def put(request):
     if token:
         db.delete(token)
 
-    return HTTPNoContent() # 204 all went well
+    return HTTPNoContent()  # 204 all went well

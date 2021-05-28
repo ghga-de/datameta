@@ -23,6 +23,7 @@ from .. import security
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
 
+
 @dataclass
 class UserUpdateRequest(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
@@ -33,25 +34,27 @@ class UserUpdateRequest(DataHolderBase):
     enabled: bool
     siteRead: bool
 
+
 @dataclass
 class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
-    name: str # why is this name when it is called fullname in the db?
+    name: str  # why is this name when it is called fullname in the db?
     group_admin: bool
     site_admin: bool
     site_read: bool
     email: str
     group: dict
 
+
 @view_config(
     route_name="rpc_whoami",
-    renderer='json', 
-    request_method="GET", 
+    renderer='json',
+    request_method="GET",
     openapi=True
 )
 def get_whoami(request: Request) -> UserResponseElement:
-    
+
     auth_user = security.revalidate_user(request)
 
     return UserResponseElement(
@@ -64,10 +67,11 @@ def get_whoami(request: Request) -> UserResponseElement:
         group           =   {"id": get_identifier(auth_user.group), "name": auth_user.group.name}
     )
 
+
 @view_config(
-    route_name="user_id", 
-    renderer='json', 
-    request_method="PUT", 
+    route_name="user_id",
+    renderer='json',
+    request_method="PUT",
     openapi=True
 )
 def put(request: Request):
@@ -85,12 +89,12 @@ def put(request: Request):
 
     # Authenticate the user
     auth_user = security.revalidate_user(request)
-    
+
     # Get the targeted user
     target_user = resource_by_id(db, User, user_id)
 
     if target_user is None:
-        raise HTTPNotFound() # 404 User ID not found
+        raise HTTPNotFound()  # 404 User ID not found
 
     # First, check, if the user has the rights to perform all the changes they want
 
@@ -118,12 +122,11 @@ def put(request: Request):
     if name is not None and not authz.update_user_name(auth_user, target_user):
         raise HTTPForbidden()
 
-
     # Now, make the corresponding changes
     if group_id is not None:
         new_group = resource_by_id(db, Group, group_id)
         if new_group is None:
-            raise HTTPNotFound() # 404 Group ID not found
+            raise HTTPNotFound()  # 404 Group ID not found
         target_user.group_id = new_group.id
     if site_read is not None:
         target_user.site_read = site_read

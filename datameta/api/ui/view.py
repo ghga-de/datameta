@@ -33,20 +33,23 @@ from ..metadatasets import get_record_from_metadataset, MetaDataSetResponse, col
 
 log = logging.getLogger(__name__)
 
+
 @dataclass
 class ViewTableResponse(MetaDataSetResponse):
     """Data class representing the JSON response returned by POST:/api/ui/view"""
     submission_label : Optional[str] = None
-    submission_datetime : Optional[str] = None # ISO
+    submission_datetime : Optional[str] = None  # ISO
     group_id : Optional[dict] = None
     group_name: Optional[str] = None
     user_name: Optional[str] = None
+
 
 def metadata_index_to_name(db, idx):
     name = db.query(MetaDatum.name).order_by(MetaDatum.order).limit(1).offset(idx).scalar()
     if not name:
         errors.get_validation_error(["Invalid sort column index"])
     return name
+
 
 @view_config(
     route_name      = "ui_view",
@@ -92,7 +95,7 @@ def post(request: Request):
     # SQL AND clauses to apply to the filter query
     and_filters = [
             # This clause joins the EXISTS subquery with the main query
-            MetaDataSet.id==MetaDataSetFilter.id,
+            MetaDataSet.id == MetaDataSetFilter.id,
             ]
 
     # This clause restricts the results to submissions of the user's group
@@ -135,8 +138,8 @@ def post(request: Request):
     # WHERE clause by AND linking the clauses prepared above.
     filter_query = filter_query\
             .join(Submission)\
-            .join(Group, Submission.group_id==Group.id)\
-            .join(User, MetaDataSetFilter.user_id==User.id)\
+            .join(Group, Submission.group_id == Group.id)\
+            .join(User, MetaDataSetFilter.user_id == User.id)\
             .filter(and_(*and_filters))
 
     # Query the matching metadatasets, adding the total number of records as an
@@ -147,17 +150,17 @@ def post(request: Request):
 
     MetaDatumRecordOrder = aliased(MetaDatumRecord)
     mdata_name = None
-    if   sort_idx == 0: # The submission label
+    if   sort_idx == 0:  # The submission label
         mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.label))
-    elif sort_idx == 1: # The submission time
+    elif sort_idx == 1:  # The submission time
         mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.date))
-    elif sort_idx == 2: # The user full name
-        mdatasets_base_query = mdatasets_base_query.join(User).order_by(direction(User.fullname)) # TODO FIX
-    elif sort_idx == 3: # The submission group name
-        mdatasets_base_query = mdatasets_base_query.join(Submission).join(Group).order_by(direction(Group.site_id)) # TODO FIX
-    elif sort_idx == 4: # The metadataset site ID
+    elif sort_idx == 2:  # The user full name
+        mdatasets_base_query = mdatasets_base_query.join(User).order_by(direction(User.fullname))  # TODO FIX
+    elif sort_idx == 3:  # The submission group name
+        mdatasets_base_query = mdatasets_base_query.join(Submission).join(Group).order_by(direction(Group.site_id))  # TODO FIX
+    elif sort_idx == 4:  # The metadataset site ID
         mdatasets_base_query = mdatasets_base_query.order_by(direction(MetaDataSet.site_id))
-    else: # Sorting by a metadatum value
+    else:  # Sorting by a metadatum value
         mdata_name = metadata_index_to_name(db, sort_idx - 5)
         # [WARNING] The following JOIN assumes that an inner join between MetaDatumRecord
         # and MetaDatum does not result in a loss of rows if the JOIN is restricted to one
@@ -165,7 +168,7 @@ def post(request: Request):
         # store a MetaDatumRecord for every MetaDatum known, even if it is NULL.
         mdatasets_base_query = mdatasets_base_query\
                 .join(MetaDatumRecord)\
-                .join(MetaDatum, and_(MetaDatumRecord.metadatum_id==MetaDatum.id,MetaDatum.name==mdata_name))\
+                .join(MetaDatum, and_(MetaDatumRecord.metadatum_id == MetaDatum.id, MetaDatum.name == mdata_name))\
                 .order_by(direction(MetaDatumRecord.value))
 
     # Add the EXISTS statement the query, specify the relationships that we want to JOIN for fast
@@ -192,13 +195,13 @@ def post(request: Request):
     # Note:
     # There seems to be little benefit of providing this number to datatables.
     # If different from records_filtered, the footer shows a summary as in
-    # "Showing 1 to 25 of 502 entries (filtered from 1,800 total entries)"
+    # "Showing 1 to 25 of 502 entries (filtered from 1, 800 total entries)"
     # otherwise only the first part of the message is shown. The query should
     # be rather fast, but may be a waste of resources.
     records_total = db.query(func.count(MetaDataSet.id))\
             .select_from(MetaDataSet)\
             .join(Submission)\
-            .filter(Submission.group_id==auth_user.group_id)\
+            .filter(Submission.group_id == auth_user.group_id)\
             .scalar()
 
     # Check which metadata of this metadataset the user is allowed to view

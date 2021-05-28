@@ -4,6 +4,7 @@
 from . import BaseIntegrationTest
 from datameta.api import base_url
 
+
 class TestBasics(BaseIntegrationTest):
 
     def setUp(self):

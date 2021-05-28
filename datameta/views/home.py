@@ -16,6 +16,7 @@ from pyramid.view import view_config
 
 from .. import security
 
+
 @view_config(route_name='home', renderer='../templates/home.pt')
 def my_view(request):
     security.revalidate_user_or_login(request)

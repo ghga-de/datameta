@@ -28,17 +28,20 @@ from . import DataHolderBase
 from .metadata import get_all_metadata
 from .metadatasets import get_record_from_metadataset
 
+
 @dataclass
 class SubmissionBase(DataHolderBase):
     """Base class for Submission communication to OpenApi"""
     metadataset_ids: List[dict]
     file_ids: List[dict]
 
+
 @dataclass
 class SubmissionResponse(SubmissionBase):
     """SubmissionResponse container for OpenApi communication"""
-    id:dict
-    label:str
+    id: dict
+    label: str
+
 
 def validate_submission_access(db, db_files, db_msets, auth_user):
     """Validates a submission with regard to
@@ -50,13 +53,13 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
         400 HTTPBadRequest
     """
     # Collect missing files
-    val_errors = [ 
-        ({ 'site' : file_id, 'uuid' : file_id }, None, "Not found") 
+    val_errors = [
+        ({ 'site' : file_id, 'uuid' : file_id }, None, "Not found")
         for file_id, db_file in db_files.items()
-        if db_file is None 
+        if db_file is None
     ]
     # Collect authorization issues
-    val_errors += [ 
+    val_errors += [
         ({ 'site' : file_id, 'uuid' : file_id }, None, "Access denied")
         for file_id, db_file in db_files.items()
         if db_file is not None and not authz.submit_file(auth_user, db_file)
@@ -80,6 +83,7 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
         entities, fields, messages = zip(*val_errors)
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
+
 def validate_submission_association(db_files, db_msets):
     """Validates a submission with regard to
 
@@ -94,7 +98,7 @@ def validate_submission_association(db_files, db_msets):
     """
     errors = []
     # Collect files with no data associated
-    errors += [ (db_file, None, "No data uploaded") for file_id, db_file in db_files.items() if db_file.content_uploaded==False ]
+    errors += [ (db_file, None, "No data uploaded") for file_id, db_file in db_files.items() if db_file.content_uploaded == False ]
     # Collect files which already have other metadata associated
     errors += [ (db_file, None, "Already submitted") for file_id, db_file in db_files.items() if db_file.metadatumrecord is not None ]
     # Collect metadatasets that were already submitted
@@ -122,7 +126,7 @@ def validate_submission_association(db_files, db_msets):
     # Make sure referenced file names are unique
     ref_fname_counts = Counter(mdatrec.value for mdatrecs in mdat_fnames_obj.values() for mdatrec in mdatrecs)
     errors += [ (mdatrec.metadataset, mdatrec.metadatum.name, "Filename occurs multiple times in metadata")
-            for ref_fname, count in ref_fname_counts.items() if count > 1 
+            for ref_fname, count in ref_fname_counts.items() if count > 1
             for mdatrec in mdat_fnames_obj[ref_fname]]
 
     # Make sure the files' filenames and the referenced filenames match
@@ -131,13 +135,14 @@ def validate_submission_association(db_files, db_msets):
 
     return f_names_obj, ref_fnames, errors
 
+
 def validate_submission_uniquekeys(db, db_files, db_msets):
     errors = []
 
     # Submission unique keys (includes those that are globally unique)
-    keys_submission_unique  = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique==True, MetaDatum.site_unique==True)) ]
+    keys_submission_unique  = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique == True, MetaDatum.site_unique == True)) ]
     # Globally unique keys
-    keys_site_unique        = [ md.name for md in db.query(MetaDatum).filter(MetaDatum.site_unique==True) ]
+    keys_site_unique        = [ md.name for md in db.query(MetaDatum).filter(MetaDatum.site_unique == True) ]
 
     # Validate the set of metadatasets with regard to submission unique key constraints
     for key in keys_submission_unique:
@@ -145,7 +150,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         # Associate all values for that key with the metadatasets it occurs in
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
-                if mdatrec.metadatum.name==key:
+                if mdatrec.metadatum.name == key:
                     value_msets[mdatrec.value].append(db_mset)
         # Reduce to those values that occur in more than one metadatast
         value_msets = { k: v for k, v in value_msets.items() if len(v) > 1 }
@@ -158,7 +163,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         # Associate all values for that key with the metadatasets it occurs in
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
-                if mdatrec.metadatum.name==key:
+                if mdatrec.metadatum.name == key:
                     value_msets[mdatrec.value].append(db_mset)
 
         # Query the database for the supplied values
@@ -167,7 +172,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
                 .join(MetaDatum)\
                 .filter(and_(
                     MetaDataSet.submission_id != None,
-                    MetaDatum.name==key,
+                    MetaDatum.name == key,
                     MetaDatumRecord.value.in_(value_msets.keys())
                     ))
 
@@ -175,6 +180,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         errors += [ (db_mset, key, "Violation of global unique constraint") for value, msets in value_msets.items() if value in db_values for db_mset in msets ]
 
     return errors
+
 
 def validate_submission(request, auth_user):
     db = request.dbsession
@@ -214,11 +220,12 @@ def validate_submission(request, auth_user):
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
     # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
-    fnames = { k : v[0] for k,v in fnames.items() }
+    fnames = { k : v[0] for k, v in fnames.items() }
 
     return fnames, ref_fnames, db_files, db_msets
 
 ####################################################################################################
+
 
 @view_config(
     route_name      = "presubvalidation",
@@ -244,6 +251,7 @@ def post_pre(request: Request) -> HTTPNoContent:
 
 ####################################################################################################
 
+
 @view_config(
     route_name      = "submissions",
     renderer        = "json",
@@ -262,7 +270,7 @@ def post(request: Request) -> SubmissionResponse:
     db = request.dbsession
 
     label = request.openapi_validated.body.get("label")
-    label = label if label else None # Convert empty strings to None
+    label = label if label else None  # Convert empty strings to None
 
     # Raises 400 in case of any validation issues
     fnames, ref_fnames, db_files, db_msets = validate_submission(request, auth_user)

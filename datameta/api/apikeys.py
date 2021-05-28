@@ -26,6 +26,7 @@ from datetime import datetime, timedelta
 from pyramid import threadlocal
 from . import DataHolderBase
 
+
 @dataclass
 class UserSession(DataHolderBase):
     """User Session as return object when requesting new ApiKey"""
@@ -35,12 +36,13 @@ class UserSession(DataHolderBase):
     label: str
     expires: Optional[str]
 
+
 class ApiKeyLabels:
     """ApiKeyLabels container for OpenApi communication"""
 
     apikeys: List[dict]
 
-    def __init__(self, user:models.User):
+    def __init__(self, user: models.User):
         self.apikeys = [
             {
                 "id": get_identifier(key),
@@ -55,7 +57,7 @@ class ApiKeyLabels:
         return self.apikeys
 
 
-def get_expiration_date_from_str(expires_str:Optional[str]):
+def get_expiration_date_from_str(expires_str: Optional[str]):
     """Validates a user-defined ApiKey expiration date and converts it into a datetime object"""
     # calculated the latest expiration date allowed
     max_expiration_period = int(threadlocal.get_current_registry().settings['datameta.apikeys.max_expiration_period'])
@@ -69,27 +71,27 @@ def get_expiration_date_from_str(expires_str:Optional[str]):
             expires_datetime = datetime.fromisoformat(expires_str)
         except (ValueError, TypeError):
             raise get_validation_error(
-                messages=["Wrong datetime format. Please use isoformat."],
-                fields=["expires"]
+                messages = ["Wrong datetime format. Please use isoformat."],
+                fields = ["expires"]
             )
 
         # check if chosen expiratio date exceeds max_expiration_datetime:
         if expires_datetime > max_expiration_datetime:
             raise get_validation_error(
-                messages=[
+                messages = [
                     (
                         "The defined expiration date exceeded"
                         " the max allowed expiration period, "
                         f"which is {max_expiration_period} days."
                     )
                 ],
-                fields=["expires"]
+                fields = ["expires"]
             )
 
     return expires_datetime
 
 
-def generate_api_key(request:Request, user:models.User, label:str, expires:Optional[datetime]=None):
+def generate_api_key(request: Request, user: models.User, label: str, expires: Optional[datetime] = None):
     """
     Generate API Token and store unsalted hash in db.
     """
@@ -107,20 +109,21 @@ def generate_api_key(request:Request, user:models.User, label:str, expires:Optio
     db.flush()
 
     return UserSession(
-        id=get_identifier(apikey),
-        user_id=get_identifier(user),
-        token=token,
-        label=apikey.label,
-        expires=expires.isoformat() if expires else None
+        id = get_identifier(apikey),
+        user_id = get_identifier(user),
+        token = token,
+        label = apikey.label,
+        expires = expires.isoformat() if expires else None
     )
 
+
 @view_config(
-    route_name="apikeys",
-    renderer='json',
-    request_method="POST",
-    openapi=True
+    route_name = "apikeys",
+    renderer = 'json',
+    request_method = "POST",
+    openapi = True
 )
-def post(request:Request) -> UserSession:
+def post(request: Request) -> UserSession:
     """Request new ApiKey"""
     try:
         auth_user = security.revalidate_user(request)
@@ -146,12 +149,12 @@ def post(request:Request) -> UserSession:
 
 
 @view_config(
-    route_name="user_id_keys",
-    renderer='json',
-    request_method="GET",
-    openapi=True
+    route_name = "user_id_keys",
+    renderer = 'json',
+    request_method = "GET",
+    openapi = True
 )
-def get_user_keys(request:Request) -> ApiKeyLabels:
+def get_user_keys(request: Request) -> ApiKeyLabels:
     """Get all ApiKeys from a user"""
 
     auth_user = security.revalidate_user(request)
@@ -164,14 +167,13 @@ def get_user_keys(request:Request) -> ApiKeyLabels:
     return ApiKeyLabels(auth_user)
 
 
-
 @view_config(
-    route_name="apikeys_id",
-    renderer='json',
-    request_method="DELETE",
-    openapi=True
+    route_name = "apikeys_id",
+    renderer = 'json',
+    request_method = "DELETE",
+    openapi = True
 )
-def delete_key(request:Request) -> UserSession:
+def delete_key(request: Request) -> UserSession:
     """Delete an ApiKey"""
     auth_user = security.revalidate_user(request)
 
@@ -183,4 +185,3 @@ def delete_key(request:Request) -> UserSession:
     db.delete(target_key)
 
     return HTTPOk()
-

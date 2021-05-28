@@ -22,6 +22,7 @@ from .. import resource, models, storage, security
 
 log = logging.getLogger(__name__)
 
+
 @view_config(
     route_name="upload",
     renderer="json",
@@ -54,7 +55,7 @@ def post(request) -> HTTPNoContent:
     # Validate access token match
     db_file = db_file if db_file and req_token and db_file.upload_expires > datetime.now() and db_file.access_token == security.hash_token(req_token) else None
 
-    if db_file is None: # Includes token mismatch
+    if db_file is None:  # Includes token mismatch
         raise HTTPNotFound(json=None)
 
     # Verify that this file is still open for uploads

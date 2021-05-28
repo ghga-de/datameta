@@ -19,6 +19,7 @@ from datameta.api import base_url
 no_service_metadata   = {'ZIP Code', 'ID', 'FileR1', 'Date', 'FileR2'}
 all_metadata          = no_service_metadata.union({ 'ServiceMeta0' , 'ServiceMeta1' })
 
+
 class TestGetMetaDataSets(BaseIntegrationTest):
 
     def setUp(self):
@@ -34,7 +35,6 @@ class TestGetMetaDataSets(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('serviceexecutions')
         self.fixture_manager.copy_files_to_storage()
         self.fixture_manager.populate_metadatasets()
-
 
     @parameterized.expand([
         # Unauthenticated users should get a 401
@@ -57,12 +57,12 @@ class TestGetMetaDataSets(BaseIntegrationTest):
         ("service_user_combined", "service_user_0", "awaitingService=service_0&submittedBefore=2021-01-02T00:00:00%2B00:00", {'mset_a'}, all_metadata, True, 200),
         ])
     def test_query_metadatasets(self, _,
-            executing_user:str,
-            query_string:str,
-            expected_mset_ids:list,
-            expected_metadata:list,
-            expected_with_service_executions:bool,
-            expected_status:int):
+            executing_user: str,
+            query_string: str,
+            expected_mset_ids: list,
+            expected_metadata: list,
+            expected_with_service_executions: bool,
+            expected_status: int):
 
         user = self.fixture_manager.get_fixture('users', executing_user) if executing_user else None
         auth_headers = self.apikey_auth(user) if user else {}
@@ -73,7 +73,7 @@ class TestGetMetaDataSets(BaseIntegrationTest):
             status    = expected_status
         )
 
-        if expected_status== 200:
+        if expected_status == 200:
             # Check if the returned metadatasets are the expected ones
             returned_mset_ids = { mset['id']['site'] for mset in response.json }
             assert returned_mset_ids == expected_mset_ids, "Returned metadatasets did not match expected ones"

@@ -27,6 +27,7 @@ from ..metadata import get_all_metadata
 
 log = logging.getLogger(__name__)
 
+
 def formatted_mrec_value(value, datetimefmt):
     if datetimefmt is not None:
         try:
@@ -34,6 +35,7 @@ def formatted_mrec_value(value, datetimefmt):
         except ValueError:
             pass
     return value
+
 
 def get_samplesheet_reader(file_like_obj):
     """Given a file with tabular data which is either in delimited plain text
@@ -52,6 +54,7 @@ def get_samplesheet_reader(file_like_obj):
         return create_excel_reader
     else:
         dialect = csv.Sniffer().sniff(file_like_obj.read(1024).decode())
+
         def create_table_reader(sheet, sep=dialect.delimiter):
             return pd.read_table(sheet, dtype="object", sep=sep)
         file_like_obj.seek(0)
@@ -59,6 +62,7 @@ def get_samplesheet_reader(file_like_obj):
 
 
 ####################################################################################################
+
 
 def convert_samplesheet(db, file_like_obj, filename, user):
     # Try to read the sample sheet
@@ -95,6 +99,7 @@ def convert_samplesheet(db, file_like_obj, filename, user):
 
 
 ####################################################################################################
+
 
 @view_config(
     route_name      = "convert",

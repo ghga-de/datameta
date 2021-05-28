@@ -26,18 +26,20 @@ from ..resource import resource_by_id
 from ..settings import get_setting_value_type
 import datetime
 
+
 @dataclass
 class AppSettingsResponseElement(DataHolderBase):
     """Class for Appsettings Request Response from OpenApi"""
-    id:         dict
-    key:        str
-    value_type:  str
-    value:      str
+    id           : dict
+    key          : str
+    value_type   : str
+    value        : str
+
 
 @view_config(
-    route_name="appsettings", 
-    renderer='json', 
-    request_method="GET", 
+    route_name="appsettings",
+    renderer='json',
+    request_method="GET",
     openapi=True
 )
 def get(request: Request) -> List[AppSettingsResponseElement]:
@@ -69,13 +71,14 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
 
     return settings
 
+
 @view_config(
     route_name="appsettings_id",
     renderer='json',
     request_method="PUT",
     openapi=True
 )
-def put(request:Request):
+def put(request: Request):
     """Change an application setting"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
@@ -83,7 +86,7 @@ def put(request:Request):
 
     # Only site admins can change site settings
     if not authz.update_appsettings(auth_user):
-         raise HTTPForbidden()
+        raise HTTPForbidden()
 
     target_setting = resource_by_id(db, ApplicationSetting, settings_id)
 
@@ -96,9 +99,9 @@ def put(request:Request):
         except ValueError:
             err = {
                 "exception": "ValidationError",
-            }   
+            }
             raise errors.get_validation_error(["You have to provide an integer."])
-            
+
         target_setting.int_value = value_int
 
     elif value_type == 'string':
@@ -110,29 +113,29 @@ def put(request:Request):
         except ValueError:
             err = {
                 "exception": "ValidationError",
-            }   
+            }
             raise errors.get_validation_error(["You have to provide a float."])
-            
+
         target_setting.float_value = value_float
 
     elif value_type == 'date':
-        try: 
-            datetime.datetime.strptime(value,"%Y-%m-%d")
+        try:
+            datetime.datetime.strptime(value, "%Y-%m-%d")
         except ValueError:
             err = {
                 "exception": "ValidationError",
-            }   
+            }
             raise errors.get_validation_error(["The date value has to specified in the form '%Y-%m-%d'."])
 
         target_setting.date_value = value
 
     elif value_type == 'time':
-        try: 
-            datetime.datetime.strptime(value,"%H:%M:%S")
+        try:
+            datetime.datetime.strptime(value, "%H:%M:%S")
         except ValueError:
             err = {
                 "exception": "ValidationError",
-            }   
+            }
             raise errors.get_validation_error(["The time value has to specified in the form '%H:%M:%S'."])
 
         target_setting.date_value = value
