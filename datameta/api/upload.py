@@ -66,12 +66,8 @@ def post(request) -> HTTPNoContent:
     if not db_file.storage_uri.startswith("file://"):
         raise HTTPNotFound(json=None)
 
-    # Calculate the file size
-    req_file_data.seek(0, 2)
-    file_size = req_file_data.tell()
-    req_file_data.seek(0)
-
     # Store the file on disk
+    req_file_data.seek(0)
     storage.write_file(request, db_file, req_file_data)
 
     return HTTPNoContent()

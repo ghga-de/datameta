@@ -49,7 +49,7 @@ def get(request: Request) -> RegisterOptionsResponse:
     user_agreement = db.query(ApplicationSetting).filter(ApplicationSetting.key == "user_agreement").first()
     groups = db.query(Group)
 
-    if not user_agreement == None:
+    if user_agreement is not None:
         user_agreement = str(user_agreement.str_value)
 
     return RegisterOptionsResponse(
@@ -62,11 +62,11 @@ def get_authorative_admins(db, reg_request):
     """Identifies administrative users that are authorative for a given
     registration request and returns the corresponding database user objects"""
     if reg_request.group_id is None:
-        return db.query(User).filter(User.site_admin == True).all()
+        return db.query(User).filter(User.site_admin.is_(True)).all()
     else:
         return db.query(User).filter(or_(
-            User.site_admin == True,
-            and_(User.group_admin == True, User.group_id == reg_request.group_id)
+            User.site_admin.is_(True),
+            and_(User.group_admin.is_(True), User.group_id == reg_request.group_id)
             )).all()
 
 

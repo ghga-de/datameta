@@ -37,7 +37,7 @@ class GroupNameUpdate(BaseIntegrationTest):
             apikey = self.fixture_manager.get_fixture("apikeys", executing_user + ("_expired" if is_expired else ""))
             req_args["headers"] = get_auth_header(apikey.value_plain)
 
-        response = self.testapp.put_json(
+        self.testapp.put_json(
             f"{base_url}/groups/{target_group_id}",
             **req_args
         )

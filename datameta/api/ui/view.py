@@ -148,7 +148,6 @@ def post(request: Request):
     # number of matching records as required by datatables.
     mdatasets_base_query = db.query(MetaDataSet, func.count().over())
 
-    MetaDatumRecordOrder = aliased(MetaDatumRecord)
     mdata_name = None
     if   sort_idx == 0:  # The submission label
         mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.label))

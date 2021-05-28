@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .models import ApplicationSetting
 import transaction
 from .models import ApplicationSetting, get_engine, get_tm_session, get_session_factory
 import pkgutil

@@ -139,11 +139,11 @@ def put(request: Request) -> ServiceResponse:
     # Try to update the service, catch Integrity Error, if a service with that name already exists
     try:
         # If no name was sent, don't change it
-        if name != None:
+        if name is not None:
             service.name = name
 
         # If no userIds were sent, we don't change them
-        if user_ids != None:
+        if user_ids is not None:
             # Delete all users
             service.users = []
             messages = []
@@ -151,7 +151,7 @@ def put(request: Request) -> ServiceResponse:
             # Add the new users
             for user_id in user_ids:
                 user = resource_by_id(db, User, user_id)
-                if user == None:
+                if user is None:
                     messages.append("User with id " + user_id + " does not exist.")
 
                 service.users.append(user)

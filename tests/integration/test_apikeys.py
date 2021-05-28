@@ -67,7 +67,7 @@ class TestApiKeyUsageSenario(BaseIntegrationTest):
         status: int = 200
     ):
         """Delete ApiKey"""
-        response = self.testapp.delete(
+        self.testapp.delete(
             base_url + f"/keys/{apikey_id}",
             headers = get_auth_header(token),
             status = status

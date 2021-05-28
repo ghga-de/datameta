@@ -35,14 +35,14 @@ def get_all_metadata(db, include_service_metadata = True):
     """
     q = db.query(MetaDatum)
     if not include_service_metadata:
-        q = q.filter(MetaDatum.service_id == None)
+        q = q.filter(MetaDatum.service_id.is_(None))
     return { mdata.name : mdata for mdata in q }
 
 
 def get_service_metadata(db):
     """Queries all metadata that are currently defined and are service
     metadata."""
-    return { mdata.name : mdata for mdata in db.query(MetaDatum).filter(MetaDatum.service_id != None) }
+    return { mdata.name : mdata for mdata in db.query(MetaDatum).filter(MetaDatum.service_id.isnot(None)) }
 
 
 def get_metadata_with_access(db, user: User):
@@ -78,7 +78,7 @@ class MetaDataResponseElement(DataHolderBase):
 )
 def get(request: Request) -> List[MetaDataResponseElement]:
     """Obtain information for all metadata that are currently configured."""
-    auth_user = security.revalidate_user(request)
+    security.revalidate_user(request)
 
     metadata = request.dbsession.query(MetaDatum).order_by(MetaDatum.order).options(joinedload(MetaDatum.service))
 

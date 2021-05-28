@@ -77,7 +77,7 @@ class SMTPClient:
             part = MIMEBase("application", app_type)
             part.set_payload(data)
             email.encoders.encode_base64(part)
-            bfname = fname.encode('utf-8')
+            # bfname = fname.encode('utf-8')
             part.add_header('Content-Disposition', 'attachment', filename=fname)
             message.attach(part)
 
