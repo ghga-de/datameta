@@ -14,17 +14,17 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent, HTTPUnauthorized, HTTPNotFound, HTTPForbidden
+from pyramid.httpexceptions import HTTPNotFound, HTTPForbidden
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from dataclasses import dataclass
 from typing import List
 
 from . import DataHolderBase
-from .. import security, errors, resource, siteid
+from .. import security, resource
 from ..errors import get_validation_error
 from ..security import authz
-from ..models import Service, ServiceExecution, User
+from ..models import Service, User
 from ..resource import get_identifier, resource_by_id
 
 @dataclass

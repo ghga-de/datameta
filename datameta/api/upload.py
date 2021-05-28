@@ -15,7 +15,6 @@
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest, HTTPConflict, HTTPNoContent
 from pyramid.view import view_config
 
-import hashlib
 import webob
 import logging
 from datetime import datetime

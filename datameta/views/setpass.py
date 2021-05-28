@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound, HTTPNoContent, HTTPBadRequest, HTTPUnauthorized
 from pyramid.view import view_config
 
-from ..models import User, PasswordToken
 from .. import security
 from ..api.ui.forgot import send_forgot_token
 

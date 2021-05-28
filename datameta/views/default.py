@@ -13,11 +13,8 @@
 # limitations under the License.
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPException, HTTPFound
+from pyramid.httpexceptions import HTTPFound
 
-from sqlalchemy.exc import DBAPIError
-
-from ..models import ApplicationSetting
 from .. import security, settings
 
 from pyramid.events import subscriber

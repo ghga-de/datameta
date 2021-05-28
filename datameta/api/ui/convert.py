@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlalchemy.orm import joinedload
-
-from pyramid.httpexceptions import HTTPBadRequest, HTTPOk
+from pyramid.httpexceptions import HTTPOk
 from pyramid.request import Request
 from pyramid.view import view_config
 import webob
@@ -25,7 +23,6 @@ import csv
 import pandas as pd
 
 from ... import security, samplesheet, errors
-from ...models import MetaDatum, MetaDataSet, MetaDatumRecord
 from ..metadata import get_all_metadata
 
 log = logging.getLogger(__name__)

@@ -13,13 +13,8 @@
 # limitations under the License.
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound
 
-from sqlalchemy.exc import DBAPIError
 from ..models import Group
-
-from .. import models
-from .. import security
 
 @view_config(route_name='register', renderer='../templates/register.pt')
 def v_register(request):

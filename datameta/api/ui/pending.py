@@ -26,7 +26,6 @@ from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, File
 from ..metadatasets import MetaDataSetResponse, get_record_from_metadataset
 from ..metadata import get_all_metadata
 from ..files import FileResponse
-from .convert import formatted_mrec_value
 
 ####################################################################################################
 

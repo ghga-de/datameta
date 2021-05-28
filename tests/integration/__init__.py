@@ -1,19 +1,12 @@
 """The skeleton of the test framework.
 """
-
-import os
-import json
-
 import unittest
 from webtest import TestApp
 import tempfile
 
-from pyramid import testing
-from pyramid.httpexceptions import HTTPFound
 import transaction
 from sqlalchemy_utils import create_database, drop_database, database_exists
 
-from datameta import models
 from datameta.models import (
     get_engine,
     get_session_factory
@@ -22,7 +15,6 @@ from datameta.models.meta import Base
 
 from .fixtures import (
     db_url,
-    memcached_url, 
     FixtureManager,
     default_settings,
     holders
