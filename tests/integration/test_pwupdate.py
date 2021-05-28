@@ -21,6 +21,7 @@ from . import BaseIntegrationTest
 from datameta.api import base_url
 from .fixtures import FixtureNotFoundError
 
+
 class TestPasswordUpdate(BaseIntegrationTest):
 
     def setUp(self):
@@ -32,16 +33,16 @@ class TestPasswordUpdate(BaseIntegrationTest):
 
     @parameterized.expand([
         # TEST_NAME                           EXEC_USER    TGT_USER_ID    TOKEN_FIXTURE                            NEW_PW             EXPIRED   RESP
-        ("self_pw_update_oldpass"           , "user_a"   , None         , None                                   , "012345678910"   , False   , 204), 
-        ("self_pw_update_reset_token"       , "user_a"   , None         , "user_a_reset_token"                   , "012345678910"   , False   , 204), 
-        ("self_pw_update_reset_exp_token"   , "user_a"   , None         , "user_a_reset_token"                   , "012345678910"   , True    , 410), 
-        ("self_expired_auth"                , "user_a"   , None         , None                                   , "012345678910"   , True    , 401), 
-        ("self_invalid_password"            , "user_a"   , None         , None                                   , "*meep*"         , False   , 400), 
-        ("self_invalid_reset_token"         , "user_a"   , None         , "does_not_exist"                       , "012345678910"   , False   , 404), 
-        ("other_password_update"            , "user_a"   , "user_b"     , None                                   , "012345678910"   , False   , 403), 
-        ("other_password_update"            , "user_a"   , "nihilist"   , None                                   , "012345678910"   , False   , 403), 
+        ("self_pw_update_oldpass"           , "user_a"   , None         , None                                   , "012345678910"   , False   , 204),
+        ("self_pw_update_reset_token"       , "user_a"   , None         , "user_a_reset_token"                   , "012345678910"   , False   , 204),
+        ("self_pw_update_reset_exp_token"   , "user_a"   , None         , "user_a_reset_token"                   , "012345678910"   , True    , 410),
+        ("self_expired_auth"                , "user_a"   , None         , None                                   , "012345678910"   , True    , 401),
+        ("self_invalid_password"            , "user_a"   , None         , None                                   , "*meep*"         , False   , 400),
+        ("self_invalid_reset_token"         , "user_a"   , None         , "does_not_exist"                       , "012345678910"   , False   , 404),
+        ("other_password_update"            , "user_a"   , "user_b"     , None                                   , "012345678910"   , False   , 403),
+        ("other_password_update"            , "user_a"   , "nihilist"   , None                                   , "012345678910"   , False   , 403),
         ])
-    def test_password_update(self, _, executing_user:str, target_user_id:str, token_fixture:str, new_password:str, expired_auth:bool, expected_response:int):
+    def test_password_update(self, _, executing_user: str, target_user_id: str, token_fixture: str, new_password: str, expired_auth: bool, expected_response: int):
         if token_fixture:
             user_id = "0"
             try:
@@ -54,7 +55,7 @@ class TestPasswordUpdate(BaseIntegrationTest):
             user = self.fixture_manager.get_fixture('users', executing_user)
             credential = user.password
             apikey = self.fixture_manager.get_fixture('apikeys', executing_user + ("_expired" if expired_auth else ""))
-            auth_header = get_auth_header(apikey.value_plain) 
+            auth_header = get_auth_header(apikey.value_plain)
             if not target_user_id:
                 user_id = user.site_id
             else:

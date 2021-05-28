@@ -23,6 +23,7 @@ from pyramid.events import BeforeRender
 import logging
 log = logging.getLogger(__name__)
 
+
 @subscriber(BeforeRender)
 def add_global(event):
     appsetting = settings.get_setting(event['request'].dbsession, "logo_html")
@@ -31,6 +32,7 @@ def add_global(event):
         log.error("Missing application settings 'logo_html'")
     else:
         event['logo_html'] = appsetting
+
 
 @view_config(route_name='root')
 def root_view(request):

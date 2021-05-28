@@ -25,8 +25,10 @@ from . import DataHolderBase
 
 log = logging.getLogger(__name__)
 
+
 class FileDeleteError(RuntimeError):
     pass
+
 
 @dataclass
 class FileBase(DataHolderBase):
@@ -36,11 +38,13 @@ class FileBase(DataHolderBase):
     user_id     : str
     expires  : Optional[str]
 
+
 @dataclass
 class FileUploadResponse(FileBase):
     """FileUploadResponse container for OpenApi communication"""
     url_to_upload    : str
     request_headers  : dict
+
 
 @dataclass
 class FileResponse(FileBase):
@@ -53,7 +57,7 @@ class FileResponse(FileBase):
 def delete_staged_file_from_db(file_id, db, auth_user):
     # Obtain file from database
     db_file = resource.resource_query_by_id(db, models.File, file_id).one_or_none()
-    
+
     # Check if file could be found
     if db_file is None:
         raise HTTPNotFound(json=None)
@@ -66,7 +70,7 @@ def delete_staged_file_from_db(file_id, db, auth_user):
         raise errors.get_not_modifiable_error()
 
     user_uuid, file_uuid, storage_uri = db_file.user.uuid, db_file.uuid, db_file.storage_uri
-    
+
     # Delete the database record
     db.delete(db_file)
 
@@ -74,7 +78,7 @@ def delete_staged_file_from_db(file_id, db, auth_user):
 
 
 def access_file_by_user(
-    request:Request,
+    request: Request,
     user: models.User,
     file_id: str
 ) -> models.File:
@@ -91,6 +95,7 @@ def access_file_by_user(
 
     return db_file
 
+
 @view_config(
     route_name      = "rpc_delete_files",
     renderer        = "json",
@@ -105,7 +110,7 @@ def delete_files(request: Request) -> HTTPNoContent:
 
     deleted_files = [
         delete_staged_file_from_db(file_id, db, auth_user)
-        for file_id in set(request.openapi_validated.body["fileIds"])    
+        for file_id in set(request.openapi_validated.body["fileIds"])
     ]
 
     # Commit transaction
@@ -151,7 +156,7 @@ def post(request: Request) -> FileUploadResponse:
             checksum          = req_checksum,
             user_id           = auth_user.id,
             content_uploaded  = False,
-            upload_expires    = datetime.now() + timedelta(days=1) # TODO make this configurable
+            upload_expires    = datetime.now() + timedelta(days=1)  # TODO make this configurable
             )
 
     # INSERT the file and flush to obtain UUID for storage_uri generation
@@ -210,6 +215,7 @@ def get_file(request: Request) -> FileResponse:
             expires           = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 
+
 @view_config(
     route_name="files_id",
     renderer="json",
@@ -226,12 +232,12 @@ def update_file(request: Request) -> HTTPOk:
     # Check if the requested resource exists and is still modifiable
     db_file = resource.resource_by_id(db, models.File, request.matchdict['id'])
     if db_file is None:
-        raise HTTPNotFound(json=None) # 404
+        raise HTTPNotFound(json=None)  # 404
     if not authz.submit_file(auth_user, db_file):
-        raise HTTPForbidden(json=None) # 403
+        raise HTTPForbidden(json=None)  # 403
     # We only allow modifications before the file is committed (uploaded)
     if db_file.content_uploaded:
-        raise errors.get_not_modifiable_error() # 403
+        raise errors.get_not_modifiable_error()  # 403
 
     # Update properties
     if 'checksum' in request.openapi_validated.body:
@@ -248,13 +254,13 @@ def update_file(request: Request) -> HTTPOk:
             storage.freeze(request, db_file)
         except storage.NoDataError:
             # No data has been uploaded yet
-            raise errors.get_validation_error(["No data has been uploaded for this file."]) # 400
+            raise errors.get_validation_error(["No data has been uploaded for this file."])  # 400
         except storage.NotWritableError:
             # File was frozen already
-            raise errors.get_not_modifiable_error() # 403
+            raise errors.get_not_modifiable_error()  # 403
         except storage.ChecksumMismatchError:
             # Checksum of uploaded data does not match announcement
-            raise HTTPConflict(json=None) # 409
+            raise HTTPConflict(json=None)  # 409
         log.info(f"[STORAGE][FREEZE][user={db_file.user.uuid}][file={db_file.uuid}]")
 
     return FileResponse(
@@ -267,7 +273,8 @@ def update_file(request: Request) -> HTTPOk:
             expires        = db_file.upload_expires.isoformat() if db_file.upload_expires else None
             )
 
-def delete_files_db(db, db_files:list) -> list:
+
+def delete_files_db(db, db_files: list) -> list:
     """Deletes the specified db_files from the database and returns the
     storage_uris for subsequent deletion from storage after the transaction was
     committed.
@@ -282,6 +289,7 @@ def delete_files_db(db, db_files:list) -> list:
         db.delete(db_file)
 
     return storage_uris
+
 
 @view_config(
     route_name="files_id",
@@ -305,7 +313,7 @@ def delete_file(request: Request) -> HTTPNoContent:
     db = request.dbsession
 
     user_uuid, file_uuid, storage_uri = delete_staged_file_from_db(request.matchdict['id'], db, auth_user)
-    
+
     # Commit transaction
     request.tm.commit()
     request.tm.begin()

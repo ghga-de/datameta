@@ -36,13 +36,14 @@ for entity in ['users', 'groups', 'submissions', 'metadatasets', 'files', 'servi
         raise
         log.warning(f"Site ID digits for {entity} not found in configuration file ({e}).")
 
+
 def generate(request, BaseClass):
     """Generates a new site ID for the specified database entity"""
     digits = _digits[BaseClass.__tablename__]
     prefix = _prefix[BaseClass.__tablename__]
     for _ in range(10):
         new_id = prefix + str(random.randint(0, pow(10, digits))).rjust(digits, "0")
-        if request.dbsession.query(BaseClass).filter(BaseClass.site_id==new_id).first():
+        if request.dbsession.query(BaseClass).filter(BaseClass.site_id == new_id).first():
             log.warning(f"Site ID collision for {BaseClass.__tablename__}. Your ID space may be saturating.")
         else:
             return new_id

@@ -16,16 +16,19 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+
 @dataclass
 class Entity:
     __db_class__   : str
     id             : int
     uuid           : str
 
+
 @dataclass
 class GroupFixture(Entity):
     name      : str
     site_id   : str
+
 
 @dataclass
 class UserFixture(Entity):
@@ -40,6 +43,7 @@ class UserFixture(Entity):
     site_read     : bool
     enabled       : bool
 
+
 @dataclass
 class ApiKeyFixture(Entity):
     label         : str
@@ -48,6 +52,7 @@ class ApiKeyFixture(Entity):
     value_plain   : str
     user          : str
 
+
 @dataclass
 class PasswordTokenFixture(Entity):
     value_plain   : str
@@ -55,12 +60,14 @@ class PasswordTokenFixture(Entity):
     user          : str
     expires       : datetime
 
+
 @dataclass
 class MetaDataSetFixture(Entity):
     site_id      : str
     user         : str
     records      : Optional[dict] = None
     submission   : Optional[str]  = None
+
 
 @dataclass
 class MetaDatumFixture(Entity):
@@ -74,6 +81,7 @@ class MetaDatumFixture(Entity):
     datetimefmt         : Optional[str] = None
     service             : Optional[dict] = None
 
+
 @dataclass
 class FileFixture(Entity):
     site_id            : str
@@ -82,6 +90,7 @@ class FileFixture(Entity):
     content_uploaded   : bool
     checksum           : str
 
+
 @dataclass
 class SubmissionFixture(Entity):
     site_id   : str
@@ -89,11 +98,13 @@ class SubmissionFixture(Entity):
     date      : datetime
     group     : dict
 
+
 @dataclass
 class ServiceFixture(Entity):
     site_id   : str
     name      : str
     users     : list
+
 
 @dataclass
 class ServiceExecutionFixture(Entity):

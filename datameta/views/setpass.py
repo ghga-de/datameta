@@ -19,6 +19,7 @@ from ..api.ui.forgot import send_forgot_token
 
 import datetime
 
+
 @view_config(route_name='setpass', renderer='../templates/setpass.pt')
 def v_setpass(request):
     # Validate token

@@ -17,20 +17,21 @@ from pyramid.httpexceptions import HTTPBadRequest, HTTPForbidden
 
 from . import resource, models
 
+
 def get_error(
     base_error,
-    exception_label:str,
-    messages:List[str],
-    fields:Optional[List[Optional[str]]]=None,
-    entities:Optional[List[Optional[str]]]=None,
+    exception_label: str,
+    messages: List[str],
+    fields: Optional[List[Optional[str]]] = None,
+    entities: Optional[List[Optional[str]]] = None,
 ):
     """Generate an Error based on the base_error with a custom message
     """
-    assert len(messages)>0, "messages cannot be empty"
-    assert fields is None or len(fields)==len(messages), (
+    assert len(messages) > 0, "messages cannot be empty"
+    assert fields is None or len(fields) == len(messages), (
         "The fields list must be of same length as messages."
     )
-    assert entities is None or len(entities)==len(messages), (
+    assert entities is None or len(entities) == len(messages), (
         "The entities list must be of same length as messages."
     )
 
@@ -54,31 +55,31 @@ def get_error(
         err["message"] = msg
         response_body.append(err)
 
-    return base_error(json=response_body)
+    return base_error(json = response_body)
 
 
 def get_validation_error(
-    messages:List[str],
-    fields:Optional[List[Optional[str]]]=None,
-    entities:Optional[List[Optional[str]]]=None
+    messages: List[str],
+    fields: Optional[List[Optional[str]]] = None,
+    entities: Optional[List[Optional[str]]] = None
 ) -> HTTPBadRequest:
     """Generate a Validation Error (400) with custom message
     """
     return get_error(
-        base_error=HTTPBadRequest,
-        exception_label="ValidationError",
-        messages=messages,
-        fields=fields,
-        entities=entities
+        base_error = HTTPBadRequest,
+        exception_label = "ValidationError",
+        messages = messages,
+        fields = fields,
+        entities = entities
     )
 
 
 def get_not_modifiable_error() -> HTTPForbidden:
-    """Generate a HTTPForbidden (403) error informing 
+    """Generate a HTTPForbidden (403) error informing
     that the resource cannot be modified
     """
     return get_error(
-        base_error=HTTPForbidden,
-        exception_label="ResourceNotModifiableError",
-        messages=["The resource cannot be modified"],
+        base_error = HTTPForbidden,
+        exception_label = "ResourceNotModifiableError",
+        messages = ["The resource cannot be modified"],
     )

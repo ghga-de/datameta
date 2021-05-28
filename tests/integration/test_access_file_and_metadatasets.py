@@ -23,51 +23,49 @@ import hashlib
 
 class ReadFileAndMetadatasets(BaseIntegrationTest):
 
-    def read_file(self, file:FileFixture, user:UserFixture, status:int=200):
+    def read_file(self, file: FileFixture, user: UserFixture, status: int = 200):
         response = self.testapp.get(
             f"{base_url}/files/{file.site_id}",
-            headers=self.apikey_auth(user),
-            status=status
+            headers = self.apikey_auth(user),
+            status = status
         )
 
-
-    def read_metadataset(self, metadataset:MetaDataSetFixture, user:UserFixture, status:int=200):
+    def read_metadataset(self, metadataset: MetaDataSetFixture, user: UserFixture, status: int = 200):
         response = self.testapp.get(
             f"{base_url}/metadatasets/{metadataset.site_id}",
-            headers=self.apikey_auth(user),
-            status=status
+            headers = self.apikey_auth(user),
+            status = status
         )
 
     def download_file_content(
         self,
-        file:FileFixture,
-        user:UserFixture,
-        expired_download_url:bool=False,
-        status_get_url:int=307,
-        status_download:int=200
+        file: FileFixture,
+        user: UserFixture,
+        expired_download_url: bool = False,
+        status_get_url: int = 307,
+        status_download: int = 200
     ):
         expires = -1 if expired_download_url else 1
         response = self.testapp.get(
             base_url + f"/rpc/get-file-url/{file.site_id}?expires={expires}",
-            headers=self.apikey_auth(user),
-            status=status_get_url
+            headers = self.apikey_auth(user),
+            status = status_get_url
         )
 
-        if status_get_url==307:
+        if status_get_url == 307:
             # follow redirect:
             header_dict = {key: value for key, value in response.headerlist}
             assert "Location" in header_dict
             redirect_url = header_dict["Location"]
 
             # retrieve file:
-            file_response = self.testapp.get(redirect_url, status=status_download)
+            file_response = self.testapp.get(redirect_url, status = status_download)
 
             if not expired_download_url:
                 # check if file response matched expectations:
                 file_content = file_response.body
                 file_checksum = hashlib.md5(file_content).hexdigest()
-                assert file_checksum==file.checksum
-
+                assert file_checksum == file.checksum
 
     def setUp(self):
         super().setUp()
@@ -84,7 +82,7 @@ class ReadFileAndMetadatasets(BaseIntegrationTest):
 
     @parameterized.expand(
         [
-            #("name of default file", "name of default user", expires, status_get_url, status_get_file, status_download_file)
+            # ("name of default file", "name of default user", expires, status_get_url, status_get_file, status_download_file)
             # owning user requests submitted file and metadataset:
             ("test_file_7", "mset_a", "user_a", False, 200, 307, 200),
             # owning user requests submitted file and metadataset and downloads with expired URL:
@@ -111,13 +109,13 @@ class ReadFileAndMetadatasets(BaseIntegrationTest):
     )
     def test_read_file_and_metadatasets(
         self,
-        file_id:str,
-        metadataset_id:str,
-        user_id:str,
-        expired_download_url:bool=False,
-        status:int=200,
-        status_get_file_url:int=307,
-        status_download:int=200
+        file_id: str,
+        metadataset_id: str,
+        user_id: str,
+        expired_download_url: bool = False,
+        status: int = 200,
+        status_get_file_url: int = 307,
+        status_download: int = 200
 
     ):
         user = self.fixture_manager.get_fixture('users', user_id)
@@ -125,21 +123,21 @@ class ReadFileAndMetadatasets(BaseIntegrationTest):
         mset = self.fixture_manager.get_fixture('metadatasets', metadataset_id)
 
         self.read_file(
-            file=file,
-            user=user,
-            status=status
+            file = file,
+            user = user,
+            status = status
         )
 
         self.download_file_content(
-            file=file,
-            user=user,
-            expired_download_url=expired_download_url,
-            status_get_url=status_get_file_url,
-            status_download=status_download
+            file = file,
+            user = user,
+            expired_download_url = expired_download_url,
+            status_get_url = status_get_file_url,
+            status_download = status_download
         )
 
         self.read_metadataset(
-            metadataset=mset,
-            user=user,
-            status=status
+            metadataset = mset,
+            user = user,
+            status = status
         )

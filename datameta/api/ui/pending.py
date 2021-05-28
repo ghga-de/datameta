@@ -27,13 +27,12 @@ from ..metadatasets import MetaDataSetResponse, get_record_from_metadataset
 from ..metadata import get_all_metadata
 from ..files import FileResponse
 
-####################################################################################################
 
-def get_pending_metadatasets(dbsession, user, metadata:Dict[str, MetaDatum]):
+def get_pending_metadatasets(dbsession, user, metadata: Dict[str, MetaDatum]):
     # Query metadatasets that have been no associated submission
     m_sets = dbsession.query(MetaDataSet).filter(and_(
-        MetaDataSet.user==user,
-        MetaDataSet.submission==None)
+        MetaDataSet.user == user,
+        MetaDataSet.submission == None)
         ).options(
                 joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)
                 ).all()
@@ -48,11 +47,10 @@ def get_pending_metadatasets(dbsession, user, metadata:Dict[str, MetaDatum]):
             for m_set in m_sets
             ]
 
-####################################################################################################
 
 def get_pending_files(dbsession, user):
     # Find files that have not yet been associated with metadata
-    db_files = dbsession.query(File).filter(and_(File.user_id==user.id, File.metadatumrecord==None, File.content_uploaded==True)).order_by(File.id.desc())
+    db_files = dbsession.query(File).filter(and_(File.user_id == user.id, File.metadatumrecord == None, File.content_uploaded == True)).order_by(File.id.desc())
     return [
             FileResponse(
                 id                = resource.get_identifier(db_file),
@@ -65,7 +63,6 @@ def get_pending_files(dbsession, user):
                 ) for db_file in db_files
             ]
 
-####################################################################################################
 
 @view_config(
     route_name      = "pending",

@@ -21,6 +21,7 @@ import yaml
 import logging
 log = logging.getLogger(__name__)
 
+
 def get_setting_value_type(setting):
     """Returns the type of the setting as the first value field that contains a
     value"""
@@ -44,11 +45,12 @@ def get_setting_value_type(setting):
 
     return value, value_type
 
+
 def get_setting(db, name):
     """Given a setting name, obtains the corresponding setting from the
     database and returns the value. The return type varies. Returns `None` if
     the setting couldn't be found or no value was set."""
-    setting = db.query(ApplicationSetting).filter(ApplicationSetting.key==name).one_or_none()
+    setting = db.query(ApplicationSetting).filter(ApplicationSetting.key == name).one_or_none()
     if not setting:
         return None
     elif setting.int_value is not None:
@@ -62,6 +64,7 @@ def get_setting(db, name):
     elif setting.time_value is not None:
         return time_value
     return None
+
 
 def includeme(config):
     """Initializes the default values for applications settings"""

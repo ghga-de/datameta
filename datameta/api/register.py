@@ -29,15 +29,17 @@ from typing import Optional
 import logging
 log = logging.getLogger(__name__)
 
+
 @dataclass
 class RegisterOptionsResponse(DataHolderBase):
     user_agreement: str
     groups: list
 
+
 @view_config(
     route_name="register_settings",
-    renderer='json', 
-    request_method="GET", 
+    renderer='json',
+    request_method="GET",
     openapi=True
 )
 def get(request: Request) -> RegisterOptionsResponse:
@@ -55,21 +57,23 @@ def get(request: Request) -> RegisterOptionsResponse:
         groups = [ {"id": get_identifier(group), "name": group.name} for group in groups ]
     )
 
+
 def get_authorative_admins(db, reg_request):
     """Identifies administrative users that are authorative for a given
     registration request and returns the corresponding database user objects"""
     if reg_request.group_id is None:
-        return db.query(User).filter(User.site_admin==True).all()
+        return db.query(User).filter(User.site_admin == True).all()
     else:
         return db.query(User).filter(or_(
-            User.site_admin==True,
-            and_(User.group_admin==True, User.group_id == reg_request.group_id)
+            User.site_admin == True,
+            and_(User.group_admin == True, User.group_id == reg_request.group_id)
             )).all()
+
 
 @view_config(
     route_name='register_submit',
-    renderer='json', 
-    request_method="POST", 
+    renderer='json',
+    request_method="POST",
     openapi=True
 )
 def post(request):
@@ -98,9 +102,9 @@ def post(request):
         error_fields.append('email')
     else:
         # Check if the user already exists
-        if db.query(User).filter(User.email==req_email).one_or_none() is not None:
+        if db.query(User).filter(User.email == req_email).one_or_none() is not None:
             error_fields.append('user_exists')
-        elif db.query(RegRequest).filter(RegRequest.email==req_email).one_or_none() is not None:
+        elif db.query(RegRequest).filter(RegRequest.email == req_email).one_or_none() is not None:
             error_fields.append('req_exists')
 
     # Check whether the selected organization is valid
@@ -145,7 +149,7 @@ def post(request):
                 'req_url' : request.route_url('admin') + f"?showreq={reg_req.uuid}"
                 },
             bcc = [ admin.email for admin in admins ],
-            rec_header_only=True # We're not actually sending this to the from address, just using it in the "To" header
+            rec_header_only=True  # We're not actually sending this to the from address, just using it in the "To" header
             )
 
     if org_create:

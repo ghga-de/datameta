@@ -6,6 +6,7 @@ from . import BaseIntegrationTest
 from .utils import get_auth_header
 from datameta.api import base_url
 
+
 class GroupNameUpdate(BaseIntegrationTest):
 
     def setUp(self):
@@ -24,9 +25,9 @@ class GroupNameUpdate(BaseIntegrationTest):
         ("foreign_as_regular_user"     , "user_a"          , "group_y_id"   , "fancy_group"  , 403),
         ("admin_use_existing_groupname", "admin"           , "group_x_id"   , "group_y"      , 400),
         ("unauthorized"                , ""                , "group_x_id"   , "fancy_group"  , 401),
-        ("admin_expired_token"         , "admin:expired"   , "group_x_id"   , "fancy_group"  , 401),
+        ("admin_expired_token"         , "admin: expired"   , "group_x_id"   , "fancy_group"  , 401),
         ])
-    def test_group_name_update(self, _, executing_user:str, target_group_id:str, new_groupname:str, expected_response:int):
+    def test_group_name_update(self, _, executing_user: str, target_group_id: str, new_groupname: str, expected_response: int):
         req_args = {
             "status": expected_response,
             "params": {"name": new_groupname}

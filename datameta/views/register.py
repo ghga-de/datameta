@@ -16,6 +16,7 @@ from pyramid.view import view_config
 
 from ..models import Group
 
+
 @view_config(route_name='register', renderer='../templates/register.pt')
 def v_register(request):
     groups = request.dbsession.query(Group).all()

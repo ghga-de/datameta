@@ -19,10 +19,11 @@ from .. import security
 
 log = logging.getLogger(__name__)
 
+
 @view_config(route_name='admin', renderer='../templates/admin.pt')
 def v_admin(request):
     security.revalidate_admin(request)
     try:
-	    return { 'showreq' : request.GET['showreq'] }
+        return { 'showreq' : request.GET['showreq'] }
     except KeyError:
-	    return { 'showreq' : '' }
+        return { 'showreq' : '' }

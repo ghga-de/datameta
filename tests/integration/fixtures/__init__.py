@@ -26,8 +26,10 @@ from datameta.models.meta import Base as DatabaseModel
 from datameta.models import MetaDatum, MetaDatumRecord, File
 from ..utils import get_file_path
 
+
 class FixtureNotFoundError(RuntimeError):
     pass
+
 
 # get URL to test db from environment variable:
 db_url = os.getenv("SQLALCHEMY_TEST_URL")
@@ -43,8 +45,10 @@ with open(default_settings_json, "r") as json_:
 default_settings["sqlalchemy.url"] = db_url
 default_settings["session.url"] = memcached_url
 
-def datetime_from_isoformat(s:str) -> datetime.datetime:
+
+def datetime_from_isoformat(s: str) -> datetime.datetime:
     return datetime.datetime.fromisoformat(s)
+
 
 class FixtureManager:
 
@@ -54,7 +58,7 @@ class FixtureManager:
         self.session_factory   = session_factory
         self.storage_path      = storage_path
 
-    def _create_fixture(self, db, fixture_set:str, fixture_name:str,  fixture:dict, database_insert=True):
+    def _create_fixture(self, db, fixture_set: str, fixture_name: str, fixture: dict, database_insert=True):
         """Creates a fixture based on the provided dictionary"""
         models = import_module('datameta.models')
         db_class_name = fixture['class']
@@ -114,7 +118,7 @@ class FixtureManager:
                         raise RuntimeError(f"Could not find referenced fixture '{reference['fixtureset']}.{reference['name']}'. You may have to load other fixtures first.")
                     ref_fixture_id              = ref_fixture.id
                     RefEntity                   = getattr(import_module('datameta.models'), ref_fixture.__db_class__)
-                    ref_entity                  = db.query(RefEntity).filter(RefEntity.id==ref_fixture_id).one_or_none()
+                    ref_entity                  = db.query(RefEntity).filter(RefEntity.id == ref_fixture_id).one_or_none()
                     ref_objects.append(ref_entity)
                 ref_attributes[attr_name]       = ref_objects if multiple else ref_objects[0]
             fixture_only_attributes[attr_name] = attr_value
@@ -133,10 +137,10 @@ class FixtureManager:
             attributes['id'] = None
             attributes['uuid'] = None
 
-        Fixture = getattr(globals()['holders'], db_class_name+'Fixture')
+        Fixture = getattr(globals()['holders'], db_class_name + 'Fixture')
         self.fixtures[fixture_set, fixture_name] = Fixture(__db_class__ = db_class_name, **attributes, **fixture_only_attributes)
 
-    def load_fixtureset(self, fixture_set:str, database_insert=True):
+    def load_fixtureset(self, fixture_set: str, database_insert=True):
         """Load a fixture set. The name corresponds to the basename of the fixture yaml file"""
         with open(os.path.join(base_dir, f"{fixture_set}.yaml"), 'r') as infile:
             fixtures = yaml.safe_load(infile)
@@ -145,16 +149,16 @@ class FixtureManager:
             for fixture_name, fixture in fixtures.items():
                 self._create_fixture(db, fixture_set, fixture_name, fixture, database_insert=database_insert)
 
-    def get_fixtureset(self, fixture_set:str) -> dict:
-        res =  { 
+    def get_fixtureset(self, fixture_set: str) -> dict:
+        res =  {
                 fixture_name : fixture
-                for (fixture_set_, fixture_name), fixture in self.fixtures.items() if fixture_set_==fixture_set
+                for (fixture_set_, fixture_name), fixture in self.fixtures.items() if fixture_set_ == fixture_set
                 }
         if not res:
             raise FixtureNotFoundError(f"Could not find fixture set '{fixture_set}'. The fixture set was not loaded or is empty.")
         return res
 
-    def get_fixture(self, fixtureset:str, name:str) -> dict:
+    def get_fixture(self, fixtureset: str, name: str) -> dict:
         """Returns the fixture object corresponding to a fixture given the
         fixture set name and the fixture name."""
         try:
@@ -162,7 +166,7 @@ class FixtureManager:
         except KeyError:
             raise FixtureNotFoundError(f"Could not find fixture '{name}' in '{fixtureset}'. The fixture may not exist or the fixture set '{fixtureset}' was not loaded.")
 
-    def get_fixture_db(self, fixture_set:str, fixture_name:str, *query_options) -> DatabaseModel:
+    def get_fixture_db(self, fixture_set: str, fixture_name: str, *query_options) -> DatabaseModel:
         """Queries and returns the database object corresponding to a fixture
         given the fixture set name and the fixture name."""
 
@@ -172,7 +176,7 @@ class FixtureManager:
 
         with transaction.manager:
             db = get_tm_session(self.session_factory, transaction.manager, expire_on_commit=False)
-            return db.query(Entity).filter(Entity.id==fixture_id).options(*query_options).one_or_none()
+            return db.query(Entity).filter(Entity.id == fixture_id).options(*query_options).one_or_none()
 
     def populate_metadatasets(self):
         with transaction.manager:

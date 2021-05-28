@@ -30,12 +30,14 @@ from . import DataHolderBase
 from .. import errors
 from .metadata import get_all_metadata, get_service_metadata, get_metadata_with_access
 
+
 @dataclass
 class MetaDataSetServiceExecution(DataHolderBase):
     service_execution_id   : dict
-    execution_time         : str # ISO format
+    execution_time         : str  # ISO format
     service_id             : dict
     user_id                : dict
+
 
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
@@ -47,7 +49,8 @@ class MetaDataSetResponse(DataHolderBase):
     submission_id        : Optional[str] = None
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
 
-def render_record_values(metadata:Dict[str, MetaDatum], record:dict) -> dict:
+
+def render_record_values(metadata: Dict[str, MetaDatum], record: dict) -> dict:
     """Renders values of a metadataset record. Please note: the record should already have passed validation."""
     record_rendered = record.copy()
     for field in metadata:
@@ -60,8 +63,9 @@ def render_record_values(metadata:Dict[str, MetaDatum], record:dict) -> dict:
             record_rendered[field] = datetime.datetime.strptime(
                     record_rendered[field],
                     metadata[field].datetimefmt
-                ).isoformat()
+                    ).isoformat()
     return record_rendered
+
 
 def formatted_mrec_value(mrec):
     if mrec.value and mrec.metadatum.datetimefmt is not None:
@@ -69,13 +73,15 @@ def formatted_mrec_value(mrec):
     else:
         return mrec.value
 
-def get_record_from_metadataset(mdata_set:MetaDataSet, metadata:Dict[str, MetaDatum], render = True) -> dict:
+
+def get_record_from_metadataset(mdata_set: MetaDataSet, metadata: Dict[str, MetaDatum], render = True) -> dict:
     """ Construct a dict containing all records of that MetaDataSet"""
     mdata_ids = [ mdatum.id for mdatum in metadata.values() ]
     return {
             rec.metadatum.name : formatted_mrec_value(rec) if render else rec.value
             for rec in mdata_set.metadatumrecords if rec.metadatum.id in mdata_ids
             }
+
 
 def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
     # Find the requested metadataset
@@ -94,10 +100,11 @@ def delete_staged_metadataset_from_db(mdata_id, db, auth_user, request):
         raise errors.get_not_modifiable_error()
 
     # Delete the records
-    request.dbsession.query(MetaDatumRecord).filter(MetaDatumRecord.metadataset_id==mdata_set.id).delete()
+    request.dbsession.query(MetaDatumRecord).filter(MetaDatumRecord.metadataset_id == mdata_set.id).delete()
 
     # Delete the metadataset
     db.delete(mdata_set)
+
 
 @view_config(
     route_name      = "rpc_delete_metadatasets",
@@ -123,13 +130,13 @@ def delete_metadatasets(request: Request) -> HTTPNoContent:
     request_method="POST",
     openapi=True
 )
-def post(request:Request) -> MetaDataSetResponse:
+def post(request: Request) -> MetaDataSetResponse:
     """Create new metadataset"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
 
     # Obtain string converted version of the record
-    record = { k : str(v) if v is not None else None for k,v in request.openapi_validated.body["record"].items() }
+    record = { k : str(v) if v is not None else None for k, v in request.openapi_validated.body["record"].items() }
 
     # Query the configured metadata. We're only considering and allowing
     # non-service metadata when creating a new metadataset.
@@ -179,7 +186,8 @@ def post(request:Request) -> MetaDataSetResponse:
         submission_id   = get_identifier(mdata_set.submission) if mdata_set.submission else None,
     )
 
-def collect_service_executions(metadata_with_access:Dict[str, MetaDatum], mdata_set:MetaDataSet) -> Optional[Dict[str, Optional[MetaDataSetServiceExecution]]]:
+
+def collect_service_executions(metadata_with_access: Dict[str, MetaDatum], mdata_set: MetaDataSet) -> Optional[Dict[str, Optional[MetaDataSetServiceExecution]]]:
     # Collect service metadata from provided metadata with access
     service_metadata = { name : mdatum for name, mdatum in metadata_with_access.items() if mdatum.service_id is not None }
     # If there are service metadata among the metadata with access, we're returning a dict, otherwise None
@@ -204,11 +212,12 @@ def collect_service_executions(metadata_with_access:Dict[str, MetaDatum], mdata_
         # MetaDataSetServiceExecution objects
         service_executions = { name : MetaDataSetServiceExecution(
             service_execution_id   = get_identifier(sexec),
-            execution_time         = sexec.datetime.isoformat()+'+00:00', # Assuming UTC datetimes in the database
+            execution_time         = sexec.datetime.isoformat() + '+00:00',  # Assuming UTC datetimes in the database
             service_id             = get_identifier(sexec.service),
             user_id                = get_identifier(sexec.user)
             ) if sexec is not None else None for name, sexec in service_executions.items() }
     return service_executions
+
 
 @view_config(
     route_name="metadatasets",
@@ -216,7 +225,7 @@ def collect_service_executions(metadata_with_access:Dict[str, MetaDatum], mdata_
     request_method="GET",
     openapi=True
 )
-def get_metadatasets(request:Request) -> List[MetaDataSetResponse]:
+def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
     """Query metadatasets according to filtering critera"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
@@ -286,13 +295,14 @@ def get_metadatasets(request:Request) -> List[MetaDataSetResponse]:
             for mdata_set, service_executions in zip(mdata_sets, service_executions_all)
             ]
 
+
 @view_config(
     route_name="metadatasets_id",
     renderer='json',
     request_method="GET",
     openapi=True
 )
-def get_metadataset(request:Request) -> MetaDataSetResponse:
+def get_metadataset(request: Request) -> MetaDataSetResponse:
     """Get a metadataset by ID"""
     auth_user = security.revalidate_user(request)
     db = request.dbsession
@@ -333,13 +343,14 @@ def get_metadataset(request:Request) -> MetaDataSetResponse:
         service_executions   = service_executions,
     )
 
+
 @view_config(
     route_name="metadatasets_id",
     renderer='json',
     request_method="DELETE",
     openapi=True
 )
-def delete_metadataset(request:Request) -> HTTPNoContent:
+def delete_metadataset(request: Request) -> HTTPNoContent:
     # Check authentication or raise 401
     auth_user = security.revalidate_user(request)
 

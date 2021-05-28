@@ -16,6 +16,7 @@ import pandas as pd
 import pandas.api.types as pdtypes
 import datetime
 
+
 class SampleSheetReadError(RuntimeError):
     pass
 
@@ -31,11 +32,13 @@ class SampleSheetReadError(RuntimeError):
 # or when Excel files are submitted but the corresponding column is of type
 # "text" rather than datetime.
 
+
 def strptime_iso_or_empty(s, datetimefmt):
     try:
         return datetime.datetime.strptime(s, datetimefmt).isoformat()
     except (ValueError, TypeError):
         return ""
+
 
 def datetime_iso_or_empty(x):
     try:
@@ -44,9 +47,11 @@ def datetime_iso_or_empty(x):
         log.error(f"Unexpected exception: {e}")
         return ""
 
+
 def to_str(x):
     """Converts to str unless pd.isna() is true, then converts to an empty string"""
     return "" if pd.isna(x) else str(x)
+
 
 def string_conversion_dates(series, datetimefmt):
     """Converts a series of dates to ISO format strings. The dates can either

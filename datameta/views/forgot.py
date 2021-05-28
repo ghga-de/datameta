@@ -14,6 +14,7 @@
 
 from pyramid.view import view_config
 
+
 @view_config(route_name='forgot', renderer='../templates/forgot.pt')
 def v_forgot(request):
     # Invalidate this session
