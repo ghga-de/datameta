@@ -1,0 +1,26 @@
+name: Check code with flake8
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set conda package directory
+      run: |
+        mkdir /tmp/condapkgs
+        echo "CONDA_PKGS_DIRS=/tmp/condapkgs" >> $GITHUB_ENV
+    - name: Set up Python 3.8
+      run: |
+        $CONDA/bin/conda create -p /tmp/condaenv python=='3.8.*' flake8
+    - name: Activate conda environment
+      run: |
+        echo "/tmp/condaenv/bin" >> $GITHUB_PATH
+        export PATH="/tmp/condaenv/bin:$PATH"
+    - name: Run flake8
+      run: |
+        flake8
