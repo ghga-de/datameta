@@ -27,7 +27,7 @@ def get_identifier(db_obj):
 
 
 def get_identifier_or_none(db_obj):
-    """Given a database object, return the identifying IDs as a dictionary or None if the objecft is None"""
+    """Given a database object, return the identifying IDs as a dictionary or None if the object is None"""
     if db_obj is None:
         return None
     return get_identifier(db_obj)
