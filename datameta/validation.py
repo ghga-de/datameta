@@ -184,10 +184,10 @@ def validate_submission(request, auth_user):
     fnames, ref_fnames, val_errors = validate_submission_association(db_files, db_msets)
 
     # Get all non-service metadata definitions
-    metadata = get_all_metadata(db, include_service_metadata = False)
+    metadata = get_all_metadata(db, include_service_metadata=False)
 
     # Convert metadatasets to dictionaries
-    msets = { mset_id : get_record_from_metadataset(db_mset, metadata , False) for mset_id, db_mset in db_msets.items() }
+    msets = { mset_id : get_record_from_metadataset(db_mset, metadata, False) for mset_id, db_mset in db_msets.items() }
 
     # Validate every metadataset individually
     for mset_id, mset_values in msets.items():

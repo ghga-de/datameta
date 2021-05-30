@@ -401,7 +401,7 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
         if mdatum_name not in (target_metadatum.name for target_metadatum in service.target_metadata):
             val_errors.append(("Metadatum unknown or not associated with the specified service.", mdatum_name))
 
-    # If there were any validation errors until here, return 400
+    # If there were any validation errors, return 400
     if val_errors:
         messages, fields = zip(*val_errors)
         raise errors.get_validation_error(messages, fields)
@@ -410,7 +410,7 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
     file_ids = set(request.openapi_validated.body['fileIds'])
     db_files = { file_id : resource.resource_query_by_id(db, File, file_id).options(joinedload(File.metadatumrecord)).one_or_none() for file_id in file_ids }
 
-    # Valide submission access to the specified files
+    # Validate submission access to the specified files
     validation.validate_submission_access(db, db_files, {}, auth_user)
 
     # Validate the associations between files and records

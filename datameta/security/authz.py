@@ -163,4 +163,4 @@ def view_services(user):
 
 
 def execute_service(user, service):
-    return user.id in (service_user.id for service_user in service.users )
+    return user.id in (service_user.id for service_user in service.users)
