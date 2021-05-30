@@ -54,7 +54,7 @@ def render_record_values(metadata: Dict[str, MetaDatum], record: dict) -> dict:
     """Renders values of a metadataset record. Please note: the record should already have passed validation."""
     record_rendered = record.copy()
     for field in metadata:
-        if field not in record_rendered.keys():
+        if field not in record_rendered:
             # if field is not contained in record, add it as None to the record:
             record_rendered[field] = None
             continue
