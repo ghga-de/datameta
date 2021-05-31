@@ -32,9 +32,10 @@ from sqlalchemy import and_
 def get_file_url(request: Request) -> HTTPTemporaryRedirect:
     """Redirects to a temporary, pre-sign HTTP-URL for downloading a file.
     """
-    file_id = request.openapi_validated.parameters.path['id']
-    expires_after = request.openapi_validated.parameters.query['expires']
-    auth_user = security.revalidate_user(request)
+    file_id         = request.openapi_validated.parameters.path['id']
+    expires_after   = request.openapi_validated.parameters.query['expires']
+    auth_user       = security.revalidate_user(request)
+    redirect        = request.openapi_validated.parameters.query['redirect']
 
     # get file from db:
     db_file = access_file_by_user(
@@ -50,11 +51,18 @@ def get_file_url(request: Request) -> HTTPTemporaryRedirect:
         expires_after=expires_after
     )
 
-    return HTTPTemporaryRedirect(url, json_body = {
-        'fileId' : get_identifier(db_file),
-        'fileUrl' : f"{request.host_url}{url}",
-        'expires' : expires_after
-        })
+    if redirect:
+        return HTTPTemporaryRedirect(url, json_body = {
+            'fileId' : get_identifier(db_file),
+            'fileUrl' : f"{request.host_url}{url}",
+            'expires' : expires_after
+            })
+    else:
+        return HTTPOk(json_body = {
+            'fileId' : get_identifier(db_file),
+            'fileUrl' : f"{request.host_url}{url}",
+            'expires' : expires_after
+            })
 
 
 @view_config(

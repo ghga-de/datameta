@@ -47,7 +47,7 @@ class ReadFileAndMetadatasets(BaseIntegrationTest):
     ):
         expires = -1 if expired_download_url else 1
         response = self.testapp.get(
-            base_url + f"/rpc/get-file-url/{file.site_id}?expires={expires}",
+            base_url + f"/rpc/get-file-url/{file.site_id}?expires={expires}&redirect=true",
             headers = self.apikey_auth(user),
             status = status_get_url
         )

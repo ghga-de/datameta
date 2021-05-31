@@ -34,7 +34,7 @@ DataMeta.view.buildColumns = function(mdata) {
                 // Special case NULL
                 if (mdataset.record[mdatum.name] === null) return '<span class="text-black-50"><i>empty</i></span>';
                 // Speical case file
-                if (mdataset.fileIds[mdatum.name]) return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdatum.name].site) +'"><i class="bi bi-cloud-arrow-down-fill"></i> '+mdataset.record[mdatum.name]+'</a>';
+                if (mdataset.fileIds[mdatum.name]) return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdatum.name].site) +'?redirect=true"><i class="bi bi-cloud-arrow-down-fill"></i> '+mdataset.record[mdatum.name]+'</a>';
                 // All other cases
                 return mdataset.record[mdatum.name];
             }
