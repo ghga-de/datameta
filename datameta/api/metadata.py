@@ -17,7 +17,7 @@ from typing import Optional, List
 from pyramid.request import Request
 from pyramid.view import view_config
 from . import DataHolderBase
-from ..models import MetaDatum, User, Service
+from ..models import MetaDatum, User, Service, MetaDataSet, MetaDatumRecord
 from .. import resource, security
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
@@ -194,6 +194,10 @@ def post(request: Request) -> MetaDataResponseElement:
     )
 
     db.add(metadatum)
+
+    # Add a NULL value for every metadataset
+    db.add_all(MetaDatumRecord(metadataset_id=mset_id, metadatum=metadatum) for (mset_id,) in db.query(MetaDataSet.id))
+
     db.flush()
 
     return MetaDataResponseElement(
