@@ -15,6 +15,7 @@
 from sqlalchemy import or_
 from uuid import UUID
 
+
 def get_identifier(db_obj):
     """Given a database object, return the identifying IDs as a dictionary"""
     ids = { 'uuid' : str(db_obj.uuid) }
@@ -24,11 +25,13 @@ def get_identifier(db_obj):
         pass
     return ids
 
+
 def get_identifier_or_none(db_obj):
-    """Given a database object, return the identifying IDs as a dictionary or None if the objecft is None"""
+    """Given a database object, return the identifying IDs as a dictionary or None if the object is None"""
     if db_obj is None:
         return None
     return get_identifier(db_obj)
+
 
 def resource_query_by_id(db, model, idstring):
     """Returns a database query that returns an entity based on it's uuid or
@@ -49,11 +52,11 @@ def resource_query_by_id(db, model, idstring):
         pass
 
     if 'site_id' in model.__dict__:
-        or_clause  = [ model.site_id==idstring ]
-        or_clause += [] if uuid_string is None else [ model.uuid==uuid_string ]
+        or_clause  = [ model.site_id == idstring ]
+        or_clause += [] if uuid_string is None else [ model.uuid == uuid_string ]
         return db.query(model).filter(or_(*or_clause))
     else:
-        return db.query(model).filter(model.uuid==uuid_string)
+        return db.query(model).filter(model.uuid == uuid_string)
 
 
 def resource_by_id(dbsession, model, idstring):

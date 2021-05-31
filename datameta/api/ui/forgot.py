@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from ... import security, email
 from ...settings import get_setting
 
+import re
 import logging
 log = logging.getLogger(__name__)
 
-import re
 
 def send_forgot_token(request, db_token_obj, clear_token):
     """Sends a password reset token email to the corresponding user"""
@@ -32,10 +31,11 @@ def send_forgot_token(request, db_token_obj, clear_token):
         subject = get_setting(db, "subject_forgot_token"),
         template = get_setting(db, "template_forgot_token"),
         values={
-           'fullname' : db_token_obj.user.fullname,
-           'token_url' : request.route_url('setpass', token = clear_token)
-           }
+            'fullname' : db_token_obj.user.fullname,
+            'token_url' : request.route_url('setpass', token = clear_token)
+            }
         )
+
 
 @view_config(route_name='forgot_api', renderer='json')
 def v_forgot_api(request):
@@ -43,7 +43,7 @@ def v_forgot_api(request):
     # Extract email from body
     try:
         req_email = request.json_body['email']
-        req_email = req_email.lower() # Convert separately to maintain KeyError
+        req_email = req_email.lower()  # Convert separately to maintain KeyError
     except KeyError:
         return { 'success' : False, 'error' : 'INVALID_REQUEST' }
 

@@ -1,0 +1,165 @@
+# Copyright 2021 Universität Tübingen, DKFZ and EMBL for the German Human Genome-Phenome Archive (GHGA)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+admin:
+  class: User
+  attributes:
+    email: admin@admin.admin
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: admin
+    fullname: admin
+    site_id: admin
+    group_admin: true
+    site_admin: true
+    site_read: true
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: admin
+
+group_x_admin:
+  class: User
+  attributes:
+    email: group_x_admin@user.group_x
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: group_x_admin
+    fullname: group_x_admin
+    site_id: group_x_admin
+    group_admin: true
+    site_admin: false
+    site_read: false
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x
+
+user_a:
+  class: User
+  attributes:
+    email: user_a@user.group_x
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: user_a
+    fullname: user_a
+    site_id: user_a
+    group_admin: false
+    site_admin: false
+    site_read: false
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x
+
+user_b:
+  class: User
+  attributes:
+    email: user_b@user.group_x
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: user_b
+    fullname: user_b
+    site_id: user_b
+    group_admin: false
+    site_admin: false
+    site_read: false
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x
+
+group_y_admin:
+  class: User
+  attributes:
+    email: group_y_admin@user.group_y
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: group_y_admin
+    fullname: group_y_admin
+    site_id: group_y_admin
+    group_admin: true
+    site_admin: false
+    site_read: false
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_y
+
+user_c:
+  class: User
+  attributes:
+    email: user_c@user.group_y
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: user_c
+    fullname: user_c
+    site_id: user_c
+    group_admin: false
+    site_admin: false
+    site_read: false
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_y
+
+user_site_read:
+  class: User
+  attributes:
+    email: user_site_read@group_site_read
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: user_site_read
+    fullname: user_site_read
+    site_id: user_site_read
+    group_admin: false
+    site_admin: false
+    site_read: true
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_site_read
+
+service_user_0:
+  class: User
+  attributes:
+    email: service_user_0@user.group_x
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: service_user_0
+    fullname: service_user_0
+    site_id: service_user_0
+    group_admin: false
+    site_admin: false
+    site_read: true
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x

@@ -15,23 +15,20 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-import datameta
-
-from datameta.models import User
 from .. import security
 
 import logging
 log = logging.getLogger(__name__)
 
+
 @view_config(route_name='login', renderer='../templates/login.pt')
 def my_view(request):
     request.session.invalidate()
-    db = request.dbsession
     if request.POST:
         try:
             # Obtain submitted data
             in_email = request.POST['input_email']
-            in_email = in_email.lower() # Convert separately to maintain KeyError
+            in_email = in_email.lower()  # Convert separately to maintain KeyError
             in_pwd   = request.POST['input_password']
 
             auth_user = security.get_user_by_credentials(request, in_email, in_pwd)

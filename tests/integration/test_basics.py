@@ -4,7 +4,13 @@
 from . import BaseIntegrationTest
 from datameta.api import base_url
 
+
 class TestBasics(BaseIntegrationTest):
+
+    def setUp(self):
+        super().setUp()
+        self.fixture_manager.load_fixtureset('groups')
+        self.fixture_manager.load_fixtureset('users')
 
     def test_swagger_api_loaded(self):
         """Swagger's API Explorer should be served on /api/."""

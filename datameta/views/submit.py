@@ -16,6 +16,7 @@ from pyramid.view import view_config
 
 from .. import security
 
+
 @view_config(route_name='submit', renderer='../templates/submit.pt')
 def v_submit(request):
     """Delivers the submission page"""

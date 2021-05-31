@@ -1,0 +1,47 @@
+# Copyright 2021 Universität Tübingen, DKFZ and EMBL for the German Human Genome-Phenome Archive (GHGA)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+mset_a_1:
+  class: MetaDataSet
+  attributes:
+    site_id: mset_a_1
+    records:
+      ID: MD03
+      Date: "2021-03-04"
+      ZIP Code: "123"
+      FileR1: test_file_7.txt
+      FileR2: test_file_8.txt
+  fixtureOnly:
+    - records
+  references:
+    user:
+      fixtureset: users
+      name: user_a
+
+mset_a_2:
+  class: MetaDataSet
+  attributes:
+    site_id: mset_a_2
+    records:
+      ID: MD04
+      Date: "2021-03-05"
+      ZIP Code: "456"
+      FileR1: test_file_9.txt
+      FileR2: test_file_10.txt
+  fixtureOnly:
+    - records
+  references:
+    user:
+      fixtureset: users
+      name: user_a

@@ -13,11 +13,8 @@
 # limitations under the License.
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPException, HTTPFound
+from pyramid.httpexceptions import HTTPFound
 
-from sqlalchemy.exc import DBAPIError
-
-from ..models import ApplicationSetting
 from .. import security, settings
 
 from pyramid.events import subscriber
@@ -25,6 +22,7 @@ from pyramid.events import BeforeRender
 
 import logging
 log = logging.getLogger(__name__)
+
 
 @subscriber(BeforeRender)
 def add_global(event):
@@ -34,6 +32,7 @@ def add_global(event):
         log.error("Missing application settings 'logo_html'")
     else:
         event['logo_html'] = appsetting
+
 
 @view_config(route_name='root')
 def root_view(request):

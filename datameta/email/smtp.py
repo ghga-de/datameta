@@ -14,12 +14,11 @@
 
 import email
 from email.mime.base import MIMEBase
-from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import parseaddr, formataddr, formatdate
+from email.utils import formataddr, formatdate
 import smtplib
-import ssl
+
 
 class SMTPClient:
 
@@ -30,6 +29,7 @@ class SMTPClient:
             password = None,
             tls = False,
             rec_header_only=False):
+
         self.hostname = hostname
         self.port     = port
         self.user     = user
@@ -77,7 +77,7 @@ class SMTPClient:
             part = MIMEBase("application", app_type)
             part.set_payload(data)
             email.encoders.encode_base64(part)
-            bfname = fname.encode('utf-8')
+            # bfname = fname.encode('utf-8')
             part.add_header('Content-Disposition', 'attachment', filename=fname)
             message.attach(part)
 

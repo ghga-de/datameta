@@ -45,7 +45,7 @@ requires = [
     'openapi-core<0.14',
     'pytest >= 3.7.4',
     'dataclasses-json==0.5.2',
-    "pyaml",
+    "pyyaml",
     "gunicorn==20.0.4",
 ]
 
@@ -54,12 +54,13 @@ tests_require = [
     'pytest-cov',
     "sqlalchemy_utils",
     "requests",
-    "parameterized >= 0.8.1"
+    "parameterized >= 0.8.1",
+    "mypy",
 ]
 
 setup(
     name                   = 'datameta',
-    version                = '0.9.3',
+    version                = '0.9.4',
     description            = 'DataMeta - submission server for data and associated metadata',
     long_description       = README + '\n\n' + CHANGES,
     author                 = 'Leon Kuchenbecker',

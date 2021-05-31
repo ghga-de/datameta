@@ -24,18 +24,23 @@ from .api import base_url
 
 log = logging.getLogger(__name__)
 
+
 class ChecksumMismatchError(RuntimeError):
     pass
+
 
 class NotWritableError(RuntimeError):
     pass
 
+
 class NoDataError(RuntimeError):
     pass
+
 
 def demo_mode(request):
     """Determine whether the application has been configured to be in demo mode"""
     return request.registry.settings.get('datameta.demo_mode') in [True, 'true', 'True']
+
 
 def rm(request, storage_path):
     """Remove a file from storage by local storage file name"""
@@ -47,6 +52,7 @@ def rm(request, storage_path):
     else:
         log.debug("DID NOT DELETE. DEMO MODE.")
 
+
 def get_local_storage_path(request, storage_uri):
     """Given a request and a database File object, determine the local storage path for the given storage_uri"""
     if storage_uri is None:
@@ -57,7 +63,8 @@ def get_local_storage_path(request, storage_uri):
     outdir = request.registry.settings['datameta.storage_path']
     if not os.path.exists(outdir):
         os.mkdir(outdir)
-    return os.path.join(outdir, storage_uri[7:]) # Strip the file:// prefix
+    return os.path.join(outdir, storage_uri[7:])  # Strip the file:// prefix
+
 
 def create_and_annotate_storage(request, db_file):
     """Returns an upload URL and corresponding request headers for uploading
@@ -77,7 +84,8 @@ def create_and_annotate_storage(request, db_file):
     open(get_local_storage_path(request, db_file.storage_uri), 'w').close()
 
     # Return the Upload URL
-    return request.route_url('upload', id=db_file.uuid), { 'Access-Token' : token }
+    return request.route_url('upload', id = db_file.uuid), { 'Access-Token' : token }
+
 
 def write_file(request, db_file, file):
     """Write the file content specified by 'file' to the storage denoted in 'db_file'"""
@@ -95,12 +103,13 @@ def write_file(request, db_file, file):
     else:
         log.info(f"[!!DEMOMODE!!][STORAGE][NEWFILE][user={db_file.user.uuid}][file={db_file.uuid}]")
 
+
 def _freeze_local(request, db_file):
     # Perform checksum comparison
     try:
         with open(get_local_storage_path(request, db_file.storage_uri), 'rb') as infile:
             # Calculate filesize
-            infile.seek(0,2)
+            infile.seek(0, 2)
             filesize = infile.tell()
             infile.seek(0)
             # Calculate checksum
@@ -113,6 +122,7 @@ def _freeze_local(request, db_file):
     except FileNotFoundError:
         raise NoDataError()
 
+
 def _freeze_s3(request, db_file):
     # TODO
     # - Move object to another S3 object unaccessible by presigned URL
@@ -121,6 +131,7 @@ def _freeze_s3(request, db_file):
     # - Delete old S3 object for which presigned URL was issued?
     # - Mark file as uploaded
     raise NotImplementedError()
+
 
 def freeze(request, db_file):
     """Freezes a File. This function ensures that data is present, consistent
@@ -137,22 +148,23 @@ def freeze(request, db_file):
         ChecksumMismatchError - The uploaded data does not match the pre-announced checksum
     """
     if db_file.storage_uri is None:
-        raise NoDataError() # No data has been uploaded yet
+        raise NoDataError()  # No data has been uploaded yet
     if db_file.content_uploaded:
-        raise NotWritableError() # Data has been uploaded and file was frozen already
+        raise NotWritableError()  # Data has been uploaded and file was frozen already
     if db_file.storage_uri.startswith("file://"):
         return _freeze_local(request, db_file)
     if db_file.storage_uri.startswith("s3://"):
         return _freeze_s3(request, db_file)
     raise NotImplementedError()
 
-def _get_download_url_local(request:Request, db_file:models.File, expires_after:Optional[int]=None):
+
+def _get_download_url_local(request: Request, db_file: models.File, expires_after: Optional[int] = None):
     if expires_after is None:
         expires_after = 1
 
     token = security.generate_token()
     token_hash = security.hash_token(token)
-    expires = datetime.now() + timedelta(minutes=float(expires_after))
+    expires = datetime.now() + timedelta(minutes = float(expires_after))
 
     db = request.dbsession
     download_token = models.DownloadToken(
@@ -164,24 +176,24 @@ def _get_download_url_local(request:Request, db_file:models.File, expires_after:
 
     return f"{base_url}/download/{token}"
 
-def _get_download_url_s3(request:Request, db_file:models.File, expires_after:Optional[int]=None):
+
+def _get_download_url_s3(request: Request, db_file: models.File, expires_after: Optional[int] = None):
     # TODO
     raise NotImplementedError()
 
-def get_download_url(request:Request, db_file:models.File, expires_after:Optional[int]=None):
+
+def get_download_url(request: Request, db_file: models.File, expires_after: Optional[int] = None):
     """Get a presigned URL to download a file
 
     Args:
-        request (Request): The calling HTTP request 
+        request (Request): The calling HTTP request
         db_file (models.File): The database 'File' object
         expires_after (Optional[int]): Number of minutes after which the URL will expire
     """
     if db_file.storage_uri is None:
-        raise NoDataError() # No data has been uploaded yet
+        raise NoDataError()  # No data has been uploaded yet
     if db_file.storage_uri.startswith("file://"):
-        return _get_download_url_local(request, db_file, expires_after=expires_after)
+        return _get_download_url_local(request, db_file, expires_after = expires_after)
     if db_file.storage_uri.startswith("s3://"):
-        return _get_download_url_s3(request, db_file, expires_after=expires_after)
+        return _get_download_url_s3(request, db_file, expires_after = expires_after)
     raise NotImplementedError()
-
-

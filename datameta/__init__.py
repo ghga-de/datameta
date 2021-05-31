@@ -21,6 +21,7 @@ from pkg_resources import get_distribution
 
 __version__ = get_distribution('datameta').version
 
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """

@@ -12,30 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlalchemy.orm import joinedload
-
-from pyramid.httpexceptions import HTTPBadRequest, HTTPOk
+from pyramid.httpexceptions import HTTPOk
 from pyramid.request import Request
 from pyramid.view import view_config
 import webob
 import logging
-import datetime
 import csv
 
 import pandas as pd
 
 from ... import security, samplesheet, errors
-from ...models import MetaDatum, MetaDataSet, MetaDatumRecord
+from ...utils import formatted_mrec_value_str
+from ..metadata import get_all_metadata
 
 log = logging.getLogger(__name__)
 
-def formatted_mrec_value(value, datetimefmt):
-    if datetimefmt is not None:
-        try:
-            return datetime.datetime.fromisoformat(value).strftime(datetimefmt)
-        except ValueError:
-            pass
-    return value
 
 def get_samplesheet_reader(file_like_obj):
     """Given a file with tabular data which is either in delimited plain text
@@ -54,6 +45,7 @@ def get_samplesheet_reader(file_like_obj):
         return create_excel_reader
     else:
         dialect = csv.Sniffer().sniff(file_like_obj.read(1024).decode())
+
         def create_table_reader(sheet, sep=dialect.delimiter):
             return pd.read_table(sheet, dtype="object", sep=sep)
         file_like_obj.seek(0)
@@ -61,6 +53,7 @@ def get_samplesheet_reader(file_like_obj):
 
 
 ####################################################################################################
+
 
 def convert_samplesheet(db, file_like_obj, filename, user):
     # Try to read the sample sheet
@@ -72,9 +65,9 @@ def convert_samplesheet(db, file_like_obj, filename, user):
         raise samplesheet.SampleSheetReadError("Unable to parse the sample sheet.")
 
     # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
-    metadata              = db.query(MetaDatum).order_by(MetaDatum.order).all() 
-    metadata_names        = [ datum.name for datum in metadata ]
-    metadata_datetimefmt  = { datum.name : datum.datetimefmt for datum in metadata }
+    metadata               = get_all_metadata(db, include_service_metadata = False)
+    metadata_names         = list(metadata.keys())
+    metadata_datetimefmt   = { datum.name : datum.datetimefmt for datum in metadata.values() }
 
     missing_columns  = [ metadata_name for metadata_name in metadata_names if metadata_name not in submitted_metadata.columns ]
     if missing_columns:
@@ -84,19 +77,20 @@ def convert_samplesheet(db, file_like_obj, filename, user):
     submitted_metadata = submitted_metadata[metadata_names].drop_duplicates()
 
     # Convert all data to strings
-    samplesheet.string_conversion(submitted_metadata, metadata)
+    samplesheet.string_conversion(submitted_metadata, list(metadata.values()))
 
     try:
         # Datetimes are converted according to the format string. Empty strings
         # are converted to None aka null, i.e. setting metadata to an empty
         # string value is not possible through the convert API.
-        return [ { mdname : None if not row[mdname] else formatted_mrec_value(row[mdname], metadata_datetimefmt[mdname]) for mdname in metadata_names } for _, row in submitted_metadata.iterrows() ]
+        return [ { mdname : None if not row[mdname] else formatted_mrec_value_str(row[mdname], metadata_datetimefmt[mdname]) for mdname in metadata_names } for _, row in submitted_metadata.iterrows() ]
     except Exception as e:
         log.error(e)
         raise samplesheet.SampleSheetReadError("Unknown error")
 
 
 ####################################################################################################
+
 
 @view_config(
     route_name      = "convert",

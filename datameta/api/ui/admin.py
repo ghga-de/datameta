@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound, HTTPUnauthorized, HTTPNoContent, HTTPForbidden
+from pyramid.httpexceptions import HTTPBadRequest, HTTPNotFound, HTTPUnauthorized, HTTPNoContent
 from pyramid.view import view_config
-
-import bcrypt
 
 from ...models import User, Group, RegRequest
 from ...settings import get_setting
@@ -25,6 +23,7 @@ from sqlalchemy.exc import IntegrityError
 
 import logging
 log = logging.getLogger(__name__)
+
 
 @view_config(route_name='admin_put_request', renderer='json', request_method='PUT')
 def v_admin_put_request(request):
@@ -43,9 +42,10 @@ def v_admin_put_request(request):
         reg_req_id             = request.json_body['id']
         response               = request.json_body['response']
         newuser_make_admin     = bool(request.json_body.get("group_admin"))
-        newuser_fullname       = request.json_body['fullname'] # Admin can edit upon confirm
-        newuser_group_id       = request.json_body['group_id'] if request.json_body['group_id'] is not None else None # Admin can edit upon confirm
-        newuser_group_newname  = request.json_body['group_newname'] # Admin can edit upon confirm
+        newuser_fullname       = request.json_body['fullname']  # Admin can edit upon confirm
+        newuser_group_id       = request.json_body['group_id']
+        # Admin can edit upon confirm
+        newuser_group_newname  = request.json_body['group_newname']  # Admin can edit upon confirm
         if response.lower() == 'accept':
             accept = True
         elif response.lower() == 'reject':
@@ -57,14 +57,14 @@ def v_admin_put_request(request):
         raise HTTPBadRequest()
 
     # Check if the request exists
-    reg_req = resource_by_id(db ,RegRequest, reg_req_id)
-    
+    reg_req = resource_by_id(db, RegRequest, reg_req_id)
+
     if reg_req is None:
         return HTTPNotFound('Registration request not found')
 
     # Check if the requesting user is authorized. Both the request group as well as the
     # administratively selected group have to be the requesting user's group
-    if not req_user.site_admin and (reg_req.group_id!=req_user.group_id.uuid or newuser_group_id!=req_user.group_id.uuid):
+    if not req_user.site_admin and (reg_req.group_id != req_user.group_id.uuid or newuser_group_id != req_user.group_id.uuid):
         return HTTPUnauthorized()
 
     # Check if the specified group id is valid
@@ -89,7 +89,7 @@ def v_admin_put_request(request):
                 pwhash = '!')
         try:
             db.add(new_user)
-            db.flush() # We need an ID
+            db.flush()  # We need an ID
         except IntegrityError:
             raise errors.get_validation_error(["A group with that name already exists."])
 
@@ -148,44 +148,44 @@ def v_admin_get(request):
     # If the requesting user is only a group admin, return only those users
     # that are in the same group
     if not req_user.site_admin:
-        query = query.filter(User.group_id==req_user.group_id)
+        query = query.filter(User.group_id == req_user.group_id)
 
     response = {}
 
     response["users"] = [ {
-        'id' :  get_identifier(user),
-        'group_id' :  get_identifier(user.group),
-        'group_name' : user.group.name,
-        'fullname' : user.fullname,
-        'email' : user.email,
-        'enabled' : user.enabled,
-        'site_admin' : user.site_admin,
-        'group_admin' : user.group_admin,
-        'site_read' : user.site_read
+        'id'            : get_identifier(user),
+        'group_id'      : get_identifier(user.group),
+        'group_name'    : user.group.name,
+        'fullname'      : user.fullname,
+        'email'         : user.email,
+        'enabled'       : user.enabled,
+        'site_admin'    : user.site_admin,
+        'group_admin'   : user.group_admin,
+        'site_read'     : user.site_read
         } for user in query ]
 
     # If the requesting user is a site admin, return all groups, otherwise only theirs
     if req_user.site_admin:
-        response['groups'] = [ { 
+        response['groups'] = [ {
             'id' : get_identifier(group),
             'name': group.name
             } for group in db.query(Group) ]
     else:
-        response['groups'] = [ { 
-            'id' :  get_identifier(group),
-            'name': group.name
+        response['groups'] = [ {
+            'id'     : get_identifier(group),
+            'name'   : group.name
             } for group in [ req_user.group ] ]
     # Pending registration requests
     query = db.query(RegRequest)
     if not req_user.site_admin:
-        query = query.filter(RegRequest.group_id==req_user.group_id)
+        query = query.filter(RegRequest.group_id == req_user.group_id)
 
-    response['reg_requests'] = [ { 
-        'id' :  get_identifier(reg_request),
-        'fullname' : reg_request.fullname, 
-        'email' : reg_request.email, 
-        'group_id': ( str(reg_request.group.uuid) if reg_request.group else None),
-        'new_group_name' : reg_request.new_group_name
-        } for reg_request in query ] 
+    response['reg_requests'] = [ {
+        'id'               : get_identifier(reg_request),
+        'fullname'         : reg_request.fullname,
+        'email'            : reg_request.email,
+        'group_id'         : ( str(reg_request.group.uuid) if reg_request.group else None),
+        'new_group_name'   : reg_request.new_group_name
+        } for reg_request in query ]
 
     return response

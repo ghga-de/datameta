@@ -15,40 +15,42 @@
 from sqlalchemy.orm import joinedload, aliased
 from sqlalchemy import func, and_, or_, desc, asc
 
-from pyramid.httpexceptions import HTTPBadRequest, HTTPOk
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.request import Request
 from pyramid.view import view_config
 from dataclasses import dataclass
 from typing import Optional
 import shlex
-import webob
 import logging
-import datetime
 
-import pandas as pd
-
-from ... import security, samplesheet, errors, resource
+from ... import security, errors, resource
 from ...security import authz
 from ...resource import get_identifier
-from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, User, Group, Submission
+from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, User, Group, Submission, ServiceExecution, Service
+from ...utils import get_record_from_metadataset
 
-from ...api.metadatasets import get_record_from_metadataset, MetaDataSetResponse
+from ..metadata import get_all_metadata
+from ..metadatasets import MetaDataSetResponse, collect_service_executions
 
 log = logging.getLogger(__name__)
+
 
 @dataclass
 class ViewTableResponse(MetaDataSetResponse):
     """Data class representing the JSON response returned by POST:/api/ui/view"""
     submission_label : Optional[str] = None
+    submission_datetime : Optional[str] = None  # ISO
     group_id : Optional[dict] = None
     group_name: Optional[str] = None
     user_name: Optional[str] = None
+
 
 def metadata_index_to_name(db, idx):
     name = db.query(MetaDatum.name).order_by(MetaDatum.order).limit(1).offset(idx).scalar()
     if not name:
         errors.get_validation_error(["Invalid sort column index"])
     return name
+
 
 @view_config(
     route_name      = "ui_view",
@@ -94,7 +96,7 @@ def post(request: Request):
     # SQL AND clauses to apply to the filter query
     and_filters = [
             # This clause joins the EXISTS subquery with the main query
-            MetaDataSet.id==MetaDataSetFilter.id,
+            MetaDataSet.id == MetaDataSetFilter.id,
             ]
 
     # This clause restricts the results to submissions of the user's group
@@ -137,8 +139,8 @@ def post(request: Request):
     # WHERE clause by AND linking the clauses prepared above.
     filter_query = filter_query\
             .join(Submission)\
-            .join(Group, Submission.group_id==Group.id)\
-            .join(User, MetaDataSetFilter.user_id==User.id)\
+            .join(Group, Submission.group_id == Group.id)\
+            .join(User, MetaDataSetFilter.user_id == User.id)\
             .filter(and_(*and_filters))
 
     # Query the matching metadatasets, adding the total number of records as an
@@ -147,25 +149,26 @@ def post(request: Request):
     # number of matching records as required by datatables.
     mdatasets_base_query = db.query(MetaDataSet, func.count().over())
 
-    MetaDatumRecordOrder = aliased(MetaDatumRecord)
     mdata_name = None
-    if   sort_idx == 0: # The submission label
+    if   sort_idx == 0:  # The submission label
         mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.label))
-    elif sort_idx == 1: # The user full name
-        mdatasets_base_query = mdatasets_base_query.join(User).order_by(direction(User.fullname)) # TODO FIX
-    elif sort_idx == 2: # The submission group name
-        mdatasets_base_query = mdatasets_base_query.join(Submission).join(Group).order_by(direction(Group.site_id)) # TODO FIX
-    elif sort_idx == 3: # The metadataset site ID
+    elif sort_idx == 1:  # The submission time
+        mdatasets_base_query = mdatasets_base_query.join(Submission).order_by(direction(Submission.date))
+    elif sort_idx == 2:  # The user full name
+        mdatasets_base_query = mdatasets_base_query.join(User).order_by(direction(User.fullname))  # TODO FIX
+    elif sort_idx == 3:  # The submission group name
+        mdatasets_base_query = mdatasets_base_query.join(Submission).join(Group).order_by(direction(Group.site_id))  # TODO FIX
+    elif sort_idx == 4:  # The metadataset site ID
         mdatasets_base_query = mdatasets_base_query.order_by(direction(MetaDataSet.site_id))
-    else: # Sorting by a metadatum value
-        mdata_name = metadata_index_to_name(db, sort_idx - 4)
+    else:  # Sorting by a metadatum value
+        mdata_name = metadata_index_to_name(db, sort_idx - 5)
         # [WARNING] The following JOIN assumes that an inner join between MetaDatumRecord
         # and MetaDatum does not result in a loss of rows if the JOIN is restricted to one
         # particular MetaDatum.name. Put differently, this query requires that we always
         # store a MetaDatumRecord for every MetaDatum known, even if it is NULL.
         mdatasets_base_query = mdatasets_base_query\
                 .join(MetaDatumRecord)\
-                .join(MetaDatum, and_(MetaDatumRecord.metadatum_id==MetaDatum.id,MetaDatum.name==mdata_name))\
+                .join(MetaDatum, and_(MetaDatumRecord.metadatum_id == MetaDatum.id, MetaDatum.name == mdata_name))\
                 .order_by(direction(MetaDatumRecord.value))
 
     # Add the EXISTS statement the query, specify the relationships that we want to JOIN for fast
@@ -173,7 +176,12 @@ def post(request: Request):
     # currently being viewed
     mdatasets_base_query = mdatasets_base_query\
             .filter(filter_query.exists())\
-            .options(joinedload(MetaDataSet.submission).joinedload(Submission.group),joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum),joinedload(MetaDataSet.user))\
+            .options(joinedload(MetaDataSet.submission).joinedload(Submission.group))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum))\
+            .options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.file))\
+            .options(joinedload(MetaDataSet.user))\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.user))\
+            .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.service).joinedload(Service.target_metadata))\
             .offset(start)\
             .limit(length)\
 
@@ -187,29 +195,37 @@ def post(request: Request):
     # Note:
     # There seems to be little benefit of providing this number to datatables.
     # If different from records_filtered, the footer shows a summary as in
-    # "Showing 1 to 25 of 502 entries (filtered from 1,800 total entries)"
+    # "Showing 1 to 25 of 502 entries (filtered from 1, 800 total entries)"
     # otherwise only the first part of the message is shown. The query should
     # be rather fast, but may be a waste of resources.
     records_total = db.query(func.count(MetaDataSet.id))\
             .select_from(MetaDataSet)\
             .join(Submission)\
-            .filter(Submission.group_id==auth_user.group_id)\
+            .filter(Submission.group_id == auth_user.group_id)\
             .scalar()
+
+    # Check which metadata of this metadataset the user is allowed to view
+    all_metadata           = get_all_metadata(db, include_service_metadata = True)
+    metadata_with_access   = authz.get_readable_metadata(all_metadata, auth_user)
+
+    service_executions_all = [ collect_service_executions(metadata_with_access, mdata_set) for mdata_set, _ in mdata_sets ]
 
     # Build the 'data' response
     data = [
             ViewTableResponse(
-                id                 = get_identifier(mdata_set),
-                record             = get_record_from_metadataset(mdata_set),
-                file_ids           = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
-                user_id            = get_identifier(mdata_set.user),
-                user_name          = mdata_set.user.fullname,
-                group_id           = get_identifier(mdata_set.submission.group),
-                group_name         = mdata_set.submission.group.name,
-                submission_id      = get_identifier(mdata_set.submission) if mdata_set.submission else None,
-                submission_label   = mdata_set.submission.label
+                id                    = get_identifier(mdata_set),
+                record                = get_record_from_metadataset(mdata_set, metadata_with_access),
+                file_ids              = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file) for mdrec in mdata_set.metadatumrecords if mdrec.metadatum.isfile },
+                user_id               = get_identifier(mdata_set.user),
+                user_name             = mdata_set.user.fullname,
+                group_id              = get_identifier(mdata_set.submission.group),
+                group_name            = mdata_set.submission.group.name,
+                submission_id         = get_identifier(mdata_set.submission) if mdata_set.submission else None,
+                submission_datetime   = mdata_set.submission.date.isoformat(),
+                submission_label      = mdata_set.submission.label,
+                service_executions    = service_executions,
                 )
-            for mdata_set, _ in mdata_sets
+            for (mdata_set, _), service_executions in zip(mdata_sets, service_executions_all)
             ]
 
     # Return the response as specified by the datatables API

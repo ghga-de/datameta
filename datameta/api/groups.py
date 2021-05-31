@@ -14,7 +14,7 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from typing import Optional, Dict, List
+from typing import List
 from dataclasses import dataclass
 from . import DataHolderBase
 from .. import models
@@ -25,14 +25,14 @@ from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 
-from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPGone
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
 
 
 class GroupSubmissions:
     """GroupSubmissions container for OpenApi communication"""
     submissions: List[dict]
 
-    def __init__(self, request:Request, group_id:str):
+    def __init__(self, request: Request, group_id: str):
         db = request.dbsession
         group = resource_query_by_id(db, models.Group, group_id).options(
             joinedload(
@@ -59,7 +59,7 @@ class GroupSubmissions:
             for sub in group.submissions
         ]
 
-    def _get_file_ids_of_submission(self, submission:models.Submission):
+    def _get_file_ids_of_submission(self, submission: models.Submission):
         file_ids = []
         for mset in submission.metadatasets:
             file_records = [
@@ -72,8 +72,7 @@ class GroupSubmissions:
             )
         return file_ids
 
-
-    def __json__(self, requests:Request) -> List[dict]:
+    def __json__(self, requests: Request) -> List[dict]:
         return self.submissions
 
 
@@ -92,7 +91,7 @@ def get_all_submissions(request: Request) -> GroupSubmissions:
     target_group = resource_by_id(db, Group, group_id)
 
     if target_group is None:
-        raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
+        raise HTTPForbidden()  # 403 Group ID not found, hidden from the user intentionally
 
     # check if user is part of the target group:
     if not authz.view_group_submissions(auth_user, group_id):
@@ -103,11 +102,13 @@ def get_all_submissions(request: Request) -> GroupSubmissions:
         group_id=group_id
     )
 
+
 @dataclass
 class ChangeGroupName(DataHolderBase):
     """Class for Group Name Change communication to OpenApi"""
     group_id: str
     new_group_name: str
+
 
 @view_config(
     route_name="groups_id",
@@ -128,7 +129,7 @@ def put(request: Request):
     target_group = resource_by_id(db, Group, group_id)
 
     if target_group is None:
-        raise HTTPForbidden() # 403 Group ID not found, hidden from the user intentionally
+        raise HTTPForbidden()  # 403 Group ID not found, hidden from the user intentionally
 
     if authz.update_group_name(auth_user):
         try:
@@ -138,4 +139,4 @@ def put(request: Request):
             raise errors.get_validation_error(["A group with that name already exists."])
 
         return HTTPNoContent()
-    raise HTTPForbidden() # 403 Not authorized to change this group name
+    raise HTTPForbidden()  # 403 Not authorized to change this group name

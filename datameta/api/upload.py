@@ -15,12 +15,13 @@
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest, HTTPConflict, HTTPNoContent
 from pyramid.view import view_config
 
-import hashlib
 import webob
 import logging
+from datetime import datetime
 from .. import resource, models, storage, security
 
 log = logging.getLogger(__name__)
+
 
 @view_config(
     route_name="upload",
@@ -52,9 +53,9 @@ def post(request) -> HTTPNoContent:
     db_file = resource.resource_by_id(db, models.File, req_file_id)
 
     # Validate access token match
-    db_file = db_file if req_token and db_file.access_token == security.hash_token(req_token) else None
+    db_file = db_file if db_file and req_token and db_file.upload_expires > datetime.now() and db_file.access_token == security.hash_token(req_token) else None
 
-    if db_file is None: # Includes token mismatch
+    if db_file is None:  # Includes token mismatch
         raise HTTPNotFound(json=None)
 
     # Verify that this file is still open for uploads
@@ -65,12 +66,8 @@ def post(request) -> HTTPNoContent:
     if not db_file.storage_uri.startswith("file://"):
         raise HTTPNotFound(json=None)
 
-    # Calculate the file size
-    req_file_data.seek(0, 2)
-    file_size = req_file_data.tell()
-    req_file_data.seek(0)
-
     # Store the file on disk
+    req_file_data.seek(0)
     storage.write_file(request, db_file, req_file_data)
 
     return HTTPNoContent()

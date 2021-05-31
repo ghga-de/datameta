@@ -22,8 +22,6 @@ from dataclasses_json import dataclass_json, LetterCase
 import os
 import yaml
 
-import datameta
-
 openapi_spec_path = os.path.join(os.path.dirname(__file__), "openapi.yaml")
 # read base url from openapi.yaml:
 with open(openapi_spec_path, "r") as spec_file:
@@ -31,12 +29,14 @@ with open(openapi_spec_path, "r") as spec_file:
 base_url = openapi_spec["servers"][0]["url"]
 api_version = openapi_spec["info"]["version"]
 
+
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class DataHolderBase:
     """Base class for data classes intended to be used as API response bodies"""
     def __json__(self, request):
         return self.to_dict()
+
 
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
@@ -65,6 +65,9 @@ def includeme(config: Configurator) -> None:
     config.add_route("rpc_get_file_url", base_url + "/rpc/get-file-url/{id}")
     config.add_route('register_submit', base_url + "/registrations")
     config.add_route("register_settings", base_url + "/registrationsettings")
+    config.add_route("services", base_url + "/services")
+    config.add_route("services_id", base_url + "/services/{id}")
+    config.add_route("service_execution", base_url + "/service-execution/{serviceId}/{metadatasetId}")
 
     # Endpoint outside of openapi
     config.add_route("upload", base_url + "/upload/{id}")

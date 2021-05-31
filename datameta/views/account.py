@@ -13,12 +13,9 @@
 # limitations under the License.
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound
 
-from sqlalchemy.exc import DBAPIError
-
-from .. import models
 from .. import security
+
 
 @view_config(route_name='account', renderer='../templates/account.pt')
 def my_view(request):

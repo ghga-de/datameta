@@ -12,46 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datameta.models import MetaDataSet, MetaDatum, File
 from .errors import get_validation_error
-from sqlalchemy import and_
-from pyramid.request import Request
 
-from collections import Counter
 import re
 import datetime
 
+
 def validate_metadataset_record(
-    request:Request,
-    record:dict, 
-    return_err_message:bool=False,
-    rendered:bool=False # set to true if values have already
-                        # been rendered (e.g. datetime fields
-                        # already in isoformat) 
+        metadata: dict,
+        record: dict,
+        return_err_message: bool = False,
+        rendered: bool = False  # set to true if values have already
+        # been rendered (e.g. datetime fields
+        # already in isoformat)
 ):
     """Validate single metadataset in isolation"""
-    errors = [] # list of errors
-                # empty means success
+    # list of errors, empty means success
+    errors = []
 
-    # get all metadatum fields:
-    db = request.dbsession
-    mdats_query = db.query(MetaDatum).order_by(MetaDatum.order).all()
-    mdats = { mdat.name: mdat for mdat in mdats_query }
-
-    if mdats.get("isFile") and not mdats.get("name"):
+    if metadata.get("isFile") and not metadata.get("name"):
         errors.append({
             "message": "file names cannot be empty.",
             "field": "name"
         })
 
-    for name, mdat in mdats.items():
+    for name, mdat in metadata.items():
 
         # check if mdat is present in record dict
         # if not and mdat is mandatory, throw an error:
         if name not in record:
             if mdat.mandatory:
                 errors.append({
-                    "message": "field was not specified but is mandatory",
+                    "message": "Field was not specified but is mandatory",
                     "field": name
                 })
             continue
@@ -64,7 +56,7 @@ def validate_metadataset_record(
         if value is None:
             if mdat.mandatory:
                 errors.append({
-                    "message": "field value was null, but the field is mandatory",
+                    "message": "Field value was null, but the field is mandatory",
                     "field": name
                 })
             continue
@@ -73,7 +65,7 @@ def validate_metadataset_record(
         # (all values will be stringified later)
         if not isinstance(value, str):
             errors.append({
-                "message": "field value must be a string.",
+                "message": "Field value must be a string.",
                 "field": name
             })
 
@@ -104,7 +96,7 @@ def validate_metadataset_record(
                 continue
 
     # check if any of the record fields has no corresponding MetaDatum object:
-    mdats_set = set(mdats.keys())
+    mdats_set = set(metadata.keys())
     record_set = set(record.keys())
     if not record_set.issubset(mdats_set):
         for field in record_set.difference(mdats_set):

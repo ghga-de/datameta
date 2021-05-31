@@ -28,6 +28,7 @@ __smtp = SMTPClient(
 
 __smtp_from = parseaddr(threadlocal.get_current_registry().settings['datameta.smtp_from'])
 
+
 def send(recipients, subject, template, values, bcc=None, rec_header_only=False):
     """Sends an email message to the specified recipients using the provided template and values.
 

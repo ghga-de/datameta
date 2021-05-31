@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound, HTTPUnauthorized, HTTPNoContent, HTTPForbidden
+import logging
 from pyramid.view import view_config
 
-from ..models import Group
 from .. import security
 
-
-import logging
 log = logging.getLogger(__name__)
+
 
 @view_config(route_name='admin', renderer='../templates/admin.pt')
 def v_admin(request):
     security.revalidate_admin(request)
     try:
-	    return { 'showreq' : request.GET['showreq'] }
+        return { 'showreq' : request.GET['showreq'] }
     except KeyError:
-	    return { 'showreq' : '' }
+        return { 'showreq' : '' }

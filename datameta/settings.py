@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .models import ApplicationSetting
 import transaction
 from .models import ApplicationSetting, get_engine, get_tm_session, get_session_factory
 import pkgutil
@@ -20,6 +19,7 @@ import yaml
 
 import logging
 log = logging.getLogger(__name__)
+
 
 def get_setting_value_type(setting):
     """Returns the type of the setting as the first value field that contains a
@@ -33,22 +33,23 @@ def get_setting_value_type(setting):
         value = setting.str_value
         value_type = "string"
     elif setting.float_value is not None:
-        value = float_value
+        value = setting.float_value
         value_type = "float"
     elif setting.date_value is not None:
-        value = date_value
+        value = setting.date_value
         value_type = "date"
     elif setting.time_value is not None:
-        value = time_value
+        value = setting.time_value
         value_type = "time"
 
     return value, value_type
+
 
 def get_setting(db, name):
     """Given a setting name, obtains the corresponding setting from the
     database and returns the value. The return type varies. Returns `None` if
     the setting couldn't be found or no value was set."""
-    setting = db.query(ApplicationSetting).filter(ApplicationSetting.key==name).one_or_none()
+    setting = db.query(ApplicationSetting).filter(ApplicationSetting.key == name).one_or_none()
     if not setting:
         return None
     elif setting.int_value is not None:
@@ -56,12 +57,13 @@ def get_setting(db, name):
     elif setting.str_value is not None:
         return setting.str_value
     elif setting.float_value is not None:
-        return float_value
+        return setting.float_value
     elif setting.date_value is not None:
-        return date_value
+        return setting.date_value
     elif setting.time_value is not None:
-        return time_value
+        return setting.time_value
     return None
+
 
 def includeme(config):
     """Initializes the default values for applications settings"""
