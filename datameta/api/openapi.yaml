@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.24.0
+  version: 0.25.0
   title: DataMeta
 
 servers:
@@ -217,6 +217,10 @@ paths:
       responses:
         '307':
           description: Redirecting to the pre-signed URL of the file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileUrl"
           headers:
             location:
               description: Location to redirect to
@@ -1249,6 +1253,21 @@ components:
         - userId
         - token
         - label
+        - expires
+      additionalProperties: false
+
+    FileUrl:
+      type: object
+      properties:
+        fileId:
+          $ref: "#/components/schemas/Identifier"
+        fileUrl:
+          type: string
+        expires:
+          type: integer
+      required:
+        - fileId
+        - fileUrl
         - expires
       additionalProperties: false
 

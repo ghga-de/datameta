@@ -18,6 +18,7 @@ from pyramid.request import Request
 from pyramid.response import FileResponse
 from datetime import datetime
 from .. import security, models, storage
+from ..resource import get_identifier
 from .files import access_file_by_user
 from sqlalchemy import and_
 
@@ -49,7 +50,11 @@ def get_file_url(request: Request) -> HTTPTemporaryRedirect:
         expires_after=expires_after
     )
 
-    return HTTPTemporaryRedirect(url)
+    return HTTPTemporaryRedirect(url, json_body = {
+        'fileId' : get_identifier(db_file),
+        'fileUrl' : f"{request.host_url}{url}",
+        'expires' : expires_after
+        })
 
 
 @view_config(

@@ -82,6 +82,7 @@ DataMeta.view.initTable = function() {
       rowId: 'id.uuid',
       paging : true,
       lengthMenu: [ 10, 25, 50, 100 ],
+      order: [[1, "desc"]],
       pageLength: 25,
       searching: true,
       processing: true,
