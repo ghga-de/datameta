@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 0.23.0
+  version: 0.24.0
   title: DataMeta
 
 servers:
@@ -619,7 +619,7 @@ paths:
         the form of metadatum key - value pairs for the service-related
         metadata and corresponding files if file metadata are involved.
       tags:
-        - Metadata
+        - Services
       operationId: ServiceSetMetaDatum
       parameters:
         - name: serviceId
