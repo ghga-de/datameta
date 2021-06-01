@@ -118,7 +118,7 @@ test_file_service_0:
   references:
     user:
       fixtureset: users
-      name: user_a
+      name: service_user_0
 
 test_file_service_1:
   class: File
@@ -130,7 +130,7 @@ test_file_service_1:
   references:
     user:
       fixtureset: users
-      name: user_b
+      name: service_user_0
 
 test_file_unreferenced:
   class: File
@@ -142,4 +142,4 @@ test_file_unreferenced:
   references:
     user:
       fixtureset: users
-      name: user_a
+      name: service_user_0
