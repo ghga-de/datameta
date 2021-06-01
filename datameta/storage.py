@@ -164,7 +164,7 @@ def _get_download_url_local(request: Request, db_file: models.File, expires_afte
 
     token = security.generate_token()
     token_hash = security.hash_token(token)
-    expires = datetime.now() + timedelta(minutes = float(expires_after))
+    expires = datetime.utcnow() + timedelta(minutes = float(expires_after))
 
     db = request.dbsession
     download_token = models.DownloadToken(
@@ -174,7 +174,7 @@ def _get_download_url_local(request: Request, db_file: models.File, expires_afte
     )
     db.add(download_token)
 
-    return f"{base_url}/download/{token}"
+    return f"{base_url}/download/{token}", expires
 
 
 def _get_download_url_s3(request: Request, db_file: models.File, expires_after: Optional[int] = None):

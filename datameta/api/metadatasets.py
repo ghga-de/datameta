@@ -378,13 +378,13 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
             .options(joinedload(Service.users))\
             .one_or_none()
 
-    service_metadata = { mdatum.name : mdatum for mdatum in service.target_metadata }
-
-    service_records = { rec.metadatum.name : rec for rec in metadataset.metadatumrecords if rec.metadatum.name in service_metadata }
-
     # Return 404 if a resource could not be found
     if metadataset is None or service is None:
         raise HTTPNotFound()
+
+    service_metadata = { mdatum.name : mdatum for mdatum in service.target_metadata }
+
+    service_records = { rec.metadatum.name : rec for rec in metadataset.metadatumrecords if rec.metadatum.name in service_metadata }
 
     # Return 403 if the user has no permission to execute this service or the
     # service has already been executed for this metadataset
@@ -413,9 +413,6 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
     # Validate submission access to the specified files
     validation.validate_submission_access(db, db_files, {}, auth_user)
 
-    # Validate the associations between files and records
-    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { metadataset.site_id : metadataset })
-
     # Validate the provided records
     validate_metadataset_record(service_metadata, records, return_err_message=False, rendered=False)
 
@@ -426,9 +423,21 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
         db_rec.value = record_value
         db.add(db_rec)
 
+    # Validate the associations between files and records
+    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { metadataset.site_id : metadataset }, ignore_submitted_metadatasets=True)
+
+    # If there were any validation errors, return 400
+    if val_errors:
+        entities, fields, messages = zip(*val_errors)
+        raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
+
+    # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
+    fnames = { k : v[0] for k, v in fnames.items() }
+
     # Associate the files with the metadata
     for fname, mdatrec in ref_fnames.items():
         mdatrec.file = fnames[fname]
+        db.add(mdatrec)
 
     # Create a service execution
     sexec = ServiceExecution(

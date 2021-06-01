@@ -64,7 +64,7 @@ def validate_submission_access(db, db_files, db_msets, auth_user):
         raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
 
-def validate_submission_association(db_files, db_msets):
+def validate_submission_association(db_files, db_msets, ignore_submitted_metadatasets = False):
     """Validates a submission with regard to
 
     - All submitted files being associated to metadata
@@ -82,7 +82,8 @@ def validate_submission_association(db_files, db_msets):
     # Collect files which already have other metadata associated
     errors += [ (db_file, None, "Already submitted") for file_id, db_file in db_files.items() if db_file.metadatumrecord is not None ]
     # Collect metadatasets that were already submitted
-    errors += [ (db_mset, None, "Already submitted") for mset_id, db_mset in db_msets.items() if db_mset.submission_id is not None ]
+    if not ignore_submitted_metadatasets:
+        errors += [ (db_mset, None, "Already submitted") for mset_id, db_mset in db_msets.items() if db_mset.submission_id is not None ]
 
     # Collect the file names of the provided files
     f_names_obj = defaultdict(list)
