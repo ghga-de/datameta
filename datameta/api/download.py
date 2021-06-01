@@ -45,24 +45,22 @@ def get_file_url(request: Request) -> HTTPTemporaryRedirect:
     )
 
     # retrieve URL:
-    url = storage.get_download_url(
+    url, expires_at = storage.get_download_url(
         request=request,
         db_file=db_file,
         expires_after=expires_after
     )
 
+    response = {
+            'fileId' : get_identifier(db_file),
+            'fileUrl' : f"{request.host_url}{url}",
+            'expires' : expires_at.isoformat() + "+00:00"
+            }
+
     if redirect:
-        return HTTPTemporaryRedirect(url, json_body = {
-            'fileId' : get_identifier(db_file),
-            'fileUrl' : f"{request.host_url}{url}",
-            'expires' : expires_after
-            })
+        return HTTPTemporaryRedirect(url, json_body=response)
     else:
-        return HTTPOk(json_body = {
-            'fileId' : get_identifier(db_file),
-            'fileUrl' : f"{request.host_url}{url}",
-            'expires' : expires_after
-            })
+        return HTTPOk(json_body=response)
 
 
 @view_config(
@@ -83,7 +81,7 @@ def download_by_token(request: Request) -> HTTPOk:
     db_token = db.query(models.DownloadToken).filter(
         and_(
             models.DownloadToken.value == hashed_token,
-            models.DownloadToken.expires > datetime.now()
+            models.DownloadToken.expires > datetime.utcnow()
         )
     ).one_or_none()
 
