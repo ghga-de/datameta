@@ -34,13 +34,13 @@ class ServiceExecutionTest(BaseIntegrationTest):
         
     
     @parameterized.expand([
-        #("unauthorized_no_user", "",  "313", "x", 401),
-        #("forbidden_no_service_user", "admin", "service_0", "mset_a", 403),
-        #("forbidden_service_already_executed", "service_user_0", "service_0", "mset_a_sexec", 403),
+        ("unauthorized_no_user", "",  "313", "x", 401),
+        ("forbidden_no_service_user", "admin", "service_0", "mset_a", 403),
+        ("forbidden_service_already_executed", "service_user_0", "service_0", "mset_a_sexec", 403),
         ("success", "service_user_0", "service_0", "mset_a", 200),
-        #("missing_file_mdatum", "service_user_0", "service_0", "mset_a", 400),
-        #("file_mdatum_set_to_nonfile", "service_user_0", "service_0", "mset_a", 400),
-        #("unreferenced_file", "service_user_0", "service_0", "mset_a", 400),
+        ("missing_file_mdatum", "service_user_0", "service_0", "mset_a", 400),
+        ("file_mdatum_set_to_nonfile", "service_user_0", "service_0", "mset_a", 400),
+        ("unreferenced_file", "service_user_0", "service_0", "mset_a", 400),
     ])
     def test_service_execution(self, testname: str, executing_user: str, service_id: str, mset_id: str, expected_status: int):
         user = self.fixture_manager.get_fixture('users', executing_user) if executing_user else None
@@ -73,20 +73,3 @@ class ServiceExecutionTest(BaseIntegrationTest):
             status    = expected_status,
             params    = request_body
         )
-
-
-
-"""
-        '200':
-          description: Update successful
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: The specified metadataset or service does not exist.
-        '400':
-          description: Validation Error
-        '500':
-          description: Internal Server Error 
-"""
