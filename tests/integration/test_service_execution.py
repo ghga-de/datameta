@@ -48,8 +48,8 @@ class ServiceExecutionTest(BaseIntegrationTest):
 
         test_data = {
             "success": {
-                "record": {"ServiceMeta0": 313, "ServiceMeta1": "test_file_service_0.txt"},
-                "fileIds": ["test_file_service_0"]
+                "record": {"ServiceMeta0": 313, "ServiceMeta1": "test_file_unreferenced.txt"},
+                "fileIds": ["test_file_unreferenced"]
             },
             "missing_file_mdatum": {
                 "record": {"ServiceMeta0": 313},
