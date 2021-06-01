@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import BaseIntegrationTest
 from parameterized import parameterized
+
+from sqlalchemy.orm import joinedload
+
 from datameta.api import base_url
+from datameta import models
+
+from . import BaseIntegrationTest
 
 class ServiceExecutionTest(BaseIntegrationTest):
     def setUp(self):
@@ -73,3 +78,12 @@ class ServiceExecutionTest(BaseIntegrationTest):
             status    = expected_status,
             params    = request_body
         )
+
+        if expected_status == 200:
+          mset_after = self.fixture_manager.get_fixture_db("metadatasets", mset_id, joinedload(models.MetaDataSet.service_executions).joinedload(models.ServiceExecution.service))
+          assert service_id in (sexec.service.site_id for sexec in mset_after.service_executions), f"Service {service_id} was not executed."
+
+          mset_after = self.fixture_manager.get_fixture_db("metadatasets", mset_id, joinedload(models.MetaDataSet.metadatumrecords).joinedload(models.MetaDatumRecord.metadatum))
+          mdrecords = {mdr.metadatum.name: mdr.value for mdr in mset_after.metadatumrecords}
+          for key, value in request_body.get("record", dict()).items():
+              assert mdrecords.get(key) == str(value), f"Metadata was not set as expected {key}: {mdrecords.get(key)}, expected: {value}"
