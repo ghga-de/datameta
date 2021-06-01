@@ -416,6 +416,11 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
     # Validate the associations between files and records
     fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { metadataset.site_id : metadataset })
 
+    # If there were any validation errors, return 400
+    if val_errors:
+        entities, fields, messages = zip(*val_errors)
+        raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
+
     # Validate the provided records
     validate_metadataset_record(service_metadata, records, return_err_message=False, rendered=False)
 
