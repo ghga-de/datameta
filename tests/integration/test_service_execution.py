@@ -68,8 +68,8 @@ class ServiceExecutionTest(BaseIntegrationTest):
                 "fileIds": ["test_file_service_0", "test_file_unreferenced"]
             }
         }
-
-        request_body = test_data.get(testname, test_data["success"])
+        
+        request_body: dict = test_data.get(testname, test_data["success"])
 
         self.testapp.post_json(
             url       = f"{base_url}/service-execution/{service_id}/{mset_id}",
