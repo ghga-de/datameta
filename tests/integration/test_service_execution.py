@@ -68,7 +68,7 @@ class ServiceExecutionTest(BaseIntegrationTest):
                 "fileIds": ["test_file_service_0", "test_file_unreferenced"]
             }
         }
-        
+
         request_body: dict = test_data.get(testname, test_data["success"])
 
         self.testapp.post_json(
