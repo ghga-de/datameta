@@ -60,7 +60,7 @@ tests_require = [
 
 setup(
     name                   = 'datameta',
-    version                = '0.9.8',
+    version                = '0.9.9',
     description            = 'DataMeta - submission server for data and associated metadata',
     long_description       = README + '\n\n' + CHANGES,
     author                 = 'Leon Kuchenbecker',
