@@ -35,7 +35,25 @@ from . import BaseIntegrationTest
 # Change Name of Service 2 to Service 1 (400)
 # Change something on a Service, that does not exist (404)
 
+class TestServices(BaseIntegrationTest):
+    
+    def setUp(self):
+        super().setUp()
+        self.fixture_manager.load_fixtureset('groups')
+        self.fixture_manager.load_fixtureset('users')
+        self.fixture_manager.load_fixtureset('apikeys')
+
+    @parameterized.expand([
+        # TEST_NAME                                  , EXECUTING_USER    , TARGET_USER   , NEW_NAME                     , EXP_RESPONSE
+        ("create_service_by_admin"                , "user_a"          , "user_a"      , "changed_by_user_a"          , 200),
+        ("create_service_with_existing_name"      , "user_a"          , "user_c"      , "changed_by_user_a"          , 403),
+        ("create_service_with_existing_name"      , "user_a"          , "user_c"      , "changed_by_user_a"          , 200),
+
+    ])
+    def test_create_service(self, testname: str, executing_user: str, target_user: str, new_name: str, expected_response: int):
+        user          = self.fixture_manager.get_fixture('users', executing_user)
+        target_user   = self.fixture_manager.get_fixture('users', target_user)
 
 
-
+        
 
