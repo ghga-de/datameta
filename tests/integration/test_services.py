@@ -18,23 +18,6 @@ from parameterized import parameterized
 from datameta.api import base_url
 from . import BaseIntegrationTest
 
-# One Service already in Database
-# Two Users already in Database: User 1 is site_admin, User is not
-# Try every (200) also as a not authorized user
-
-# POST Service
-# Create a new Service (200), Check Response
-# Try to create a service with the same name (400)
-
-# GET Services
-# Run a get (200), check if everything okay
-
-# PUT Service
-# Set user 1 (200), Check Response
-# Set user 2 (200), Check Response
-# Change Name of Service 2 to Service 1 (400)
-# Change something on a Service, that does not exist (404)
-
 class TestServices(BaseIntegrationTest):
     
     def setUp(self):
@@ -44,25 +27,62 @@ class TestServices(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('apikeys')
         self.fixture_manager.load_fixtureset('services')
 
-
     @parameterized.expand([
         # TEST_NAME                                  , EXECUTING_USER   , SERVICE_NAME                     , EXP_RESPONSE
-        ("create_service_by_admin"                , "admin"             , "service_1"          , 200),
-        ("create_service_by_regular_user"         , "user_a"            , "service_2"          , 400),
-        ("create_service_with_existing_name"      , "user_a"            , "service_3"          , 400),
+        ("create_service_by_admin"                , "admin"             , "service_2"          , 200),
+        ("create_service_by_regular_user"         , "user_a"            , "service_3"          , 403),
+        ("create_service_with_existing_name"      , "admin"             , "service_0"          , 400),
     ])
     def test_create_service(self, testname: str, executing_user: str, service_name: str, expected_response: int):
         user            = self.fixture_manager.get_fixture('users', executing_user)
         auth_headers    = self.apikey_auth(user) if user else {}
 
-        response = self.testapp.post(
+        self.testapp.post_json(
             url       = f"{base_url}/services",
+            params={"name": service_name},
             headers   = auth_headers,
-            params={"metadatasetIds": metadataset_ids},
             status    = expected_response
         )
 
+        #Check returned info
+
+    @parameterized.expand([
+        # TEST_NAME                             , EXECUTING_USER      , SERVICE_ID  , NEW_SERVICE_NAME  , USER_LIST         , EXP_RESPONSE
+        ("update_service_by_admin"              , "admin"             , "service_0"   , "service_2"       , "user_a, user_b"  , 200),
+        ("update_service_by_regular_user"       , "user_a"            , "service_0"   , "service_2"       , "user_a, user_b"  , 403),
+        ("update_service_to_existing_name"      , "admin"             , "service_0"   , "service_1"       , ""                , 400),
+        ("update_nonexisting_service"           , "admin"             , "service_7"   , "service_1"       , ""                , 404),
+
+    ])
+    def test_update_service(self, testname: str, executing_user: str, service_id: str, new_service_name: str, user_list: str, expected_response: int):
+        user            = self.fixture_manager.get_fixture('users', executing_user)
+        auth_headers    = self.apikey_auth(user) if user else {}
+        user_ids        = user_list.split(", ")
+
+        self.testapp.put_json(
+            url       = f"{base_url}/services/{service_id}",
+            params={"name": new_service_name, "userIds": user_ids},
+            headers   = auth_headers,
+            status    = expected_response
+        )
+
+        #Check returned info
 
 
-        
+    @parameterized.expand([
+        # TEST_NAME                           , EXECUTING_USER    , EXP_RESPONSE
+        ("get_services_by_admin"              , "admin"             , 200),
+        ("get_services_by_regular_user"       , "user_a"            , 403),
 
+    ])
+    def test_get_service(self, testname: str, executing_user: str, expected_response: int):
+        user            = self.fixture_manager.get_fixture('users', executing_user)
+        auth_headers    = self.apikey_auth(user) if user else {}
+
+        self.testapp.get(
+            url       = f"{base_url}/services",
+            headers   = auth_headers,
+            status    = expected_response
+        )
+
+        #Check returned info
