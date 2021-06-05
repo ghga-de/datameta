@@ -18,8 +18,9 @@ from parameterized import parameterized
 from datameta.api import base_url
 from . import BaseIntegrationTest
 
+
 class TestServices(BaseIntegrationTest):
-    
+
     def setUp(self):
         super().setUp()
         self.fixture_manager.load_fixtureset('groups')
@@ -96,3 +97,4 @@ class TestServices(BaseIntegrationTest):
             assert response.json[0]['name'] == 'service_0', (
                     "Returned Value does not meet expectations."
             )
+            
