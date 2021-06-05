@@ -42,17 +42,26 @@ class TestServices(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('groups')
         self.fixture_manager.load_fixtureset('users')
         self.fixture_manager.load_fixtureset('apikeys')
+        self.fixture_manager.load_fixtureset('services')
+
 
     @parameterized.expand([
-        # TEST_NAME                                  , EXECUTING_USER    , TARGET_USER   , NEW_NAME                     , EXP_RESPONSE
-        ("create_service_by_admin"                , "user_a"          , "user_a"      , "changed_by_user_a"          , 200),
-        ("create_service_with_existing_name"      , "user_a"          , "user_c"      , "changed_by_user_a"          , 403),
-        ("create_service_with_existing_name"      , "user_a"          , "user_c"      , "changed_by_user_a"          , 200),
-
+        # TEST_NAME                                  , EXECUTING_USER   , SERVICE_NAME                     , EXP_RESPONSE
+        ("create_service_by_admin"                , "admin"             , "service_1"          , 200),
+        ("create_service_by_regular_user"         , "user_a"            , "service_2"          , 400),
+        ("create_service_with_existing_name"      , "user_a"            , "service_3"          , 400),
     ])
-    def test_create_service(self, testname: str, executing_user: str, target_user: str, new_name: str, expected_response: int):
-        user          = self.fixture_manager.get_fixture('users', executing_user)
-        target_user   = self.fixture_manager.get_fixture('users', target_user)
+    def test_create_service(self, testname: str, executing_user: str, service_name: str, expected_response: int):
+        user            = self.fixture_manager.get_fixture('users', executing_user)
+        auth_headers    = self.apikey_auth(user) if user else {}
+
+        response = self.testapp.post(
+            url       = f"{base_url}/services",
+            headers   = auth_headers,
+            params={"metadatasetIds": metadataset_ids},
+            status    = expected_response
+        )
+
 
 
         
