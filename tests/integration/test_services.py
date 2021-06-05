@@ -97,4 +97,3 @@ class TestServices(BaseIntegrationTest):
             assert response.json[0]['name'] == 'service_0', (
                     "Returned Value does not meet expectations."
             )
-            
