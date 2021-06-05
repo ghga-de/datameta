@@ -37,14 +37,18 @@ class TestServices(BaseIntegrationTest):
         user            = self.fixture_manager.get_fixture('users', executing_user)
         auth_headers    = self.apikey_auth(user) if user else {}
 
-        self.testapp.post_json(
+        response = self.testapp.post_json(
             url       = f"{base_url}/services",
             params={"name": service_name},
             headers   = auth_headers,
             status    = expected_response
         )
 
-        #Check returned info
+        if expected_response == 200:
+
+            assert response.json['name'] == service_name, (
+                "Returned Value does not meet expectations."
+            )
 
     @parameterized.expand([
         # TEST_NAME                             , EXECUTING_USER      , SERVICE_ID  , NEW_SERVICE_NAME  , USER_LIST         , EXP_RESPONSE
@@ -59,15 +63,18 @@ class TestServices(BaseIntegrationTest):
         auth_headers    = self.apikey_auth(user) if user else {}
         user_ids        = user_list.split(", ")
 
-        self.testapp.put_json(
+        response = self.testapp.put_json(
             url       = f"{base_url}/services/{service_id}",
             params={"name": new_service_name, "userIds": user_ids},
             headers   = auth_headers,
             status    = expected_response
         )
 
-        #Check returned info
+        if expected_response == 200:
 
+            assert response.json['name'] == new_service_name or response.json['userIds'] != user_ids, (
+                    "Returned Value does not meet expectations."
+            )
 
     @parameterized.expand([
         # TEST_NAME                           , EXECUTING_USER    , EXP_RESPONSE
@@ -79,10 +86,13 @@ class TestServices(BaseIntegrationTest):
         user            = self.fixture_manager.get_fixture('users', executing_user)
         auth_headers    = self.apikey_auth(user) if user else {}
 
-        self.testapp.get(
+        response = self.testapp.get(
             url       = f"{base_url}/services",
             headers   = auth_headers,
             status    = expected_response
         )
 
-        #Check returned info
+        if expected_response == 200:
+            assert response.json[0]['name'] == 'service_0', (
+                    "Returned Value does not meet expectations."
+            )
