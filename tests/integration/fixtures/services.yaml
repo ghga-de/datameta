@@ -21,3 +21,13 @@ service_0:
     users:
       - fixtureset: users
         name: service_user_0
+
+service_1:
+  class: Service
+  attributes:
+    site_id: service_1
+    name: service_1
+  references:
+    users:
+      - fixtureset: users
+        name: service_user_0
