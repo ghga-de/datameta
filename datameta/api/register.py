@@ -140,8 +140,8 @@ def post(request):
     admins = get_authorative_admins(db, reg_req)
     email.send(
             recipients = email.__smtp_from,
-            subject = get_setting(db, "subject_reg_notify").str_value,
-            template = get_setting(db, "template_reg_notify").str_value,
+            subject = get_setting(db, "subject_reg_notify"),
+            template = get_setting(db, "template_reg_notify"),
             values = {
                 'req_fullname' : reg_req.fullname,
                 'req_email' : reg_req.email,
