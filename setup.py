@@ -41,7 +41,7 @@ requires = [
     'SQLAlchemy == 1.3.*',
     'transaction',
     'zope.sqlalchemy',
-    'pyramid_openapi3',
+    'pyramid_openapi3==0.11',
     'openapi-core<0.14',
     'pytest >= 3.7.4',
     'dataclasses-json==0.5.2',
