@@ -214,16 +214,30 @@ class MetaDataSet(Base):
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     submission_id    = Column(Integer, ForeignKey('submissions.id'), nullable=True)
-    is_deprecated    = Column(Boolean, default=False)
-    deprecated_label = Column(String, nullable=True)
-    replaced_by_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=True)
+    
     # Relationships
     user                 = relationship('User', back_populates='metadatasets')
     submission           = relationship('Submission', back_populates='metadatasets')
     metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset')
-    replaces             = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
     service_executions   = relationship('ServiceExecution', back_populates = 'metadataset')
 
+
+class MsetReplacementEvent(Base):
+    """ Stores information about an mset replacement event """
+    __tablename__ = 'msetreplacements'
+    id               = Column(Integer, primary_key=True)
+    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
+    datetime         = Column(DateTime, nullable=False)
+    # former 'is_deprecated' label from MetaDataSet
+    reason           = Column(String(140), nullable=False)
+    # the id of the new mset
+    metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
+    
+    # Relationships
+    user                 = relationship('User', back_populates='metadatasets')
+    # replaced msets can then backref to the even and the replacing mset can be obtained via event.metadataset_id
+    replaced_msets       = relationship('MetaDataSet', backref=backref('replaced_through', remote_side=[id]))
 
 class ApplicationSetting(Base):
     __tablename__ = 'appsettings'
