@@ -90,6 +90,7 @@ class User(Base):
     apikeys              = relationship('ApiKey', back_populates='user')
     services             = relationship('Service', secondary=user_service_table, back_populates='users')
     service_executions   = relationship('ServiceExecution', back_populates='user')
+    mset_replacements    = relationship('MsetReplacementEvent', back_populates='user')
 
 
 class ApiKey(Base):
@@ -235,9 +236,9 @@ class MsetReplacementEvent(Base):
     metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
     
     # Relationships
-    user                 = relationship('User', back_populates='metadatasets')
+    user                 = relationship('User', back_populates='mset_replacements')
     # replaced msets can then backref to the even and the replacing mset can be obtained via event.metadataset_id
-    replaced_msets       = relationship('MetaDataSet', backref=backref('replaced_through', remote_side=[id]))
+    replaced_msets       = relationship('MetaDataSet', backref=backref('replaced_through', remote_side=[metadataset_id]))
 
 class ApplicationSetting(Base):
     __tablename__ = 'appsettings'
