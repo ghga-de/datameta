@@ -23,7 +23,7 @@ DataMeta.uilocal      = {};
 DataMeta.user         = {};
 DataMeta.toolTips     = [];
 DataMeta.popoverList  = [];
-DataMeta.api = path => "/api/v0/" + path;
+DataMeta.api = path => "/api/v1/" + path;
 
 DataMeta.AnnotatedError = function(response) {
   this.response = response;
