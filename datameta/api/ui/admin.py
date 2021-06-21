@@ -65,9 +65,6 @@ def v_admin_put_request(request):
     # Check if the requesting user is authorized. Both the request group as well as the
     # administratively selected group have to be the requesting user's group
 
-    # import pdb
-    # pdb.set_trace()
-
     if not req_user.site_admin and (reg_req.group_id != req_user.group_id or newuser_group_id != str(req_user.group.uuid)):
         return HTTPUnauthorized()
 
