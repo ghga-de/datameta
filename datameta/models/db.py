@@ -28,7 +28,7 @@ from sqlalchemy import (
     Table
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 from .meta import Base
 
@@ -215,8 +215,8 @@ class MetaDataSet(Base):
     uuid                   = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id                = Column(Integer, ForeignKey('users.id'), nullable=False)
     submission_id          = Column(Integer, ForeignKey('submissions.id'), nullable=True)
-    replaced_via_event_id  = Column(Integer, ForeignKey('msetreplacements.id', use_alter=True), nullable=True) 
-    
+    replaced_via_event_id  = Column(Integer, ForeignKey('msetreplacements.id', use_alter=True), nullable=True)
+
     # Relationships
     user                 = relationship('User', back_populates='metadatasets')
     submission           = relationship('Submission', back_populates='metadatasets')
@@ -236,7 +236,7 @@ class MsetReplacementEvent(Base):
     datetime             = Column(DateTime, nullable=False)
     label                = Column(String(140), nullable=False)
     new_metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
-    
+
     # Relationships
     user                 = relationship('User', back_populates='mset_replacements')
 
