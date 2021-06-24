@@ -348,6 +348,13 @@ paths:
       tags:
         - Authentication and Users
       operationId: UserInformationRequest
+      parameters:
+        - name: id
+          in: path
+          description: ID of the user
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: OK
@@ -990,13 +997,20 @@ paths:
       tags:
         - Groups
       operationId: GroupInformationRequest
+      parameters:
+        - name: id
+          in: path
+          description: ID of the group
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/'
+                $ref: '#/components/schemas/GroupResponse'
         '400':
           description: Validation Error
           content:
