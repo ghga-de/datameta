@@ -24,7 +24,6 @@ from ..linting import validate_metadataset_record
 from .. import security, siteid, resource, validation
 from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord, Submission, File
 from ..security import authz
-import datetime
 from datetime import timezone, datetime
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from ..utils import get_record_from_metadataset
@@ -50,7 +49,6 @@ class MetaDataSetResponse(DataHolderBase):
     user_id              : str
     submission_id        : Optional[str] = None
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
-
 
     @staticmethod
     def from_metadataset(metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
@@ -90,7 +88,7 @@ def render_record_values(metadata: Dict[str, MetaDatum], record: dict) -> dict:
             continue
         elif record_rendered[field] and metadata[field].datetimefmt:
             # if MetaDatum is a datetime field, render the value in isoformat
-            record_rendered[field] = datetime.datetime.strptime(
+            record_rendered[field] = datetime.strptime(
                     record_rendered[field],
                     metadata[field].datetimefmt
                     ).isoformat()
@@ -470,7 +468,7 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
             service       = service,
             metadataset   = metadataset,
             user          = auth_user,
-            datetime      = datetime.datetime.utcnow()
+            datetime      = datetime.utcnow()
             )
 
     db.add(sexec)
