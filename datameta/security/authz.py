@@ -15,6 +15,7 @@
 from typing import Dict
 from ..models import MetaDatum, User
 
+
 def is_own_group(user, group):
     return user.group.id == group.id
 
@@ -36,9 +37,9 @@ def has_privileged_access(user):
 
 
 def view_user(user, target_user):
-    #Regular users shall only be able to request their own user and otherwise receive a 404. 
-    #group_admin users shall be able to request information about all users in their group. 
-    #site_read (!) and site_admin users shall be able to retrieve information about all users.
+    # Regular users shall only be able to request their own user and otherwise receive a 404.
+    # group_admin users shall be able to request information about all users in their group.
+    # site_read (!) and site_admin users shall be able to retrieve information about all users.
     return any((
         user_is_target(user, target_user),
         has_group_rights(user, target_user.group),
@@ -48,7 +49,7 @@ def view_user(user, target_user):
 
 def view_group(user, group):
     return any((
-        is_own_group(user, group), # i assume, a 'normal' user can query their group's details regardless of group_admin status?
+        is_own_group(user, group),  # i assume, a 'normal' user can query their group's details regardless of group_admin status?
         has_privileged_access(user)
     ))
 

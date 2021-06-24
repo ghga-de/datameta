@@ -16,12 +16,8 @@
 """
 from parameterized import parameterized
 
-from sqlalchemy.orm import joinedload
-
 from . import BaseIntegrationTest
-from datameta import models
 from datameta.api import base_url
-import re
 
 
 class TestUserInformationRequest(BaseIntegrationTest):
@@ -31,8 +27,7 @@ class TestUserInformationRequest(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('groups')
         self.fixture_manager.load_fixtureset('users')
         self.fixture_manager.load_fixtureset('apikeys')
-        
-        
+
     def do_request(self, user_uuid, **params):
         response = self.testapp.get(
             f"{base_url}/users/{user_uuid}",
@@ -59,6 +54,7 @@ class TestUserInformationRequest(BaseIntegrationTest):
             headers=self.apikey_auth(user),
         )
 
+
 class TestGroupInformationRequest(BaseIntegrationTest):
 
     def setUp(self):
@@ -73,7 +69,7 @@ class TestGroupInformationRequest(BaseIntegrationTest):
             **params
         )
         return response
-    
+
     @parameterized.expand([
         # TEST_NAME                           , EXECUTING USER    , TARGET_USER       , EXP_RESPONSE
         ("own_group"                          , "user_a"          , "group_x"         , 200),
@@ -86,7 +82,7 @@ class TestGroupInformationRequest(BaseIntegrationTest):
     def test_group_query(self, testname: str, executing_user: str, target_group: str, expected_response: int):
         user          = self.fixture_manager.get_fixture('users', executing_user)
         target_group  = self.fixture_manager.get_fixture('groups', target_group)
-        
+
         self.do_request(
             target_group.uuid,
             status=expected_response,

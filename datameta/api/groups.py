@@ -27,11 +27,13 @@ from sqlalchemy.exc import IntegrityError
 
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 
+
 @dataclass
 class GroupResponseElement(DataHolderBase):
     """Class for Group Information Request communication to OpenApi"""
     id: dict
     name: str
+
 
 class GroupSubmissions:
     """GroupSubmissions container for OpenApi communication"""
@@ -122,7 +124,7 @@ class ChangeGroupName(DataHolderBase):
     openapi=True
 )
 def get(request: Request):
-    
+
     # Authenticate the user
     auth_user = security.revalidate_user(request)
 
