@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent
+from datameta.models.db import MsetReplacementEvent
+from pyramid.httpexceptions import HTTPBadRequest, HTTPForbidden, HTTPNotFound, HTTPNoContent
 from pyramid.view import view_config
 from pyramid.request import Request
 from sqlalchemy.orm import joinedload
@@ -24,7 +25,7 @@ from .. import security, siteid, resource, validation
 from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord, Submission, File
 from ..security import authz
 import datetime
-from datetime import timezone
+from datetime import timezone, datetime
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from ..utils import get_record_from_metadataset
 from . import DataHolderBase
@@ -49,6 +50,7 @@ class MetaDataSetResponse(DataHolderBase):
     user_id              : str
     submission_id        : Optional[str] = None
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
+
 
     @staticmethod
     def from_metadataset(metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
@@ -150,6 +152,12 @@ def post(request: Request) -> MetaDataSetResponse:
     # Obtain string converted version of the record
     record = record_to_strings(request.openapi_validated.body["record"])
 
+    replaces = request.openapi_validated.body.get("replaces")
+    replaces_label = request.openapi_validated.body.get("replaces_label")
+
+    if replaces and not replaces_label:
+        return HTTPBadRequest()
+
     # Query the configured metadata. We're only considering and allowing
     # non-service metadata when creating a new metadataset.
     metadata = get_all_metadata(db, include_service_metadata=False)
@@ -167,6 +175,24 @@ def post(request: Request) -> MetaDataSetResponse:
         submission_id = None
     )
     db.add(mdata_set)
+
+    if replaces:
+        mset_repl_evt = MsetReplacementEvent(
+            user_id = auth_user.id,
+            datetime = datetime.utcnow(),
+            label = replaces_label,
+            new_metadataset_id = mdata_set.id
+        )
+        db.add(mset_repl_evt)
+
+        for mset_id in replaces:
+
+            target_mset = resource_by_id(db, MetaDataSet, mset_id)
+            if target_mset is None:
+                raise HTTPForbidden()
+
+            target_mset.replaced_via_event_id = mset_repl_evt.id
+
     db.flush()
 
     # Add NULL values for service metadata
