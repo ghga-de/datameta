@@ -25,8 +25,13 @@ from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 
+@dataclass
+class GroupResponseElement(DataHolderBase):
+    """Class for Group Information Request communication to OpenApi"""
+    id: dict
+    name: str
 
 class GroupSubmissions:
     """GroupSubmissions container for OpenApi communication"""
@@ -108,6 +113,32 @@ class ChangeGroupName(DataHolderBase):
     """Class for Group Name Change communication to OpenApi"""
     group_id: str
     new_group_name: str
+
+
+@view_config(
+    route_name="groups_id",
+    renderer="json",
+    request_method="GET",
+    openapi=True
+)
+def get(request: Request):
+    
+    # Authenticate the user
+    auth_user = security.revalidate_user(request)
+
+    group_id = request.matchdict["id"]
+    db = request.dbsession
+
+    # Get the targeted user
+    target_group = resource_by_id(db, Group, group_id)
+
+    if not authz.view_group(auth_user, target_group):
+        raise HTTPNotFound()
+
+    return GroupResponseElement(
+        id              =   get_identifier(target_group),
+        name            =   target_group.name,
+    )
 
 
 @view_config(

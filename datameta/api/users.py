@@ -70,6 +70,43 @@ def get_whoami(request: Request) -> UserResponseElement:
 
 @view_config(
     route_name="user_id",
+    renderer="json",
+    request_method="GET",
+    openapi=True
+)
+def get(request: Request):
+    """
+    We require an endpoint that returns information about a user. 
+    Regular users shall only be able to request their own user and otherwise receive a 404. 
+    group_admin users shall be able to request information about all users in their group. 
+    site_read (!) and site_admin users shall be able to retrieve information about all users.
+    """
+    
+    # Authenticate the user
+    auth_user = security.revalidate_user(request)
+
+    user_id = request.matchdict["id"]
+    db = request.dbsession
+
+    # Get the targeted user
+    target_user = resource_by_id(db, User, user_id)
+
+    if not authz.view_user(auth_user, target_user):
+        raise HTTPNotFound()
+
+    return UserResponseElement(
+        id              =   get_identifier(target_user),
+        name            =   target_user.fullname,
+        group_admin     =   target_user.group_admin,
+        site_admin      =   target_user.site_admin,
+        site_read       =   target_user.site_read,
+        email           =   target_user.email,
+        group           =   get_identifier(auth_user.group)
+    )
+
+
+@view_config(
+    route_name="user_id",
     renderer='json',
     request_method="PUT",
     openapi=True

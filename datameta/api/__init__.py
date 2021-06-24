@@ -60,6 +60,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("presubvalidation", base_url + "/presubvalidation")
     config.add_route("groups_id_submissions", base_url + "/groups/{id}/submissions")
     config.add_route("groups_id", base_url + "/groups/{id}")
+    #config.add_route("groups_id_get", base_url + "/groups/{id}")
     config.add_route("rpc_delete_files", base_url + "/rpc/delete-files")
     config.add_route("rpc_delete_metadatasets", base_url + "/rpc/delete-metadatasets")
     config.add_route("rpc_get_file_url", base_url + "/rpc/get-file-url/{id}")
