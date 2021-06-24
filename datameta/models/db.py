@@ -210,35 +210,35 @@ class MetaDatumRecord(Base):
 class MetaDataSet(Base):
     """A MetaDataSet represents all metadata associated with *one* record"""
     __tablename__  = 'metadatasets'
-    id               = Column(Integer, primary_key=True)
-    site_id          = Column(String(50), unique=True, nullable=False, index=True)
-    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
-    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
-    submission_id    = Column(Integer, ForeignKey('submissions.id'), nullable=True)
-
+    id                     = Column(Integer, primary_key=True)
+    site_id                = Column(String(50), unique=True, nullable=False, index=True)
+    uuid                   = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id                = Column(Integer, ForeignKey('users.id'), nullable=False)
+    submission_id          = Column(Integer, ForeignKey('submissions.id'), nullable=True)
+    replaced_via_event_id  = Column(Integer, ForeignKey('msetreplacements.id', use_alter=True), nullable=True) 
+    
     # Relationships
     user                 = relationship('User', back_populates='metadatasets')
     submission           = relationship('Submission', back_populates='metadatasets')
     metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset')
-    service_executions   = relationship('ServiceExecution', back_populates = 'metadataset')
+    service_executions   = relationship('ServiceExecution', back_populates ='metadataset')
+
+    replaced_via_event   = relationship('MsetReplacementEvent', primaryjoin='MetaDataSet.replaced_via_event_id==MsetReplacementEvent.id')
+    replaces_via_event   = relationship('MsetReplacementEvent', primaryjoin='MetaDataSet.id==MsetReplacementEvent.new_metadataset_id')
 
 
 class MsetReplacementEvent(Base):
     """ Stores information about an mset replacement event """
     __tablename__ = 'msetreplacements'
-    id               = Column(Integer, primary_key=True)
-    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
-    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
-    datetime         = Column(DateTime, nullable=False)
-    # former 'is_deprecated' label from MetaDataSet
-    reason           = Column(String(140), nullable=False)
-    # the id of the new mset
-    metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
-
+    id                   = Column(Integer, primary_key=True)
+    uuid                 = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id              = Column(Integer, ForeignKey('users.id'), nullable=False)
+    datetime             = Column(DateTime, nullable=False)
+    label                = Column(String(140), nullable=False)
+    new_metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
+    
     # Relationships
     user                 = relationship('User', back_populates='mset_replacements')
-    # replaced msets can then backref to the even and the replacing mset can be obtained via event.metadataset_id
-    replaced_msets       = relationship('MetaDataSet', backref=backref('replaced_through', remote_side=[metadataset_id]))
 
 
 class ApplicationSetting(Base):
@@ -260,7 +260,7 @@ class Service(Base):
     site_id      = Column(String(50), unique=True, nullable=False, index=True)
     name         = Column(Text, nullable=True, unique=True)
     # Relationships
-    users           = relationship('User', secondary=user_service_table, back_populates='services')
+    users                = relationship('User', secondary=user_service_table, back_populates='services')
     # unfortunately, 'metadata' is a reserved keyword for sqlalchemy classes
     service_executions   = relationship('ServiceExecution', back_populates = 'service')
     target_metadata      = relationship('MetaDatum', back_populates = 'service')
