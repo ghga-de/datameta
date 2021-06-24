@@ -46,10 +46,10 @@ class TestUserInformationRequest(BaseIntegrationTest):
     ])
     def test_user_query(self, testname: str, executing_user: str, target_user: str, expected_response: int):
         user          = self.fixture_manager.get_fixture('users', executing_user)
-        target_user   = self.fixture_manager.get_fixture('users', target_user)
+        tgt_user      = self.fixture_manager.get_fixture('users', target_user)
 
         self.do_request(
-            target_user.uuid,
+            tgt_user.uuid,
             status=expected_response,
             headers=self.apikey_auth(user),
         )
@@ -81,10 +81,10 @@ class TestGroupInformationRequest(BaseIntegrationTest):
     ])
     def test_group_query(self, testname: str, executing_user: str, target_group: str, expected_response: int):
         user          = self.fixture_manager.get_fixture('users', executing_user)
-        target_group  = self.fixture_manager.get_fixture('groups', target_group)
+        tgt_group     = self.fixture_manager.get_fixture('groups', target_group)
 
         self.do_request(
-            target_group.uuid,
+            tgt_group.uuid,
             status=expected_response,
             headers=self.apikey_auth(user)
         )
