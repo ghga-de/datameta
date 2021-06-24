@@ -75,13 +75,7 @@ def get_whoami(request: Request) -> UserResponseElement:
     openapi=True
 )
 def get(request: Request):
-    """
-    We require an endpoint that returns information about a user. 
-    Regular users shall only be able to request their own user and otherwise receive a 404. 
-    group_admin users shall be able to request information about all users in their group. 
-    site_read (!) and site_admin users shall be able to retrieve information about all users.
-    """
-    
+
     # Authenticate the user
     auth_user = security.revalidate_user(request)
 
