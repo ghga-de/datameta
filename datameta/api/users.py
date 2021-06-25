@@ -26,7 +26,6 @@ from ..security import authz
 from ..resource import resource_by_id, get_identifier
 
 
-
 @dataclass
 class UserUpdateRequest(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
