@@ -14,7 +14,7 @@
 
 from dataclasses import dataclass
 from datameta.models.db import MsetReplacementEvent
-from pyramid.httpexceptions import HTTPBadRequest, HTTPForbidden, HTTPNotFound, HTTPNoContent
+from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent
 from pyramid.view import view_config
 from pyramid.request import Request
 from sqlalchemy.orm import joinedload
@@ -154,7 +154,7 @@ def post(request: Request) -> MetaDataSetResponse:
     replaces_label = request.openapi_validated.body.get("replaces_label")
 
     if replaces and not replaces_label:
-        raise errors.get_validation_error(messages=['No reason (label) given for Metadataset replacement.']) # maybe label should be reason.
+        raise errors.get_validation_error(messages=['No reason (label) given for Metadataset replacement.'])  # maybe label should be reason.
     if not replaces and replaces_label:
         raise errors.get_validation_error(messages=["No metadataset ids specified (replacement reason (label) is given."])
 
