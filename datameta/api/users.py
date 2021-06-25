@@ -14,7 +14,7 @@
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound, HTTPUnauthorized
 
 from dataclasses import dataclass
 from . import DataHolderBase
@@ -84,17 +84,26 @@ def get(request: Request):
 
     # Get the targeted user
     target_user = resource_by_id(db, User, user_id)
+    if target_user is None:
+        raise HTTPNotFound()
 
     if not authz.view_user(auth_user, target_user):
-        raise HTTPNotFound()
+        raise HTTPUnauthorized()
+
+    group_admin, site_admin, site_read, email = None, None, None, None
+    if auth_user.site_admin:
+        group_admin, site_admin, site_read, email = (
+            getattr(target_user, attrib) 
+            for attrib in ("group_admin", "site_admin", "site_read", "email")
+        )
 
     return UserResponseElement(
         id              =   get_identifier(target_user),
         name            =   target_user.fullname,
-        group_admin     =   target_user.group_admin,
-        site_admin      =   target_user.site_admin,
-        site_read       =   target_user.site_read,
-        email           =   target_user.email,
+        group_admin     =   group_admin,
+        site_admin      =   site_admin,
+        site_read       =   site_read,
+        email           =   email,
         group           =   get_identifier(auth_user.group)
     )
 

@@ -32,7 +32,7 @@ def is_power_grab(user, target_user):
     return not user.site_admin and target_user.site_admin
 
 
-def has_privileged_access(user):
+def can_site_read(user):
     return user.site_admin or user.site_read
 
 
@@ -43,14 +43,14 @@ def view_user(user, target_user):
     return any((
         user_is_target(user, target_user),
         has_group_rights(user, target_user.group),
-        has_privileged_access(user)
+        can_site_read(user)
     ))
 
 
 def view_group(user, group):
     return any((
         is_own_group(user, group),  # i assume, a 'normal' user can query their group's details regardless of group_admin status?
-        has_privileged_access(user)
+        can_site_read(user)
     ))
 
 
