@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+
 from pyramid.view import view_config
 from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound, HTTPUnauthorized
@@ -23,7 +25,7 @@ from .. import security
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
 
-from typing import Optional
+
 
 @dataclass
 class UserUpdateRequest(DataHolderBase):
@@ -94,7 +96,7 @@ def get(request: Request):
     group_admin, site_admin, site_read, email = None, None, None, None
     if auth_user.site_admin:
         group_admin, site_admin, site_read, email = (
-            getattr(target_user, attrib) 
+            getattr(target_user, attrib)
             for attrib in ("group_admin", "site_admin", "site_read", "email")
         )
 
