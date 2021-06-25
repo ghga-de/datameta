@@ -71,7 +71,7 @@ class TestGroupInformationRequest(BaseIntegrationTest):
         return response
 
     @parameterized.expand([
-        # TEST_NAME                           , EXECUTING USER    , TARGET_USER       , EXP_RESPONSE
+        # TEST_NAME                           , EXECUTING USER    , TARGET_GROUP      , EXP_RESPONSE
         ("own_group"                          , "user_a"          , "group_x"         , 200),
         ("foreign_group"                      , "user_a"          , "group_y"         , 404),
         ("group_admin_own"                    , "group_x_admin"   , "group_x"         , 200),
