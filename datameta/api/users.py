@@ -103,10 +103,10 @@ def get(request: Request):
         return UserResponseElement(
             id              =   get_identifier(target_user),
             name            =   target_user.fullname,
-            group_admin     =   group_admin,
-            site_admin      =   site_admin,
-            site_read       =   site_read,
-            email           =   email,
+            group_admin     =   target_user.group_admin,
+            site_admin      =   target_user.site_admin,
+            site_read       =   target_user.site_read,
+            email           =   target_user.email,
             group           =   get_identifier(auth_user.group)
         )
     return UserResponseElement(
