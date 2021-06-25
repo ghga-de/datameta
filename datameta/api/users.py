@@ -92,21 +92,25 @@ def get(request: Request):
     if not authz.view_user(auth_user, target_user):
         raise HTTPUnauthorized()
 
-    group_admin, site_admin, site_read, email = False, False, False, ""
+    #group_admin, site_admin, site_read, email = False, False, False, ""
     if auth_user.site_admin:
-        group_admin, site_admin, site_read, email = (
-            getattr(target_user, attrib)
-            for attrib in ("group_admin", "site_admin", "site_read", "email")
-        )
 
+        #group_admin, site_admin, site_read, email = (
+        #    getattr(target_user, attrib)
+        #    for attrib in ("group_admin", "site_admin", "site_read", "email")
+        #)
+
+        return UserResponseElement(
+            id              =   get_identifier(target_user),
+            name            =   target_user.fullname,
+            group_admin     =   group_admin,
+            site_admin      =   site_admin,
+            site_read       =   site_read,
+            email           =   email,
+            group           =   get_identifier(auth_user.group)
+        )
     return UserResponseElement(
-        id              =   get_identifier(target_user),
-        name            =   target_user.fullname,
-        group_admin     =   group_admin,
-        site_admin      =   site_admin,
-        site_read       =   site_read,
-        email           =   email,
-        group           =   get_identifier(auth_user.group)
+        id=get_identifier(target_user), name=target_user.fullname, group=get_identifier(auth_user.group)
     )
 
 
