@@ -33,6 +33,7 @@ class UserUpdateRequest(DataHolderBase):
     siteAdmin: bool
     enabled: bool
     siteRead: bool
+    canUpdate: bool
 
 
 @dataclass
@@ -43,6 +44,7 @@ class UserResponseElement(DataHolderBase):
     group_admin: bool
     site_admin: bool
     site_read: bool
+    can_update: bool
     email: str
     group: dict
 
@@ -63,6 +65,7 @@ def get_whoami(request: Request) -> UserResponseElement:
         group_admin     =   auth_user.group_admin,
         site_admin      =   auth_user.site_admin,
         site_read       =   auth_user.site_read,
+        can_update      =   auth_user.can_update,
         email           =   auth_user.email,
         group           =   {"id": get_identifier(auth_user.group), "name": auth_user.group.name}
     )
@@ -84,6 +87,7 @@ def put(request: Request):
     site_admin = request.openapi_validated.body.get("siteAdmin")
     enabled = request.openapi_validated.body.get("enabled")
     site_read = request.openapi_validated.body.get("siteRead")
+    can_update = request.openapi_validated.body.get("canUpdate")
 
     db = request.dbsession
 
@@ -122,6 +126,10 @@ def put(request: Request):
     if name is not None and not authz.update_user_name(auth_user, target_user):
         raise HTTPForbidden()
 
+    # The user has to be site admin to change update privileges for a user
+    if can_update is not None and not authz.update_user_can_update(auth_user):
+        raise HTTPForbidden()
+
     # Now, make the corresponding changes
     if group_id is not None:
         new_group = resource_by_id(db, Group, group_id)
@@ -138,5 +146,7 @@ def put(request: Request):
         target_user.enabled = enabled
     if name is not None:
         target_user.fullname = name
+    if can_update is not None:
+        target_user.can_update = can_update
 
     return HTTPNoContent()

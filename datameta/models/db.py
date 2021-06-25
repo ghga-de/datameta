@@ -29,6 +29,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import null
 
 from .meta import Base
 
@@ -82,6 +83,8 @@ class User(Base):
     site_admin           = Column(Boolean(create_constraint=False), nullable=False)
     group_admin          = Column(Boolean(create_constraint=False), nullable=False)
     site_read            = Column(Boolean(create_constraint=False), nullable=False)
+    can_update           = Column(Boolean(create_constraint=False), nullable=False)
+
     # Relationships
     group                = relationship('Group', back_populates='user')
     metadatasets         = relationship('MetaDataSet', back_populates='user')

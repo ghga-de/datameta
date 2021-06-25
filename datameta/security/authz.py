@@ -150,6 +150,10 @@ def update_user_name(user, target_user):
     ))
 
 
+def update_user_can_update(user):
+    return user.site_admin
+
+
 def create_service(user):
     return user.site_admin
 

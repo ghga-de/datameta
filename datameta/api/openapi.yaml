@@ -1654,6 +1654,8 @@ components:
           type: boolean
         siteRead:
           type: boolean
+        canUpdate:
+          type: boolean
         email:
           type: string
         group:
@@ -1669,6 +1671,7 @@ components:
         - groupAdmin
         - siteAdmin
         - siteRead
+        - canUpdate
         - email
         - group
       additionalProperties: false
@@ -1687,6 +1690,8 @@ components:
         siteRead:
           type: boolean
         enabled:
+          type: boolean
+        canUpdate:
           type: boolean
 
     MetaDataResponse:
