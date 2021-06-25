@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+# from typing import Optional
 
 from pyramid.view import view_config
 from pyramid.request import Request
@@ -92,14 +92,7 @@ def get(request: Request):
     if not authz.view_user(auth_user, target_user):
         raise HTTPUnauthorized()
 
-    #group_admin, site_admin, site_read, email = False, False, False, ""
     if auth_user.site_admin:
-
-        #group_admin, site_admin, site_read, email = (
-        #    getattr(target_user, attrib)
-        #    for attrib in ("group_admin", "site_admin", "site_read", "email")
-        #)
-
         return UserResponseElement(
             id              =   get_identifier(target_user),
             name            =   target_user.fullname,
@@ -109,6 +102,7 @@ def get(request: Request):
             email           =   target_user.email,
             group           =   get_identifier(auth_user.group)
         )
+
     return UserResponseElement(
         id=get_identifier(target_user), name=target_user.fullname, group=get_identifier(auth_user.group)
     )
