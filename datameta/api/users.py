@@ -23,6 +23,7 @@ from .. import security
 from ..security import authz
 from ..resource import resource_by_id, get_identifier
 
+from typing import Optional
 
 @dataclass
 class UserUpdateRequest(DataHolderBase):
@@ -40,10 +41,10 @@ class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
     name: str  # why is this name when it is called fullname in the db?
-    group_admin: bool
-    site_admin: bool
-    site_read: bool
-    email: str
+    group_admin: Optional[bool]
+    site_admin: Optional[bool]
+    site_read: Optional[bool]
+    email: Optional[str]
     group: dict
 
 
