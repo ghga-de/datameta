@@ -42,10 +42,10 @@ class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
     name: str  # why is this name when it is called fullname in the db?
-    group_admin: Optional[bool]
-    site_admin: Optional[bool]
-    site_read: Optional[bool]
-    email: Optional[str]
+    group_admin: bool
+    site_admin: bool
+    site_read: bool
+    email: str
     group: dict
 
 
@@ -92,7 +92,7 @@ def get(request: Request):
     if not authz.view_user(auth_user, target_user):
         raise HTTPUnauthorized()
 
-    group_admin, site_admin, site_read, email = None, None, None, None
+    group_admin, site_admin, site_read, email = False, False, False, ""
     if auth_user.site_admin:
         group_admin, site_admin, site_read, email = (
             getattr(target_user, attrib)
