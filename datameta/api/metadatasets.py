@@ -154,7 +154,9 @@ def post(request: Request) -> MetaDataSetResponse:
     replaces_label = request.openapi_validated.body.get("replaces_label")
 
     if replaces and not replaces_label:
-        return HTTPBadRequest()
+        raise errors.get_validation_error(messages=['No reason (label) given for Metadataset replacement.']) # maybe label should be reason.
+    if not replaces and replaces_label:
+        raise errors.get_validation_error(messages=["No metadataset ids specified (replacement reason (label) is given."])
 
     # Query the configured metadata. We're only considering and allowing
     # non-service metadata when creating a new metadataset.
@@ -172,6 +174,7 @@ def post(request: Request) -> MetaDataSetResponse:
         user_id = auth_user.id,
         submission_id = None
     )
+
     db.add(mdata_set)
 
     if replaces:
@@ -183,12 +186,17 @@ def post(request: Request) -> MetaDataSetResponse:
         )
         db.add(mset_repl_evt)
 
-        for mset_id in replaces:
+        msets = [
+            (mset_id, resource_by_id(db, MetaDataSet, mset_id))
+            for mset_id in replaces
+        ]
 
-            target_mset = resource_by_id(db, MetaDataSet, mset_id)
-            if target_mset is None:
-                raise HTTPForbidden()
+        missing_msets = [("Invalid metadataset id.", mset_id) for mset_id, target_mset in msets if target_mset is None]
+        if missing_msets:
+            messages, entities = zip(*missing_msets)
+            raise errors.get_validation_error(messages=messages, entities=entities)
 
+        for target_mset in msets:
             target_mset.replaced_via_event_id = mset_repl_evt.id
 
     db.flush()
@@ -303,7 +311,7 @@ def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
         query = query.filter(Submission.date < submitted_before.astimezone(timezone.utc))
     if awaiting_service is not None:
         if awaiting_service not in readable_services_by_id:
-            raise errors.get_validation_error(messages=['Invalid service ID specified'], fields=['awaitingServices'])
+            raise errors.get_validation_error(messages=['Invalid service ID specified'], fields=['awaitingService'])
         query = query.outerjoin(ServiceExecution, and_(
             MetaDataSet.id == ServiceExecution.metadataset_id,
             ServiceExecution.service_id == readable_services_by_id[awaiting_service].id

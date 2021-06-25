@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 1.0.1
+  version: 1.0.2
   title: DataMeta
 
 servers:
@@ -528,7 +528,7 @@ paths:
             format: date-time
         - name: awaitingService
           in: query
-          description: Identifier for a service. Restricts the result to metadatsets for which the specified service has not been executed yet.
+          description: Identifier for a service. Restricts the result to metadatasets for which the specified service has not been executed yet.
           schema:
             type: string
       responses:
@@ -1371,6 +1371,12 @@ components:
           additionalProperties: true
           # a free-form object,
           # any property is allowed
+        replaces:
+          type: array
+          items:
+            type: string
+        replaces_label:
+          type: string
       required:
         - record
       additionalProperties: false
