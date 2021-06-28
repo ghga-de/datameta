@@ -49,16 +49,19 @@ class UserResponseElement(DataHolderBase):
     site_read: Optional[bool] = None
     email: Optional[str] = None
 
-    def get_restricted_fields(self, requesting_user):
+    @classmethod
+    def from_user(cls, target_user, requesting_user):
+        
+        restricted_fields = dict()
         if requesting_user.site_admin:
-            return {
-                "group_admin": self.group_admin,
-                "site_admin": self.site_admin,
-                "site_read": self.site_read,
-                "email": self.email
-            }
+            restricted_fields.update({
+                "group_admin": target_user.group_admin,
+                "site_admin": target_user.site_admin,
+                "site_read": target_user.site_read,
+                "email": target_user.email
+            })
 
-        return dict()
+        return cls(id=get_identifier(target_user.id), name=target_user.fullname, group=get_identifier(target_user.group), **restricted_fields)
 
 
 @dataclass
@@ -116,12 +119,7 @@ def get(request: Request):
     if not authz.view_user(auth_user, target_user):
         raise HTTPUnauthorized()
 
-    return UserResponseElement(
-        id              =   target_user.id,
-        name            =   target_user.fullname,
-        group           =   get_identifier(auth_user.group),
-        **target_user.get_restricted_fields(auth_user)
-    )
+    return UserResponseElement.from_user(target_user, auth_user)
 
 
 @view_config(
