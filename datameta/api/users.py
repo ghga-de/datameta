@@ -51,8 +51,8 @@ class UserResponseElement(DataHolderBase):
 
     @classmethod
     def from_user(cls, target_user, requesting_user):
-        
         restricted_fields = dict()
+
         if requesting_user.site_admin:
             restricted_fields.update({
                 "group_admin": target_user.group_admin,
