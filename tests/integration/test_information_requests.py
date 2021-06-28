@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Testing user management via API request
+"""Testing user information requests via API
 """
-from tests.integration.fixtures import FixtureNotFoundError
 from parameterized import parameterized
 
 from . import BaseIntegrationTest
