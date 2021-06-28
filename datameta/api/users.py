@@ -61,7 +61,7 @@ class UserResponseElement(DataHolderBase):
                 "email": target_user.email
             })
 
-        return cls(id=get_identifier(target_user.id), name=target_user.fullname, group=get_identifier(target_user.group), **restricted_fields)
+        return cls(id=get_identifier(target_user), name=target_user.fullname, group=get_identifier(target_user.group), **restricted_fields)
 
 
 @dataclass
