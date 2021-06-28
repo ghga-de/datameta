@@ -14,6 +14,7 @@
 
 """Testing user management via API request
 """
+from tests.integration.fixtures import FixtureNotFoundError
 from parameterized import parameterized
 
 from . import BaseIntegrationTest
@@ -38,18 +39,24 @@ class TestUserInformationRequest(BaseIntegrationTest):
     @parameterized.expand([
         # TEST_NAME                           , EXECUTING USER    , TARGET_USER       , EXP_RESPONSE
         ("self_query"                         , "user_a"          , "user_a"          , 200),
-        ("normie_queries_other"               , "user_a"          , "user_c"          , 404),
+        ("normie_queries_other"               , "user_a"          , "user_c"          , 401),
         ("group_admin_own_groupmate"          , "group_x_admin"   , "user_a"          , 200),
-        ("group_admin_other_group"            , "group_x_admin"   , "user_c"          , 404),
+        ("group_admin_other_group"            , "group_x_admin"   , "user_c"          , 401),
         ("site_read_query"                    , "user_site_read"  , "user_b"          , 200),
         ("site_admin_query"                   , "admin"           , "user_site_read"  , 200),
+        ("site_admin_query_wrong_id"          , "admin"           , "flopsy"          , 403),
     ])
     def test_user_query(self, testname: str, executing_user: str, target_user: str, expected_response: int):
-        user          = self.fixture_manager.get_fixture('users', executing_user)
-        tgt_user      = self.fixture_manager.get_fixture('users', target_user)
+        user = self.fixture_manager.get_fixture('users', executing_user)
+
+        if testname == "site_admin_query_wrong_id":
+            tgt_user, user_id = None, target_user
+        else:
+            tgt_user = self.fixture_manager.get_fixture('users', target_user)
+            user_id = tgt_user.uuid
 
         self.do_request(
-            tgt_user.uuid,
+            user_id,
             status=expected_response,
             headers=self.apikey_auth(user),
         )
@@ -73,18 +80,24 @@ class TestGroupInformationRequest(BaseIntegrationTest):
     @parameterized.expand([
         # TEST_NAME                           , EXECUTING USER    , TARGET_GROUP      , EXP_RESPONSE
         ("own_group"                          , "user_a"          , "group_x"         , 200),
-        ("foreign_group"                      , "user_a"          , "group_y"         , 404),
+        ("foreign_group"                      , "user_a"          , "group_y"         , 401),
         ("group_admin_own"                    , "group_x_admin"   , "group_x"         , 200),
-        ("group_admin_foreign"                , "group_x_admin"   , "group_y"         , 404),
+        ("group_admin_foreign"                , "group_x_admin"   , "group_y"         , 401),
         ("site_read"                          , "user_site_read"  , "group_y"         , 200),
         ("site_admin"                         , "admin"           , "group_y"         , 200),
+        ("site_admin_wrong_id"                , "admin"           , "rabbit_family"   , 403),
     ])
     def test_group_query(self, testname: str, executing_user: str, target_group: str, expected_response: int):
-        user          = self.fixture_manager.get_fixture('users', executing_user)
-        tgt_group     = self.fixture_manager.get_fixture('groups', target_group)
+        user = self.fixture_manager.get_fixture('users', executing_user)
+
+        if testname == "site_admin_wrong_id":
+            tgt_group, group_id = None, target_group
+        else:
+            tgt_group = self.fixture_manager.get_fixture('groups', target_group)
+            group_id = tgt_group.uuid
 
         self.do_request(
-            tgt_group.uuid,
+            group_id,
             status=expected_response,
             headers=self.apikey_auth(user)
         )
