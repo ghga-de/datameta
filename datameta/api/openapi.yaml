@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 1.1.0
+  version: 1.2.0
   title: DataMeta
 
 servers:
@@ -111,7 +111,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserResponse"
+                $ref: "#/components/schemas/WhoamiResponse"
         '401':
           description: Unauthorized
         '400':
@@ -1713,7 +1713,7 @@ components:
         - name
       additionalProperties: false
         
-    UserResponse:
+    WhoamiResponse:
       type: object
       properties:
         id:
@@ -1742,6 +1742,34 @@ components:
         - siteAdmin
         - siteRead
         - email
+        - group
+      additionalProperties: false
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Identifier"
+        name:
+          type: string
+        groupAdmin:
+          type: boolean
+        siteAdmin:
+          type: boolean
+        siteRead:
+          type: boolean
+        email:
+          type: string
+        group:
+          type: object
+          properties:
+            id:
+              $ref: "#/components/schemas/Identifier"
+            name:
+              type: string
+      required:
+        - id
+        - name
         - group
       additionalProperties: false
 

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+from typing import Optional
+
 from pyramid.view import view_config
 from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound, HTTPUnauthorized
@@ -41,6 +43,29 @@ class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
     name: str  # why is this name when it is called fullname in the db?
+    group: dict
+    group_admin: Optional[bool] = None
+    site_admin: Optional[bool] = None
+    site_read: Optional[bool] = None
+    email: Optional[str] = None
+
+    def get_restricted_fields(self, requesting_user):
+        if requesting_user.site_admin:
+            return {
+                "group_admin": self.group_admin,
+                "site_admin": self.site_admin,
+                "site_read": self.site_read,
+                "email": self.email
+            }
+
+        return dict()
+
+
+@dataclass
+class WhoamiResponseElement(DataHolderBase):
+    """Class for User Update Request communication to OpenApi"""
+    id: dict
+    name: str  # why is this name when it is called fullname in the db?
     group_admin: bool
     site_admin: bool
     site_read: bool
@@ -54,11 +79,11 @@ class UserResponseElement(DataHolderBase):
     request_method="GET",
     openapi=True
 )
-def get_whoami(request: Request) -> UserResponseElement:
+def get_whoami(request: Request) -> WhoamiResponseElement:
 
     auth_user = security.revalidate_user(request)
 
-    return UserResponseElement(
+    return WhoamiResponseElement(
         id              =   get_identifier(auth_user),
         name            =   auth_user.fullname,
         group_admin     =   auth_user.group_admin,
@@ -86,24 +111,16 @@ def get(request: Request):
     # Get the targeted user
     target_user = resource_by_id(db, User, user_id)
     if target_user is None:
-        raise HTTPNotFound()
+        raise HTTPForbidden()
 
     if not authz.view_user(auth_user, target_user):
         raise HTTPUnauthorized()
 
-    if auth_user.site_admin:
-        return UserResponseElement(
-            id              =   get_identifier(target_user),
-            name            =   target_user.fullname,
-            group_admin     =   target_user.group_admin,
-            site_admin      =   target_user.site_admin,
-            site_read       =   target_user.site_read,
-            email           =   target_user.email,
-            group           =   get_identifier(auth_user.group)
-        )
-
     return UserResponseElement(
-        id=get_identifier(target_user), name=target_user.fullname, group=get_identifier(auth_user.group)
+        id              =   target_user.id,
+        name            =   target_user.name,
+        group           =   get_identifier(auth_user.group),
+        **target_user.get_restricted_fields(auth_user)
     )
 
 

@@ -25,7 +25,7 @@ from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound, HTTPUnauthorized
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPUnauthorized
 
 
 @dataclass
@@ -135,7 +135,7 @@ def get(request: Request):
     target_group = resource_by_id(db, Group, group_id)
 
     if target_group is None:
-        raise HTTPNotFound()
+        raise HTTPForbidden()
 
     if not authz.view_group(auth_user, target_group):
         raise HTTPUnauthorized()
