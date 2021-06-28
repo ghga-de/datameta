@@ -118,7 +118,7 @@ def get(request: Request):
 
     return UserResponseElement(
         id              =   target_user.id,
-        name            =   target_user.name,
+        name            =   target_user.fullname,
         group           =   get_identifier(auth_user.group),
         **target_user.get_restricted_fields(auth_user)
     )
