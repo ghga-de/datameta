@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from typing import Optional
+
 from pyramid.view import view_config
 from pyramid.request import Request
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
@@ -41,6 +44,32 @@ class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
     name: str  # why is this name when it is called fullname in the db?
+    group: dict
+    group_admin: Optional[bool] = None
+    site_admin: Optional[bool] = None
+    site_read: Optional[bool] = None
+    email: Optional[str] = None
+
+    @classmethod
+    def from_user(cls, target_user, requesting_user):
+        restricted_fields = dict()
+
+        if authz.view_restricted_user_info(requesting_user, target_user):
+            restricted_fields.update({
+                "group_admin": target_user.group_admin,
+                "site_admin": target_user.site_admin,
+                "site_read": target_user.site_read,
+                "email": target_user.email
+            })
+
+        return cls(id=get_identifier(target_user), name=target_user.fullname, group=get_identifier(target_user.group), **restricted_fields)
+
+
+@dataclass
+class WhoamiResponseElement(DataHolderBase):
+    """Class for User Update Request communication to OpenApi"""
+    id: dict
+    name: str  # why is this name when it is called fullname in the db?
     group_admin: bool
     site_admin: bool
     site_read: bool
@@ -55,11 +84,11 @@ class UserResponseElement(DataHolderBase):
     request_method="GET",
     openapi=True
 )
-def get_whoami(request: Request) -> UserResponseElement:
+def get_whoami(request: Request) -> WhoamiResponseElement:
 
     auth_user = security.revalidate_user(request)
 
-    return UserResponseElement(
+    return WhoamiResponseElement(
         id              =   get_identifier(auth_user),
         name            =   auth_user.fullname,
         group_admin     =   auth_user.group_admin,
@@ -69,6 +98,31 @@ def get_whoami(request: Request) -> UserResponseElement:
         email           =   auth_user.email,
         group           =   {"id": get_identifier(auth_user.group), "name": auth_user.group.name}
     )
+
+
+@view_config(
+    route_name="user_id",
+    renderer="json",
+    request_method="GET",
+    openapi=True
+)
+def get(request: Request):
+
+    # Authenticate the user
+    auth_user = security.revalidate_user(request)
+
+    user_id = request.matchdict["id"]
+    db = request.dbsession
+
+    # Get the targeted user
+    target_user = resource_by_id(db, User, user_id)
+    if target_user is None:
+        raise HTTPNotFound()
+
+    if not authz.view_user(auth_user, target_user):
+        raise HTTPForbidden()
+
+    return UserResponseElement.from_user(target_user, auth_user)
 
 
 @view_config(
