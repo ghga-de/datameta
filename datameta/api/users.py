@@ -114,7 +114,7 @@ def get(request: Request):
     # Get the targeted user
     target_user = resource_by_id(db, User, user_id)
     if target_user is None:
-        raise HTTPForbidden()
+        raise HTTPNotFound()
 
     if not authz.view_user(auth_user, target_user):
         raise HTTPUnauthorized()
