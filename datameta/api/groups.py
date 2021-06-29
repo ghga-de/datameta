@@ -138,7 +138,7 @@ def get(request: Request):
         raise HTTPNotFound()
 
     if not authz.view_group(auth_user, target_group):
-        raise HTTPUnauthorized()
+        raise HTTPForbidden()
 
     return GroupResponseElement(
         id              =   get_identifier(target_group),
