@@ -183,7 +183,7 @@ def update_user_can_update(user):
 def view_restricted_user_info(user, target_user):
     return has_group_rights(user, target_user.group)
 
-  
+
 def create_service(user):
     return user.site_admin
 

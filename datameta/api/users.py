@@ -49,6 +49,7 @@ class UserResponseElement(DataHolderBase):
     site_admin: Optional[bool] = None
     site_read: Optional[bool] = None
     email: Optional[str] = None
+    can_update: Optional[bool] = None
 
     @classmethod
     def from_user(cls, target_user, requesting_user):
@@ -59,7 +60,8 @@ class UserResponseElement(DataHolderBase):
                 "group_admin": target_user.group_admin,
                 "site_admin": target_user.site_admin,
                 "site_read": target_user.site_read,
-                "email": target_user.email
+                "email": target_user.email,
+                "can_update": target_user.can_update
             })
 
         return cls(id=get_identifier(target_user), name=target_user.fullname, group=get_identifier(target_user.group), **restricted_fields)
