@@ -54,11 +54,21 @@ class TestUserInformationRequest(BaseIntegrationTest):
             tgt_user = self.fixture_manager.get_fixture('users', target_user)
             user_id = tgt_user.uuid
 
-        self.do_request(
+        response = self.do_request(
             user_id,
             status=expected_response,
             headers=self.apikey_auth(user),
         )
+
+        successful_request = expected_response == 200
+        privileged_request = "admin" in executing_user
+
+        restricted_fields = ["groupAdmin", "siteAdmin", "siteRead", "email"]
+        
+        assert any((
+            not successful_request,
+            successful_request and all((privileged_request != (response.json.get(field) is None)) for field in restricted_fields)
+        ))
 
 
 class TestGroupInformationRequest(BaseIntegrationTest):
