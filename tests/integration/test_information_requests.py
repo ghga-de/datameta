@@ -43,7 +43,7 @@ class TestUserInformationRequest(BaseIntegrationTest):
         ("group_admin_other_group"            , "group_x_admin"   , "user_c"          , 401),
         ("site_read_query"                    , "user_site_read"  , "user_b"          , 200),
         ("site_admin_query"                   , "admin"           , "user_site_read"  , 200),
-        ("site_admin_query_wrong_id"          , "admin"           , "flopsy"          , 403),
+        ("site_admin_query_wrong_id"          , "admin"           , "flopsy"          , 404),
     ])
     def test_user_query(self, testname: str, executing_user: str, target_user: str, expected_response: int):
         user = self.fixture_manager.get_fixture('users', executing_user)
