@@ -53,7 +53,7 @@ class UserResponseElement(DataHolderBase):
     def from_user(cls, target_user, requesting_user):
         restricted_fields = dict()
 
-        if requesting_user.site_admin:
+        if authz.view_restricted_user_info(requesting_user):
             restricted_fields.update({
                 "group_admin": target_user.group_admin,
                 "site_admin": target_user.site_admin,
@@ -117,7 +117,7 @@ def get(request: Request):
         raise HTTPNotFound()
 
     if not authz.view_user(auth_user, target_user):
-        raise HTTPUnauthorized()
+        raise HTTPForbidden()
 
     return UserResponseElement.from_user(target_user, auth_user)
 

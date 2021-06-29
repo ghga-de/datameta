@@ -38,9 +38,9 @@ class TestUserInformationRequest(BaseIntegrationTest):
     @parameterized.expand([
         # TEST_NAME                           , EXECUTING USER    , TARGET_USER       , EXP_RESPONSE
         ("self_query"                         , "user_a"          , "user_a"          , 200),
-        ("normie_queries_other"               , "user_a"          , "user_c"          , 401),
+        ("normie_queries_other"               , "user_a"          , "user_c"          , 403),
         ("group_admin_own_groupmate"          , "group_x_admin"   , "user_a"          , 200),
-        ("group_admin_other_group"            , "group_x_admin"   , "user_c"          , 401),
+        ("group_admin_other_group"            , "group_x_admin"   , "user_c"          , 403),
         ("site_read_query"                    , "user_site_read"  , "user_b"          , 200),
         ("site_admin_query"                   , "admin"           , "user_site_read"  , 200),
         ("site_admin_query_wrong_id"          , "admin"           , "flopsy"          , 404),
@@ -79,9 +79,9 @@ class TestGroupInformationRequest(BaseIntegrationTest):
     @parameterized.expand([
         # TEST_NAME                           , EXECUTING USER    , TARGET_GROUP      , EXP_RESPONSE
         ("own_group"                          , "user_a"          , "group_x"         , 200),
-        ("foreign_group"                      , "user_a"          , "group_y"         , 401),
+        ("foreign_group"                      , "user_a"          , "group_y"         , 403),
         ("group_admin_own"                    , "group_x_admin"   , "group_x"         , 200),
-        ("group_admin_foreign"                , "group_x_admin"   , "group_y"         , 401),
+        ("group_admin_foreign"                , "group_x_admin"   , "group_y"         , 403),
         ("site_read"                          , "user_site_read"  , "group_y"         , 200),
         ("site_admin"                         , "admin"           , "group_y"         , 200),
         ("site_admin_wrong_id"                , "admin"           , "rabbit_family"   , 404),

@@ -176,6 +176,10 @@ def update_user_name(user, target_user):
     ))
 
 
+def view_restricted_user_info(user):
+    return user.site_admin
+
+
 def create_service(user):
     return user.site_admin
 
