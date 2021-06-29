@@ -135,7 +135,7 @@ def get(request: Request):
     target_group = resource_by_id(db, Group, group_id)
 
     if target_group is None:
-        raise HTTPForbidden()
+        raise HTTPNotFound()
 
     if not authz.view_group(auth_user, target_group):
         raise HTTPUnauthorized()
