@@ -196,7 +196,7 @@ def post(request: Request) -> MetaDataSetResponse:
             messages, entities = zip(*missing_msets)
             raise errors.get_validation_error(messages=messages, entities=entities)
 
-        for target_mset in msets:
+        for _, target_mset in msets:
             target_mset.replaced_via_event_id = mset_repl_evt.id
 
     db.flush()
