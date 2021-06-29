@@ -53,7 +53,7 @@ class UserResponseElement(DataHolderBase):
     def from_user(cls, target_user, requesting_user):
         restricted_fields = dict()
 
-        if authz.view_restricted_user_info(requesting_user):
+        if authz.view_restricted_user_info(requesting_user, target_user):
             restricted_fields.update({
                 "group_admin": target_user.group_admin,
                 "site_admin": target_user.site_admin,

@@ -176,8 +176,8 @@ def update_user_name(user, target_user):
     ))
 
 
-def view_restricted_user_info(user):
-    return user.site_admin
+def view_restricted_user_info(user, target_user):
+    return has_group_rights(user, target_user.group)
 
 
 def create_service(user):
