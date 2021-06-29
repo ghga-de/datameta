@@ -17,7 +17,7 @@ from typing import Optional
 
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound, HTTPUnauthorized
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 
 from dataclasses import dataclass
 from . import DataHolderBase
