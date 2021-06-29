@@ -64,7 +64,7 @@ class TestUserInformationRequest(BaseIntegrationTest):
         privileged_request = "admin" in executing_user
 
         restricted_fields = ["groupAdmin", "siteAdmin", "siteRead", "email"]
-        
+
         assert any((
             not successful_request,
             successful_request and all((privileged_request != (response.json.get(field) is None)) for field in restricted_fields)
