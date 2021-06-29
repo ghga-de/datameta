@@ -84,7 +84,7 @@ class TestGroupInformationRequest(BaseIntegrationTest):
         ("group_admin_foreign"                , "group_x_admin"   , "group_y"         , 401),
         ("site_read"                          , "user_site_read"  , "group_y"         , 200),
         ("site_admin"                         , "admin"           , "group_y"         , 200),
-        ("site_admin_wrong_id"                , "admin"           , "rabbit_family"   , 403),
+        ("site_admin_wrong_id"                , "admin"           , "rabbit_family"   , 404),
     ])
     def test_group_query(self, testname: str, executing_user: str, target_group: str, expected_response: int):
         user = self.fixture_manager.get_fixture('users', executing_user)
