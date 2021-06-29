@@ -1784,6 +1784,9 @@ components:
               $ref: "#/components/schemas/Identifier"
             name:
               type: string
+        canUpdate:
+          type: boolean
+          nullable: true
       required:
         - id
         - name
