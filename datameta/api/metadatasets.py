@@ -156,7 +156,7 @@ def post(request: Request) -> MetaDataSetResponse:
     if replaces and not replaces_label:
         raise errors.get_validation_error(messages=['No reason (label) given for Metadataset replacement.'])  # maybe label should be reason.
     if not replaces and replaces_label:
-        raise errors.get_validation_error(messages=["No metadataset ids specified (replacement reason (label) is given."])
+        raise errors.get_validation_error(messages=["No metadataset IDs specified but replacement reason (label) is given."])
 
     # Query the configured metadata. We're only considering and allowing
     # non-service metadata when creating a new metadataset.
@@ -192,8 +192,19 @@ def post(request: Request) -> MetaDataSetResponse:
         ]
 
         missing_msets = [("Invalid metadataset id.", mset_id) for mset_id, target_mset in msets if target_mset is None]
+
         if missing_msets:
             messages, entities = zip(*missing_msets)
+            raise errors.get_validation_error(messages=messages, entities=entities)
+
+        already_replaced = [
+            (f"MetaDataSet was already replaced via event {target_mset.replaced_via_event_id}", mset_id)
+            for mset_id, target_mset in msets
+            if target_mset.replaced_via_event_id is not None
+        ]
+
+        if already_replaced:
+            messages, entities = zip(*already_replaced)
             raise errors.get_validation_error(messages=messages, entities=entities)
 
         for _, target_mset in msets:
