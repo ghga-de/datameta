@@ -1352,10 +1352,13 @@ components:
         expires:
           type: string
           format: date-time
+        checksum:
+          type: string
       required:
         - fileId
         - fileUrl
         - expires
+        - checksum
       additionalProperties: false
 
     ApiKeyList:
