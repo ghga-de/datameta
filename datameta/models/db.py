@@ -225,8 +225,8 @@ class MetaDataSet(Base):
     metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset')
     service_executions   = relationship('ServiceExecution', back_populates ='metadataset')
 
-    replaced_via_event   = relationship('MsetReplacementEvent', primaryjoin='MetaDataSet.replaced_via_event_id==MsetReplacementEvent.id')
-    replaces_via_event   = relationship('MsetReplacementEvent', primaryjoin='MetaDataSet.id==MsetReplacementEvent.new_metadataset_id')
+    replaced_via_event   = relationship('MsetReplacementEvent', primaryjoin='MetaDataSet.replaced_via_event_id==MsetReplacementEvent.id', back_populates='new_metadataset')
+    replaces_via_event   = relationship('MsetReplacementEvent', primaryjoin='MetaDataSet.id==MsetReplacementEvent.new_metadataset_id', back_populates='replaced_metadatasets')
 
 
 class MsetReplacementEvent(Base):
@@ -241,8 +241,8 @@ class MsetReplacementEvent(Base):
 
     # Relationships
     user                   = relationship('User', back_populates='mset_replacements')
-    new_metadataset        = relationship("MetaDataSet", primaryjoin='MetaDataSet.id==MsetReplacementEvent.new_metadataset_id')
-    replaced_metadatasets  = relationship("MetaDataSet", primaryjoin='MetaDataSet.replaced_via_event_id==MsetReplacementEvent.id')
+    new_metadataset        = relationship("MetaDataSet", primaryjoin='MetaDataSet.id==MsetReplacementEvent.new_metadataset_id', back_populates='replaces_via_event')
+    replaced_metadatasets  = relationship("MetaDataSet", primaryjoin='MetaDataSet.replaced_via_event_id==MsetReplacementEvent.id', back_populates='replaced_via_event')
 
 
 class ApplicationSetting(Base):
