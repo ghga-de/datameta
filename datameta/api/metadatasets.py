@@ -197,21 +197,11 @@ def post(request: Request) -> MetaDataSetResponse:
             messages, entities = zip(*missing_msets)
             raise errors.get_validation_error(messages=messages, entities=entities)
 
-        already_replaced = list()
-        for mset_id, target_mset in msets:
-            if target_mset.replaced_via_event_id is not None:
-
-                event_unknown = target_mset.replaced_via_event is None
-
-                if any((
-                    event_unknown,
-                    not event_unknown and target_mset.replaced_via_event.new_metadataset_id is None
-                )):
-                    message = "Metadataset is flagged as having been replaced, but cannot find replacement."
-                else:
-                    message = f"Metadataset was already replaced by {target_mset.replaced_via_event.new_metadataset_id}."
-
-                already_replaced.append((message, mset_id))
+        already_replaced = [
+            (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset)}", mset_id)
+            for mset_id, target_mset in msets
+            if target_mset.replaced_via_event_id is not None
+        ]
 
         if already_replaced:
             messages, entities = zip(*already_replaced)
