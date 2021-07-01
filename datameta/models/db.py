@@ -240,7 +240,9 @@ class MsetReplacementEvent(Base):
     new_metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
 
     # Relationships
-    user                 = relationship('User', back_populates='mset_replacements')
+    user                   = relationship('User', back_populates='mset_replacements')
+    new_metadataset        = relationship("MetaDataSet", primaryjoin='MetaDataSet.id==MsetReplacementEvent.new_metadataset_id')
+    replaced_metadatasets  = relationship("MetaDataSet", primaryjoin='MetaDataSet.replaced_via_event_id==MsetReplacementEvent.id')
 
 
 class ApplicationSetting(Base):
