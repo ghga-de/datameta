@@ -54,7 +54,8 @@ def get_file_url(request: Request) -> HTTPTemporaryRedirect:
     response = {
             'fileId' : get_identifier(db_file),
             'fileUrl' : f"{request.host_url}{url}",
-            'expires' : expires_at.isoformat() + "+00:00"
+            'expires' : expires_at.isoformat() + "+00:00",
+            'checksum' : db_file.checksum
             }
 
     if redirect:
