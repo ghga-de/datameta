@@ -37,7 +37,9 @@ def upgrade():
     op.drop_column('metadatasets', 'deprecated_label')
     op.drop_column('metadatasets', 'replaced_by_id')
     op.drop_column('metadatasets', 'is_deprecated')
-    op.add_column('users', sa.Column('can_update', sa.Boolean(create_constraint=False), nullable=False))
+    op.add_column('users', sa.Column('can_update', sa.Boolean(create_constraint=False), nullable=True))
+    op.execute('UPDATE users SET can_update = site_admin;')
+    op.alter_column('users', 'can_update', nullable=False)
     # ### end Alembic commands ###
 
 
