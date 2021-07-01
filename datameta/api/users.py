@@ -51,17 +51,18 @@ class UserResponseElement(DataHolderBase):
     email: Optional[str] = None
     can_update: Optional[bool] = None
 
+    @staticmethod
+    def get_restricted_fields():
+        return ["group_admin", "site_admin", "site_read", "email", "can_update"]
+
     @classmethod
     def from_user(cls, target_user, requesting_user):
         restricted_fields = dict()
 
         if authz.view_restricted_user_info(requesting_user, target_user):
             restricted_fields.update({
-                "group_admin": target_user.group_admin,
-                "site_admin": target_user.site_admin,
-                "site_read": target_user.site_read,
-                "email": target_user.email,
-                "can_update": target_user.can_update
+                field: getattr(target_user, field)
+                for field in UserResponseElement.get_restricted_fields()
             })
 
         return cls(id=get_identifier(target_user), name=target_user.fullname, group=get_identifier(target_user.group), **restricted_fields)
