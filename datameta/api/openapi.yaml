@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 1.3.0
+  version: 1.4.0
   title: DataMeta
 
 servers:
@@ -1771,17 +1771,12 @@ components:
         email:
           type: string
           nullable: true
-        group:
-          type: object
-          properties:
-            id:
-              $ref: "#/components/schemas/Identifier"
-            name:
-              type: string
+        groupId:
+          $ref: "#/components/schemas/Identifier"
       required:
         - id
         - name
-        - group
+        - groupId
       additionalProperties: false
 
     UserUpdateRequest:
