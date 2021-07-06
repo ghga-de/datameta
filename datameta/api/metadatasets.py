@@ -19,7 +19,7 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from sqlalchemy.orm import joinedload
 from sqlalchemy import and_
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Set, Any, Tuple
 from ..linting import validate_metadataset_record
 from .. import security, siteid, resource, validation
 from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord, Submission, File
@@ -40,18 +40,19 @@ class MetaDataSetServiceExecution(DataHolderBase):
     service_id             : dict
     user_id                : dict
 
+
 @dataclass
 class ReplacementMsetResponse(DataHolderBase):
     id : dict
     record : Dict[str, Optional[str]]
     file_ids             : Dict[str, Optional[Dict[str, str]]]
     user_id              : str
-    replaces :  List[str]
+    replaces             : Set[Any]
     submission_id        : Optional[str] = None
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
 
     @classmethod
-    def from_metadataset(cls, metadataset: MetaDataSet, replaces: List[MetaDataSet], metadata_with_access: Dict[str, MetaDatum]):
+    def from_metadataset(cls, metadataset: MetaDataSet, replaces: List[Tuple[Any, MetaDataSet]], metadata_with_access: Dict[str, MetaDatum]):
         return cls(
                 id                 = get_identifier(metadataset),
                 record             = get_record_from_metadataset(metadataset, metadata_with_access),
@@ -61,7 +62,7 @@ class ReplacementMsetResponse(DataHolderBase):
                 submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
                 service_executions = collect_service_executions(metadata_with_access, metadataset)
         )
-    
+
 
 def get_mset_associated_files(metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
     # Identify file ids associated with this metadataset for metadata with access
@@ -71,6 +72,7 @@ def get_mset_associated_files(metadataset: MetaDataSet, metadata_with_access: Di
         for mdrec in metadataset.metadatumrecords
         if mdrec.metadatum.isfile and mdrec.metadatum.name in metadata_with_access
     }
+
 
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
@@ -278,7 +280,7 @@ def update_metadatasets(request: Request) -> SubmissionResponse:
         mdatrec.file = fnames[fname]
         db.add(mdatrec)
 
-     # Add a submission
+    # Add a submission
     submission = Submission(
             site_id = siteid.generate(request, Submission),
             label = replaces_label,
@@ -288,7 +290,6 @@ def update_metadatasets(request: Request) -> SubmissionResponse:
             )
     db.add(submission)
 
-    
     # Check which metadata of this metadataset the user is allowed to view
     metadata_with_access = get_metadata_with_access(db, auth_user)
 
