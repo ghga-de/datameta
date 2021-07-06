@@ -30,6 +30,7 @@ from ..utils import get_record_from_metadataset
 from . import DataHolderBase
 from .. import errors
 from .metadata import get_all_metadata, get_service_metadata, get_metadata_with_access
+from datameta.api.submissions import SubmissionResponse
 
 
 @dataclass
@@ -39,6 +40,37 @@ class MetaDataSetServiceExecution(DataHolderBase):
     service_id             : dict
     user_id                : dict
 
+@dataclass
+class ReplacementMsetResponse(DataHolderBase):
+    id : dict
+    record : Dict[str, Optional[str]]
+    file_ids             : Dict[str, Optional[Dict[str, str]]]
+    user_id              : str
+    replaces :  List[str]
+    submission_id        : Optional[str] = None
+    service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
+
+    @classmethod
+    def from_metadataset(cls, metadataset: MetaDataSet, replaces: List[MetaDataSet], metadata_with_access: Dict[str, MetaDatum]):
+        return cls(
+                id                 = get_identifier(metadataset),
+                record             = get_record_from_metadataset(metadataset, metadata_with_access),
+                file_ids           = get_mset_associated_files(metadataset, metadata_with_access),
+                user_id            = get_identifier(metadataset.user),
+                replaces           = {get_identifier(mset) for mset in replaces},
+                submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
+                service_executions = collect_service_executions(metadata_with_access, metadataset)
+        )
+    
+
+def get_mset_associated_files(metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
+    # Identify file ids associated with this metadataset for metadata with access
+
+    return {
+        mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file)
+        for mdrec in metadataset.metadatumrecords
+        if mdrec.metadatum.isfile and mdrec.metadatum.name in metadata_with_access
+    }
 
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
@@ -56,15 +88,11 @@ class MetaDataSetResponse(DataHolderBase):
         a dictionary of metadata [MetaDatum.name, MetaDatum] that the receiving
         user has read access to."""
 
-        # Identify file ids associated with this metadataset for metadata with access
-        file_ids = { mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file)
-                for mdrec in metadataset.metadatumrecords
-                if mdrec.metadatum.isfile and mdrec.metadatum.name in metadata_with_access}
         # Build the metadataset response
         return MetaDataSetResponse(
                 id                 = get_identifier(metadataset),
                 record             = get_record_from_metadataset(metadataset, metadata_with_access),
-                file_ids           = file_ids,
+                file_ids           = get_mset_associated_files(metadataset, metadata_with_access),
                 user_id            = get_identifier(metadataset.user),
                 submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
                 service_executions = collect_service_executions(metadata_with_access, metadataset)
@@ -137,26 +165,20 @@ def delete_metadatasets(request: Request) -> HTTPNoContent:
 
 
 @view_config(
-    route_name="metadatasets",
-    renderer='json',
+    route_name="rpc_update_metadatasets",
+    renderer="json",
     request_method="POST",
     openapi=True
 )
-def post(request: Request) -> MetaDataSetResponse:
-    """Create new metadataset"""
+def update_metadatasets(request: Request) -> SubmissionResponse:
     auth_user = security.revalidate_user(request)
     db = request.dbsession
 
     # Obtain string converted version of the record
     record = record_to_strings(request.openapi_validated.body["record"])
 
-    replaces = request.openapi_validated.body.get("replaces")
-    replaces_label = request.openapi_validated.body.get("replaces_label")
-
-    if replaces and not replaces_label:
-        raise errors.get_validation_error(messages=['No reason (label) given for Metadataset replacement.'])  # maybe label should be reason.
-    if not replaces and replaces_label:
-        raise errors.get_validation_error(messages=["No metadataset IDs specified but replacement reason (label) is given."])
+    replaces = request.openapi_validated.body["replaces"]
+    replaces_label = request.openapi_validated.body["replacesLabel"]
 
     # Query the configured metadata. We're only considering and allowing
     # non-service metadata when creating a new metadataset.
@@ -177,39 +199,134 @@ def post(request: Request) -> MetaDataSetResponse:
 
     db.add(mdata_set)
 
-    if replaces:
-        mset_repl_evt = MsetReplacementEvent(
-            user_id = auth_user.id,
-            datetime = datetime.utcnow(),
-            label = replaces_label,
-            new_metadataset_id = mdata_set.id
+    mset_repl_evt = MsetReplacementEvent(
+        user_id = auth_user.id,
+        datetime = datetime.utcnow(),
+        label = replaces_label,
+        new_metadataset_id = mdata_set.id
+    )
+    db.add(mset_repl_evt)
+
+    msets = [
+        (mset_id, resource_by_id(db, MetaDataSet, mset_id))
+        for mset_id in replaces
+    ]
+
+    missing_msets = [("Invalid metadataset id.", mset_id) for mset_id, target_mset in msets if target_mset is None]
+
+    if missing_msets:
+        messages, entities = zip(*missing_msets)
+        raise errors.get_validation_error(messages=messages, entities=entities)
+
+    already_replaced = [
+        (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset)}", mset_id)
+        for mset_id, target_mset in msets
+        if target_mset.replaced_via_event_id is not None
+    ]
+
+    if already_replaced:
+        messages, entities = zip(*already_replaced)
+        raise errors.get_validation_error(messages=messages, entities=entities)
+
+    for _, target_mset in msets:
+        target_mset.replaced_via_event_id = mset_repl_evt.id
+
+    # Add NULL values for service metadata
+    service_metadata = get_service_metadata(db)
+    for s_mdatum in service_metadata.values():
+        mdatum_rec = MetaDatumRecord(
+                metadatum_id     = s_mdatum.id,
+                metadataset_id   = mdata_set.id,
+                file_id          = None,
+                value            = None
+                )
+        db.add(mdatum_rec)
+
+    # Add the non-service metadata as specified in the request body
+    for name, value in record.items():
+        mdatum_rec = MetaDatumRecord(
+            metadatum_id     = metadata[name].id,
+            metadataset_id   = mdata_set.id,
+            file_id          = None,
+            value            = value
         )
-        db.add(mset_repl_evt)
+        db.add(mdatum_rec)
 
-        msets = [
-            (mset_id, resource_by_id(db, MetaDataSet, mset_id))
-            for mset_id in replaces
-        ]
+    # Collect files, drop duplicates
+    file_ids = set(request.openapi_validated.body['fileIds'])
+    db_files = { file_id : resource.resource_query_by_id(db, File, file_id).options(joinedload(File.metadatumrecord)).one_or_none() for file_id in file_ids }
 
-        missing_msets = [("Invalid metadataset id.", mset_id) for mset_id, target_mset in msets if target_mset is None]
+    # Validate submission access to the specified files
+    validation.validate_submission_access(db, db_files, {}, auth_user)
 
-        if missing_msets:
-            messages, entities = zip(*missing_msets)
-            raise errors.get_validation_error(messages=messages, entities=entities)
+    # Validate the provided records
+    validate_metadataset_record(service_metadata, record, return_err_message=False, rendered=False)
 
-        already_replaced = [
-            (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset)}", mset_id)
-            for mset_id, target_mset in msets
-            if target_mset.replaced_via_event_id is not None
-        ]
+    # Validate the associations between files and records
+    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { mdata_set.site_id : mdata_set }, ignore_submitted_metadatasets=True)
 
-        if already_replaced:
-            messages, entities = zip(*already_replaced)
-            raise errors.get_validation_error(messages=messages, entities=entities)
+    # If there were any validation errors, return 400
+    if val_errors:
+        entities, fields, messages = zip(*val_errors)
+        raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
 
-        for _, target_mset in msets:
-            target_mset.replaced_via_event_id = mset_repl_evt.id
+    # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
+    fnames = { k : v[0] for k, v in fnames.items() }
 
+    # Associate the files with the metadata
+    for fname, mdatrec in ref_fnames.items():
+        mdatrec.file = fnames[fname]
+        db.add(mdatrec)
+
+     # Add a submission
+    submission = Submission(
+            site_id = siteid.generate(request, Submission),
+            label = replaces_label,
+            date = datetime.utcnow(),
+            metadatasets = list(mdata_set),
+            group_id = auth_user.group.id
+            )
+    db.add(submission)
+
+    
+    # Check which metadata of this metadataset the user is allowed to view
+    metadata_with_access = get_metadata_with_access(db, auth_user)
+
+    return ReplacementMsetResponse.from_metadataset(mdata_set, msets, metadata_with_access)
+
+
+@view_config(
+    route_name="metadatasets",
+    renderer='json',
+    request_method="POST",
+    openapi=True
+)
+def post(request: Request) -> MetaDataSetResponse:
+    """Create new metadataset"""
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+
+    # Obtain string converted version of the record
+    record = record_to_strings(request.openapi_validated.body["record"])
+
+    # Query the configured metadata. We're only considering and allowing
+    # non-service metadata when creating a new metadataset.
+    metadata = get_all_metadata(db, include_service_metadata=False)
+
+    # prevalidate (raises 400 in case of validation failure):
+    validate_metadataset_record(metadata, record)
+
+    # Render records according to MetaDatum constraints.
+    record = render_record_values(metadata, record)
+
+    # construct new MetaDataSet:
+    mdata_set = MetaDataSet(
+        site_id = siteid.generate(request, MetaDataSet),
+        user_id = auth_user.id,
+        submission_id = None
+    )
+
+    db.add(mdata_set)
     db.flush()
 
     # Add NULL values for service metadata
