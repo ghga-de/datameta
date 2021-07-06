@@ -190,14 +190,14 @@ paths:
         '500':
           description: Internal Server Error
 
-  /rpc/update-metadatasets:
+  /rpc/replace-metadatasets:
     post:
-      summary: Update a range of metadatasets.
+      summary: Replace a range of metadatasets.
       description: >-
-        Update metadatasets.
+        Replace metadatasets.
       tags:
         - Remote Procedure Calls
-      operationId: UpdateMetaDataSets
+      operationId: ReplaceMetaDataSets
       requestBody:
         content:
           application/json:

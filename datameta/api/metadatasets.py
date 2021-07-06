@@ -167,7 +167,7 @@ def delete_metadatasets(request: Request) -> HTTPNoContent:
 
 
 @view_config(
-    route_name="rpc_update_metadatasets",
+    route_name="rpc_replace_metadatasets",
     renderer="json",
     request_method="POST",
     openapi=True
@@ -265,7 +265,7 @@ def update_metadatasets(request: Request) -> SubmissionResponse:
     validate_metadataset_record(service_metadata, record, return_err_message=False, rendered=False)
 
     # Validate the associations between files and records
-    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { mdata_set.site_id : mdata_set }, ignore_submitted_metadatasets=True)
+    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { mdata_set.site_id : mdata_set })
 
     # If there were any validation errors, return 400
     if val_errors:
