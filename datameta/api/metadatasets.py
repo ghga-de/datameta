@@ -220,7 +220,7 @@ def replace_metadatasets(request: Request) -> SubmissionResponse:
 
     if missing_msets:
         messages, entities = zip(*missing_msets)
-        raise errors.get_validation_error(messages=list(messages), entities=list(entities))
+        raise errors.get_validation_error(messages=list(messages), entities=list(entities))  # @lkuchenb: any idea why these list-casts are necessary to please mypy? they're not required in e.g validation.py:63
 
     already_replaced = [
         (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset).get('site')}", target_mset)
