@@ -220,7 +220,7 @@ def replace_metadatasets(request: Request) -> SubmissionResponse:
 
     if missing_msets:
         messages, entities = zip(*missing_msets)
-        raise errors.get_validation_error(messages=messages, entities=entities)
+        raise errors.get_validation_error(messages=list(messages), entities=list(entities))
 
     already_replaced = [
         (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset).get('site')}", target_mset)
@@ -272,7 +272,7 @@ def replace_metadatasets(request: Request) -> SubmissionResponse:
     # If there were any validation errors, return 400
     if val_errors:
         entities, fields, messages = zip(*val_errors)
-        raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
+        raise errors.get_validation_error(messages=list(messages), fields=fields, entities=list(entities))
 
     # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
     fnames = { k : v[0] for k, v in fnames.items() }
