@@ -44,7 +44,7 @@ class UserResponseElement(DataHolderBase):
     """Class for User Update Request communication to OpenApi"""
     id: dict
     name: str  # why is this name when it is called fullname in the db?
-    group: dict
+    group_id: dict
     group_admin: Optional[bool] = None
     site_admin: Optional[bool] = None
     site_read: Optional[bool] = None
@@ -65,7 +65,7 @@ class UserResponseElement(DataHolderBase):
                 for field in UserResponseElement.get_restricted_fields()
             })
 
-        return cls(id=get_identifier(target_user), name=target_user.fullname, group=get_identifier(target_user.group), **restricted_fields)
+        return cls(id=get_identifier(target_user), name=target_user.fullname, group_id=get_identifier(target_user.group), **restricted_fields)
 
 
 @dataclass

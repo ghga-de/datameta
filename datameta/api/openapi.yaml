@@ -1837,20 +1837,15 @@ components:
         email:
           type: string
           nullable: true
-        group:
-          type: object
-          properties:
-            id:
-              $ref: "#/components/schemas/Identifier"
-            name:
-              type: string
+        groupId:
+          $ref: "#/components/schemas/Identifier"
         canUpdate:
           type: boolean
           nullable: true
       required:
         - id
         - name
-        - group
+        - groupId
       additionalProperties: false
 
     UserUpdateRequest:
