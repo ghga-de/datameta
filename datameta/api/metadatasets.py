@@ -223,14 +223,14 @@ def replace_metadatasets(request: Request) -> SubmissionResponse:
         raise errors.get_validation_error(messages=messages, entities=entities)
 
     already_replaced = [
-        (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset)}", target_mset)
+        (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset).get('site')}", target_mset)
         for mset_id, target_mset in msets
         if target_mset.replaced_via_event_id is not None
     ]
 
     if already_replaced:
         messages, entities = zip(*already_replaced)
-        raise errors.get_validation_error(messages=messages, entities=entities)
+        raise errors.get_validation_error(messages=list(messages), entities=list(entities))
 
     for _, target_mset in msets:
         target_mset.replaced_via_event_id = mset_repl_evt.id
