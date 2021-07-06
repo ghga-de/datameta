@@ -1540,7 +1540,7 @@ components:
         replaces:
           type: array
           items:
-            type: string
+            type: object
         fileIds:
           type: object
           additionalProperties: true

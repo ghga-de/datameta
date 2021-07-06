@@ -19,7 +19,7 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from sqlalchemy.orm import joinedload
 from sqlalchemy import and_
-from typing import Optional, Dict, List, Set, Any, Tuple
+from typing import Optional, Dict, List, Any, Tuple
 from ..linting import validate_metadataset_record
 from .. import security, siteid, resource, validation
 from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord, Submission, File
@@ -47,7 +47,7 @@ class ReplacementMsetResponse(DataHolderBase):
     record : Dict[str, Optional[str]]
     file_ids             : Dict[str, Optional[Dict[str, str]]]
     user_id              : str
-    replaces             : Set[Any]
+    replaces             : List[Dict[str, Any]]
     submission_id        : Optional[str] = None
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
 
@@ -58,7 +58,7 @@ class ReplacementMsetResponse(DataHolderBase):
                 record             = get_record_from_metadataset(metadataset, metadata_with_access),
                 file_ids           = get_mset_associated_files(metadataset, metadata_with_access),
                 user_id            = get_identifier(metadataset.user),
-                replaces           = {get_identifier(mset) for mset in replaces},
+                replaces           = [get_identifier(mset) for _, mset in replaces],
                 submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
                 service_executions = collect_service_executions(metadata_with_access, metadataset)
         )
@@ -172,7 +172,7 @@ def delete_metadatasets(request: Request) -> HTTPNoContent:
     request_method="POST",
     openapi=True
 )
-def update_metadatasets(request: Request) -> SubmissionResponse:
+def replace_metadatasets(request: Request) -> SubmissionResponse:
     auth_user = security.revalidate_user(request)
     db = request.dbsession
 
@@ -200,6 +200,7 @@ def update_metadatasets(request: Request) -> SubmissionResponse:
     )
 
     db.add(mdata_set)
+    db.flush()
 
     mset_repl_evt = MsetReplacementEvent(
         user_id = auth_user.id,
@@ -208,20 +209,21 @@ def update_metadatasets(request: Request) -> SubmissionResponse:
         new_metadataset_id = mdata_set.id
     )
     db.add(mset_repl_evt)
+    db.flush()
 
     msets = [
         (mset_id, resource_by_id(db, MetaDataSet, mset_id))
         for mset_id in replaces
     ]
 
-    missing_msets = [("Invalid metadataset id.", mset_id) for mset_id, target_mset in msets if target_mset is None]
+    missing_msets = [("Invalid metadataset id.", target_mset) for mset_id, target_mset in msets if target_mset is None]
 
     if missing_msets:
         messages, entities = zip(*missing_msets)
         raise errors.get_validation_error(messages=messages, entities=entities)
 
     already_replaced = [
-        (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset)}", mset_id)
+        (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset)}", target_mset)
         for mset_id, target_mset in msets
         if target_mset.replaced_via_event_id is not None
     ]
@@ -262,7 +264,7 @@ def update_metadatasets(request: Request) -> SubmissionResponse:
     validation.validate_submission_access(db, db_files, {}, auth_user)
 
     # Validate the provided records
-    validate_metadataset_record(service_metadata, record, return_err_message=False, rendered=False)
+    validate_metadataset_record(metadata, record, return_err_message=False, rendered=True)
 
     # Validate the associations between files and records
     fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { mdata_set.site_id : mdata_set })
@@ -280,12 +282,14 @@ def update_metadatasets(request: Request) -> SubmissionResponse:
         mdatrec.file = fnames[fname]
         db.add(mdatrec)
 
+    _mset = resource.resource_query_by_id(db, MetaDataSet, mdata_set.site_id).options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)).one_or_none()
+
     # Add a submission
     submission = Submission(
             site_id = siteid.generate(request, Submission),
             label = replaces_label,
             date = datetime.utcnow(),
-            metadatasets = list(mdata_set),
+            metadatasets = [_mset],
             group_id = auth_user.group.id
             )
     db.add(submission)
@@ -293,7 +297,7 @@ def update_metadatasets(request: Request) -> SubmissionResponse:
     # Check which metadata of this metadataset the user is allowed to view
     metadata_with_access = get_metadata_with_access(db, auth_user)
 
-    return ReplacementMsetResponse.from_metadataset(mdata_set, msets, metadata_with_access)
+    return ReplacementMsetResponse.from_metadataset(_mset, msets, metadata_with_access)
 
 
 @view_config(
