@@ -64,16 +64,6 @@ class ReplacementMsetResponse(DataHolderBase):
         )
 
 
-def get_mset_associated_files(metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
-    # Identify file ids associated with this metadataset for metadata with access
-
-    return {
-        mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file)
-        for mdrec in metadataset.metadatumrecords
-        if mdrec.metadatum.isfile and mdrec.metadatum.name in metadata_with_access
-    }
-
-
 @dataclass
 class MetaDataSetResponse(DataHolderBase):
     """MetaDataSetResponse container for OpenApi communication"""
@@ -99,6 +89,15 @@ class MetaDataSetResponse(DataHolderBase):
                 submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
                 service_executions = collect_service_executions(metadata_with_access, metadataset)
                 )
+
+
+def get_mset_associated_files(metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
+    """ Identify file ids associated with this metadataset for metadata with access """
+    return {
+        mdrec.metadatum.name : resource.get_identifier_or_none(mdrec.file)
+        for mdrec in metadataset.metadatumrecords
+        if mdrec.metadatum.isfile and mdrec.metadatum.name in metadata_with_access
+    }
 
 
 def record_to_strings(record: Dict[str, str]):
@@ -166,54 +165,64 @@ def delete_metadatasets(request: Request) -> HTTPNoContent:
     return HTTPNoContent()
 
 
-@view_config(
-    route_name="rpc_replace_metadatasets",
-    renderer="json",
-    request_method="POST",
-    openapi=True
-)
-def replace_metadatasets(request: Request) -> SubmissionResponse:
-    auth_user = security.revalidate_user(request)
-    db = request.dbsession
+def initialize_service_metadata(db, mset_id):
+    service_metadata = get_service_metadata(db)
+    for s_mdatum in service_metadata.values():
+        mdatum_rec = MetaDatumRecord(
+                metadatum_id     = s_mdatum.id,
+                metadataset_id   = mset_id,
+                file_id          = None,
+                value            = None
+                )
+        db.add(mdatum_rec)
 
-    # Obtain string converted version of the record
-    record = record_to_strings(request.openapi_validated.body["record"])
 
-    replaces = request.openapi_validated.body["replaces"]
-    replaces_label = request.openapi_validated.body["replacesLabel"]
+def add_metadata_from_request(db, record, metadata, mset_id):
+    # Add the non-service metadata as specified in the request body
+    for name, value in record.items():
+        mdatum_rec = MetaDatumRecord(
+            metadatum_id     = metadata[name].id,
+            metadataset_id   = mset_id,
+            file_id          = None,
+            value            = value
+        )
+        db.add(mdatum_rec)
 
-    # Query the configured metadata. We're only considering and allowing
-    # non-service metadata when creating a new metadataset.
-    metadata = get_all_metadata(db, include_service_metadata=False)
 
-    # prevalidate (raises 400 in case of validation failure):
-    validate_metadataset_record(metadata, record)
+def validate_associated_files(db, file_ids, auth_user):
+    # Collect files, drop duplicates
+    db_files = { file_id : resource.resource_query_by_id(db, File, file_id).options(joinedload(File.metadatumrecord)).one_or_none() for file_id in set(file_ids) }
 
-    # Render records according to MetaDatum constraints.
-    record = render_record_values(metadata, record)
+    # Validate submission access to the specified files
+    validation.validate_submission_access(db, db_files, {}, auth_user)
 
-    # construct new MetaDataSet:
-    mdata_set = MetaDataSet(
-        site_id = siteid.generate(request, MetaDataSet),
-        user_id = auth_user.id,
-        submission_id = None
-    )
+    return db_files
 
-    db.add(mdata_set)
-    db.flush()
 
-    mset_repl_evt = MsetReplacementEvent(
-        user_id = auth_user.id,
-        datetime = datetime.utcnow(),
-        label = replaces_label,
-        new_metadataset_id = mdata_set.id
-    )
-    db.add(mset_repl_evt)
-    db.flush()
+def link_files(db, mdata_set, db_files, ignore_submitted=False):
+
+    # Validate the associations between files and records
+    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { mdata_set.site_id : mdata_set }, ignore_submitted_metadatasets=ignore_submitted)
+
+    # If there were any validation errors, return 400
+    if val_errors:
+        entities, fields, messages = zip(*val_errors)
+        raise errors.get_validation_error(messages=list(messages), fields=fields, entities=list(entities))
+
+    # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
+    fnames = { k : v[0] for k, v in fnames.items() }
+
+    # Associate the files with the metadata
+    for fname, mdatrec in ref_fnames.items():
+        mdatrec.file = fnames[fname]
+        db.add(mdatrec)
+
+
+def execute_mset_replacement(db, new_mset_id, replaced_msets, replaces_label, user_id):
 
     msets = [
         (mset_id, resource_by_id(db, MetaDataSet, mset_id))
-        for mset_id in replaces
+        for mset_id in replaced_msets
     ]
 
     missing_msets = [("Invalid metadataset id.", target_mset) for mset_id, target_mset in msets if target_mset is None]
@@ -232,85 +241,22 @@ def replace_metadatasets(request: Request) -> SubmissionResponse:
         messages, entities = zip(*already_replaced)
         raise errors.get_validation_error(messages=list(messages), entities=list(entities))
 
+    mset_repl_evt = MsetReplacementEvent(
+        user_id = user_id,
+        datetime = datetime.utcnow(),
+        label = replaces_label,
+        new_metadataset_id = new_mset_id
+    )
+    db.add(mset_repl_evt)
+    db.flush()
+
     for _, target_mset in msets:
         target_mset.replaced_via_event_id = mset_repl_evt.id
 
-    # Add NULL values for service metadata
-    service_metadata = get_service_metadata(db)
-    for s_mdatum in service_metadata.values():
-        mdatum_rec = MetaDatumRecord(
-                metadatum_id     = s_mdatum.id,
-                metadataset_id   = mdata_set.id,
-                file_id          = None,
-                value            = None
-                )
-        db.add(mdatum_rec)
-
-    # Add the non-service metadata as specified in the request body
-    for name, value in record.items():
-        mdatum_rec = MetaDatumRecord(
-            metadatum_id     = metadata[name].id,
-            metadataset_id   = mdata_set.id,
-            file_id          = None,
-            value            = value
-        )
-        db.add(mdatum_rec)
-
-    # Collect files, drop duplicates
-    file_ids = set(request.openapi_validated.body['fileIds'])
-    db_files = { file_id : resource.resource_query_by_id(db, File, file_id).options(joinedload(File.metadatumrecord)).one_or_none() for file_id in file_ids }
-
-    # Validate submission access to the specified files
-    validation.validate_submission_access(db, db_files, {}, auth_user)
-
-    # Validate the provided records
-    validate_metadataset_record(metadata, record, return_err_message=False, rendered=True)
-
-    # Validate the associations between files and records
-    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { mdata_set.site_id : mdata_set })
-
-    # If there were any validation errors, return 400
-    if val_errors:
-        entities, fields, messages = zip(*val_errors)
-        raise errors.get_validation_error(messages=list(messages), fields=fields, entities=list(entities))
-
-    # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
-    fnames = { k : v[0] for k, v in fnames.items() }
-
-    # Associate the files with the metadata
-    for fname, mdatrec in ref_fnames.items():
-        mdatrec.file = fnames[fname]
-        db.add(mdatrec)
-
-    _mset = resource.resource_query_by_id(db, MetaDataSet, mdata_set.site_id).options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)).one_or_none()
-
-    # Add a submission
-    submission = Submission(
-            site_id = siteid.generate(request, Submission),
-            label = replaces_label,
-            date = datetime.utcnow(),
-            metadatasets = [_mset],
-            group_id = auth_user.group.id
-            )
-    db.add(submission)
-
-    # Check which metadata of this metadataset the user is allowed to view
-    metadata_with_access = get_metadata_with_access(db, auth_user)
-
-    return ReplacementMsetResponse.from_metadataset(_mset, msets, metadata_with_access)
+    return msets
 
 
-@view_config(
-    route_name="metadatasets",
-    renderer='json',
-    request_method="POST",
-    openapi=True
-)
-def post(request: Request) -> MetaDataSetResponse:
-    """Create new metadataset"""
-    auth_user = security.revalidate_user(request)
-    db = request.dbsession
-
+def prepare_record(db, request):
     # Obtain string converted version of the record
     record = record_to_strings(request.openapi_validated.body["record"])
 
@@ -324,6 +270,21 @@ def post(request: Request) -> MetaDataSetResponse:
     # Render records according to MetaDatum constraints.
     record = render_record_values(metadata, record)
 
+    return record, metadata
+
+
+@view_config(
+    route_name="rpc_replace_metadatasets",
+    renderer="json",
+    request_method="POST",
+    openapi=True
+)
+def replace_metadatasets(request: Request) -> SubmissionResponse:
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+
+    record, metadata = prepare_record(db, request)
+
     # construct new MetaDataSet:
     mdata_set = MetaDataSet(
         site_id = siteid.generate(request, MetaDataSet),
@@ -334,26 +295,66 @@ def post(request: Request) -> MetaDataSetResponse:
     db.add(mdata_set)
     db.flush()
 
-    # Add NULL values for service metadata
-    service_metadata = get_service_metadata(db)
-    for s_mdatum in service_metadata.values():
-        mdatum_rec = MetaDatumRecord(
-                metadatum_id     = s_mdatum.id,
-                metadataset_id   = mdata_set.id,
-                file_id          = None,
-                value            = None
-                )
-        db.add(mdatum_rec)
+    replaces = request.openapi_validated.body["replaces"]
+    replaces_label = request.openapi_validated.body["replacesLabel"]
 
-    # Add the non-service metadata as specified in the request body
-    for name, value in record.items():
-        mdatum_rec = MetaDatumRecord(
-            metadatum_id     = metadata[name].id,
-            metadataset_id   = mdata_set.id,
-            file_id          = None,
-            value            = value
-        )
-        db.add(mdatum_rec)
+    replaced_msets = execute_mset_replacement(db, mdata_set.id, replaces, replaces_label, auth_user.id)
+
+    initialize_service_metadata(db, mdata_set.id)
+
+    add_metadata_from_request(db, record, metadata, mdata_set.id)
+
+    db_files = validate_associated_files(db, set(request.openapi_validated.body['fileIds']), auth_user)
+
+    # Validate the provided records
+    validate_metadataset_record(metadata, record, return_err_message=False, rendered=True)
+
+    link_files(db, mdata_set, db_files, ignore_submitted=False)
+
+    mdata_set = resource.resource_query_by_id(db, MetaDataSet, mdata_set.site_id).options(joinedload(MetaDataSet.metadatumrecords).joinedload(MetaDatumRecord.metadatum)).one_or_none()
+
+    # Add a submission
+    submission = Submission(
+        site_id = siteid.generate(request, Submission),
+        label = replaces_label,
+        date = datetime.utcnow(),
+        metadatasets = [mdata_set],
+        group_id = auth_user.group.id
+    )
+    db.add(submission)
+
+    # Check which metadata of this metadataset the user is allowed to view
+    metadata_with_access = get_metadata_with_access(db, auth_user)
+
+    return ReplacementMsetResponse.from_metadataset(mdata_set, replaced_msets, metadata_with_access)
+
+
+@view_config(
+    route_name="metadatasets",
+    renderer='json',
+    request_method="POST",
+    openapi=True
+)
+def post(request: Request) -> MetaDataSetResponse:
+    """Create new metadataset"""
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+
+    record, metadata = prepare_record(db, request)
+
+    # construct new MetaDataSet:
+    mdata_set = MetaDataSet(
+        site_id = siteid.generate(request, MetaDataSet),
+        user_id = auth_user.id,
+        submission_id = None
+    )
+
+    db.add(mdata_set)
+    db.flush()
+
+    initialize_service_metadata(db, mdata_set.id)
+
+    add_metadata_from_request(db, record, metadata, mdata_set.id)
 
     return MetaDataSetResponse(
         id              = get_identifier(mdata_set),
@@ -458,9 +459,9 @@ def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
         raise HTTPNotFound()
 
     return [
-            MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
-            for mdata_set in mdata_sets
-            ]
+        MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
+        for mdata_set in mdata_sets
+    ]
 
 
 @view_config(
@@ -571,12 +572,7 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
         messages, fields = zip(*val_errors)
         raise errors.get_validation_error(messages, fields)
 
-    # Collect files, drop duplicates
-    file_ids = set(request.openapi_validated.body['fileIds'])
-    db_files = { file_id : resource.resource_query_by_id(db, File, file_id).options(joinedload(File.metadatumrecord)).one_or_none() for file_id in file_ids }
-
-    # Validate submission access to the specified files
-    validation.validate_submission_access(db, db_files, {}, auth_user)
+    db_files = validate_associated_files(db, set(request.openapi_validated.body['fileIds']), auth_user)
 
     # Validate the provided records
     validate_metadataset_record(service_metadata, records, return_err_message=False, rendered=False)
@@ -588,29 +584,15 @@ def set_metadata_via_service(request: Request) -> MetaDataSetResponse:
         db_rec.value = record_value
         db.add(db_rec)
 
-    # Validate the associations between files and records
-    fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { metadataset.site_id : metadataset }, ignore_submitted_metadatasets=True)
-
-    # If there were any validation errors, return 400
-    if val_errors:
-        entities, fields, messages = zip(*val_errors)
-        raise errors.get_validation_error(messages=messages, fields=fields, entities=entities)
-
-    # Given that validation hasn't failed, we know that file names are unique. Flatten the dict.
-    fnames = { k : v[0] for k, v in fnames.items() }
-
-    # Associate the files with the metadata
-    for fname, mdatrec in ref_fnames.items():
-        mdatrec.file = fnames[fname]
-        db.add(mdatrec)
+    link_files(db, metadataset, db_files, ignore_submitted=True)
 
     # Create a service execution
     sexec = ServiceExecution(
-            service       = service,
-            metadataset   = metadataset,
-            user          = auth_user,
-            datetime      = datetime.utcnow()
-            )
+        service       = service,
+        metadataset   = metadataset,
+        user          = auth_user,
+        datetime      = datetime.utcnow()
+    )
 
     db.add(sexec)
 
