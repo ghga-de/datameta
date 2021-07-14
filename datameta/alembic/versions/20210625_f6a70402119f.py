@@ -24,7 +24,6 @@ def upgrade():
         sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('datetime', sa.DateTime(), nullable=False),
-        sa.Column('label', sa.String(length=140), nullable=False),
         sa.Column('new_metadataset_id', sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(['new_metadataset_id'], ['metadatasets.id'], name=op.f('fk_msetreplacements_new_metadataset_id_metadatasets')),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_msetreplacements_user_id_users')),

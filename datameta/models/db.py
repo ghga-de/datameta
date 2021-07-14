@@ -236,7 +236,6 @@ class MsetReplacementEvent(Base):
     uuid                 = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id              = Column(Integer, ForeignKey('users.id'), nullable=False)
     datetime             = Column(DateTime, nullable=False)
-    label                = Column(String(140), nullable=False)
     new_metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
 
     # Relationships

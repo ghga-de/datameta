@@ -218,7 +218,7 @@ def link_files(db, mdata_set, db_files, ignore_submitted=False):
         db.add(mdatrec)
 
 
-def execute_mset_replacement(db, new_mset_id, replaced_msets, replaces_label, user_id):
+def execute_mset_replacement(db, new_mset_id, replaced_msets, user_id):
 
     msets = [
         (mset_id, resource_by_id(db, MetaDataSet, mset_id))
@@ -244,7 +244,6 @@ def execute_mset_replacement(db, new_mset_id, replaced_msets, replaces_label, us
     mset_repl_evt = MsetReplacementEvent(
         user_id = user_id,
         datetime = datetime.utcnow(),
-        label = replaces_label,
         new_metadataset_id = new_mset_id
     )
     db.add(mset_repl_evt)
@@ -298,7 +297,7 @@ def replace_metadatasets(request: Request) -> SubmissionResponse:
     replaces = request.openapi_validated.body["replaces"]
     replaces_label = request.openapi_validated.body["replacesLabel"]
 
-    replaced_msets = execute_mset_replacement(db, mdata_set.id, replaces, replaces_label, auth_user.id)
+    replaced_msets = execute_mset_replacement(db, mdata_set.id, replaces, auth_user.id)
 
     initialize_service_metadata(db, mdata_set.id)
 
