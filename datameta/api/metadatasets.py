@@ -53,6 +53,7 @@ class ReplacementMsetResponse(DataHolderBase):
 
     @classmethod
     def from_metadataset(cls, metadataset: MetaDataSet, replaces: List[Tuple[Any, MetaDataSet]], metadata_with_access: Dict[str, MetaDatum]):
+
         return cls(
                 id                 = get_identifier(metadataset),
                 record             = get_record_from_metadataset(metadataset, metadata_with_access),
@@ -60,7 +61,7 @@ class ReplacementMsetResponse(DataHolderBase):
                 user_id            = get_identifier(metadataset.user),
                 replaces           = [get_identifier(mset) for _, mset in replaces],
                 submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
-                service_executions = collect_service_executions(metadata_with_access, metadataset)
+                service_executions = collect_service_executions(metadata_with_access, metadataset),
         )
 
 
@@ -73,6 +74,8 @@ class MetaDataSetResponse(DataHolderBase):
     user_id              : str
     submission_id        : Optional[str] = None
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
+    replaces             : Optional[List[str]] = None
+    replaced_by          : Optional[str] = None
 
     @staticmethod
     def from_metadataset(metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
@@ -87,7 +90,9 @@ class MetaDataSetResponse(DataHolderBase):
                 file_ids           = get_mset_associated_files(metadataset, metadata_with_access),
                 user_id            = get_identifier(metadataset.user),
                 submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
-                service_executions = collect_service_executions(metadata_with_access, metadataset)
+                service_executions = collect_service_executions(metadata_with_access, metadataset),
+                replaces           = [get_identifier(mset) for event in metadataset.replaces_via_event for mset in event.replaced_metadatasets] if metadataset.replaces_via_event else None,
+                replaced_by        =  get_identifier(metadataset.replaced_via_event.new_metadataset) if metadataset.replaced_via_event else None
                 )
 
 

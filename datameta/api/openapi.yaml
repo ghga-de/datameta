@@ -1592,6 +1592,14 @@ components:
           $ref: "#/components/schemas/NullableIdentifier"
         userId:
           $ref: "#/components/schemas/Identifier"
+        replaces:
+          type: array
+          items:
+              type: object
+          nullable: true
+        replacedBy:
+          type: object
+          nullable: true
       required:
         - record
       additionalProperties: false
