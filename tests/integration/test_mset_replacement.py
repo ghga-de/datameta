@@ -46,7 +46,7 @@ class MsetReplacementTest(BaseIntegrationTest):
             "record": {
                 "Date": "2021-07-01",
                 "ZIP Code": "108",
-                "ID": "XC13",  # this is weird: when using the swagger interface, you can use the key "#ID", is that # stripped off somewhere?
+                "ID": "XC13",
                 "FileR2": "group_x_file_1.txt",
                 "FileR1": "group_x_file_2.txt"
             },
