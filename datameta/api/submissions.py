@@ -37,7 +37,7 @@ class SubmissionResponse(SubmissionBase):
     id: dict
     label: str
     group_id: str
-    submission_date_time: datetime
+    submission_date_time: str
 
     @classmethod
     def from_submission(cls, submission, db):

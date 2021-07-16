@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datameta.api.submissions import SubmissionResponse
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import List
