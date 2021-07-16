@@ -57,6 +57,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("files", base_url + "/files")
     config.add_route("files_id", base_url + "/files/{id}")
     config.add_route("submissions", base_url + "/submissions")
+    config.add_route("submissions_id", base_url + "/submissions/{id}")
     config.add_route("presubvalidation", base_url + "/presubvalidation")
     config.add_route("groups_id_submissions", base_url + "/groups/{id}/submissions")
     config.add_route("groups_id", base_url + "/groups/{id}")

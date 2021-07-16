@@ -16,10 +16,11 @@ from datetime import datetime
 from dataclasses import dataclass
 from pyramid.view import view_config
 from pyramid.request import Request
-from pyramid.httpexceptions import HTTPNoContent
+from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 from typing import List
 from .. import security, resource, validation, siteid
 from ..models import Submission
+from ..security import authz
 from . import DataHolderBase
 
 
@@ -35,6 +36,26 @@ class SubmissionResponse(SubmissionBase):
     """SubmissionResponse container for OpenApi communication"""
     id: dict
     label: str
+    group_id: str
+    date_time: datetime
+
+    @classmethod
+    def from_submission(cls, submission):
+
+        db_files = [
+            mrec.file for mset in submission.metadatasets
+            for mrec in mset.metadatumrecords
+            if mrec.file_id
+        ]
+
+        return cls(
+            id = resource.get_identifier(submission),
+            label = submission.label,
+            metadataset_ids = [ resource.get_identifier(db_mset) for db_mset in submission.metadatasets ],
+            file_ids = [ resource.get_identifier(db_file) for db_file in db_files ],
+            group_id = submission.group_id,
+            date_time = submission.date
+        )
 
 
 ####################################################################################################
@@ -90,11 +111,13 @@ def post(request: Request) -> SubmissionResponse:
     for fname, mdatrec in ref_fnames.items():
         mdatrec.file = fnames[fname]
 
+    submission_timestamp = datetime.utcnow()
+
     # Add a submission
     submission = Submission(
             site_id = siteid.generate(request, Submission),
             label = label,
-            date = datetime.utcnow(),
+            date = submission_timestamp,
             metadatasets = list(db_msets.values()),
             group_id = auth_user.group.id
             )
@@ -105,5 +128,32 @@ def post(request: Request) -> SubmissionResponse:
             id = resource.get_identifier(submission),
             label = label,
             metadataset_ids = [ resource.get_identifier(db_mset) for db_mset in db_msets.values() ],
-            file_ids = [ resource.get_identifier(db_file) for db_file in db_files.values() ]
+            file_ids = [ resource.get_identifier(db_file) for db_file in db_files.values() ],
+            group_id = auth_user.group_id,
+            date_time = submission_timestamp
             )
+
+
+@view_config(
+    route_name      = "submissions_id",
+    renderer        = "json",
+    request_method  = "GET",
+    openapi         = True
+)
+def get_submission(request: Request) -> SubmissionResponse:
+    """Get a submission by ID"""
+    auth_user = security.revalidate_user(request)
+    db = request.dbsession
+
+    # query targeted submission
+    submission = resource.resource_query_by_id(db, Submission, request.matchdict['id']).one_or_none()
+
+    # Check if the metadataset exists
+    if not submission:
+        raise HTTPNotFound()
+
+    # Check if the user is allowed to view this metadataset
+    if not authz.view_group_submissions(auth_user, submission.group_id):
+        raise HTTPForbidden()
+
+    return SubmissionResponse.from_submission(submission)
