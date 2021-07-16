@@ -37,10 +37,10 @@ class SubmissionResponse(SubmissionBase):
     id: dict
     label: str
     group_id: str
-    date_time: datetime
+    submission_date_time: datetime
 
     @classmethod
-    def from_submission(cls, submission):
+    def from_submission(cls, submission, db):
 
         db_files = [
             mrec.file for mset in submission.metadatasets
@@ -53,8 +53,8 @@ class SubmissionResponse(SubmissionBase):
             label = submission.label,
             metadataset_ids = [ resource.get_identifier(db_mset) for db_mset in submission.metadatasets ],
             file_ids = [ resource.get_identifier(db_file) for db_file in db_files ],
-            group_id = submission.group_id,
-            date_time = submission.date
+            group_id = resource.get_identifier(submission.group),
+            submission_date_time = submission.date.isoformat()
         )
 
 
@@ -129,8 +129,8 @@ def post(request: Request) -> SubmissionResponse:
             label = label,
             metadataset_ids = [ resource.get_identifier(db_mset) for db_mset in db_msets.values() ],
             file_ids = [ resource.get_identifier(db_file) for db_file in db_files.values() ],
-            group_id = auth_user.group_id,
-            date_time = submission_timestamp
+            group_id = resource.get_identifier(auth_user.group),
+            submission_date_time = submission_timestamp.isoformat()
             )
 
 
@@ -156,4 +156,4 @@ def get_submission(request: Request) -> SubmissionResponse:
     if not authz.view_group_submissions(auth_user, submission.group_id):
         raise HTTPForbidden()
 
-    return SubmissionResponse.from_submission(submission)
+    return SubmissionResponse.from_submission(submission, db)
