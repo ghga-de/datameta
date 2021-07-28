@@ -35,11 +35,6 @@ class MsetReplacementTest(BaseIntegrationTest):
         self.fixture_manager.copy_files_to_storage()
         self.fixture_manager.populate_metadatasets()
 
-    """
-    Erweiterung der Tests auf die wesentlichen Szenarien, die auftreten können (Replacement of already replaced, non-existing replaced / replacing / etc)
-    """
-
-
     @parameterized.expand([
         ("success", "group_x_admin", "mset_a", 200),
         ("insufficient_access_rights", "user_a", "mset_a", 400),
@@ -71,7 +66,7 @@ class MsetReplacementTest(BaseIntegrationTest):
         self.testapp.post_json(
             url       = f"{base_url}/rpc/replace-metadatasets",
             headers   = auth_headers,
-            status    = expected_status if testname != "target_mset_already_replaced" else 200, 
+            status    = expected_status if testname != "target_mset_already_replaced" else 200,
             params    = request_body
         )
 
@@ -90,6 +85,3 @@ class MsetReplacementTest(BaseIntegrationTest):
                 status    = expected_status,
                 params    = request_body
             )
-        
-
-
