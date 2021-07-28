@@ -72,10 +72,22 @@ class MsetReplacementTest(BaseIntegrationTest):
 
         if testname == "target_mset_already_replaced":
 
-            request_body["record"]["ID"] = "blargh"
-            request_body["record"]["FileR1"] = "group_x_file_3.txt"
-            request_body["record"]["FileR2"] = "group_x_file_4.txt"
-            request_body["fileIds"] = ["group_x_file_3", "group_x_file_4"]
+            request_body = {
+                "record": {
+                    "Date": "2021-07-01",
+                    "ZIP Code": "108",
+                    "ID": "blargh",
+                    "FileR2": "group_x_file_3.txt",
+                    "FileR1": "group_x_file_4.txt"
+                },
+                "replaces": [
+                    replaced_mset
+                ],
+                "replacesLabel": "because i can",
+                "fileIds": [
+                    "group_x_file_3", "group_x_file_4"
+                ]
+            }
 
             self.testapp.post_json(
                 url       = f"{base_url}/rpc/replace-metadatasets",
