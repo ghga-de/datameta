@@ -224,6 +224,7 @@ def post(request: Request):
                 submission_datetime   = mdata_set.submission.date.isoformat(),
                 submission_label      = mdata_set.submission.label,
                 service_executions    = service_executions,
+                replaced_by           = get_identifier(mdata_set.replaced_via_event.new_metadataset) if mdata_set.replaced_via_event else None
                 )
             for (mdata_set, _), service_executions in zip(mdata_sets, service_executions_all)
             ]

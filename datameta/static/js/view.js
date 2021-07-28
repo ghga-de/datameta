@@ -23,23 +23,30 @@ DataMeta.view.buildColumns = function(mdata) {
         return {
             title : mdatum.serviceId === null ? mdatum.name : '<i class="bi bi-cpu"></i> '+mdatum.name,
             data : null,
-            render : function(mdataset, type, row, meta) {
+            render : function(mdataset, type, row, meta) {                              
                 // We don't have access
                 if (!(mdatum.name in mdataset.record)) return '<i class="bi bi-lock-fill text-danger"></i>';
                 // Special case NULL and service metadatum with access but not run yet
                 if (mdataset.serviceExecutions !== null
                     && mdatum.name in mdataset.serviceExecutions
-                    && mdataset.serviceExecutions[mdatum.name]===null)
+                    && mdataset.serviceExecutions[mdatum.name] === null)
                     return '<span class="text-black-50"><i class="bi bi-hourglass-split"></i> <i>pending</i></span>';
                 // Special case NULL
                 if (mdataset.record[mdatum.name] === null) return '<span class="text-black-50"><i>empty</i></span>';
-                // Speical case file
-                if (mdataset.fileIds[mdatum.name]) return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdatum.name].site) +'?redirect=true"><i class="bi bi-cloud-arrow-down-fill"></i> '+mdataset.record[mdatum.name]+'</a>';
+                // Special case file
+                if (mdataset.fileIds[mdatum.name]) {
+                    var record_str = mdataset.replacedBy === null ? mdataset.record[mdatum.name] : '<span class="large-super" style="color:#ccc"><i>' + mdataset.record[mdatum.name] + '</i></span>';
+                    return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdatum.name].site) + '?redirect=true"><i class="bi bi-cloud-arrow-down-fill"></i>' + record_str + '</a>';
+                }                     
                 // All other cases
-                return mdataset.record[mdatum.name];
+                return mdataset.replacedBy === null ? mdataset.record[mdatum.name] : '<span class="large-super" style="color:#ccc"><i>' + mdataset.record[mdatum.name] + '</i></span>';
             }
         };
     });
+}
+
+function format_cell(data, is_replaced) {
+  return is_replaced ? '<div class="large-super" style="color:#ccc"><i>' + data + '</i></div>' : '<div>' + '<div class="large-super">' + data + '</div>'
 }
 
 DataMeta.view.initTable = function() {
@@ -57,23 +64,44 @@ DataMeta.view.initTable = function() {
     // Extract field names from the metadata information
     var mdata = json;
 
+    
+    //var cell_style_start = data.replacedBy === null ? '<div class="large-super" style="color:#bbb"><i>' : '<div class="large-super">';
+    //var cell_style_end = data.replacedBy === null ? '</div>' : '</i></div>';
+    var cell_style_start = '';
+    var cell_style_end = '';
+
+    
+    
     var columns = [
         { title: '<i class="bi bi-house-door"></i> Submission', data: null, className: "id_col", render: function(data) {
-            var label = data.submissionLabel ? data.submissionLabel : '<span class="text-black-50"><i>empty</i></span>';
-            return '<div> <div class="large-super">' + label + '</div><div class="text-accent small-sub">' + data.submissionId.site + '</div></div>'
+            var label = data.submissionLabel ? data.submissionLabel : '<i>empty</i>'; //'<span class="text-black-50"><i>empty</i></span>';
+            return '<div>' + format_cell(label, data.replacedBy !== null) + '<div class="text-accent small-sub">' + data.submissionId.site + '</div></div>';
         }},
         { title: '<i class="bi bi-house-door"></i> Submission Time', data: null, className: "id_col", render: function(data) {
             var d = moment(new Date(data.submissionDatetime));
-            return '<div> <div class="large-super">' + d.format('YYYY-MM-DD HH:mm:ss') +
-                '</div><div class="text-accent small-sub">' + 'GMT' + d.format('ZZ') + '</div></div>'
+            return '<div>' + format_cell(d.format('YYYY-MM-DD HH:mm:ss'), data.replacedBy !== null) + '<div class="text-accent small-sub">' + 'GMT' + d.format('ZZ') + '</div></div>';
         }},
         { title: '<i class="bi bi-house-door"></i> User', data: null, className: "id_col", render: data =>
-            '<div> <div class="large-super">'+data.userName+'</div><div class="text-accent small-sub">'+data.userId.site+'</div></div>'
+            '<div>' + format_cell(data.userName, data.replacedBy !== null) + '</div><div class="text-accent small-sub">' + data.userId.site + '</div></div>'
         },
         { title: '<i class="bi bi-house-door"></i> Group', data: null, className: "id_col", render: data =>
-            '<div> <div class="large-super">'+data.groupName+'</div><div class="text-accent small-sub">'+data.groupId.site+'</div></div>'
+            '<div>' + format_cell(data.groupName, data.replacedBy !== null) + '</div><div class="text-accent small-sub">' + data.groupId.site + '</div></div>'
         },
-        { title: '<i class="bi bi-house-door"></i> ID', data: "id.site", className: "id_col", render: data => '<span class="text-accent">' + data + '</span>'}
+        { title: '<i class="bi bi-house-door"></i> ID', data: null, className: "id_col", render: function(data) { 
+            
+            var return_str = format_cell(data.id.site, data.replacedBy !== null);
+            return '<div>' + return_str + (data.replacedBy === null ? '' : '<div class="text-accent small-sub">replaced by ' + data.replacedBy.site + '</div>') + '</div>';
+            if (data.replacedBy !== null) {
+              return_str += '<div class="large-super" style="color:#bbb"><i>' + data.id.site + '</i></div>';
+              return_str += '<div class="text-accent small-sub">replaced by ' + data.replacedBy.site + '</div>';
+            } else {
+              return_str += '<div class="large-super">' + data.id.site + '</div>';
+            }
+
+            return return_str + '</div>'
+
+        }
+      },
       ].concat(DataMeta.view.buildColumns(mdata))
 
     // Build table based on field names
