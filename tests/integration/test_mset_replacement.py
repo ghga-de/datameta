@@ -35,10 +35,19 @@ class MsetReplacementTest(BaseIntegrationTest):
         self.fixture_manager.copy_files_to_storage()
         self.fixture_manager.populate_metadatasets()
 
+    """
+    Erweiterung der Tests auf die wesentlichen Szenarien, die auftreten können (Replacement of already replaced, non-existing replaced / replacing / etc)
+    """
+
+
     @parameterized.expand([
-        ("success", "group_x_admin", 200),
+        ("success", "group_x_admin", "mset_a", 200),
+        ("insufficient_access_rights", "user_a", "mset_a", 400),
+        ("insufficient_access_rights_other_group", "user_b", "mset_a", 400),
+        ("target_mset_does_not_exist", "group_x_admin", "blob", 400),
+        ("target_mset_already_replaced", "group_x_admin", "mset_a", 400)
     ])
-    def test_mset_replacement(self, testname: str, executing_user: str, expected_status: int):
+    def test_mset_replacement(self, testname: str, executing_user: str, replaced_mset: str, expected_status: int):
         user = self.fixture_manager.get_fixture("users", executing_user) if executing_user else None
         auth_headers = self.apikey_auth(user) if user else {}
 
@@ -51,7 +60,7 @@ class MsetReplacementTest(BaseIntegrationTest):
                 "FileR1": "group_x_file_2.txt"
             },
             "replaces": [
-                "mset_a"
+                replaced_mset
             ],
             "replacesLabel": "because i can",
             "fileIds": [
@@ -62,6 +71,25 @@ class MsetReplacementTest(BaseIntegrationTest):
         self.testapp.post_json(
             url       = f"{base_url}/rpc/replace-metadatasets",
             headers   = auth_headers,
-            status    = expected_status,
+            status    = expected_status if testname != "target_mset_already_replaced" else 200, 
             params    = request_body
         )
+
+        if testname == "target_mset_already_replaced":
+
+            request_body["record"].update({
+                "ID": "blargh",
+                "FileR1": "group_x_file_3.txt",
+                "FileR2": "group_x_file_4.txt",
+            })
+            request_body["fileIds"] = ["group_x_file_3", "group_x_file_4"]
+
+            self.testapp.post_json(
+                url       = f"{base_url}/rpc/replace-metadatasets",
+                headers   = auth_headers,
+                status    = expected_status,
+                params    = request_body
+            )
+        
+
+
