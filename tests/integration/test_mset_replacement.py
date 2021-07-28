@@ -72,11 +72,9 @@ class MsetReplacementTest(BaseIntegrationTest):
 
         if testname == "target_mset_already_replaced":
 
-            request_body["record"].update({
-                "ID": "blargh",
-                "FileR1": "group_x_file_3.txt",
-                "FileR2": "group_x_file_4.txt",
-            })
+            request_body["record"]["ID"] = "blargh"
+            request_body["record"]["FileR1"] = "group_x_file_3.txt"
+            request_body["record"]["FileR2"] = "group_x_file_4.txt"
             request_body["fileIds"] = ["group_x_file_3", "group_x_file_4"]
 
             self.testapp.post_json(
