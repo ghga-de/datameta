@@ -211,6 +211,13 @@ DataMeta.admin.rebuildUsersTable = function(users) {
     t.columns.adjust().draw();
 }
 
+
+function getTogglePrivilegeButton (data, privilege) {
+    return data
+        ? '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="togglePrivilege(event, \'' + privilege + '\');"><i class="bi bi-check2"></i></button>'
+        : '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="togglePrivilege(event, \'' + privilege + '\')";><i class="bi bi-x"></i></button>';
+}
+
 //Initializes the user table
 DataMeta.admin.initUsersTable = function() {
     $('#table_users').DataTable({
@@ -232,44 +239,22 @@ DataMeta.admin.initUsersTable = function() {
             }},
             { title: "Group ID", data: "group_id.site"},
             { title: "Enabled", data: "enabled", render:function(data, type, row) {
-                if ( type === 'display' || type === 'filter' ) {
-                    if(data) {
-                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleUserEnabled(event);"><i class="bi bi-check2"></i></button>'
-                    } else {
-                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleUserEnabled(event)";><i class="bi bi-x"></i></button>'
-                    }
-                }
-                return Boolean(data);
+                return ( type === 'display' || type === 'filter' ) ? getTogglePrivilegeButton(data, "userEnabled") : Boolean(data);
             }},
             { title: "Site Read", data: "site_read", render:function(data, type, row) {
-                if ( type === 'display' || type === 'filter' ) {
-                    if(data) {
-                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleSiteRead(event);"><i class="bi bi-check2"></i></button>'
-                    } else {
-                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleSiteRead(event)";><i class="bi bi-x"></i></button>'
-                    }
-                }
-                return Boolean(data);
+                return ( type === 'display' || type === 'filter' ) ? getTogglePrivilegeButton(data, "siteRead") : Boolean(data);
             }},
             { title: "Is Group Admin", data: "group_admin", render:function(data, type, row) {
-                if ( type === 'display' || type === 'filter' ) {
-                    if(data) {
-                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleGroupAdmin(event)"><i class="bi bi-check2"></i></button>'
-                    } else {
-                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleGroupAdmin(event)"><i class="bi bi-x"></i></button>'
-                    }
-                }
-                return Boolean(data);
+                return ( type === 'display' || type === 'filter' ) ? getTogglePrivilegeButton(data, "groupAdmin") : Boolean(data);
             }},
             { title: "Is Site Admin", data: "site_admin", render:function(data, type, row) {
-                if ( type === 'display' || type === 'filter' ) {
-                    if(data) {
-                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-success enabled" onclick="toggleSiteAdmin(event)"><i class="bi bi-check2"></i></button>'
-                    } else {
-                        return '<button type="button" class="py-0 px-1 btn btn-sm btn-outline-danger" onclick="toggleSiteAdmin(event)"><i class="bi bi-x"></i></button>'
-                    }
-                }
-                return Boolean(data);
+                return ( type === 'display' || type === 'filter' ) ? getTogglePrivilegeButton(data, "siteAdmin") : Boolean(data);
+            }},
+            { title: "Can Update", data: "can_update", render:function(data, type, row) {
+                return ( type === 'display' || type === 'filter' ) ? getTogglePrivilegeButton(data, "canUpdate") : Boolean(data);
+            }},
+            { title: "Group View", data: "group_view", render:function(data, type, row) {
+                return ( type === 'display' || type === 'filter' ) ? getTogglePrivilegeButton(data, "groupView") : Boolean(data);
             }}
         ]
     });
@@ -872,15 +857,15 @@ function addMetaDatum(event) {
 }
 
 /**
- * Toggles the group_admin setting for a user
+ * Toggles the specified privilege setting for a user
  */
-function toggleGroupAdmin(event) {
+function togglePrivilege(event, privilege) {
 
     // The button that triggered the function call
     var button = event.srcElement;
 
     // If the picture in the button was triggered instead of the button itself, change to the button element
-    if(button.localName != "button") {
+    if (button.localName != "button") {
         button = button.parentNode;
     }
 
@@ -890,103 +875,41 @@ function toggleGroupAdmin(event) {
 
     var enabled = button.classList.contains("enabled");
 
-    if(enabled) {
-        if(confirm("Do you want to remove the user " + name + " as admin of " + group + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, false, undefined, undefined, undefined);
+    let privileges = {};
+
+    var privilege_str = "";
+    var question = "";
+    if (privilege === "userEnabled") {
+        privileges.enabled = !enabled;
+        question = "Do you want to " + (enabled ? "deactivate" : "activate") + " user " + name + "?";
+
+    }  else {
+
+        if (privilege === "groupAdmin") {
+            privilege_str = "group admin status of group " + group;
+            privileges.groupAdmin = !enabled;
+        } else if (privilege === "siteAdmin") {
+            privilege_str = "site admin status";
+            privileges.siteAdmin = !enabled;
+        } else if (privilege === "siteRead") {
+            privilege_str = "Site Read privileges";
+            privileges.siteRead = !enabled;
+        } else if (privilege === "groupView") {
+            privilege_str = "Group View privileges";
+            privileges.groupView = !enabled;
+        } else if (privilege === "canUpdate") {
+            privilege_str = "Update privileges";
+            privileges.canUpdate = !enabled;
         }
-    } else {
-        if(confirm("Do you want to make the user " + name + " admin of " + group + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, true, undefined, undefined, undefined);
-        }
+
+        question = "Do you want to " + (enabled ? "revoke" : "grant") + " " + privilege_str + " " + (enabled ? "from" : "to") + " user " + name + "?";
+    }
+
+    if (confirm(question)) {
+        DataMeta.admin.updateUser(row.id, undefined, undefined, privileges.groupAdmin, privileges.siteAdmin, privileges.enabled, privileges.siteRead, privileges.canUpdate, privileges.groupView);
     }
 }
 
-/**
- * Toggles the site_admin setting for a user
- */
-function toggleSiteAdmin(event) {
-
-    // The button that triggered the function call
-    var button = event.srcElement;
-
-    // Change the location to the button if the picture was clicked
-    if(button.localName != "button") {
-        button = button.parentNode;
-    }
-
-    var row = button.parentNode.parentNode;
-    var name = row.children[1].children[0].getAttribute('data');
-
-    var enabled = button.classList.contains("enabled");
-
-    if(enabled) {
-        if(confirm("Do you want to remove the user " + name + " as site admin?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, false, undefined, undefined);
-        }
-    } else {
-        if(confirm("Do you want to make the user " + name + " site admin?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, true, undefined, undefined);
-        }
-    }
-}
-
-/**
- * Toggles the enabled setting for a user
- */
-function toggleUserEnabled(event) {
-
-    // The button that triggered the function call
-    var button = event.srcElement;
-
-    // Change the location to the button if the picture was clicked
-    if(button.localName != "button") {
-        button = button.parentNode;
-    }
-
-    var row = button.parentNode.parentNode;
-    var name = row.children[1].children[0].getAttribute('data');
-
-    var enabled = button.classList.contains("enabled");
-
-    if(enabled) {
-        if(confirm("Do you want to deactivate the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, false, undefined);
-        }
-    } else {
-        if(confirm("Do you want to activate the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, true, undefined);
-        }
-    }
-}
-
-/**
- * Toggles the site_read setting for a user
- */
- function toggleSiteRead(event) {
-
-    // The button that triggered the function call
-    var button = event.srcElement;
-
-    // Change the location to the button if the picture was clicked
-    if(button.localName != "button") {
-        button = button.parentNode;
-    }
-
-    var row = button.parentNode.parentNode;
-    var name = row.children[1].children[0].getAttribute('data');
-
-    var enabled = button.classList.contains("enabled");
-
-    if(enabled) {
-        if(confirm("Do you want to remove Site Read priviledges from the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, undefined, false);
-        }
-    } else {
-        if(confirm("Do you want to give Site Read priviledges to the user " + name + "?")) {
-            DataMeta.admin.updateUser(row.id, undefined, undefined, undefined, undefined, undefined, true);
-        }
-    }
-}
 
 /**
  * Switch the Group
@@ -1021,7 +944,7 @@ function switchGroup(event) {
         var btn = document.createElement("button")
         btn.classList.add("dropdown-item");
         btn.setAttribute("type", "button");
-        btn.setAttribute("onClick", " DataMeta.admin.updateUser('"+ uuid +"', undefined, '"+ groups[i].id.uuid +"', undefined, undefined, undefined);")
+        btn.setAttribute("onClick", " DataMeta.admin.updateUser('"+ uuid +"', undefined, '"+ groups[i].id.uuid +"', undefined, undefined, undefined, undefined, undefined, undefined);")
         btn.innerHTML = groups[i].name;
         li.appendChild(btn);
     }
@@ -1065,7 +988,7 @@ function confirmUserNameChange(event, uuid) {
 
     var newName = button.parentNode.querySelector("input[name='fullname']").value;
 
-    DataMeta.admin.updateUser(uuid, newName, undefined, undefined, undefined, undefined);
+    DataMeta.admin.updateUser(uuid, newName, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
 }
 
 /**
@@ -1395,7 +1318,7 @@ function showAlert(alertName, text) {
 }
 
 // API call to change user name, group, admin and enabled settings
-DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, enabled, siteRead) {
+DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, enabled, siteRead, canUpdate, groupView) {
     fetch(DataMeta.api('users/' + id),
     {
         method: 'PUT',
@@ -1409,7 +1332,9 @@ DataMeta.admin.updateUser = function (id, name, groupId, groupAdmin, siteAdmin, 
             groupAdmin,
             siteAdmin,
             enabled,
-            siteRead
+            siteRead,
+            canUpdate,
+            groupView
         })
     })
     .then(function (response) {
