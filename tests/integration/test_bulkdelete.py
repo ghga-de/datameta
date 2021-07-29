@@ -20,7 +20,7 @@ class BulkDeletionTest(BaseIntegrationTest):
         auth_headers   = self.apikey_auth(user)
         files          = self.fixture_manager.get_fixtureset('files_independent')
 
-        file_ids = [ file.site_id for file in files.values() ]
+        file_ids = [ file.site_id for file in files.values() if not file.site_id.startswith("group") ]
 
         self.testapp.post_json(
             f"{base_url}/rpc/delete-files",

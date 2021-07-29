@@ -49,7 +49,7 @@ def view_user(user, target_user):
 
 def view_group(user, group):
     return any((
-        is_own_group(user, group),  # i assume, a 'normal' user can query their group's details regardless of group_admin status?
+        is_own_group(user, group) and user.group_view,
         can_site_read(user)
     ))
 
@@ -174,6 +174,14 @@ def update_user_name(user, target_user):
         has_group_rights(user, target_user.group),
         user_is_target(user, target_user)
     ))
+
+
+def update_user_can_update(user):
+    return user.site_admin
+
+
+def update_user_group_view(user):
+    return has_group_rights(user, user.group)
 
 
 def view_restricted_user_info(user, target_user):

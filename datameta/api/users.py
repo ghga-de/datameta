@@ -36,6 +36,8 @@ class UserUpdateRequest(DataHolderBase):
     siteAdmin: bool
     enabled: bool
     siteRead: bool
+    canUpdate: bool
+    groupView: bool
 
 
 @dataclass
@@ -47,7 +49,13 @@ class UserResponseElement(DataHolderBase):
     group_admin: Optional[bool] = None
     site_admin: Optional[bool] = None
     site_read: Optional[bool] = None
+    group_view: Optional[bool] = None
     email: Optional[str] = None
+    can_update: Optional[bool] = None
+
+    @staticmethod
+    def get_restricted_fields():
+        return ["group_admin", "site_admin", "site_read", "email", "can_update", "group_view"]
 
     @classmethod
     def from_user(cls, target_user, requesting_user):
@@ -55,10 +63,8 @@ class UserResponseElement(DataHolderBase):
 
         if authz.view_restricted_user_info(requesting_user, target_user):
             restricted_fields.update({
-                "group_admin": target_user.group_admin,
-                "site_admin": target_user.site_admin,
-                "site_read": target_user.site_read,
-                "email": target_user.email
+                field: getattr(target_user, field)
+                for field in UserResponseElement.get_restricted_fields()
             })
 
         return cls(id=get_identifier(target_user), name=target_user.fullname, group_id=get_identifier(target_user.group), **restricted_fields)
@@ -72,6 +78,8 @@ class WhoamiResponseElement(DataHolderBase):
     group_admin: bool
     site_admin: bool
     site_read: bool
+    can_update: bool
+    group_view: bool
     email: str
     group: dict
 
@@ -92,6 +100,8 @@ def get_whoami(request: Request) -> WhoamiResponseElement:
         group_admin     =   auth_user.group_admin,
         site_admin      =   auth_user.site_admin,
         site_read       =   auth_user.site_read,
+        can_update      =   auth_user.can_update,
+        group_view      =   auth_user.group_view,
         email           =   auth_user.email,
         group           =   {"id": get_identifier(auth_user.group), "name": auth_user.group.name}
     )
@@ -138,6 +148,8 @@ def put(request: Request):
     site_admin = request.openapi_validated.body.get("siteAdmin")
     enabled = request.openapi_validated.body.get("enabled")
     site_read = request.openapi_validated.body.get("siteRead")
+    can_update = request.openapi_validated.body.get("canUpdate")
+    group_view = request.openapi_validated.body.get("groupView")
 
     db = request.dbsession
 
@@ -176,6 +188,13 @@ def put(request: Request):
     if name is not None and not authz.update_user_name(auth_user, target_user):
         raise HTTPForbidden()
 
+    # The user has to be site admin to change update privileges for a user
+    if can_update is not None and not authz.update_user_can_update(auth_user):
+        raise HTTPForbidden()
+
+    if group_view is not None and not authz.update_user_group_view(auth_user):
+        raise HTTPForbidden()
+
     # Now, make the corresponding changes
     if group_id is not None:
         new_group = resource_by_id(db, Group, group_id)
@@ -192,5 +211,9 @@ def put(request: Request):
         target_user.enabled = enabled
     if name is not None:
         target_user.fullname = name
+    if can_update is not None:
+        target_user.can_update = can_update
+    if group_view is not None:
+        target_user.group_view = group_view
 
     return HTTPNoContent()

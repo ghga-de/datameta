@@ -162,7 +162,9 @@ def v_admin_get(request):
         'enabled'       : user.enabled,
         'site_admin'    : user.site_admin,
         'group_admin'   : user.group_admin,
-        'site_read'     : user.site_read
+        'site_read'     : user.site_read,
+        'can_update'    : user.can_update,
+        'group_view'    : user.group_view
         } for user in query ]
 
     # If the requesting user is a site admin, return all groups, otherwise only theirs

@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 1.4.0
+  version: 1.5.0
   title: DataMeta
 
 servers:
@@ -104,7 +104,7 @@ paths:
         [Attention this endpoint is not RESTful, the result should not be cached.]
       tags:
         - Remote Procedure Calls
-      operationId: GetUserInformation
+      operationId: GetOwnUserInfo
       responses:
         "200":
           description: OK
@@ -156,6 +156,7 @@ paths:
         '500':
           description: Internal Server Error
 
+
   /rpc/delete-metadatasets:
     post:
       summary: Bulk-delete Staged MetaDataSets
@@ -174,6 +175,43 @@ paths:
       responses:
         '204':
           description: Deletion successful
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: File not found
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+        '500':
+          description: Internal Server Error
+
+  /rpc/replace-metadatasets:
+    post:
+      summary: Replace a range of metadatasets.
+      description: >-
+        Replace metadatasets.
+      tags:
+        - Remote Procedure Calls
+      operationId: ReplaceMetaDataSets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplacementMetaDataSet"
+        description: >-
+          Provide all properties for one MetaDataSet and a list of MetaDataSets to be replaced.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReplacementMsetResponse"
         '401':
           description: Unauthorized
         '403':
@@ -347,7 +385,7 @@ paths:
         Get information about a user.
       tags:
         - Authentication and Users
-      operationId: UserInformationRequest
+      operationId: GetUserInfo
       parameters:
         - name: id
           in: path
@@ -563,7 +601,7 @@ paths:
             format: date-time
         - name: awaitingService
           in: query
-          description: Identifier for a service. Restricts the result to metadatsets for which the specified service has not been executed yet.
+          description: Identifier for a service. Restricts the result to metadatasets for which the specified service has not been executed yet.
           schema:
             type: string
       responses:
@@ -998,7 +1036,7 @@ paths:
         Get information about a group.
       tags:
         - Groups
-      operationId: GroupInformationRequest
+      operationId: GetGroupInfo
       parameters:
         - name: id
           in: path
@@ -1448,6 +1486,31 @@ components:
         - record
       additionalProperties: false
 
+    ReplacementMetaDataSet:
+      type: object
+      properties:
+        record:
+          type: object
+          additionalProperties: true
+          # a free-form object,
+          # any property is allowed
+        replaces:
+          type: array
+          items:
+            type: string
+        replacesLabel:
+          type: string
+        fileIds:
+          type: array
+          items:
+            type: string
+      required:
+        - record
+        - replaces
+        - replacesLabel
+        - fileIds
+      additionalProperties: false
+
     ServiceExecution:
       type: object
       properties:
@@ -1464,6 +1527,42 @@ components:
             type: string
       required:
         - record
+        - fileIds
+      additionalProperties: false
+
+    ReplacementMsetResponse:
+      type: object
+      properties:
+        record:
+          type: object
+          additionalProperties: true
+          # a free-form object, any property is allowed
+        replaces:
+          type: array
+          items:
+            type: object
+        fileIds:
+          type: object
+          additionalProperties: true
+          # a free-form object mapping the field names to file IDs
+        serviceExecutions:
+          type: object
+          # nullable as a whole for responses to users who cannot see service executions
+          nullable: true
+          additionalProperties:
+            # Maps record field names to service executions. The individual
+            # fields are also nullable for services that haven't been executed
+            # yet.
+            $ref: "#/components/schemas/MetaDataSetServiceExecution"
+        id:
+          $ref: "#/components/schemas/Identifier"
+        submissionId:   
+          $ref: "#/components/schemas/NullableIdentifier"
+        userId:
+          $ref: "#/components/schemas/Identifier"
+      required:
+        - record
+        - replaces
         - fileIds
       additionalProperties: false
 
@@ -1493,6 +1592,14 @@ components:
           $ref: "#/components/schemas/NullableIdentifier"
         userId:
           $ref: "#/components/schemas/Identifier"
+        replaces:
+          type: array
+          items:
+              type: object
+          nullable: true
+        replacedBy:
+          type: object
+          nullable: true
       required:
         - record
       additionalProperties: false
@@ -1733,6 +1840,10 @@ components:
           type: boolean
         siteRead:
           type: boolean
+        canUpdate:
+          type: boolean
+        groupView:
+          type: boolean
         email:
           type: string
         group:
@@ -1748,6 +1859,8 @@ components:
         - groupAdmin
         - siteAdmin
         - siteRead
+        - canUpdate
+        - groupView
         - email
         - group
       additionalProperties: false
@@ -1768,11 +1881,17 @@ components:
         siteRead:
           type: boolean
           nullable: true
+        groupView:
+          type: boolean
+          nullable: true
         email:
           type: string
           nullable: true
         groupId:
           $ref: "#/components/schemas/Identifier"
+        canUpdate:
+          type: boolean
+          nullable: true
       required:
         - id
         - name
@@ -1793,6 +1912,10 @@ components:
         siteRead:
           type: boolean
         enabled:
+          type: boolean
+        canUpdate:
+          type: boolean
+        groupView:
           type: boolean
 
     MetaDataResponse:

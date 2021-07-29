@@ -25,7 +25,9 @@ admin:
     group_admin: true
     site_admin: true
     site_read: true
+    can_update: true
     enabled: true
+    group_view: true
   references:
     group:
       fixtureset: groups
@@ -44,7 +46,9 @@ group_x_admin:
     group_admin: true
     site_admin: false
     site_read: false
+    can_update: true
     enabled: true
+    group_view: true
   references:
     group:
       fixtureset: groups
@@ -63,7 +67,9 @@ user_a:
     group_admin: false
     site_admin: false
     site_read: false
+    can_update: false
     enabled: true
+    group_view: false
   references:
     group:
       fixtureset: groups
@@ -82,7 +88,9 @@ user_b:
     group_admin: false
     site_admin: false
     site_read: false
+    can_update: false
     enabled: true
+    group_view: false
   references:
     group:
       fixtureset: groups
@@ -101,7 +109,9 @@ group_y_admin:
     group_admin: true
     site_admin: false
     site_read: false
+    can_update: true
     enabled: true
+    group_view: true
   references:
     group:
       fixtureset: groups
@@ -120,7 +130,9 @@ user_c:
     group_admin: false
     site_admin: false
     site_read: false
+    can_update: false
     enabled: true
+    group_view: false
   references:
     group:
       fixtureset: groups
@@ -139,7 +151,9 @@ user_site_read:
     group_admin: false
     site_admin: false
     site_read: true
+    can_update: false
     enabled: true
+    group_view: true
   references:
     group:
       fixtureset: groups
@@ -158,7 +172,9 @@ service_user_0:
     group_admin: false
     site_admin: false
     site_read: true
+    can_update: false
     enabled: true
+    group_view: false
   references:
     group:
       fixtureset: groups
