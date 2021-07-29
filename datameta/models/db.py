@@ -83,6 +83,7 @@ class User(Base):
     group_admin          = Column(Boolean(create_constraint=False), nullable=False)
     site_read            = Column(Boolean(create_constraint=False), nullable=False)
     can_update           = Column(Boolean(create_constraint=False), nullable=False)
+    group_view           = Column(Boolean(create_constraint=False), nullable=False)
 
     # Relationships
     group                = relationship('Group', back_populates='user')

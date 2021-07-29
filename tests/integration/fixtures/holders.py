@@ -43,6 +43,7 @@ class UserFixture(Entity):
     site_read     : bool
     enabled       : bool
     can_update    : bool
+    group_view    : bool
 
 
 @dataclass

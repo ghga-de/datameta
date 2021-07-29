@@ -27,6 +27,7 @@ admin:
     site_read: true
     can_update: true
     enabled: true
+    group_view: true
   references:
     group:
       fixtureset: groups
@@ -47,6 +48,7 @@ group_x_admin:
     site_read: false
     can_update: true
     enabled: true
+    group_view: true
   references:
     group:
       fixtureset: groups
@@ -67,6 +69,7 @@ user_a:
     site_read: false
     can_update: false
     enabled: true
+    group_view: false
   references:
     group:
       fixtureset: groups
@@ -87,6 +90,7 @@ user_b:
     site_read: false
     can_update: false
     enabled: true
+    group_view: false
   references:
     group:
       fixtureset: groups
@@ -107,6 +111,7 @@ group_y_admin:
     site_read: false
     can_update: true
     enabled: true
+    group_view: true
   references:
     group:
       fixtureset: groups
@@ -127,6 +132,7 @@ user_c:
     site_read: false
     can_update: false
     enabled: true
+    group_view: false
   references:
     group:
       fixtureset: groups
@@ -147,6 +153,7 @@ user_site_read:
     site_read: true
     can_update: false
     enabled: true
+    group_view: true
   references:
     group:
       fixtureset: groups
@@ -167,6 +174,7 @@ service_user_0:
     site_read: true
     can_update: false
     enabled: true
+    group_view: false
   references:
     group:
       fixtureset: groups

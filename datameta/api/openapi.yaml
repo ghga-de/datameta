@@ -1842,6 +1842,8 @@ components:
           type: boolean
         canUpdate:
           type: boolean
+        groupView:
+          type: boolean
         email:
           type: string
         group:
@@ -1858,6 +1860,7 @@ components:
         - siteAdmin
         - siteRead
         - canUpdate
+        - groupView
         - email
         - group
       additionalProperties: false
@@ -1876,6 +1879,9 @@ components:
           type: boolean
           nullable: true
         siteRead:
+          type: boolean
+          nullable: true
+        groupView:
           type: boolean
           nullable: true
         email:
@@ -1908,6 +1914,8 @@ components:
         enabled:
           type: boolean
         canUpdate:
+          type: boolean
+        groupView:
           type: boolean
 
     MetaDataResponse:

@@ -92,7 +92,7 @@ class TestGroupInformationRequest(BaseIntegrationTest):
 
     @parameterized.expand([
         # TEST_NAME                           , EXECUTING USER    , TARGET_GROUP      , EXP_RESPONSE
-        ("own_group"                          , "user_a"          , "group_x"         , 200),
+        ("own_group"                          , "user_a"          , "group_x"         , 403),
         ("foreign_group"                      , "user_a"          , "group_y"         , 403),
         ("group_admin_own"                    , "group_x_admin"   , "group_x"         , 200),
         ("group_admin_foreign"                , "group_x_admin"   , "group_y"         , 403),
