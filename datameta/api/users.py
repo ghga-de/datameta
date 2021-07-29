@@ -192,7 +192,7 @@ def put(request: Request):
     if can_update is not None and not authz.update_user_can_update(auth_user):
         raise HTTPForbidden()
 
-    if group_view is not None and not authz.update_user_group_view(auth_user, target_user):
+    if group_view is not None and not authz.update_user_group_view(auth_user):
         raise HTTPForbidden()
 
     # Now, make the corresponding changes
