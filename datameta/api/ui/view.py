@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datameta.models.db import MsetReplacementEvent
 from sqlalchemy.orm import joinedload, aliased
 from sqlalchemy import func, and_, or_, desc, asc
 
@@ -182,6 +183,7 @@ def post(request: Request):
             .options(joinedload(MetaDataSet.user))\
             .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.user))\
             .options(joinedload(MetaDataSet.service_executions).joinedload(ServiceExecution.service).joinedload(Service.target_metadata))\
+            .options(joinedload(MetaDataSet.replaced_via_event).joinedload(MsetReplacementEvent.new_metadataset))\
             .offset(start)\
             .limit(length)\
 

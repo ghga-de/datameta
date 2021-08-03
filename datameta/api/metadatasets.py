@@ -19,7 +19,7 @@ from pyramid.view import view_config
 from pyramid.request import Request
 from sqlalchemy.orm import joinedload
 from sqlalchemy import and_
-from typing import Optional, Dict, List, Any, Tuple
+from typing import Optional, Dict, List, Any
 from ..linting import validate_metadataset_record
 from .. import security, siteid, resource, validation
 from ..models import MetaDatum, MetaDataSet, ServiceExecution, Service, MetaDatumRecord, Submission, File
@@ -52,14 +52,15 @@ class ReplacementMsetResponse(DataHolderBase):
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
 
     @classmethod
-    def from_metadataset(cls, metadataset: MetaDataSet, replaces: List[Tuple[Any, MetaDataSet]], metadata_with_access: Dict[str, MetaDatum]):
+    def from_metadataset(cls, metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
 
+        replaces = [get_identifier(mset) for event in metadataset.replaces_via_event for mset in event.replaced_metadatasets] if metadataset.replaces_via_event else None
         return cls(
                 id                 = get_identifier(metadataset),
                 record             = get_record_from_metadataset(metadataset, metadata_with_access),
                 file_ids           = get_mset_associated_files(metadataset, metadata_with_access),
                 user_id            = get_identifier(metadataset.user),
-                replaces           = [get_identifier(mset) for _, mset in replaces],
+                replaces           = replaces,
                 submission_id      = get_identifier(metadataset.submission) if metadataset.submission else None,
                 service_executions = collect_service_executions(metadata_with_access, metadataset),
         )
@@ -171,30 +172,41 @@ def delete_metadatasets(request: Request) -> HTTPNoContent:
 
 
 def initialize_service_metadata(db, mset_id):
+    """
+    For the specified metadataset, set initial metadatumrecords
+    for all service-provided metadata fields.
+    """
     service_metadata = get_service_metadata(db)
     for s_mdatum in service_metadata.values():
-        mdatum_rec = MetaDatumRecord(
+        _ = MetaDatumRecord(
                 metadatum_id     = s_mdatum.id,
                 metadataset_id   = mset_id,
                 file_id          = None,
                 value            = None
                 )
-        db.add(mdatum_rec)
+        # db.add(mdatum_rec)
 
 
 def add_metadata_from_request(db, record, metadata, mset_id):
-    # Add the non-service metadata as specified in the request body
+    """
+    For the specified metadataset, set non-service metadatum records
+    as supplied in the request body.
+    """
     for name, value in record.items():
-        mdatum_rec = MetaDatumRecord(
+        _ = MetaDatumRecord(
             metadatum_id     = metadata[name].id,
             metadataset_id   = mset_id,
             file_id          = None,
             value            = value
         )
-        db.add(mdatum_rec)
+        # db.add(mdatum_rec)
 
 
 def validate_associated_files(db, file_ids, auth_user):
+    """
+    Check that a list of files is accessible by an authenticated user.
+    """
+
     # Collect files, drop duplicates
     db_files = { file_id : resource.resource_query_by_id(db, File, file_id).options(joinedload(File.metadatumrecord)).one_or_none() for file_id in set(file_ids) }
 
@@ -205,6 +217,10 @@ def validate_associated_files(db, file_ids, auth_user):
 
 
 def link_files(db, mdata_set, db_files, ignore_submitted=False):
+    """
+    Perform association checks between a specified metadataset and list of files
+    and, upon success, link the files to the metadataset.
+    """
 
     # Validate the associations between files and records
     fnames, ref_fnames, val_errors = validation.validate_submission_association(db_files, { mdata_set.site_id : mdata_set }, ignore_submitted_metadatasets=ignore_submitted)
@@ -224,6 +240,12 @@ def link_files(db, mdata_set, db_files, ignore_submitted=False):
 
 
 def execute_mset_replacement(db, new_mset_id, replaced_msets, user_id):
+    """
+    Evaluate if a replacement of a list of metadatasets is possible
+     - validate target metadataset ids
+     - ensure target metadatasets have not already been replaced
+     Upon success, generate a replacement event and mark the target datasets as replaced.
+    """
 
     msets = [
         (mset_id, resource_by_id(db, MetaDataSet, mset_id))
@@ -302,7 +324,7 @@ def replace_metadatasets(request: Request) -> SubmissionResponse:
     replaces = request.openapi_validated.body["replaces"]
     replaces_label = request.openapi_validated.body["replacesLabel"]
 
-    replaced_msets = execute_mset_replacement(db, mdata_set.id, replaces, auth_user.id)
+    execute_mset_replacement(db, mdata_set.id, replaces, auth_user.id)
 
     initialize_service_metadata(db, mdata_set.id)
 
@@ -330,7 +352,7 @@ def replace_metadatasets(request: Request) -> SubmissionResponse:
     # Check which metadata of this metadataset the user is allowed to view
     metadata_with_access = get_metadata_with_access(db, auth_user)
 
-    return ReplacementMsetResponse.from_metadataset(mdata_set, replaced_msets, metadata_with_access)
+    return ReplacementMsetResponse.from_metadataset(mdata_set, metadata_with_access)
 
 
 @view_config(
