@@ -23,7 +23,7 @@ DataMeta.view.buildColumns = function(mdata) {
         return {
             title : mdatum.serviceId === null ? mdatum.name : '<i class="bi bi-cpu"></i> '+mdatum.name,
             data : null,
-            render : function(mdataset, type, row, meta) {                              
+            render : function(mdataset, type, row, meta) {
                 // We don't have access
                 if (!(mdatum.name in mdataset.record)) return '<i class="bi bi-lock-fill text-danger"></i>';
                 // Special case NULL and service metadatum with access but not run yet
@@ -36,7 +36,7 @@ DataMeta.view.buildColumns = function(mdata) {
                 // Special case file
                 if (mdataset.fileIds[mdatum.name]) {
                     var record_str = mdataset.replacedBy === null ? mdataset.record[mdatum.name] : '<span class="large-super" style="color:#ccc"><i>' + mdataset.record[mdatum.name] + '</i></span>';
-                    return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdatum.name].site) + '?redirect=true"><i class="bi bi-cloud-arrow-down-fill"></i>' + record_str + '</a>';
+                    return '<a class="link-bare" href="' + DataMeta.api('rpc/get-file-url/'+mdataset.fileIds[mdatum.name].site) + '?redirect=true"><i class="bi bi-cloud-arrow-down-fill"></i> ' + record_str + '</a>';
                 }                     
                 // All other cases
                 return mdataset.replacedBy === null ? mdataset.record[mdatum.name] : '<span class="large-super" style="color:#ccc"><i>' + mdataset.record[mdatum.name] + '</i></span>';

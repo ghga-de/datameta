@@ -231,7 +231,7 @@ class MetaDataSet(Base):
 
 class MsetReplacementEvent(Base):
     """ Stores information about an mset replacement event """
-    __tablename__ = 'msetreplacements'
+    __tablename__ = 'msetreplacementevents'
     id                   = Column(Integer, primary_key=True)
     uuid                 = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id              = Column(Integer, ForeignKey('users.id'), nullable=False)

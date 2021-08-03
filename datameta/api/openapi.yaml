@@ -156,7 +156,6 @@ paths:
         '500':
           description: Internal Server Error
 
-
   /rpc/delete-metadatasets:
     post:
       summary: Bulk-delete Staged MetaDataSets
@@ -217,7 +216,7 @@ paths:
         '403':
           description: Forbidden
         '404':
-          description: File not found
+          description: Not found
         '400':
           description: Validation Error
           content:
