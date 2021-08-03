@@ -252,11 +252,10 @@ def execute_mset_replacement(db, new_mset_id, replaced_msets, user_id):
         for mset_id in replaced_msets
     ]
 
-    missing_msets = [("Invalid metadataset id.", target_mset) for mset_id, target_mset in msets if target_mset is None]
+    missing_msets = [ f"Invalid metadataset id: {mset_id}" for mset_id, target_mset in msets if target_mset is None]
 
     if missing_msets:
-        messages, entities = zip(*missing_msets)
-        raise errors.get_validation_error(messages=list(messages), entities=list(entities))
+        raise errors.get_validation_error(messages=missing_msets)
 
     already_replaced = [
         (f"Metadataset already replaced by {get_identifier(target_mset.replaced_via_event.new_metadataset).get('site')}", target_mset)

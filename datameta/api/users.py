@@ -62,7 +62,7 @@ class UserResponseElement(DataHolderBase):
         if authz.view_restricted_user_info(requesting_user, target_user):
             restricted_fields.update({
                 field: getattr(target_user, field)
-                for field in UserResponseElement.get_restricted_fields()
+                for field in cls.get_restricted_fields()
             })
 
         return cls(id=get_identifier(target_user), name=target_user.fullname, group_id=get_identifier(target_user.group), **restricted_fields)
