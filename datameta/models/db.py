@@ -217,7 +217,7 @@ class MetaDataSet(Base):
     uuid                   = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     user_id                = Column(Integer, ForeignKey('users.id'), nullable=False)
     submission_id          = Column(Integer, ForeignKey('submissions.id'), nullable=True)
-    replaced_via_event_id  = Column(Integer, ForeignKey('msetreplacements.id', use_alter=True), nullable=True)
+    replaced_via_event_id  = Column(Integer, ForeignKey('msetreplacementevents.id', use_alter=True), nullable=True)
 
     # Relationships
     user                 = relationship('User', back_populates='metadatasets')
