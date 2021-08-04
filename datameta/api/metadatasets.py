@@ -47,7 +47,7 @@ class ReplacementMsetResponse(DataHolderBase):
     record : Dict[str, Optional[str]]
     file_ids             : Dict[str, Optional[Dict[str, str]]]
     user_id              : str
-    replaces             : List[Dict[str, Any]]
+    replaces             : List[Any]
     submission_id        : Optional[str] = None
     service_executions   : Optional[Dict[str, Optional[MetaDataSetServiceExecution]]] = None
 
@@ -178,13 +178,13 @@ def initialize_service_metadata(db, mset_id):
     """
     service_metadata = get_service_metadata(db)
     for s_mdatum in service_metadata.values():
-        _ = MetaDatumRecord(
+        mdatum_rec = MetaDatumRecord(
                 metadatum_id     = s_mdatum.id,
                 metadataset_id   = mset_id,
                 file_id          = None,
                 value            = None
                 )
-        # db.add(mdatum_rec)
+        db.add(mdatum_rec)
 
 
 def add_metadata_from_request(db, record, metadata, mset_id):
@@ -193,13 +193,13 @@ def add_metadata_from_request(db, record, metadata, mset_id):
     as supplied in the request body.
     """
     for name, value in record.items():
-        _ = MetaDatumRecord(
+        mdatum_rec = MetaDatumRecord(
             metadatum_id     = metadata[name].id,
             metadataset_id   = mset_id,
             file_id          = None,
             value            = value
         )
-        # db.add(mdatum_rec)
+        db.add(mdatum_rec)
 
 
 def validate_associated_files(db, file_ids, auth_user):

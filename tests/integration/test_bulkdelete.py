@@ -18,7 +18,7 @@ class BulkDeletionTest(BaseIntegrationTest):
 
         user           = self.fixture_manager.get_fixture('users', 'user_a')
         auth_headers   = self.apikey_auth(user)
-        
+
         file_ids = ["user_a_file_1", "user_a_file_2"]
 
         self.testapp.post_json(
