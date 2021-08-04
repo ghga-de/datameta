@@ -54,7 +54,7 @@ class ReplacementMsetResponse(DataHolderBase):
     @classmethod
     def from_metadataset(cls, metadataset: MetaDataSet, metadata_with_access: Dict[str, MetaDatum]):
 
-        replaces = [get_identifier(mset) for event in metadataset.replaces_via_event for mset in event.replaced_metadatasets] if metadataset.replaces_via_event else None
+        replaces = [get_identifier(mset) for event in metadataset.replaces_via_event for mset in event.replaced_metadatasets]  # if metadataset.replaces_via_event else None
         return cls(
                 id                 = get_identifier(metadataset),
                 record             = get_record_from_metadataset(metadataset, metadata_with_access),
