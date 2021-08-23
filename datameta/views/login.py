@@ -17,9 +17,11 @@ from pyramid.view import view_config
 
 from .. import security
 
+from datetime import datetime, timedelta
 import logging
 log = logging.getLogger(__name__)
 
+TWO_FACTOR_AUTHORIZATION_ENABLED = True
 
 @view_config(route_name='login', renderer='../templates/login.pt')
 def my_view(request):
@@ -33,13 +35,17 @@ def my_view(request):
 
             auth_user = security.get_user_by_credentials(request, in_email, in_pwd)
             if auth_user:
-                request.session['user_uid'] = auth_user.id
-                request.session['user_gid'] = auth_user.group.id
-                request.session['user_email'] = auth_user.email
-                request.session['user_fullname'] = auth_user.fullname
-                request.session['user_groupname'] = auth_user.group.name
                 log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
-                return HTTPFound(location="/home")
+                
+                uid_key, gid_key, site = [
+                    ('user_uid', 'user_gid', '/home'),
+                    ('preauth_uid', 'preauth_gid', '/twofa')][TWO_FACTOR_AUTHORIZATION_ENABLED]
+                
+                request.session[uid_key] = auth_user.id
+                request.session[gid_key] = auth_user.group_id
+                request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
+                return HTTPFound(location=site)
+
         except KeyError:
             pass
         return HTTPFound(location="/login")

@@ -82,6 +82,8 @@ class User(Base):
     site_admin           = Column(Boolean(create_constraint=False), nullable=False)
     group_admin          = Column(Boolean(create_constraint=False), nullable=False)
     site_read            = Column(Boolean(create_constraint=False), nullable=False)
+    tfa_secret           = Column(String)
+
     # Relationships
     group                = relationship('Group', back_populates='user')
     metadatasets         = relationship('MetaDataSet', back_populates='user')

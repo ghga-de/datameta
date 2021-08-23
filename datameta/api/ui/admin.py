@@ -123,6 +123,7 @@ def v_admin_put_request(request):
         db.delete(reg_req)
 
         # Inform the user
+        """
         email.send(
                 recipients = (reg_req_fullname, reg_req_email),
                 subject = get_setting(db, "subject_reject"),
@@ -131,6 +132,7 @@ def v_admin_put_request(request):
                     'fullname' : reg_req_fullname,
                     }
                 )
+        """
         log.info(f"REGISTRATION REQUEST BY '{reg_req_email}' REJECTED BY '{req_user.email}'")
 
     return HTTPNoContent()

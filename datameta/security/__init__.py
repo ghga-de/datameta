@@ -27,6 +27,21 @@ import logging
 import secrets
 log = logging.getLogger(__name__)
 
+from cryptography.fernet import Fernet
+import pyotp
+
+
+def get_user_2fa_secret(user):
+    THE_KEY = b'n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394='
+    secret = user.tfa_secret
+    decrypt = Fernet(THE_KEY)
+    secret = decrypt.decrypt(secret.encode())
+    return secret.decode()
+    
+
+def validate_2fa_token(user, token):
+    return token == pyotp.TOTP(get_user_2fa_secret(user)).now()
+
 
 def generate_token():
     return "".join(choice(ascii_letters + digits) for _ in range(64) )

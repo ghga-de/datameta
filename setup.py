@@ -47,6 +47,8 @@ requires = [
     'dataclasses-json==0.5.2',
     "pyyaml",
     "gunicorn==20.0.4",
+    "pyotp",
+    "cryptography",
 ]
 
 tests_require = [
