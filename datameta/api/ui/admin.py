@@ -86,6 +86,7 @@ def v_admin_put_request(request):
                 enabled = True,
                 site_admin = False,
                 site_read = False,
+                can_update = False,
                 group_admin = newuser_make_admin,
                 pwhash = '!')
         try:
