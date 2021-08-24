@@ -26,6 +26,7 @@ def send_forgot_token(request, db_token_obj, clear_token):
     """Sends a password reset token email to the corresponding user"""
     db = request.dbsession
 
+    """
     email.send(
         recipients = (db_token_obj.user.fullname, db_token_obj.user.email),
         subject = get_setting(db, "subject_forgot_token"),
@@ -35,6 +36,7 @@ def send_forgot_token(request, db_token_obj, clear_token):
             'token_url' : request.route_url('setpass', token = clear_token)
             }
         )
+    """
 
 
 @view_config(route_name='forgot_api', renderer='json')

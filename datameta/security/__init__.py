@@ -31,6 +31,17 @@ from cryptography.fernet import Fernet
 import pyotp
 
 
+def generate_2fa_secret():
+    return pyotp.random_base32()
+
+
+def generate_totp_uri(user, secret):
+    return pyotp.totp.TOTP(secret).provisioning_uri(
+        name=user.email,
+        issuer_name='CoGDat'
+    )
+
+
 def get_user_2fa_secret(user):
     THE_KEY = b'n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394='
     secret = user.tfa_secret
@@ -40,7 +51,7 @@ def get_user_2fa_secret(user):
     
 
 def validate_2fa_token(user, token):
-    return token == pyotp.TOTP(get_user_2fa_secret(user)).now()
+    return pyotp.TOTP(get_user_2fa_secret(user)).verify(token)
 
 
 def generate_token():

@@ -105,6 +105,28 @@
                 </div>
             </form>
         </div>
+        <div tal:condition="twofa_setup_required">
+
+            <div id="twofa_qrcode" class="collapse">
+                <h4>Please set up your 2FA and enter a valid OTP-token.</h4>
+                <canvas id="twofa_qr_canvas"></canvas>
+                <script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/node_modules/qrcode/build/qrcode.js')}"></script>
+                <script>
+                    QRCode.toCanvas(document.getElementById("twofa_qr_canvas"), "${twofa_uri}", function(error) {
+                        if (error) console.error(error)
+                        console.log("qrcode:success!")
+                    })
+                </script>
+                <form action="#" id="otp_setup_form" data-datameta-twofa="${twofa_uri}">
+                    <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP" required autofocus>
+                    <div class="input-group mb-3">
+                        <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
         <script type="module" src="${request.static_url('datameta:static/js/setpass.js')}"></script>
     </div>
 </main>

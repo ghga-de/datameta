@@ -18,7 +18,8 @@ window.addEventListener("load", function() {
 
     function view_success() {
         new bootstrap.Collapse(document.getElementById("passentry"), { hide: true })
-        new bootstrap.Collapse(document.getElementById("success"), { show: true })
+        //new bootstrap.Collapse(document.getElementById("success"), { show: true })
+        new bootstrap.Collapse(document.getElementById("twofa_qrcode"), { show: true })
     }
 
     function show_alert(text) {

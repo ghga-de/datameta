@@ -86,6 +86,7 @@ def v_admin_put_request(request):
                 enabled = True,
                 site_admin = False,
                 site_read = False,
+                can_update = False,
                 group_admin = newuser_make_admin,
                 pwhash = '!')
         try:
@@ -104,6 +105,7 @@ def v_admin_put_request(request):
         token_url = request.route_url('setpass', token = clear_token)
 
         # Send the token to the user
+        """
         email.send(
                 recipients = (new_user.fullname, new_user.email),
                 subject = get_setting(db, "subject_welcome_token"),
@@ -113,6 +115,7 @@ def v_admin_put_request(request):
                     'token_url' : token_url
                     }
                 )
+        """
         log.info(f"NEW USER '{new_user.email}' [GROUP '{new_user.group.name}'] CONFIRMED BY '{req_user.email}'")
     else:
         # Denote email and name before request deletion
