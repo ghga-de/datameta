@@ -18,13 +18,16 @@ from pyramid import threadlocal
 
 from email.utils import parseaddr
 
-__smtp = SMTPClient(
-        hostname  =threadlocal.get_current_registry().settings['datameta.smtp_host'],
-        port      =threadlocal.get_current_registry().settings['datameta.smtp_port'],
-        user      =threadlocal.get_current_registry().settings['datameta.smtp_user'],
-        password  =threadlocal.get_current_registry().settings['datameta.smtp_pass'],
-        tls       =threadlocal.get_current_registry().settings['datameta.smtp_tls']
-        )
+if threadlocal.get_current_registry().settings['datameta.smtp_user']:
+        __smtp = SMTPClient(
+                hostname  =threadlocal.get_current_registry().settings['datameta.smtp_host'],
+                port      =threadlocal.get_current_registry().settings['datameta.smtp_port'],
+                user      =threadlocal.get_current_registry().settings['datameta.smtp_user'],
+                password  =threadlocal.get_current_registry().settings['datameta.smtp_pass'],
+                tls       =threadlocal.get_current_registry().settings['datameta.smtp_tls']
+                )
+else:
+        __smtp = None
 
 __smtp_from = parseaddr(threadlocal.get_current_registry().settings['datameta.smtp_from'])
 
@@ -42,4 +45,5 @@ def send(recipients, subject, template, values, bcc=None, rec_header_only=False)
     message = template.format(**values)
 
     # Send the message
-    __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
+    if __smtp:
+        __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
