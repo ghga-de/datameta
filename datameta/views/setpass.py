@@ -15,6 +15,7 @@
 from pyramid.view import view_config
 
 from .. import security
+from ..settings import get_setting
 from ..api.ui.forgot import send_forgot_token
 
 import datetime
@@ -37,9 +38,15 @@ def v_setpass(request):
     twofa_uri = ""  # "MORGH!" if twofa_setup_required else ""
     twofa_user = ""
 
+<<<<<<< HEAD
     if twofa_setup_required:
         security.generate_2fa_secret(dbtoken.user)
         twofa_uri = security.generate_totp_uri(dbtoken.user)
+=======
+    if get_setting(request.dbsession, "two_factor_authorization_enabled") and twofa_setup_required:
+        security.generate_2fa_secret(request.dbsession, dbtoken.user)
+        twofa_uri = security.generate_totp_uri(request.dbsession, dbtoken.user)
+>>>>>>> 496df2b... moving params to appsettings
         twofa_user = dbtoken.user.site_id
 
     return {

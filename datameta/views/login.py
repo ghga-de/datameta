@@ -16,12 +16,11 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from .. import security
+from .. settings import get_setting
 
 from datetime import datetime, timedelta
 import logging
 log = logging.getLogger(__name__)
-
-TWO_FACTOR_AUTHORIZATION_ENABLED = True
 
 
 @view_config(route_name='login', renderer='../templates/login.pt')
@@ -40,8 +39,7 @@ def my_view(request):
 
                 uid_key, gid_key, site = [
                     ('user_uid', 'user_gid', '/home'),
-                    ('preauth_uid', 'preauth_gid', '/twofa')][TWO_FACTOR_AUTHORIZATION_ENABLED]
-
+                    ('preauth_uid', 'preauth_gid', '/twofa')][get_setting(request.dbsession, "two_factor_authorization_enabled")]
                 request.session[uid_key] = auth_user.id
                 request.session[gid_key] = auth_user.group_id
                 request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)

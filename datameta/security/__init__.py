@@ -20,6 +20,7 @@ from string import ascii_letters, digits
 from sqlalchemy import and_
 
 from ..models import User, ApiKey, PasswordToken, Session
+from ..settings import get_setting
 
 import bcrypt
 import hashlib
@@ -31,30 +32,27 @@ import logging
 log = logging.getLogger(__name__)
 
 
-THE_KEY = b'n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394='
-
-
-def generate_2fa_secret(user):
-    encrypt_f = Fernet(THE_KEY)
+def generate_2fa_secret(db, user):
+    encrypt_f = Fernet(get_setting(db, "two_factor_authorization_encrypt_key").encode())
     user.tfa_secret = encrypt_f.encrypt(pyotp.random_base32().encode()).decode()
     return user.tfa_secret
 
 
-def generate_totp_uri(user):
-    return pyotp.totp.TOTP(get_user_2fa_secret(user)).provisioning_uri(
+def generate_totp_uri(db, user):
+    return pyotp.totp.TOTP(get_user_2fa_secret(db, user)).provisioning_uri(
         name=user.email,
         issuer_name='CoGDat'
     )
 
 
-def get_user_2fa_secret(user):
-    decrypt_f = Fernet(THE_KEY)
+def get_user_2fa_secret(db, user):
+    decrypt_f = Fernet(get_setting(db, "two_factor_authorization_encrypt_key").encode())
     secret = decrypt_f.decrypt(user.tfa_secret.encode())
     return secret.decode()
 
 
-def validate_2fa_token(user, token):
-    return pyotp.TOTP(get_user_2fa_secret(user)).verify(token)
+def validate_2fa_token(db, user, token):
+    return pyotp.TOTP(get_user_2fa_secret(db, user)).verify(token)
 
 
 def generate_token():

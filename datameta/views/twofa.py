@@ -37,7 +37,7 @@ def setup_twofa(request):
     )).one_or_none()
 
     in_otp = body['inputOTP']
-    otp_works = security.validate_2fa_token(user, in_otp)
+    otp_works = security.validate_2fa_token(request.dbsession, user, in_otp)
 
     if not otp_works:
         return HTTPNotFound()
@@ -57,7 +57,7 @@ def my_view(request):
                 User.enabled.is_(True)
             )).one_or_none()
 
-            if user and security.validate_2fa_token(user, in_otp):
+            if user and security.validate_2fa_token(request.dbsession, user, in_otp):
 
                 if datetime.utcnow() < request.session["auth_expires"]:
                     log.info(f"2FA [uid={user.id},email={user.email}] FROM [{request.client_addr}]")
