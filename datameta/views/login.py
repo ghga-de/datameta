@@ -23,6 +23,7 @@ log = logging.getLogger(__name__)
 
 TWO_FACTOR_AUTHORIZATION_ENABLED = True
 
+
 @view_config(route_name='login', renderer='../templates/login.pt')
 def my_view(request):
     request.session.invalidate()
@@ -36,11 +37,11 @@ def my_view(request):
             auth_user = security.get_user_by_credentials(request, in_email, in_pwd)
             if auth_user:
                 log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
-                
+
                 uid_key, gid_key, site = [
                     ('user_uid', 'user_gid', '/home'),
                     ('preauth_uid', 'preauth_gid', '/twofa')][TWO_FACTOR_AUTHORIZATION_ENABLED]
-                
+
                 request.session[uid_key] = auth_user.id
                 request.session[gid_key] = auth_user.group_id
                 request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)

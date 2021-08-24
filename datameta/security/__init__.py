@@ -23,12 +23,13 @@ from ..models import User, ApiKey, PasswordToken, Session
 
 import bcrypt
 import hashlib
-import logging
 import secrets
-log = logging.getLogger(__name__)
-
 from cryptography.fernet import Fernet
 import pyotp
+
+import logging
+log = logging.getLogger(__name__)
+
 
 THE_KEY = b'n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394='
 
@@ -50,7 +51,7 @@ def get_user_2fa_secret(user):
     decrypt_f = Fernet(THE_KEY)
     secret = decrypt_f.decrypt(user.tfa_secret.encode())
     return secret.decode()
-    
+
 
 def validate_2fa_token(user, token):
     return pyotp.TOTP(get_user_2fa_secret(user)).verify(token)

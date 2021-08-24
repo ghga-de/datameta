@@ -138,7 +138,6 @@ def post(request):
 
     # Send out a notification to authorative admins
     admins = get_authorative_admins(db, reg_req)
-    """
     email.send(
             recipients = email.__smtp_from,
             subject = get_setting(db, "subject_reg_notify"),
@@ -152,7 +151,6 @@ def post(request):
             bcc = [ admin.email for admin in admins ],
             rec_header_only=True  # We're not actually sending this to the from address, just using it in the "To" header
             )
-    """
 
     if org_create:
         log.info(f"REGISTRATION REQUEST [email='{req_email}', name='{name}', new_org='{org_new_name}']")

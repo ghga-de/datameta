@@ -38,7 +38,7 @@ def v_setpass(request):
     twofa_user = ""
 
     if twofa_setup_required:
-        secret = security.generate_2fa_secret(dbtoken.user)
+        security.generate_2fa_secret(dbtoken.user)
         twofa_uri = security.generate_totp_uri(dbtoken.user)
         twofa_user = dbtoken.user.site_id
 

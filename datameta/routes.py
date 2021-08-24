@@ -27,4 +27,3 @@ def includeme(config):
     config.add_route('view', '/view')
     config.add_route('admin', '/admin')
     config.add_route('twofa', '/twofa')
-    # config.add_route('setotp', '/setotp')
