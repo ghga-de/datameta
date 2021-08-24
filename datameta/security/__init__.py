@@ -30,23 +30,25 @@ log = logging.getLogger(__name__)
 from cryptography.fernet import Fernet
 import pyotp
 
-
-def generate_2fa_secret():
-    return pyotp.random_base32()
+THE_KEY = b'n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394='
 
 
-def generate_totp_uri(user, secret):
-    return pyotp.totp.TOTP(secret).provisioning_uri(
+def generate_2fa_secret(user):
+    encrypt_f = Fernet(THE_KEY)
+    user.tfa_secret = encrypt_f.encrypt(pyotp.random_base32().encode()).decode()
+    return user.tfa_secret
+
+
+def generate_totp_uri(user):
+    return pyotp.totp.TOTP(get_user_2fa_secret(user)).provisioning_uri(
         name=user.email,
         issuer_name='CoGDat'
     )
 
 
 def get_user_2fa_secret(user):
-    THE_KEY = b'n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394='
-    secret = user.tfa_secret
-    decrypt = Fernet(THE_KEY)
-    secret = decrypt.decrypt(secret.encode())
+    decrypt_f = Fernet(THE_KEY)
+    secret = decrypt_f.decrypt(user.tfa_secret.encode())
     return secret.decode()
     
 

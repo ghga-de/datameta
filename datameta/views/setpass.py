@@ -26,9 +26,7 @@ def v_setpass(request):
     dbtoken = security.get_password_reset_token(request.dbsession, request.matchdict['token'])
 
     unknown_token = dbtoken is None
-    expired_token = dbtoken is not None and dbtoken.expires < datetime.datetime.now()
-
-    
+    expired_token = not unknown_token and dbtoken.expires < datetime.datetime.now()
 
     # Token expired? Send new one.
     if expired_token:
@@ -37,18 +35,20 @@ def v_setpass(request):
 
     twofa_setup_required = not unknown_token and not expired_token and dbtoken.user.tfa_secret is None
     twofa_uri = ""  # "MORGH!" if twofa_setup_required else ""
+    twofa_user = ""
 
     if twofa_setup_required:
-        secret = security.generate_2fa_secret()
-        twofa_uri = security.generate_totp_uri(dbtoken.user, secret)
-    
+        secret = security.generate_2fa_secret(dbtoken.user)
+        twofa_uri = security.generate_totp_uri(dbtoken.user)
+        twofa_user = dbtoken.user.site_id
 
     return {
-            'pagetitle' : 'DataMeta - Set Password',
-            'unknown_token' : unknown_token,
-            'expired_token' : expired_token,
-            'token_ok' : not unknown_token and not expired_token,
-            'token' : request.matchdict['token'],
-            'twofa_setup_required' : twofa_setup_required,
-            'twofa_uri' : twofa_uri,
-            }
+        'pagetitle' : 'DataMeta - Set Password',
+        'unknown_token' : unknown_token,
+        'expired_token' : expired_token,
+        'token_ok' : not unknown_token and not expired_token,
+        'token' : request.matchdict['token'],
+        'twofa_setup_required' : twofa_setup_required,
+        'twofa_uri' : twofa_uri,
+        "twofa_user" : twofa_user,
+    }

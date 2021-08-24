@@ -117,7 +117,7 @@
                         console.log("qrcode:success!")
                     })
                 </script>
-                <form action="#" id="otp_setup_form" data-datameta-twofa="${twofa_uri}">
+                <form action="#" id="otp_setup_form" data-datameta-twofa="${twofa_user}">
                     <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP" required autofocus>
                     <div class="input-group mb-3">
                         <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
