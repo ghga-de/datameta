@@ -19,15 +19,15 @@ from pyramid import threadlocal
 from email.utils import parseaddr
 
 if threadlocal.get_current_registry().settings['datameta.smtp_user']:
-        __smtp = SMTPClient(
-                hostname  =threadlocal.get_current_registry().settings['datameta.smtp_host'],
-                port      =threadlocal.get_current_registry().settings['datameta.smtp_port'],
-                user      =threadlocal.get_current_registry().settings['datameta.smtp_user'],
-                password  =threadlocal.get_current_registry().settings['datameta.smtp_pass'],
-                tls       =threadlocal.get_current_registry().settings['datameta.smtp_tls']
-                )
+    __smtp = SMTPClient(
+        hostname  = threadlocal.get_current_registry().settings['datameta.smtp_host'],
+        port      = threadlocal.get_current_registry().settings['datameta.smtp_port'],
+        user      = threadlocal.get_current_registry().settings['datameta.smtp_user'],
+        password  = threadlocal.get_current_registry().settings['datameta.smtp_pass'],
+        tls       = threadlocal.get_current_registry().settings['datameta.smtp_tls']
+    )
 else:
-        __smtp = None
+    __smtp = None
 
 __smtp_from = parseaddr(threadlocal.get_current_registry().settings['datameta.smtp_from'])
 
