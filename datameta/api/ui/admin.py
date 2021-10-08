@@ -86,7 +86,6 @@ def v_admin_put_request(request):
                 enabled = True,
                 site_admin = False,
                 site_read = False,
-                can_update = False,
                 group_admin = newuser_make_admin,
                 pwhash = '!')
         try:
@@ -115,6 +114,7 @@ def v_admin_put_request(request):
                     }
                 )
         log.info(f"NEW USER '{new_user.email}' [GROUP '{new_user.group.name}'] CONFIRMED BY '{req_user.email}'")
+        log.info(f"NEW USER PWTOKEN URL '{token_url}'")
     else:
         # Denote email and name before request deletion
         reg_req_email = reg_req.email
