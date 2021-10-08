@@ -37,9 +37,10 @@ def my_view(request):
             if auth_user:
                 log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
 
+                twofa_enabled = get_setting(request.dbsession, "two_factor_authorization_enabled") == "true"
                 uid_key, gid_key, site = [
                     ('user_uid', 'user_gid', '/home'),
-                    ('preauth_uid', 'preauth_gid', '/twofa')][get_setting(request.dbsession, "two_factor_authorization_enabled")]
+                    ('preauth_uid', 'preauth_gid', '/twofa')][twofa_enabled]
                 request.session[uid_key] = auth_user.id
                 request.session[gid_key] = auth_user.group_id
                 request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)

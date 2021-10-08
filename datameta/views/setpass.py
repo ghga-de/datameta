@@ -38,9 +38,9 @@ def v_setpass(request):
     twofa_uri = ""  # "MORGH!" if twofa_setup_required else ""
     twofa_user = ""
 
-    if twofa_setup_required and get_setting(request.dbsession, "two_factor_authorization_enabled"):
-        security.generate_2fa_secret(dbtoken.user)
-        twofa_uri = security.generate_totp_uri(dbtoken.user)
+    if twofa_setup_required and get_setting(request.dbsession, "two_factor_authorization_enabled").strip() == "true":
+        security.generate_2fa_secret(request.dbsession, dbtoken.user)
+        twofa_uri = security.generate_totp_uri(request.dbsession, dbtoken.user)
         twofa_user = dbtoken.user.site_id
 
     return {
