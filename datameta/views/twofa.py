@@ -27,7 +27,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-@view_config(route_name='setotp', renderer='json', request_method="POST")
+@view_config(route_name='set_otp', renderer='json', request_method="POST")
 def setup_twofa(request):
     body = json.loads(request.body.decode())
 

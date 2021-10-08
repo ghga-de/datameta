@@ -45,7 +45,7 @@ window.addEventListener("load", function() {
         var data = new FormData(form);
 
         fetch(
-            "/api/ui/setotp",
+            "/api/ui/set_otp",
             {
                 method: 'POST',
                 headers: {
