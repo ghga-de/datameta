@@ -13,7 +13,7 @@
 # limitations under the License.
 
 two_factor_authorization_enabled:
-  int_value: 1
+  str_value: true
 
 two_factor_authorization_encrypt_key:
   str_value: n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394=
@@ -47,11 +47,9 @@ template_welcome_token:
             
             Best regards,
             The Support Team
-            },
 
 subject_reject:
   str_value : Your registration request was rejected
-
 
 template_reject:
   str_value : |
