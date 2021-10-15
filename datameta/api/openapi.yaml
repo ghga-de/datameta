@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 1.4.0
+  version: 1.4.1
   title: DataMeta
 
 servers:
@@ -1491,6 +1491,7 @@ components:
           $ref: "#/components/schemas/Identifier"
         submissionId:   
           $ref: "#/components/schemas/NullableIdentifier"
+          nullable: true
         userId:
           $ref: "#/components/schemas/Identifier"
       required:
