@@ -37,7 +37,7 @@ def my_view(request):
             if auth_user:
                 log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
 
-                twofa_enabled = get_setting(request.dbsession, "two_factor_authorization_enabled") == "true"
+                twofa_enabled = security.is2fa_enabled(request.dbsession)
                 uid_key, gid_key, site = [
                     ('user_uid', 'user_gid', '/home'),
                     ('preauth_uid', 'preauth_gid', '/twofa')][twofa_enabled]

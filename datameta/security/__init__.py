@@ -28,36 +28,67 @@ import secrets
 from cryptography.fernet import Fernet
 import pyotp
 
+import qrcode
+import qrcode.image.svg
+
+
 import logging
 log = logging.getLogger(__name__)
 
 
-def generate_2fa_secret(db, user):
-    encrypt_f = Fernet(get_setting(db, "two_factor_authorization_encrypt_key").encode())
-    user.tfa_secret = encrypt_f.encrypt(pyotp.random_base32().encode()).decode()
-    return user.tfa_secret
+def is2fa_enabled(db):
+    return get_setting(db, "two_factor_authorization_enabled").strip() == "true"
 
 
-def generate_totp_uri(db, user):
-    return pyotp.totp.TOTP(get_user_2fa_secret(db, user)).provisioning_uri(
+def get_2fa_crypto_function(db):
+    return Fernet(get_setting(db, "two_factor_authorization_encrypt_key").encode())
+
+
+def generate_2fa_secret(db):
+    encrypt_f = get_2fa_crypto_function(db)
+    return encrypt_f.encrypt(pyotp.random_base32().encode()).decode()
+
+def unpack_2fa_secret(db, secret):
+    decrypt_f = get_2fa_crypto_function(db)
+    return decrypt_f.decrypt(secret.encode()).decode()
+
+def generate_totp_uri(db, user, secret):
+    return pyotp.totp.TOTP(unpack_2fa_secret(db, secret)).provisioning_uri(
         name=user.email,
         issuer_name='CoGDat'
     )
 
+def generate_2fa_qrcode(db, user, secret):
+    totp_uri = generate_totp_uri(db, user, secret)
+    qr_code = qrcode.make(totp_uri, image_factory=qrcode.image.svg.SvgPathFillImage)
+    return qr_code.make_path().get("d")
+
 
 def get_user_2fa_secret(db, user):
-    decrypt_f = Fernet(get_setting(db, "two_factor_authorization_encrypt_key").encode())
+    decrypt_f = get_2fa_crypto_function(db)
     secret = decrypt_f.decrypt(user.tfa_secret.encode())
     return secret.decode()
 
 
-def validate_2fa_token(db, user, token):
-    return pyotp.TOTP(get_user_2fa_secret(db, user)).verify(token)
+def validate_2fa_token(db, secret, token):
+    return pyotp.TOTP(unpack_2fa_secret(db, secret)).verify(token)
 
 
 def generate_token():
     return "".join(choice(ascii_letters + digits) for _ in range(64) )
 
+def get_2fa_token(db: Session, user: User, expires=None):
+    clear_token = secrets.token_urlsafe(40)
+
+    token = PasswordToken(
+        user=user,
+        value=hash_token(clear_token),
+        expires=expires if expires else datetime.now() + timedelta(minutes=10),
+        tfa_secret=generate_2fa_secret(db)
+    )
+    db.add(token)
+
+    return clear_token, token
 
 def get_new_password_reset_token(db: Session, user: User, expires=None):
     """Clears all password recovery tokens for user identified by the supplied

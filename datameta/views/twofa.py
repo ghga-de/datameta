@@ -31,16 +31,23 @@ log = logging.getLogger(__name__)
 def setup_twofa(request):
     body = json.loads(request.body.decode())
 
-    user = request.dbsession.query(User).filter(and_(
-        User.site_id == body["user"],
-        User.enabled.is_(True)
-    )).one_or_none()
+    if body['token'] != "0":
+        # Validate token
+        dbtoken = security.get_password_reset_token(request.dbsession, body['token'])
 
-    in_otp = body['inputOTP']
-    otp_works = security.validate_2fa_token(request.dbsession, user, in_otp)
+        if dbtoken is None or not dbtoken.is_2fa_token():
+            return HTTPNotFound()
 
-    if not otp_works:
-        return HTTPNotFound()
+        in_otp = body['inputOTP']
+        otp_is_valid = security.validate_2fa_token(request.dbsession, dbtoken.tfa_secret, in_otp)
+
+        if not otp_is_valid:
+            return HTTPNotFound()
+
+        dbtoken.user.tfa_secret = dbtoken.tfa_secret
+
+        request.dbsession.delete(dbtoken)
+
 
     return HTTPNoContent()
 
@@ -57,7 +64,7 @@ def my_view(request):
                 User.enabled.is_(True)
             )).one_or_none()
 
-            if user and security.validate_2fa_token(request.dbsession, user, in_otp):
+            if user and security.validate_2fa_token(request.dbsession, user.tfa_secret, in_otp):
 
                 if datetime.utcnow() < request.session["auth_expires"]:
                     log.info(f"2FA [uid={user.id},email={user.email}] FROM [{request.client_addr}]")
