@@ -1440,6 +1440,7 @@ components:
       type: object
       properties:
         record:
+          nullable: true
           type: object
           additionalProperties: true
           # a free-form object,
