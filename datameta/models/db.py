@@ -113,8 +113,12 @@ class PasswordToken(Base):
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     value            = Column(Text, nullable=False, unique=True)
     expires          = Column(DateTime, nullable=False)
+    tfa_secret           = Column(String, default=None)
     # Relationships
     user             = relationship('User', back_populates='passwordtokens')
+
+    def is_2fa_token(self):
+        return self.tfa_secret is None
 
 
 class RegRequest(Base):

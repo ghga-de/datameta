@@ -42,7 +42,7 @@ def put(request):
     if request_id == '0':
         # Try to find the token
         token = security.get_password_reset_token(db, request_credential)
-        if token is None:
+        if token is None or token.is_2fa_token():
             raise HTTPNotFound()  # 404 Token not found
 
         # Check if token expired
@@ -51,7 +51,6 @@ def put(request):
 
         # Fetch the user corresponding to the token
         auth_user = token.user
-        target_user = auth_user
     # Case B: Authenticated user changing their own password
     else:
         # Obtain authorized user
