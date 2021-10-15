@@ -23,8 +23,8 @@ mset_a:
       ZIP Code: "123"
       FileR1: test_file_7.txt
       FileR2: test_file_8.txt
-      ServiceMeta0: null
-      ServiceMeta1: null
+      # ServiceMeta0: null
+      # ServiceMeta1: null
   references:
     user:
       fixtureset: users
@@ -46,8 +46,8 @@ mset_b:
       ZIP Code: "456"
       FileR1: test_file_9.txt
       FileR2: test_file_10.txt
-      ServiceMeta0: null
-      ServiceMeta1: null
+      # ServiceMeta0: null
+      # ServiceMeta1: null
   fixtureOnly:
     - records
   references:
