@@ -36,6 +36,8 @@ def send_forgot_token(request, db_token_obj, clear_token):
             }
         )
 
+    log.debug(f"USER REQUESTED RECOVERY TOKEN: '{token_url}'")
+
 
 @view_config(route_name='forgot_api', renderer='json')
 def v_forgot_api(request):
