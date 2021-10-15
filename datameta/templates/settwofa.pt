@@ -63,12 +63,6 @@
         </div>
         <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
     </div>
-    <div tal:condition="expired_token" id="expiredtoken">
-        <div class="alert alert-warning" role="alert">
-            This password recovery URL has expired. A new recovery link has
-            been sent, please check your inbox.
-        </div>
-    </div>
     <div tal:condition="token_ok">
         <div id="alert" class="alert alert-danger collapse" role="alert">
         </div>
@@ -78,34 +72,24 @@
             </div>
                 <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
         </div>
-        <div id="passentry" class="collapse show">
-            <div class="mb-3" style="text-align:left">
-                <h4>Please choose a new password</h4>
-            </div>
-            <form action="#" id="newpassform" data-datameta-setpass="${token}" data-datameta-set2fa="${twofa_token}">
-                <div class="input-group mb-3">
-                    <span class="input-group-text" id="desc_input_password">
-                        <i class="bi bi-key"></i>
-                    </span>
-                    <input id="new_password" name="new_password" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Enter new password..." aria-label="New Password" aria-describedby="desc_input_password">
-                    <div class="invalid-feedback" id="pw_invalid">
-                    </div>
-                </div>
-                <div class="input-group mb-3" id="org_new">
-                    <span class="input-group-text" id="desc_input_password_repeat">
-                        <i class="bi bi-key"></i>
-                    </span>
-                    <input id="new_password_repeat" name="new_password_repeat" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Repeat new password..." aria-label="Repeat new password" aria-describedby="desc_input_password_repeat">
-                    <div class="invalid-feedback">
-                        The two passwords do not match.
-                    </div>
-                </div>
-                <div class="input-group mb-3">
-                    <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Save</button>
-                </div>
-            </form>
-        </div>
-        <script type="module" src="${request.static_url('datameta:static/js/setpass.js')}"></script>
     </div>
+        <div tal:condition="twofa_setup_required">
+
+            <div id="twofa_qrcode" class="collapse show">
+                <h4>Please set up your 2FA and enter a valid OTP-token.</h4>
+                 <svg width="200" height="200" version="1.1" viewBox="0 0 45 45" xlmns="http://www.w3.org/2000/svg">
+                    <path d="${twofa_qrcode}" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none" />
+                 </svg>
+                <form action="#" id="otp_setup_form" data-datameta-twofa="${token}">
+                    <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP" required autofocus>
+                    <div class="input-group mb-3">
+                        <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+        <script type="module" src="${request.static_url('datameta:static/js/settwofa.js')}"></script>
 </main>
 </metal:block>

@@ -18,13 +18,7 @@ window.addEventListener("load", function() {
 
     function view_success() {
         new bootstrap.Collapse(document.getElementById("passentry"), { hide: true })
-        //new bootstrap.Collapse(document.getElementById("success"), { show: true })
-        new bootstrap.Collapse(document.getElementById("twofa_qrcode"), { show: true })
-    }
-
-    function view_2fa_success() {
-        new bootstrap.Collapse(document.getElementById("twofa_qrcode"), { hide: true })
-        new bootstrap.Collapse(document.getElementById("success"), { show: true })        
+        new bootstrap.Collapse(document.getElementById("success"), { show: true })
     }
 
     function show_alert(text) {
@@ -32,51 +26,6 @@ window.addEventListener("load", function() {
         al.innerHTML = text
         new bootstrap.Collapse(al, { show: true })
     }
-
-    this.document.getElementById("otp_setup_form").addEventListener("submit", function(event) {
-        // Prevent form submission
-        event.preventDefault();
-
-        document.getElementById("alert").classList.remove("show");
-
-        var form = event.target
-
-        // Validation
-        var data = new FormData(form);
-
-        fetch(
-            "/api/ui/set_otp",
-            {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user: form.getAttribute("data-datameta-twofa"),
-                    inputOTP: data.get("input_otp")
-                })
-            }
-        ).then(function(response) {
-            console.log("response", response);
-            if (response.ok) {
-                view_2fa_success();
-                return;
-            } else if (response.status == 404) {
-                document.getElementById("input_otp").classList.add("is-invalid")
-                return;
-            }
-        }).catch((error) => {
-            if (error instanceof DataMeta.AnnotatedError) {
-                error.response.json().then(function(json){
-                    show_alert(json[0].message);
-                });
-            } else {
-                show_alert("An unknown error occurred. Please try again.");
-                console.log(error);
-            }
-        });
-    });
 
     document.getElementById("newpassform").addEventListener("submit", function(event) {
         // Prevent form submission
@@ -123,7 +72,8 @@ window.addEventListener("load", function() {
                     // handles generating and sending a new token.
                     window.location.replace("/setpass/" + form.getAttribute("data-datameta-setpass"))
                 } else if (response.ok) {
-                    view_success();
+                    //view_success();
+                    window.location.replace("/settwofa/" + form.getAttribute("data-datameta-set2fa"))
                     return;
                 } else {
                     console.log("unknown response status from /users/0/password", response);
