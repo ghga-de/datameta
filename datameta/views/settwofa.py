@@ -15,14 +15,8 @@
 from pyramid.view import view_config
 
 from .. import security
-from ..settings import get_setting
-from ..api.ui.forgot import send_forgot_token
 
 import datetime
-
-#@view_config(route_name='twofa_qr', renderer='json', request_method='POST'):
-#def get_2fa_qrcode(request):
-#    twofa_qrcode = ""
 
 
 @view_config(route_name='settwofa', renderer='../templates/settwofa.pt')
@@ -38,7 +32,6 @@ def v_settwofa(request):
 
         if not expired_token and not unknown_token:
             twofa_qrcode = security.generate_2fa_qrcode(request.dbsession, dbtoken.user, dbtoken.tfa_secret)
-
 
     return {
         'pagetitle' : 'DataMeta - Set 2FA',

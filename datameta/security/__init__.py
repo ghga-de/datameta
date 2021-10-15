@@ -48,15 +48,18 @@ def generate_2fa_secret(db):
     encrypt_f = get_2fa_crypto_function(db)
     return encrypt_f.encrypt(pyotp.random_base32().encode()).decode()
 
+
 def unpack_2fa_secret(db, secret):
     decrypt_f = get_2fa_crypto_function(db)
     return decrypt_f.decrypt(secret.encode()).decode()
+
 
 def generate_totp_uri(db, user, secret):
     return pyotp.totp.TOTP(unpack_2fa_secret(db, secret)).provisioning_uri(
         name=user.email,
         issuer_name='CoGDat'
     )
+
 
 def generate_2fa_qrcode(db, user, secret):
     totp_uri = generate_totp_uri(db, user, secret)
@@ -77,6 +80,7 @@ def validate_2fa_token(db, secret, token):
 def generate_token():
     return "".join(choice(ascii_letters + digits) for _ in range(64) )
 
+
 def get_2fa_token(db: Session, user: User, expires=None):
     clear_token = secrets.token_urlsafe(40)
 
@@ -89,6 +93,7 @@ def get_2fa_token(db: Session, user: User, expires=None):
     db.add(token)
 
     return clear_token, token
+
 
 def get_new_password_reset_token(db: Session, user: User, expires=None):
     """Clears all password recovery tokens for user identified by the supplied

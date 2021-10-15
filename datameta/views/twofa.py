@@ -48,7 +48,6 @@ def setup_twofa(request):
 
         request.dbsession.delete(dbtoken)
 
-
     return HTTPNoContent()
 
 

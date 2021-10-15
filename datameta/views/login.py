@@ -16,7 +16,6 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from .. import security
-from .. settings import get_setting
 
 from datetime import datetime, timedelta
 import logging
