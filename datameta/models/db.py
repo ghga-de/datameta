@@ -118,7 +118,7 @@ class PasswordToken(Base):
     user             = relationship('User', back_populates='passwordtokens')
 
     def is_2fa_token(self):
-        return self.tfa_secret is None
+        return self.tfa_secret is not None
 
 
 class RegRequest(Base):
