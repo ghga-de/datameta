@@ -19,6 +19,9 @@ from ..api.ui.forgot import send_forgot_token
 
 import datetime
 
+import logging
+log = logging.getLogger(__name__)
+
 
 @view_config(route_name='setpass', renderer='../templates/setpass.pt')
 def v_setpass(request):
@@ -28,14 +31,18 @@ def v_setpass(request):
     unknown_token = dbtoken is None
     expired_token = not unknown_token and dbtoken.expires < datetime.datetime.now()
 
+    token_ok = not unknown_token and not expired_token
+
     # Token expired? Send new one.
     if expired_token:
         db_token_obj, clear_token = security.get_new_password_reset_token(request.dbsession, dbtoken.user)
         send_forgot_token(request, db_token_obj, clear_token)
 
-    twofa_token = "0"
-    if security.is2fa_enabled(request.dbsession) and not unknown_token and not expired_token:
-        twofa_token, _ = security.get_2fa_token(request.dbsession, dbtoken.user)
+    tfa_token = "0"
+    if security.is2fa_enabled(request.dbsession) and token_ok and dbtoken.user.tfa_secret is None:
+        tfa_token, _ = security.get_2fa_token(request.dbsession, dbtoken.user)
+
+    log.info(f"2fa_token: {tfa_token}")
 
     return {
         'pagetitle' : 'DataMeta - Set Password',
@@ -43,5 +50,5 @@ def v_setpass(request):
         'expired_token' : expired_token,
         'token_ok' : not unknown_token and not expired_token,
         'token' : request.matchdict['token'],
-        'twofa_token' : twofa_token,
+        'tfa_token' : tfa_token,
     }

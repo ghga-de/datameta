@@ -72,8 +72,11 @@ window.addEventListener("load", function() {
                     // handles generating and sending a new token.
                     window.location.replace("/setpass/" + form.getAttribute("data-datameta-setpass"))
                 } else if (response.ok) {
-                    //view_success();
-                    window.location.replace("/settwofa/" + form.getAttribute("data-datameta-set2fa"))
+                    if (form.getAttribute("data-datameta-set2fa") == "0") {
+                        view_success();
+                    } else {
+                        window.location.replace("/settfa/" + form.getAttribute("data-datameta-set2fa"))
+                    }
                     return;
                 } else {
                     console.log("unknown response status from /users/0/password", response);

@@ -17,8 +17,12 @@
 window.addEventListener("load", function() {
 
     function view_2fa_success() {
-        new bootstrap.Collapse(document.getElementById("twofa_qrcode"), { hide: true })
+        new bootstrap.Collapse(document.getElementById("tfa_qrcode"), { hide: true })
         new bootstrap.Collapse(document.getElementById("success"), { show: true })
+    }
+
+    function hide_qrcode() {
+        new bootstrap.Collapse(document.getElementById("tfa_qrcode"), { hide: true})
     }
 
     function show_alert(text) {
@@ -26,6 +30,8 @@ window.addEventListener("load", function() {
         al.innerHTML = text
         new bootstrap.Collapse(al, { show: true })
     }
+
+    if (this.document.getElementById("otp_setup_form")) {
 
     this.document.getElementById("otp_setup_form").addEventListener("submit", function(event) {
         // Prevent form submission
@@ -47,19 +53,28 @@ window.addEventListener("load", function() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    token: form.getAttribute("data-datameta-twofa"),
+                    token: form.getAttribute("data-datameta-tfa"),
                     inputOTP: data.get("input_otp")
                 })
             }
         ).then(function(response) {
             console.log("response", response);
-            if (response.ok) {
+            if (response.status==400) {
+                throw new DataMeta.AnnotatedError(response);
+            } else if (response.status==410) {
+                //document.getElementById("tfa_qrcode").classList.remove("show");
+                hide_qrcode(); // why does this not hide???
+
+                throw new DataMeta.AnnotatedError("'The 2fa setup session has expired. Please reset your password.'")
+                //window.location.replace("/login");
+            }else if (response.ok) {
                 view_2fa_success();
-                return;
             } else if (response.status == 404) {
-                document.getElementById("input_otp").classList.add("is-invalid")
-                return;
+                // document.getElementById("input_otp").classList.add("is-invalid")
+                window.location.replace("/login");
+
             }
+            return;
         }).catch((error) => {
             if (error instanceof DataMeta.AnnotatedError) {
                 error.response.json().then(function(json){
@@ -70,6 +85,7 @@ window.addEventListener("load", function() {
                 console.log(error);
             }
         });
-    });
+      });
+    }
 
 });

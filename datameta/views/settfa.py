@@ -19,25 +19,27 @@ from .. import security
 import datetime
 
 
-@view_config(route_name='settwofa', renderer='../templates/settwofa.pt')
-def v_settwofa(request):
+@view_config(route_name='settfa', renderer='../templates/settfa.pt')
+def v_settfa(request):
 
-    twofa_qrcode = ""
+    tfa_qrcode = ""
+    unknown_token, expired_token = False, False
     if request.matchdict['token'] != "0":
         # Validate token
-        dbtoken = security.get_password_reset_token(request.dbsession, request.matchdict['token'])
+        dbtoken = security.get_tfa_token(request.dbsession, request.matchdict['token'])
 
         unknown_token = dbtoken is None
         expired_token = not unknown_token and dbtoken.expires < datetime.datetime.now()
 
         if not expired_token and not unknown_token:
-            twofa_qrcode = security.generate_2fa_qrcode(request.dbsession, dbtoken.user, dbtoken.tfa_secret)
+            tfa_qrcode = security.generate_2fa_qrcode(request.dbsession, dbtoken.user, dbtoken.secret)
 
     return {
         'pagetitle' : 'DataMeta - Set 2FA',
         'unknown_token' : unknown_token,
+        'expired_token': expired_token,
         'token_ok' : not unknown_token and not expired_token,
         'token' : request.matchdict['token'],
-        'twofa_qrcode' : twofa_qrcode,
-        'twofa_setup_required' : request.matchdict['token'] != "0",
+        'tfa_qrcode' : tfa_qrcode,
+        'tfa_setup_required' : request.matchdict['token'] != "0",
     }

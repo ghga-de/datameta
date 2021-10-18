@@ -15,7 +15,7 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-from .. import security
+from .. import security, errors
 
 from datetime import datetime, timedelta
 import logging
@@ -36,10 +36,13 @@ def my_view(request):
             if auth_user:
                 log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
 
-                twofa_enabled = security.is2fa_enabled(request.dbsession)
+                tfa_enabled = security.is2fa_enabled(request.dbsession)
+                if tfa_enabled and auth_user.tfa_secret is None:
+                    raise errors.get_validation_error(
+                        ['Please reset your password and set up two-factor authorisation.'])
                 uid_key, gid_key, site = [
                     ('user_uid', 'user_gid', '/home'),
-                    ('preauth_uid', 'preauth_gid', '/twofa')][twofa_enabled]
+                    ('preauth_uid', 'preauth_gid', '/tfa')][tfa_enabled]
                 request.session[uid_key] = auth_user.id
                 request.session[gid_key] = auth_user.group_id
                 request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)

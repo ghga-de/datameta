@@ -92,6 +92,7 @@ class User(Base):
     apikeys              = relationship('ApiKey', back_populates='user')
     services             = relationship('Service', secondary=user_service_table, back_populates='users')
     service_executions   = relationship('ServiceExecution', back_populates='user')
+    tfatokens            = relationship('TfaToken', back_populates='user')
 
 
 class ApiKey(Base):
@@ -113,12 +114,20 @@ class PasswordToken(Base):
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     value            = Column(Text, nullable=False, unique=True)
     expires          = Column(DateTime, nullable=False)
-    tfa_secret           = Column(String, default=None)
     # Relationships
     user             = relationship('User', back_populates='passwordtokens')
 
-    def is_2fa_token(self):
-        return self.tfa_secret is not None
+
+class TfaToken(Base):
+    __tablename__ = 'tfatokens'
+    id            = Column(Integer, primary_key=True)
+    uuid          = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id       = Column(Integer, ForeignKey('users.id'), nullable=False)
+    value         = Column(Text, nullable=False, unique=True)
+    expires       = Column(DateTime, nullable=False)
+    secret           = Column(String, default=None)
+    # Relationships
+    user          = relationship('User', back_populates='tfatokens')
 
 
 class RegRequest(Base):

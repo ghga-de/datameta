@@ -15,12 +15,12 @@
 from datetime import datetime
 import json
 
-from pyramid.httpexceptions import HTTPFound, HTTPNoContent, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNoContent, HTTPNotFound, HTTPGone, HTTPForbidden
 from pyramid.view import view_config
 
 from sqlalchemy import and_
 
-from .. import security
+from .. import security, errors
 from ..models import User
 
 import logging
@@ -28,30 +28,34 @@ log = logging.getLogger(__name__)
 
 
 @view_config(route_name='set_otp', renderer='json', request_method="POST")
-def setup_twofa(request):
+def setup_tfa(request):
     body = json.loads(request.body.decode())
 
     if body['token'] != "0":
         # Validate token
-        dbtoken = security.get_password_reset_token(request.dbsession, body['token'])
+        dbtoken = security.get_tfa_token(request.dbsession, body['token'])
 
-        if dbtoken is None or not dbtoken.is_2fa_token():
+        if dbtoken is None:
             return HTTPNotFound()
+
+        if dbtoken and dbtoken.expires < datetime.now():
+            # return HTTPGone()
+            raise errors.get_validation_error(['The 2fa setup session has expired. Please reset your password.'])
 
         in_otp = body['inputOTP']
-        otp_is_valid = security.validate_2fa_token(request.dbsession, dbtoken.tfa_secret, in_otp)
+        error = security.verify_otp(request.dbsession, dbtoken.secret, in_otp)
 
-        if not otp_is_valid:
-            return HTTPNotFound()
+        if error:
+            raise errors.get_validation_error([error])
 
-        dbtoken.user.tfa_secret = dbtoken.tfa_secret
+        dbtoken.user.tfa_secret = dbtoken.secret
 
         request.dbsession.delete(dbtoken)
 
     return HTTPNoContent()
 
 
-@view_config(route_name='twofa', renderer='../templates/twofa.pt')
+@view_config(route_name='tfa', renderer='../templates/tfa.pt')
 def my_view(request):
     if request.POST:
         try:
@@ -63,7 +67,14 @@ def my_view(request):
                 User.enabled.is_(True)
             )).one_or_none()
 
-            if user and security.validate_2fa_token(request.dbsession, user.tfa_secret, in_otp):
+            if user is None:
+                raise HTTPForbidden()
+
+            if user.tfa_secret is None and security.is2fa_enabled(request.dbsession):
+                raise errors.get_validation_error(['Please reset your password and set up two-factor authorisation.'])
+
+            errors = security.verify_otp(request.dbsession, user.tfa_secret, in_otp)
+            if not errors:
 
                 if datetime.utcnow() < request.session["auth_expires"]:
                     log.info(f"2FA [uid={user.id},email={user.email}] FROM [{request.client_addr}]")
@@ -79,7 +90,7 @@ def my_view(request):
 
         except KeyError:
             pass
-        return HTTPFound(location="/twofa")
+        return HTTPFound(location="/tfa")
     return {
             'pagetitle' : 'DataMeta - Login'
             }

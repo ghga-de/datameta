@@ -57,30 +57,33 @@
 <main metal:fill-slot="content" class="form-signin">
     <div tal:condition="unknown_token" id="unknowntoken">
         <div class="alert alert-danger" role="alert">
-            This password recovery token is unknown. Make sure you are using
-            the correct URL and that the URL has not been previously used or
-            superseded by a new token request.
+            Something went wrong during 2fa setup.
         </div>
         <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
+    </div>
+    <div tal:condition="expired_token" id="expiredtoken">
+        <div class="alert alert-warning" role="alert">
+            The 2fa setup session has expired.
+            <a type="button" class="btn btn-warning" href="/forgot">Please reset your password.</a>
+        </div>
     </div>
     <div tal:condition="token_ok">
         <div id="alert" class="alert alert-danger collapse" role="alert">
         </div>
         <div id="success" class="collapse">
             <div class="alert alert-success" role="alert" >
-                The new password has been set successfully!
+                2-factor authorisation has been set up successfully!
             </div>
                 <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
         </div>
-    </div>
-        <div tal:condition="twofa_setup_required">
+        <div tal:condition="tfa_setup_required">
 
-            <div id="twofa_qrcode" class="collapse show">
-                <h4>Please set up your 2FA and enter a valid OTP-token.</h4>
+            <div id="tfa_qrcode" class="collapse show">
+                <h4>Please scan the QR code with an authenticator app (e.g., Google Authenticator) and enter the six-digit string (OTP) displayed by the app.</h4>
                  <svg width="200" height="200" version="1.1" viewBox="0 0 45 45" xlmns="http://www.w3.org/2000/svg">
-                    <path d="${twofa_qrcode}" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none" />
+                    <path d="${tfa_qrcode}" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none" />
                  </svg>
-                <form action="#" id="otp_setup_form" data-datameta-twofa="${token}">
+                <form action="#" id="otp_setup_form" data-datameta-tfa="${token}">
                     <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP" required autofocus>
                     <div class="input-group mb-3">
                         <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
@@ -90,6 +93,7 @@
             </div>
 
         </div>
-        <script type="module" src="${request.static_url('datameta:static/js/settwofa.js')}"></script>
+        <script type="module" src="${request.static_url('datameta:static/js/settfa.js')}"></script>
+    </div>
 </main>
 </metal:block>

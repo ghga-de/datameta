@@ -19,7 +19,7 @@ from random import choice
 from string import ascii_letters, digits
 from sqlalchemy import and_
 
-from ..models import User, ApiKey, PasswordToken, Session
+from ..models import User, ApiKey, PasswordToken, Session, TfaToken
 from ..settings import get_setting
 
 import bcrypt
@@ -73,8 +73,10 @@ def get_user_2fa_secret(db, user):
     return secret.decode()
 
 
-def validate_2fa_token(db, secret, token):
-    return pyotp.TOTP(unpack_2fa_secret(db, secret)).verify(token)
+def verify_otp(db, secret, token):
+    if not pyotp.TOTP(unpack_2fa_secret(db, secret)).verify(token):
+        return "The OTP does not match the expected value."
+    return None
 
 
 def generate_token():
@@ -84,11 +86,11 @@ def generate_token():
 def get_2fa_token(db: Session, user: User, expires=None):
     clear_token = secrets.token_urlsafe(40)
 
-    token = PasswordToken(
+    token = TfaToken(
         user=user,
         value=hash_token(clear_token),
         expires=expires if expires else datetime.now() + timedelta(minutes=10),
-        tfa_secret=generate_2fa_secret(db)
+        secret=generate_2fa_secret(db)
     )
     db.add(token)
 
@@ -191,6 +193,13 @@ def get_bearer_token(request):
         except Exception:
             pass
     return None
+
+
+def get_tfa_token(db: Session, token: str):
+    return db.query(TfaToken).join(User).filter(and_(
+        TfaToken.value == hash_token(token),
+        User.enabled.is_(True)
+    )).one_or_none()
 
 
 def get_password_reset_token(db: Session, token: str):

@@ -42,7 +42,7 @@ def put(request):
     if request_id == '0':
         # Try to find the token
         token = security.get_password_reset_token(db, request_credential)
-        if token is None or token.is_2fa_token():
+        if token is None:
             raise HTTPNotFound()  # 404 Token not found
 
         # Check if token expired
