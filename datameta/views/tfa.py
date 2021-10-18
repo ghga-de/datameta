@@ -15,7 +15,7 @@
 from datetime import datetime
 import json
 
-from pyramid.httpexceptions import HTTPFound, HTTPNoContent, HTTPNotFound, HTTPGone, HTTPForbidden
+from pyramid.httpexceptions import HTTPFound, HTTPNoContent, HTTPNotFound, HTTPForbidden
 from pyramid.view import view_config
 
 from sqlalchemy import and_
@@ -73,8 +73,8 @@ def my_view(request):
             if user.tfa_secret is None and security.is2fa_enabled(request.dbsession):
                 raise errors.get_validation_error(['Please reset your password and set up two-factor authorisation.'])
 
-            errors = security.verify_otp(request.dbsession, user.tfa_secret, in_otp)
-            if not errors:
+            error = security.verify_otp(request.dbsession, user.tfa_secret, in_otp)
+            if not error:
 
                 if datetime.utcnow() < request.session["auth_expires"]:
                     log.info(f"2FA [uid={user.id},email={user.email}] FROM [{request.client_addr}]")
