@@ -14,6 +14,7 @@
 
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
+from pyramid.settings import asbool
 import os
 from . import api
 
@@ -25,6 +26,14 @@ __version__ = get_distribution('datameta').version
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+    is_2fa_enabled = asbool(settings.get("datameta.tfa.enabled", False))
+    tfa_otp_issuer = settings.get("datameta.tfa.otp_issuer")
+    tfa_encrypt_key = settings.get("datameta.tfa.encrypt_key")
+
+    if is_2fa_enabled and (not tfa_otp_issuer or not tfa_encrypt_key):
+        raise ValueError("2fa enabled but no issuer and/or no encryption key found")
+
+
     with Configurator(settings=settings) as config:
         # Session config
         session_factory = session_factory_from_settings(settings)
