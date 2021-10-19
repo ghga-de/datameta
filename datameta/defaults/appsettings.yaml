@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-two_factor_authorization_enabled:
-  str_value: true
-
-two_factor_authorization_encrypt_key:
-  str_value: n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394=
-
 subject_forgot_token:
   str_value: Your password recovery request
 
