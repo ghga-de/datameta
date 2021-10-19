@@ -21,6 +21,7 @@ from pyramid.view import view_config
 from sqlalchemy import and_
 
 from .. import security, errors
+from ..security import tfa
 from ..models import User
 
 import logging
@@ -33,7 +34,7 @@ def setup_tfa(request):
 
     if body['token'] != "0":
         # Validate token
-        dbtoken = security.get_tfa_token(request.dbsession, body['token'])
+        dbtoken = tfa.check_tfa_token(request.dbsession, body['token'])
 
         if dbtoken is None:
             return HTTPNotFound()
@@ -43,7 +44,7 @@ def setup_tfa(request):
             raise errors.get_validation_error(['The 2fa setup session has expired. Please reset your password.'])
 
         in_otp = body['inputOTP']
-        error = security.verify_otp(request.dbsession, dbtoken.secret, in_otp)
+        error = tfa.verify_otp(request.dbsession, dbtoken.secret, in_otp)
 
         if error:
             raise errors.get_validation_error([error])
@@ -70,10 +71,10 @@ def my_view(request):
             if user is None:
                 raise HTTPForbidden()
 
-            if user.tfa_secret is None and security.is2fa_enabled(request.dbsession):
+            if user.tfa_secret is None and tfa.is_2fa_enabled():
                 raise errors.get_validation_error(['Please reset your password and set up two-factor authorisation.'])
 
-            error = security.verify_otp(request.dbsession, user.tfa_secret, in_otp)
+            error = tfa.verify_otp(request.dbsession, user.tfa_secret, in_otp)
             if not error:
 
                 if datetime.utcnow() < request.session["auth_expires"]:

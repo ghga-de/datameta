@@ -12,89 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from datetime import datetime, timedelta
 from typing import Optional
 from random import choice
 from string import ascii_letters, digits
-from sqlalchemy import and_
-
-from ..models import User, ApiKey, PasswordToken, Session, TfaToken
-from ..settings import get_setting
 
 import bcrypt
 import hashlib
 import secrets
-from cryptography.fernet import Fernet
-import pyotp
+from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
+from sqlalchemy import and_
 
-import qrcode
-import qrcode.image.svg
-
+from ..models import User, ApiKey, PasswordToken, Session, TfaToken
 
 import logging
 log = logging.getLogger(__name__)
 
 
-def is2fa_enabled(db):
-    return get_setting(db, "two_factor_authorization_enabled").strip() == "true"
-
-
-def get_2fa_crypto_function(db):
-    return Fernet(get_setting(db, "two_factor_authorization_encrypt_key").encode())
-
-
-def generate_2fa_secret(db):
-    encrypt_f = get_2fa_crypto_function(db)
-    return encrypt_f.encrypt(pyotp.random_base32().encode()).decode()
-
-
-def unpack_2fa_secret(db, secret):
-    decrypt_f = get_2fa_crypto_function(db)
-    return decrypt_f.decrypt(secret.encode()).decode()
-
-
-def generate_totp_uri(db, user, secret):
-    return pyotp.totp.TOTP(unpack_2fa_secret(db, secret)).provisioning_uri(
-        name=user.email,
-        issuer_name='CoGDat'
-    )
-
-
-def generate_2fa_qrcode(db, user, secret):
-    totp_uri = generate_totp_uri(db, user, secret)
-    qr_code = qrcode.make(totp_uri, image_factory=qrcode.image.svg.SvgPathFillImage)
-    return qr_code.make_path().get("d")
-
-
-def get_user_2fa_secret(db, user):
-    decrypt_f = get_2fa_crypto_function(db)
-    secret = decrypt_f.decrypt(user.tfa_secret.encode())
-    return secret.decode()
-
-
-def verify_otp(db, secret, token):
-    if not pyotp.TOTP(unpack_2fa_secret(db, secret)).verify(token):
-        return "The OTP does not match the expected value."
-    return None
-
-
 def generate_token():
     return "".join(choice(ascii_letters + digits) for _ in range(64) )
-
-
-def get_2fa_token(db: Session, user: User, expires=None):
-    clear_token = secrets.token_urlsafe(40)
-
-    token = TfaToken(
-        user=user,
-        value=hash_token(clear_token),
-        expires=expires if expires else datetime.now() + timedelta(minutes=10),
-        secret=generate_2fa_secret(db)
-    )
-    db.add(token)
-
-    return clear_token, token
 
 
 def get_new_password_reset_token(db: Session, user: User, expires=None):
@@ -193,13 +129,6 @@ def get_bearer_token(request):
         except Exception:
             pass
     return None
-
-
-def get_tfa_token(db: Session, token: str):
-    return db.query(TfaToken).join(User).filter(and_(
-        TfaToken.value == hash_token(token),
-        User.enabled.is_(True)
-    )).one_or_none()
 
 
 def get_password_reset_token(db: Session, token: str):

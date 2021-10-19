@@ -15,6 +15,7 @@
 from pyramid.view import view_config
 
 from .. import security
+from ..security import tfa
 from ..api.ui.forgot import send_forgot_token
 
 import datetime
@@ -39,8 +40,8 @@ def v_setpass(request):
         send_forgot_token(request, db_token_obj, clear_token)
 
     tfa_token = "0"
-    if security.is2fa_enabled(request.dbsession) and token_ok and dbtoken.user.tfa_secret is None:
-        tfa_token, _ = security.get_2fa_token(request.dbsession, dbtoken.user)
+    if tfa.is_2fa_enabled() and token_ok and dbtoken.user.tfa_secret is None:
+        tfa_token, _ = tfa.create_2fa_token(request.dbsession, dbtoken.user)
 
     log.info(f"2fa_token: {tfa_token}")
 
