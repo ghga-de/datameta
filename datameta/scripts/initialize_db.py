@@ -69,7 +69,6 @@ def create_initial_user(request, email, fullname, password, groupname):
                 group_admin=True,
                 site_admin=True,
                 site_read=True,
-                tfa_secret="gAAAAABhFrOWSDgivmMA4lD4NsRXxmlfqK1ohZIXghBvwloZ3AMbl7o-sqkdExa5pUXldOBFUVh7Z64yn0dSyi0Dq8dDs0Pt4NUgnowgvrgC-Jd2XKeY3SI="
                 )
         db.add(root)
 
