@@ -82,7 +82,7 @@ class User(Base):
     site_admin           = Column(Boolean(create_constraint=False), nullable=False)
     group_admin          = Column(Boolean(create_constraint=False), nullable=False)
     site_read            = Column(Boolean(create_constraint=False), nullable=False)
-    tfa_secret           = Column(String)
+    tfa_secret           = Column(Text)
 
     # Relationships
     group                = relationship('Group', back_populates='user')
@@ -125,7 +125,7 @@ class TfaToken(Base):
     user_id       = Column(Integer, ForeignKey('users.id'), nullable=False)
     value         = Column(Text, nullable=False, unique=True)
     expires       = Column(DateTime, nullable=False)
-    secret           = Column(String, default=None)
+    secret        = Column(Text, default=None)
     # Relationships
     user          = relationship('User', back_populates='tfatokens')
 
