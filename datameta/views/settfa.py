@@ -25,7 +25,7 @@ def v_settfa(request):
     unknown_token, expired_token = False, False
     if request.matchdict['token'] != "0":
         # Validate token
-        dbtoken = tfa.get_tfa_token(request.dbsession, request.matchdict['token'])
+        dbtoken = tfa.check_2fa_token(request.dbsession, request.matchdict['token'])
 
         unknown_token = dbtoken is None
         expired_token = not unknown_token and dbtoken.expires < datetime.datetime.now()

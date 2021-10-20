@@ -34,7 +34,7 @@ def setup_tfa(request):
 
     if body['token'] != "0":
         # Validate token
-        dbtoken = tfa.check_tfa_token(request.dbsession, body['token'])
+        dbtoken = tfa.check_2fa_token(request.dbsession, body['token'])
 
         if dbtoken is None:
             return HTTPNotFound()
