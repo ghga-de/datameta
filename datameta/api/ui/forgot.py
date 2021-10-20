@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from pyramid.view import view_config
+from pyramid import threadlocal
+from pyramid.settings import asbool
 
 from ... import security, email
 from ...settings import get_setting
@@ -37,7 +39,8 @@ def send_forgot_token(request, db_token_obj, clear_token):
             }
         )
 
-    log.debug(f"USER REQUESTED RECOVERY TOKEN: '{token_url}'")
+    if asbool(threadlocal.get_current_registry().settings['datameta.logging.log_token_urls']):
+        log.debug(f"USER REQUESTED RECOVERY TOKEN: '{token_url}'")
 
 
 @view_config(route_name='forgot_api', renderer='json')

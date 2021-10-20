@@ -78,8 +78,6 @@ def my_view(request):
             if not error:
 
                 if datetime.utcnow() < request.session["auth_expires"]:
-                    log.info(f"2FA [uid={user.id},email={user.email}] FROM [{request.client_addr}]")
-
                     request.session["user_uid"] = request.session["preauth_uid"]
                     request.session["user_gid"] = request.session["preauth_gid"]
                     del request.session["preauth_uid"]
