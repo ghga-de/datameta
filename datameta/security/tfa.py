@@ -25,7 +25,6 @@ from pyramid.settings import asbool
 
 from . import hash_token
 from ..models import User, Session, TfaToken
-from ..settings import get_setting
 
 import logging
 log = logging.getLogger(__name__)

@@ -20,7 +20,7 @@ from pyramid.view import view_config
 
 from sqlalchemy import and_
 
-from .. import security, errors
+from .. import errors
 from ..security import tfa
 from ..models import User
 

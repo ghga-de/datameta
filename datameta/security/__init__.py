@@ -23,7 +23,7 @@ import secrets
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from sqlalchemy import and_
 
-from ..models import User, ApiKey, PasswordToken, Session, TfaToken
+from ..models import User, ApiKey, PasswordToken, Session
 
 import logging
 log = logging.getLogger(__name__)

@@ -33,7 +33,6 @@ def main(global_config, **settings):
     if is_2fa_enabled and (not tfa_otp_issuer or not tfa_encrypt_key):
         raise ValueError("2fa enabled but no issuer and/or no encryption key found")
 
-
     with Configurator(settings=settings) as config:
         # Session config
         session_factory = session_factory_from_settings(settings)

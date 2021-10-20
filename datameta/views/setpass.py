@@ -15,7 +15,6 @@
 from pyramid.view import view_config
 
 from .. import security
-from ..security import tfa
 from ..api.ui.forgot import send_forgot_token
 
 import datetime
