@@ -82,7 +82,7 @@
             <div class="mb-3" style="text-align:left">
                 <h4>Please choose a new password</h4>
             </div>
-            <form action="#" id="newpassform" data-datameta-setpass="${token}" data-datameta-set2fa="${tfa_token}">
+            <form action="#" id="newpassform" data-datameta-setpass="${token}">
                 <div class="input-group mb-3">
                     <span class="input-group-text" id="desc_input_password">
                         <i class="bi bi-key"></i>

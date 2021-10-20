@@ -17,7 +17,7 @@ from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, H
 from pyramid.view import view_config
 
 from .. import security, errors
-from ..security import authz
+from ..security import authz, tfa
 from ..models import User
 from datetime import datetime
 
@@ -78,4 +78,10 @@ def put(request):
     if token:
         db.delete(token)
 
-    return HTTPNoContent()  # 204 all went well
+    tfa_token = ""
+    if tfa.is_2fa_enabled() and auth_user.tfa_secret is None:
+        tfa_token, _ = tfa.create_2fa_token(db, auth_user)
+
+    return {
+        "tfaToken": tfa_token
+    }
