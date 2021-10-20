@@ -58,7 +58,7 @@ def generate_2fa_secret(db):
           - the encrypted 2fa secret as a string
     """
 
-    encrypt_f = get_2fa_crypto_function(db).encrypt
+    encrypt_f = get_2fa_crypto_function().encrypt
     return encrypt_f(pyotp.random_base32().encode()).decode()
 
 
@@ -69,7 +69,7 @@ def unpack_2fa_secret(db, secret):
         - the decrypted and decoded secret
     """
 
-    decrypt_f = get_2fa_crypto_function(db).decrypt
+    decrypt_f = get_2fa_crypto_function().decrypt
     return decrypt_f(secret.encode()).decode()
 
 
@@ -78,11 +78,7 @@ def generate_totp_uri(db, user, secret):
 
     Returns:
         - the totp uri
-        - None if the user has no 2fa secret
     """
-
-    if user.tfa_secret is None:
-        return None
 
     issuer = str(threadlocal.get_current_registry().settings['datameta.tfa.otp_issuer'])
     return pyotp.totp.TOTP(unpack_2fa_secret(db, secret)).provisioning_uri(
@@ -96,18 +92,14 @@ def generate_2fa_qrcode(db, user, secret):
 
     Returns:
         - a string containing the svg d-attribute encoding the qr code
-        - an empty string if the user has no 2fa secret
     """
-
-    if user.tfa_secret is None:
-        return ""
 
     totp_uri = generate_totp_uri(db, user, secret)
     qr_code = qrcode.make(totp_uri, image_factory=qrcode.image.svg.SvgPathFillImage)
     return qr_code.make_path().get("d")
 
 
-def get_user_2fa_secret(db, user):
+def get_user_2fa_secret(user):
     """Decrypts and returns the 2fa secret for the given user.
 
     Returns:
@@ -118,7 +110,7 @@ def get_user_2fa_secret(db, user):
     if user.tfa_secret is None:
         return None
 
-    decrypt_f = get_2fa_crypto_function(db)
+    decrypt_f = get_2fa_crypto_function()
     secret = decrypt_f.decrypt(user.tfa_secret.encode())
     return secret.decode()
 
