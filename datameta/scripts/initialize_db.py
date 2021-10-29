@@ -19,7 +19,7 @@ from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
 from ..security import register_password, hash_token
-from ..models import User, Group, MetaDatum, DateTimeMode, ApiKey, UsedPassword
+from ..models import User, Group, MetaDatum, DateTimeMode, ApiKey
 
 
 def parse_args(argv):

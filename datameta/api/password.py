@@ -18,7 +18,7 @@ from pyramid.view import view_config
 
 from .. import security, errors
 from ..security import authz
-from ..models import User, UsedPassword
+from ..models import User
 from datetime import datetime
 
 from ..resource import resource_by_id
