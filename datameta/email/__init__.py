@@ -42,4 +42,7 @@ def send(recipients, subject, template, values, bcc=None, rec_header_only=False)
     message = template.format(**values)
 
     # Send the message
-    __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
+    try:
+        __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
+    except ConnectionRefusedError:
+        pass
