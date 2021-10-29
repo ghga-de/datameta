@@ -19,7 +19,7 @@ from random import choice
 from string import ascii_letters, digits
 from sqlalchemy import and_
 
-from ..models import User, ApiKey, PasswordToken, Session
+from ..models import User, ApiKey, PasswordToken, Session, LoginAttempt
 
 import bcrypt
 import hashlib
@@ -103,16 +103,43 @@ def check_password_by_hash(pw, hashed_pw):
 
 def hash_token(token):
     """Hash a token and return the unsalted hash"""
-    hashed_token =  hashlib.sha256(token.encode('utf-8')).hexdigest()
+    hashed_token = hashlib.sha256(token.encode('utf-8')).hexdigest()
     return hashed_token
+
+
+def register_failed_login_attempt(db, user):
+    """ Registers a failed login attempt and disables user if this has happened too often in the last hour."""
+    BLOCK_AFTER_N_FAILED_LOGINS = 5
+
+    now = datetime.now()
+    last_hour = now - timedelta(hours=1)
+    db.add(LoginAttempt(user_id=user.id, timestamp=now))
+
+    failed_logins = sum(
+        1
+        for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id==user.id).all()
+        if attempt.timestamp - last_hour <= timedelta(hours=1)
+    )
+
+    log.debug(f"FAILED LOGINS {failed_logins}")
+    if failed_logins >= BLOCK_AFTER_N_FAILED_LOGINS:
+        log.debug("BLOCKED!")
+        user.enabled = False
+
+    return None
 
 
 def get_user_by_credentials(request, email: str, password: str):
     """Check a combination of email and password, returns a user object if valid"""
+
     db = request.dbsession
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
-    if user and check_password_by_hash(password, user.pwhash):
-        return user
+    if user:
+        if check_password_by_hash(password, user.pwhash):
+            return user
+
+        register_failed_login_attempt(db, user)
+
     return None
 
 
