@@ -18,7 +18,7 @@ from pyramid.view import view_config
 
 from .. import security, errors
 from ..security import authz
-from ..models import User
+from ..models import User, UsedPassword
 from datetime import datetime
 
 from ..resource import resource_by_id
@@ -73,7 +73,7 @@ def put(request):
         raise errors.get_validation_error([error])
 
     # Set the new password
-    auth_user.pwhash = security.hash_password(request_newPassword)
+    auth_user.pwhash = security.register_password(db, auth_user.id, request_newPassword)
 
     # Delete the password token if any
     if token:

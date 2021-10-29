@@ -35,7 +35,8 @@ from .db import (
         ApiKey,
         DownloadToken,
         Service,
-        ServiceExecution
+        ServiceExecution,
+        UsedPassword
         )
 
 # run configure_mappers after defining all of the models to ensure
