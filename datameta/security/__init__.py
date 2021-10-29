@@ -16,7 +16,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from datetime import datetime, timedelta
 from typing import Optional
 from random import choice
-from string import ascii_letters, digits
+from string import ascii_letters, digits, punctuation
 from sqlalchemy import and_
 
 from ..models import User, ApiKey, PasswordToken, Session
@@ -83,9 +83,35 @@ def check_expiration(expiration_datetime: Optional[datetime]):
     return expiration_datetime is not None and datetime.now() >= expiration_datetime
 
 
-def verify_password(s):
-    if len(s) < 10:
-        return "The password has to have a length of at least 10 characters."
+def verify_password(password):
+    PW_MINIMUM_LENGTH = 10
+    PW_MINIMUM_UPPERCASE = 1
+    PW_MINIMUM_LOWERCASE = 1
+    PW_MINIMUM_DIGITS = 1
+    PW_MINIMUM_PUNCTUATION = 1
+
+    pwlen = len(password)
+
+    if pwlen < PW_MINIMUM_LENGTH:
+        return f"The password has to have a length of at least {PW_MINIMUM_LENGTH} characters."
+
+    alphas = [c for c in password if c.isalpha()]
+    digits = [c for c in password if c.isdigit()]
+    puncs = [c for c in password if c in punctuation]
+    n_upper = sum(1 for c in alphas if c.isupper())
+    n_lower = len(alphas) - n_upper
+
+    if n_upper < PW_MINIMUM_UPPERCASE or n_lower < PW_MINIMUM_LOWERCASE or len(digits) < PW_MINIMUM_DIGITS or len(puncs) < PW_MINIMUM_PUNCTUATION:
+        return f"Password must contain at least {PW_MINIMUM_UPPERCASE} uppercase, " \
+            f"{PW_MINIMUM_LOWERCASE} lowercase characters, " \
+            f"{PW_MINIMUM_PUNCTUATION} punctuation marks, and " \
+            f"{PW_MINIMUM_DIGITS} digits."
+
+    invalid_chars = set(password).difference(alphas).difference(digits).difference(puncs)
+
+    if invalid_chars:
+        return f"Invalid password characters: {','.join(invalid_chars)}"
+
     return None
 
 
