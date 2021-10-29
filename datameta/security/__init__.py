@@ -117,7 +117,7 @@ def register_failed_login_attempt(db, user):
 
     failed_logins = sum(
         1
-        for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id==user.id).all()
+        for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
         if attempt.timestamp - last_hour <= timedelta(hours=1)
     )
 
