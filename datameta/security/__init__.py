@@ -19,13 +19,41 @@ from random import choice
 from string import ascii_letters, digits
 from sqlalchemy import and_
 
-from ..models import User, ApiKey, PasswordToken, Session
+from ..models import User, ApiKey, PasswordToken, Session, UsedPassword
 
 import bcrypt
 import hashlib
 import logging
 import secrets
 log = logging.getLogger(__name__)
+
+
+def register_password(db, user_id, password):
+    """ Hashes an accepted password string, adds the hash to the user's blacklist.
+
+     Returns:
+         - the hashed password
+    """
+    hashed_pw = hash_password(password)
+    db.add(UsedPassword(user_id=user_id, value=hashed_pw))
+
+    return hashed_pw
+
+
+def is_used_password(db, user_id, password):
+    """ Checks a password string against a user's blacklist
+
+    Returns:
+        - True, if password has been used before by the user
+        - False, otherwise
+    """
+
+    used_passwords = db.query(UsedPassword).filter(UsedPassword.user_id == user_id).all()
+    for pw in used_passwords:
+        if check_password_by_hash(password, pw.value):
+            return True
+
+    return False
 
 
 def generate_token():
@@ -83,8 +111,12 @@ def check_expiration(expiration_datetime: Optional[datetime]):
     return expiration_datetime is not None and datetime.now() >= expiration_datetime
 
 
-def verify_password(s):
-    if len(s) < 10:
+def verify_password(db, user_id, password):
+
+    if is_used_password(db, user_id, password):
+        return "The password has already been used."
+
+    if len(password) < 10:
         return "The password has to have a length of at least 10 characters."
     return None
 
