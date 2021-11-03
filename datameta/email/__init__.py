@@ -18,6 +18,10 @@ from pyramid import threadlocal
 
 from email.utils import parseaddr
 
+import logging
+log = logging.getLogger(__name__)
+
+
 __smtp = SMTPClient(
         hostname  =threadlocal.get_current_registry().settings['datameta.smtp_host'],
         port      =threadlocal.get_current_registry().settings['datameta.smtp_port'],
@@ -45,4 +49,5 @@ def send(recipients, subject, template, values, bcc=None, rec_header_only=False)
     try:
         __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
     except ConnectionRefusedError:
+        log.error("Could not send email. Is the mail server configured correctly?")
         pass
