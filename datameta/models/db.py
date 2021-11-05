@@ -28,7 +28,7 @@ from sqlalchemy import (
     Table
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 from .meta import Base
 
@@ -82,6 +82,8 @@ class User(Base):
     site_admin           = Column(Boolean(create_constraint=False), nullable=False)
     group_admin          = Column(Boolean(create_constraint=False), nullable=False)
     site_read            = Column(Boolean(create_constraint=False), nullable=False)
+    can_update           = Column(Boolean(create_constraint=False), nullable=False)
+
     # Relationships
     group                = relationship('Group', back_populates='user')
     metadatasets         = relationship('MetaDataSet', back_populates='user')
@@ -90,6 +92,7 @@ class User(Base):
     apikeys              = relationship('ApiKey', back_populates='user')
     services             = relationship('Service', secondary=user_service_table, back_populates='users')
     service_executions   = relationship('ServiceExecution', back_populates='user')
+    mset_replacements    = relationship('MsetReplacementEvent', back_populates='user')
 
 
 class ApiKey(Base):
@@ -209,20 +212,36 @@ class MetaDatumRecord(Base):
 class MetaDataSet(Base):
     """A MetaDataSet represents all metadata associated with *one* record"""
     __tablename__  = 'metadatasets'
-    id               = Column(Integer, primary_key=True)
-    site_id          = Column(String(50), unique=True, nullable=False, index=True)
-    uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
-    user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
-    submission_id    = Column(Integer, ForeignKey('submissions.id'), nullable=True)
-    is_deprecated    = Column(Boolean, default=False)
-    deprecated_label = Column(String, nullable=True)
-    replaced_by_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=True)
+    id                     = Column(Integer, primary_key=True)
+    site_id                = Column(String(50), unique=True, nullable=False, index=True)
+    uuid                   = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id                = Column(Integer, ForeignKey('users.id'), nullable=False)
+    submission_id          = Column(Integer, ForeignKey('submissions.id'), nullable=True)
+    replaced_via_event_id  = Column(Integer, ForeignKey('msetreplacementevents.id', use_alter=True), nullable=True)
+
     # Relationships
     user                 = relationship('User', back_populates='metadatasets')
     submission           = relationship('Submission', back_populates='metadatasets')
     metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset')
-    replaces             = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
-    service_executions   = relationship('ServiceExecution', back_populates = 'metadataset')
+    service_executions   = relationship('ServiceExecution', back_populates ='metadataset')
+
+    replaced_via_event   = relationship('MsetReplacementEvent', primaryjoin='MetaDataSet.replaced_via_event_id==MsetReplacementEvent.id', back_populates='new_metadataset')
+    replaces_via_event   = relationship('MsetReplacementEvent', primaryjoin='MetaDataSet.id==MsetReplacementEvent.new_metadataset_id', back_populates='replaced_metadatasets')
+
+
+class MsetReplacementEvent(Base):
+    """ Stores information about an mset replacement event """
+    __tablename__ = 'msetreplacementevents'
+    id                   = Column(Integer, primary_key=True)
+    uuid                 = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id              = Column(Integer, ForeignKey('users.id'), nullable=False)
+    datetime             = Column(DateTime, nullable=False)
+    new_metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
+
+    # Relationships
+    user                   = relationship('User', back_populates='mset_replacements')
+    new_metadataset        = relationship("MetaDataSet", primaryjoin='MetaDataSet.id==MsetReplacementEvent.new_metadataset_id', back_populates='replaces_via_event')
+    replaced_metadatasets  = relationship("MetaDataSet", primaryjoin='MetaDataSet.replaced_via_event_id==MsetReplacementEvent.id', back_populates='replaced_via_event')
 
 
 class ApplicationSetting(Base):
@@ -244,7 +263,7 @@ class Service(Base):
     site_id      = Column(String(50), unique=True, nullable=False, index=True)
     name         = Column(Text, nullable=True, unique=True)
     # Relationships
-    users           = relationship('User', secondary=user_service_table, back_populates='services')
+    users                = relationship('User', secondary=user_service_table, back_populates='services')
     # unfortunately, 'metadata' is a reserved keyword for sqlalchemy classes
     service_executions   = relationship('ServiceExecution', back_populates = 'service')
     target_metadata      = relationship('MetaDatum', back_populates = 'service')

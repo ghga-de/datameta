@@ -25,6 +25,7 @@ admin:
     group_admin: true
     site_admin: true
     site_read: true
+    can_update: true
     enabled: true
   references:
     group:
@@ -44,6 +45,7 @@ group_x_admin:
     group_admin: true
     site_admin: false
     site_read: false
+    can_update: true
     enabled: true
   references:
     group:
@@ -63,6 +65,7 @@ user_a:
     group_admin: false
     site_admin: false
     site_read: false
+    can_update: false
     enabled: true
   references:
     group:
@@ -82,6 +85,7 @@ user_b:
     group_admin: false
     site_admin: false
     site_read: false
+    can_update: false
     enabled: true
   references:
     group:
@@ -101,6 +105,7 @@ group_y_admin:
     group_admin: true
     site_admin: false
     site_read: false
+    can_update: true
     enabled: true
   references:
     group:
@@ -120,6 +125,7 @@ user_c:
     group_admin: false
     site_admin: false
     site_read: false
+    can_update: false
     enabled: true
   references:
     group:
@@ -139,6 +145,7 @@ user_site_read:
     group_admin: false
     site_admin: false
     site_read: true
+    can_update: false
     enabled: true
   references:
     group:
@@ -158,6 +165,7 @@ service_user_0:
     group_admin: false
     site_admin: false
     site_read: true
+    can_update: false
     enabled: true
   references:
     group:
