@@ -48,6 +48,6 @@ def send(recipients, subject, template, values, bcc=None, rec_header_only=False)
     # Send the message
     try:
         __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
-    except ConnectionRefusedError as e:
+    except Exception as e:
         log.error(f"An error occurred when sending an email: {e}")
         pass
