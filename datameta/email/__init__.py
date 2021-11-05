@@ -18,6 +18,10 @@ from pyramid import threadlocal
 
 from email.utils import parseaddr
 
+import logging
+log = logging.getLogger(__name__)
+
+
 __smtp = SMTPClient(
         hostname  =threadlocal.get_current_registry().settings['datameta.smtp_host'],
         port      =threadlocal.get_current_registry().settings['datameta.smtp_port'],
@@ -42,4 +46,8 @@ def send(recipients, subject, template, values, bcc=None, rec_header_only=False)
     message = template.format(**values)
 
     # Send the message
-    __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
+    try:
+        __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
+    except Exception as e:
+        log.error(f"An error occurred when sending an email: {e}")
+        pass
