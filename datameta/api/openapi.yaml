@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 1.4.1
+  version: 1.4.0
   title: DataMeta
 
 servers:
@@ -321,12 +321,8 @@ paths:
         - cookieAuth: []
         - {} # Unauthenticated access for use with reset token
       responses:
-        "200":
+        "204":
           description: Password update successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SetPasswordResponse'
         "401":
           description: Unauthorized
         "403":
@@ -1444,7 +1440,6 @@ components:
       type: object
       properties:
         record:
-          nullable: true
           type: object
           additionalProperties: true
           # a free-form object,
@@ -1472,13 +1467,6 @@ components:
         - fileIds
       additionalProperties: false
 
-    SetPasswordResponse:
-      type: object
-      properties:
-        tfaToken:
-          type: string
-      additionalProperties: false
-
     MetaDataSetResponse:
       type: object
       properties:
@@ -1503,7 +1491,6 @@ components:
           $ref: "#/components/schemas/Identifier"
         submissionId:   
           $ref: "#/components/schemas/NullableIdentifier"
-          nullable: true
         userId:
           $ref: "#/components/schemas/Identifier"
       required:
