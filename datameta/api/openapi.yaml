@@ -321,8 +321,12 @@ paths:
         - cookieAuth: []
         - {} # Unauthenticated access for use with reset token
       responses:
-        "204":
+        "200":
           description: Password update successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetPasswordResponse'
         "401":
           description: Unauthorized
         "403":
@@ -1465,6 +1469,14 @@ components:
       required:
         - record
         - fileIds
+      additionalProperties: false
+
+    SetPasswordResponse:
+      type: object
+      properties:
+        tfaToken:
+          type: string
+          nullable: true
       additionalProperties: false
 
     MetaDataSetResponse:
