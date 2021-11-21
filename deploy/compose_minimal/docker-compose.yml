@@ -17,19 +17,21 @@ services:
   appserver:
     image: "datameta/datameta:dev"
     restart: "always"
+    volumes:
+      - datameta-filestorage:/var/datameta/storage
     environment:
       SQLALCHEMY_URL: postgresql://datameta:datameta@dbserver/datameta
       SESSION_URL: sessionserver:11211
       SESSION_KEY: datameta
-      SESSION_SECRET: dummy # TODO: Insert 64 character random string here
+      SESSION_SECRET: dummy # CHANGE THIS: Insert 64 character random string here
       DATAMETA_STORAGE_PATH: /var/datameta/storage
 
       # The initial values can be changed once the DataMeta instance was
       # deployed.
-      DATAMETA_INITIAL_FULLNAME: Joe user # TODO: Insert initial user fullname here
-      DATAMETA_INITIAL_EMAIL: joe@user # TODO: Insert initial user email address here
-      DATAMETA_INITIAL_PASS: j03us3r # TODO: Insert initial user password here
-      DATAMETA_INITIAL_GROUPNAME: Joe's lab # TODO: Insert intial user group name here
+      DATAMETA_INITIAL_FULLNAME: Joe User # CHANGE THIS: Insert initial user fullname here
+      DATAMETA_INITIAL_EMAIL: joe@user # CHANGE THIS: Insert initial user email address here
+      DATAMETA_INITIAL_PASS: j03us3r # CHANGE THIS: Insert initial user password here
+      DATAMETA_INITIAL_GROUPNAME: Joe's ab # CHANGE THIS: Insert intial user group name here
 
       # The maximum number of days an API key can be valid
       DATAMETA_API_KEYS_MAX_EXPIRE_DAYS: 365
@@ -45,12 +47,12 @@ services:
       # DataMeta sends out emails for password forgot tokens, registration
       # confirmations and to notify admins about new registrations. Configure
       # an SMTP server for outgoing email below.
-      DATAMETA_SMTP_HOST: # TODO: Insert SMTP server address here
+      DATAMETA_SMTP_HOST: # CHANGE THIS: Insert SMTP server address here
       DATAMETA_SMTP_PORT: 587 # Adjust if needed
-      DATAMETA_SMTP_USER: # TODO: Insert SMTP user here
-      DATAMETA_SMTP_PASS: # TODO: Insert SMTP password here
+      DATAMETA_SMTP_USER: # CHANGE THIS: Insert SMTP user here
+      DATAMETA_SMTP_PASS: # CHANGE THIS: Insert SMTP password here
       DATAMETA_SMTP_TLS: "true"
-      DATAMETA_SMTP_FROM: # TODO: Specify SMTP FROM header here, format 'Example Support <support@example.com>'
+      DATAMETA_SMTP_FROM: # CHANGE THIS: Specify SMTP FROM header here, format 'Example Support <support@example.com>'
 
       # Site ID prefixes and lengths
       # The entites 'user', 'group', 'submission', 'metadataset' and 'file' are
@@ -82,4 +84,6 @@ services:
 
 volumes: # TODO: Create external volumes before first launch
   datameta-db:
-    external: false
+    external: true
+  datameta-filestorage:
+    external: true

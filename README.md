@@ -10,9 +10,20 @@ users!
 
 ## Quick Installation
 
+1. Create a directory for the datameta configuration (of your choice)
+   ```
+   mkdir /usr/local/lib/datameta
+   cd /usr/local/lib/datameta
+   ```
+
+1. Edit the configuration file
+
+   The fields that require changing are marked with `# CHANGEME`. You may want
+   to perform additional adjustments to the compose file to fit your needs.
+
 1. Download the Docker compose file
    ```
-   curl -LO https://raw.githubusercontent.com/ghga-de/datameta/main/datameta.compose.yml
+   curl -LO https://datameta.org/minimal/docker-compose.yml
    ```
 
 1. Create the Docker volumes for persistent file and database storage
@@ -23,13 +34,5 @@ users!
 
 1. Start up your DataMeta Instance
    ```
-   docker stack deploy --compose-file datameta.compose.yml datameta
+   docker-compose up -d
    ```
-
-1. Connect to your DataMeta instance at http://localhost:9950 and log in with the default
-   account `admin@admin.admin`. The initial password can be obtained using
-   `docker logs {your_app_container_id}`.
-
-## Full Installation Instructions
-
-Detailed installation instructions can be found [here](./docs).
