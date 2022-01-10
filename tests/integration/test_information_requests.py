@@ -18,6 +18,7 @@ from parameterized import parameterized
 
 from . import BaseIntegrationTest
 from datameta.api import base_url
+from datameta.api.users import UserResponseElement
 
 
 class TestUserInformationRequest(BaseIntegrationTest):
@@ -46,6 +47,9 @@ class TestUserInformationRequest(BaseIntegrationTest):
         ("site_admin_query_wrong_id"          , "admin"           , "flopsy"          , 404),
     ])
     def test_user_query(self, testname: str, executing_user: str, target_user: str, expected_response: int):
+        def snake_to_camel(s):
+            return ''.join(x.capitalize() if i else x for i, x in enumerate(s.split('_')))
+
         user = self.fixture_manager.get_fixture('users', executing_user)
 
         if testname == "site_admin_query_wrong_id":
@@ -63,7 +67,7 @@ class TestUserInformationRequest(BaseIntegrationTest):
         successful_request = expected_response == 200
         privileged_request = "admin" in executing_user
 
-        restricted_fields = ["groupAdmin", "siteAdmin", "siteRead", "email"]
+        restricted_fields = map(snake_to_camel, UserResponseElement.get_restricted_fields())
 
         assert any((
             not successful_request,

@@ -24,6 +24,7 @@ from ..security import authz
 from ..resource import resource_by_id, resource_query_by_id, get_identifier
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
+from .submissions import SubmissionResponse
 
 from pyramid.httpexceptions import HTTPNoContent, HTTPForbidden, HTTPNotFound
 
@@ -54,15 +55,7 @@ class GroupSubmissions:
         ).one_or_none()
 
         self.submissions = [
-            {
-                "id": get_identifier(sub),
-                "label": sub.label,
-                "metadatasetIds": [
-                    get_identifier(mset)
-                    for mset in sub.metadatasets
-                ],
-                "fileIds": self._get_file_ids_of_submission(sub)
-            }
+            SubmissionResponse.from_submission(sub, db)
             for sub in group.submissions
         ]
 

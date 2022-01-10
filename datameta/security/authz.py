@@ -176,6 +176,10 @@ def update_user_name(user, target_user):
     ))
 
 
+def update_user_can_update(user):
+    return user.site_admin
+
+
 def view_restricted_user_info(user, target_user):
     return has_group_rights(user, target_user.group)
 
