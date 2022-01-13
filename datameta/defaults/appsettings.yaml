@@ -84,3 +84,6 @@ logo_html:
 user_agreement:
   str_value: ""
     
+
+security_max_failed_logins:
+  int_value: 5

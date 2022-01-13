@@ -20,6 +20,7 @@ from string import ascii_letters, digits
 from sqlalchemy import and_
 
 from ..models import User, ApiKey, PasswordToken, Session, LoginAttempt
+from ..settings import get_setting
 
 import bcrypt
 import hashlib
@@ -109,33 +110,38 @@ def hash_token(token):
 
 def register_failed_login_attempt(db, user):
     """ Registers a failed login attempt and disables user if this has happened too often in the last hour."""
-    BLOCK_AFTER_N_FAILED_LOGINS = 5
 
-    now = datetime.now()
-    last_hour = now - timedelta(hours=1)
+    now = datetime.utcnow()
+    max_allowed_failed_logins = get_setting(db, "security_max_failed_logins")
     db.add(LoginAttempt(user_id=user.id, timestamp=now))
 
-    failed_logins = sum(
-        1
+    n_failed_logins = sum(
+        now - attempt.timestamp <= timedelta(hours=1)
         for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
-        if attempt.timestamp - last_hour <= timedelta(hours=1)
     )
 
-    log.debug(f"FAILED LOGINS {failed_logins}")
-    if failed_logins >= BLOCK_AFTER_N_FAILED_LOGINS:
-        log.debug("BLOCKED!")
+    log.warning(f"FAILED LOGIN ATTEMPT USER id={user.id} n={n_failed_logins} within one hour.")
+    if n_failed_logins >= max_allowed_failed_logins:
+        log.warning(f"BLOCKED USER id={user.id} reason={n_failed_logins} failed login attempts within one hour.")
         user.enabled = False
 
     return None
 
 
 def get_user_by_credentials(request, email: str, password: str):
+
     """Check a combination of email and password, returns a user object if valid"""
 
     db = request.dbsession
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
     if user:
         if check_password_by_hash(password, user.pwhash):
+
+            failed_attempts = db.query(LoginAttempt).join(User).filter(and_(
+                User.id == user.id,
+                User.enabled.is_(True))).all()
+
+            [db.delete(attempt) for attempt in failed_attempts]
             return user
 
         register_failed_login_attempt(db, user)
