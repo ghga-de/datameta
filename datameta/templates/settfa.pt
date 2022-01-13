@@ -55,15 +55,16 @@
             }
 </style>
 <main metal:fill-slot="content" class="form-signin">
+    <div tal:replace="structure logo_html"></div>
     <div tal:condition="unknown_token" id="unknowntoken">
         <div class="alert alert-danger" role="alert">
-            Something went wrong during 2fa setup.
+            An error occurred.
         </div>
         <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
     </div>
     <div tal:condition="expired_token" id="expiredtoken">
         <div class="alert alert-warning" role="alert">
-            The 2fa setup session has expired.
+            The token used to set up two-factor authentication has expired.
             <a type="button" class="btn btn-warning" href="/forgot">Please reset your password.</a>
         </div>
     </div>
@@ -72,19 +73,37 @@
         </div>
         <div id="success" class="collapse">
             <div class="alert alert-success" role="alert" >
-                2-factor authorisation has been set up successfully!
+                Two-factor authentication has been set up successfully!
             </div>
                 <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
         </div>
         <div tal:condition="tfa_setup_required">
 
             <div id="tfa_qrcode" class="collapse show">
-                <h4>Please scan the QR code with an authenticator app (e.g., Google Authenticator) and enter the six-digit string (OTP) displayed by the app.</h4>
-                 <svg width="200" height="200" version="1.1" viewBox="0 0 45 45" xlmns="http://www.w3.org/2000/svg">
-                    <path d="${tfa_qrcode}" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none" />
-                 </svg>
+                <div class="mb-3">
+                    <svg width="200" height="200" version="1.1" viewBox="0 0 45 45" xlmns="http://www.w3.org/2000/svg">
+                        <path d="${tfa_qrcode}" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none" />
+                    </svg>
+                </div>
+                <div class="card text-dark bg-info mb-3 w-100 text-start">
+                    <div class="card-header">
+                        <h5 class="card-title my-0">Two-factor authentication required</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                        This site has two-factor authentication enabled. Please scan the QR code with a suitable OTP authenticator app and provide a valid OTP token to continue.
+                        </p>
+                    </div>
+                </div>
+                <p class="text-start">
+                </p>
                 <form action="#" id="otp_setup_form" data-datameta-tfa="${token}">
-                    <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP" required autofocus>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="desc_input_otpkey">
+                            <i class="bi bi-key"></i>
+                        </span>
+                        <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP Token" aria-describedby="desc_input_otpkey" required autofocus>
+                    </div>
                     <div class="input-group mb-3">
                         <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
                     </div>
