@@ -85,5 +85,5 @@ user_agreement:
   str_value: ""
     
 
-security_max_failed_logins:
+security_max_failed_login_attempts:
   int_value: 5

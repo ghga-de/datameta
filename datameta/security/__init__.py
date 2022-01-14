@@ -112,7 +112,7 @@ def register_failed_login_attempt(db, user):
     """ Registers a failed login attempt and disables user if this has happened too often in the last hour."""
 
     now = datetime.utcnow()
-    max_allowed_failed_logins = get_setting(db, "security_max_failed_logins")
+    max_allowed_failed_logins = get_setting(db, "security_max_failed_login_attempts")
     db.add(LoginAttempt(user_id=user.id, timestamp=now))
 
     n_failed_logins = sum(
@@ -122,8 +122,9 @@ def register_failed_login_attempt(db, user):
 
     log.warning(f"FAILED LOGIN ATTEMPT USER id={user.id} n={n_failed_logins} within one hour.")
     if n_failed_logins >= max_allowed_failed_logins:
-        log.warning(f"BLOCKED USER id={user.id} reason={n_failed_logins} failed login attempts within one hour.")
         user.enabled = False
+        log.warning(f"BLOCKED USER id={user.id} enabled={user.enabled} reason={n_failed_logins} failed login attempts within one hour.")
+    db.flush()
 
     return None
 
