@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 
 
 def register_password(db, user_id, password):
-    """ Hashes an accepted password string, adds the hash to the user's blacklist.
+    """ Hashes an accepted password string, adds the hash to the user's password hash history.
 
      Returns:
          - the hashed password
@@ -41,7 +41,7 @@ def register_password(db, user_id, password):
 
 
 def is_used_password(db, user_id, password):
-    """ Checks a password string against a user's blacklist
+    """ Checks a password string against a user's password hash history.
 
     Returns:
         - True, if password has been used before by the user
