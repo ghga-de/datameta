@@ -20,6 +20,7 @@ from string import ascii_letters, digits, punctuation
 from sqlalchemy import and_
 
 from ..models import User, ApiKey, PasswordToken, Session
+from ..settings import get_setting
 
 import bcrypt
 import hashlib
@@ -83,29 +84,27 @@ def check_expiration(expiration_datetime: Optional[datetime]):
     return expiration_datetime is not None and datetime.now() >= expiration_datetime
 
 
-def verify_password(password):
-    PW_MINIMUM_LENGTH = 10
-    PW_MINIMUM_UPPERCASE = 1
-    PW_MINIMUM_LOWERCASE = 1
-    PW_MINIMUM_DIGITS = 1
-    PW_MINIMUM_PUNCTUATION = 1
+def verify_password(db, password):
+    pw_min_length = get_setting(db, "security_password_minimum_length")
+    pw_min_ucase = get_setting(db, "security_password_minimum_uppercase_characters")
+    pw_min_lcase = get_setting(db, "security_password_minimum_lowercase_characters")
+    pw_min_digits = get_setting(db, "security_password_minimum_digits")
+    pw_min_punctuation = get_setting(db, "security_password_minimum_punctuation_characters")
 
-    pwlen = len(password)
-
-    if pwlen < PW_MINIMUM_LENGTH:
-        return f"The password has to have a length of at least {PW_MINIMUM_LENGTH} characters."
+    if len(password) < pw_min_length:
+        return f"The password has to have a length of at least {pw_min_length} characters."
 
     alphas = [c for c in password if c.isalpha()]
     digits = [c for c in password if c.isdigit()]
     puncs = [c for c in password if c in punctuation]
-    n_upper = sum(1 for c in alphas if c.isupper())
+    n_upper = sum(c.isupper() for c in alphas)
     n_lower = len(alphas) - n_upper
 
-    if n_upper < PW_MINIMUM_UPPERCASE or n_lower < PW_MINIMUM_LOWERCASE or len(digits) < PW_MINIMUM_DIGITS or len(puncs) < PW_MINIMUM_PUNCTUATION:
-        return f"Password must contain at least {PW_MINIMUM_UPPERCASE} uppercase, " \
-            f"{PW_MINIMUM_LOWERCASE} lowercase characters, " \
-            f"{PW_MINIMUM_PUNCTUATION} punctuation marks, and " \
-            f"{PW_MINIMUM_DIGITS} digits."
+    if n_upper < pw_min_ucase or n_lower < pw_min_lcase or len(digits) < pw_min_digits or len(puncs) < pw_min_punctuation:
+        return f"Password must contain at least {pw_min_ucase} uppercase, " \
+            f"{pw_min_lcase} lowercase characters, " \
+            f"{pw_min_punctuation} punctuation marks, and " \
+            f"{pw_min_digits} digits."
 
     invalid_chars = set(password).difference(alphas).difference(digits).difference(puncs)
 
