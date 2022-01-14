@@ -80,8 +80,8 @@ class TestPasswordUpdate(BaseIntegrationTest):
         )
 
         if reuse_old:
+            request_body["passwordChangeCredential"] = new_password
             req_json["status"] = expected_response
-            req_json["params"]["passwordChangeCredential"] = new_password
 
             self.testapp.put_json(
                 f"{base_url}/users/{user_id}/password",
