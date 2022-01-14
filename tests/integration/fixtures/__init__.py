@@ -58,6 +58,10 @@ class FixtureManager:
         self.session_factory   = session_factory
         self.storage_path      = storage_path
 
+    def get_db(self):
+        with transaction.manager:
+            return get_tm_session(self.session_factory, transaction.manager)
+
     def _create_fixture(self, db, fixture_set: str, fixture_name: str, fixture: dict, database_insert=True):
         """Creates a fixture based on the provided dictionary"""
         models = import_module('datameta.models')
