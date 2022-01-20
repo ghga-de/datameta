@@ -92,7 +92,7 @@ def verify_password(db, password):
     pw_min_punctuation = get_setting(db, "security_password_minimum_punctuation_characters")
 
     if len(password) < pw_min_length:
-        return f"The password has to have a length of at least {pw_min_length} characters."
+        return f"The password must be at least {pw_min_length} characters long."
 
     alphas = [c for c in password if c.isalpha()]
     digits = [c for c in password if c.isdigit()]
@@ -101,10 +101,10 @@ def verify_password(db, password):
     n_lower = len(alphas) - n_upper
 
     if n_upper < pw_min_ucase or n_lower < pw_min_lcase or len(digits) < pw_min_digits or len(puncs) < pw_min_punctuation:
-        return f"Password must contain at least {pw_min_ucase} uppercase, " \
-            f"{pw_min_lcase} lowercase characters, " \
-            f"{pw_min_punctuation} punctuation marks, and " \
-            f"{pw_min_digits} digits."
+        return f"Password must contain at least {pw_min_ucase} uppercase characters, " \
+            f"{pw_min_lcase} lowercase character(s), " \
+            f"{pw_min_punctuation} punctuation mark(s), and " \
+            f"{pw_min_digits} digit(s)."
 
     invalid_chars = set(password).difference(alphas).difference(digits).difference(puncs)
 
