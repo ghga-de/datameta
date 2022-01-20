@@ -85,3 +85,17 @@ logo_html:
 user_agreement:
   str_value: ""
     
+security_password_minimum_length:
+  int_value: 10
+
+security_password_minimum_uppercase_characters:
+  int_value: 1
+
+security_password_minimum_lowercase_characters:
+  int_value: 1
+
+security_password_minimum_digits:
+  int_value: 1
+
+security_password_minimum_punctuation_characters:
+  int_value: 1
