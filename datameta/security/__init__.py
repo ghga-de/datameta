@@ -112,7 +112,7 @@ def check_expiration(expiration_datetime: Optional[datetime]):
     return expiration_datetime is not None and datetime.now() >= expiration_datetime
 
 
-def verify_password(db, password):
+def verify_password(db, user_id, password):
     if is_used_password(db, user_id, password):
         return "The password has already been used."
 
