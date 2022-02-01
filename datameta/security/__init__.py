@@ -35,7 +35,7 @@ def register_password(db, user_id, password):
          - the hashed password
     """
     hashed_pw = hash_password(password)
-    db.add(UsedPassword(user_id=user_id, value=hashed_pw))
+    db.add(UsedPassword(user_id=user_id, pwhash=hashed_pw))
 
     return hashed_pw
 
@@ -50,7 +50,7 @@ def is_used_password(db, user_id, password):
 
     used_passwords = db.query(UsedPassword).filter(UsedPassword.user_id == user_id).all()
     for pw in used_passwords:
-        if check_password_by_hash(password, pw.value):
+        if check_password_by_hash(password, pw.pwhash):
             return True
 
     return False

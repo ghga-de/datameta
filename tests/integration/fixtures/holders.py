@@ -112,3 +112,9 @@ class ServiceExecutionFixture(Entity):
     user          : dict
     metadataset   : dict
     datetime      : datetime
+
+@dataclass
+class UsedPasswordFixture(Entity):
+    password: str
+    pwhash: str
+    user: str

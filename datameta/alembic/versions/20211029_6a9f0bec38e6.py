@@ -8,6 +8,7 @@ Create Date: 2021-10-29 11:22:19.194633
 from alembic import op
 import sqlalchemy as sa
 
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '6a9f0bec38e6'
@@ -21,11 +22,13 @@ def upgrade():
     op.create_table(
         'usedpasswords',
         sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('user_id', sa.Integer(), nullable=False),
-        sa.Column('value', sa.Text(), nullable=False),
+        sa.Column('pwhash', sa.Text(), nullable=False),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_usedpasswords_user_id_users')),
         sa.PrimaryKeyConstraint('id', name=op.f('pk_usedpasswords')),
-        sa.UniqueConstraint('value', name=op.f('uq_usedpasswords_value'))
+        sa.UniqueConstraint('uuid', name=op.f('uq_usedpasswords_uuid')),
+        sa.UniqueConstraint('pwhash', name=op.f('uq_usedpasswords_pwhash'))
     )
     # ### end Alembic commands ###
 

@@ -30,20 +30,21 @@ class TestPasswordUpdate(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('users')
         self.fixture_manager.load_fixtureset('apikeys')
         self.fixture_manager.load_fixtureset('passwordtokens')
+        self.fixture_manager.load_fixtureset('usedpasswords')
 
     @parameterized.expand([
-        # TEST_NAME                           EXEC_USER    TGT_USER_ID    TOKEN_FIXTURE            REUSE    NEW_PW             EXPIRED   RESP
-        ("self_pw_update_oldpass"           , "user_a"   , None         , None                   , False , "Xy.012345678910"   , False   , 204),
-        ("self_pw_update_reset_token"       , "user_a"   , None         , "user_a_reset_token"   , False , "Xy.012345678910"   , False   , 204),
-        ("self_pw_update_reset_exp_token"   , "user_a"   , None         , "user_a_reset_token"   , False , "Xy.012345678910"   , True    , 410),
-        ("self_expired_auth"                , "user_a"   , None         , None                   , False , "Xy.012345678910"   , True    , 401),
-        ("self_invalid_password"            , "user_a"   , None         , None                   , False , "*meep*"            , False   , 400),
-        ("self_invalid_reset_token"         , "user_a"   , None         , "does_not_exist"       , False , "Xy.012345678910"   , False   , 404),
-        ("other_password_update"            , "user_a"   , "user_b"     , None                   , False , "Xy.012345678910"   , False   , 403),
-        ("other_password_update"            , "user_a"   , "nihilist"   , None                   , False , "Xy.012345678910"   , False   , 403),
-        ("self_pw_update_reuse_pw"          , "user_a"   , None         , None                   , True  , "Xy.012345678910"   , False   , 400),
+        # TEST_NAME                           EXEC_USER    TGT_USER_ID    TOKEN_FIXTURE            NEW_PW                EXPIRED  RESP
+        ("self_pw_update_oldpass"           , "user_a"   , None         , None                   , "Xy.012345678910"   , False   , 204),
+        ("self_pw_update_reset_token"       , "user_a"   , None         , "user_a_reset_token"   , "Xy.012345678910"   , False   , 204),
+        ("self_pw_update_reset_exp_token"   , "user_a"   , None         , "user_a_reset_token"   , "Xy.012345678910"   , True    , 410),
+        ("self_expired_auth"                , "user_a"   , None         , None                   , "Xy.012345678910"   , True    , 401),
+        ("self_invalid_password"            , "user_a"   , None         , None                   , "*meep*"            , False   , 400),
+        ("self_invalid_reset_token"         , "user_a"   , None         , "does_not_exist"       , "Xy.012345678910"   , False   , 404),
+        ("other_password_update"            , "user_a"   , "user_b"     , None                   , "Xy.012345678910"   , False   , 403),
+        ("other_password_update"            , "user_a"   , "nihilist"   , None                   , "Xy.012345678910"   , False   , 403),
+        ("self_pw_update_reuse_pw"          , "user_d"   , None         , None                   , "Xy.012345678910"   , False   , 400),
         ])
-    def test_password_update(self, _, executing_user: str, target_user_id: str, token_fixture: str, reuse_old: bool, new_password: str, expired_auth: bool, expected_response: int):
+    def test_password_update(self, _, executing_user: str, target_user_id: str, token_fixture: str, new_password: str, expired_auth: bool, expected_response: int):
         if token_fixture:
             user_id = "0"
             try:
@@ -69,8 +70,9 @@ class TestPasswordUpdate(BaseIntegrationTest):
 
         req_json = {
             "params": request_body,
-            "status": 204 if reuse_old else expected_response
+            "status": expected_response
         }
+
         if auth_header:
             req_json["headers"] = auth_header
 
@@ -78,12 +80,3 @@ class TestPasswordUpdate(BaseIntegrationTest):
             f"{base_url}/users/{user_id}/password",
             **req_json
         )
-
-        if reuse_old:
-            request_body["passwordChangeCredential"] = new_password
-            req_json["status"] = expected_response
-
-            self.testapp.put_json(
-                f"{base_url}/users/{user_id}/password",
-                **req_json
-            )
