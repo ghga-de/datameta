@@ -64,8 +64,8 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
             AppSettingsResponseElement(
                 id                    =  resource.get_identifier(setting),
                 key                   =  setting.key,
-                value_type             =  value_type,
-                value                 =  value
+                value_type            =  value_type,
+                value                 =  str(value)
             )
         )
 

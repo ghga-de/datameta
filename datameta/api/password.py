@@ -68,7 +68,7 @@ def put(request):
             raise HTTPForbidden()  # 403 Not authorized to change this user's password
 
     # Verify the password quality
-    error = security.verify_password(request_newPassword)
+    error = security.verify_password(db, request_newPassword)
     if error:
         raise errors.get_validation_error([error])
 
