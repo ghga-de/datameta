@@ -1,4 +1,4 @@
-"""added failed_login tracking
+"""added failed_login_attempt tracking
 
 Revision ID: 98911b881230
 Revises: 7fdc829db18d
