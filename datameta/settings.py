@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import transaction
-from .models import ApplicationSetting, get_engine, get_tm_session, get_session_factory
+import datetime
 import pkgutil
 import yaml
+
+import transaction
+from .models import ApplicationSetting, get_engine, get_tm_session, get_session_factory
 
 import logging
 log = logging.getLogger(__name__)
@@ -62,6 +64,52 @@ def get_setting(db, name):
         return setting.date_value
     elif setting.time_value is not None:
         return setting.time_value
+    return None
+
+
+VALUE_CASTS = {
+    "int": {
+        "function": int,
+        "error_msg": "You have to provide an integer.",
+        "target": "int_value"
+    },
+    "string": {
+        "function": lambda value: value,
+        "error_msg": "",
+        "target": "str_value"
+    },
+    "float": {
+        "function": float,
+        "error_msg": "You have to provide an integer.",
+        "target": "float_value"
+    },
+    "date": {
+        "function": lambda value: datetime.datetime.strptime(value, "%Y-%m-%d"),
+        "error_msg": "The date value has to specified in the form '%Y-%m-%d'.",
+        "target": "date_value"
+    },
+    "time": {
+        "function": lambda value: datetime.datetime.strptime(value, "%H:%M:%S"),
+        "error_msg": "The time value has to specified in the form '%H:%M:%S'.",
+        "target": "date_value"
+    }
+}
+
+
+def set_setting(db, name, value):
+    target_setting = db.query(ApplicationSetting).filter(ApplicationSetting.key == name).one_or_none()
+    _, value_type = get_setting_value_type(target_setting)
+
+    cast_params = VALUE_CASTS.get(value_type)
+    if cast_params is not None:
+
+        try:
+            casted_value = cast_params["function"](value)
+        except ValueError:
+            return cast_params["error_msg"]
+
+        setattr(target_setting, cast_params["target"], casted_value)
+
     return None
 
 
