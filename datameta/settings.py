@@ -101,6 +101,7 @@ def set_setting(db, name, value):
     _, value_type = get_setting_value_type(target_setting)
 
     cast_params = VALUE_CASTS.get(value_type)
+
     if cast_params is not None:
 
         try:
