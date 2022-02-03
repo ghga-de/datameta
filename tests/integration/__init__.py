@@ -9,7 +9,8 @@ from sqlalchemy_utils import create_database, drop_database, database_exists
 
 from datameta.models import (
     get_engine,
-    get_session_factory
+    get_session_factory,
+    get_tm_session
 )
 from datameta.models.meta import Base
 
@@ -21,6 +22,8 @@ from .fixtures import (
 )
 
 from .utils import get_auth_header
+
+from datameta.settings import set_setting
 
 
 class BaseIntegrationTest(unittest.TestCase):
@@ -69,6 +72,11 @@ class BaseIntegrationTest(unittest.TestCase):
         Base.metadata.drop_all(self.engine)
         del self.testapp
         self.storage_path_obj.cleanup()
+
+    def set_application_setting(self, name, value):
+        with transaction.manager:
+            db = get_tm_session(self.session_factory, transaction.manager)
+            set_setting(db, name, value)
 
     def apikey_auth(self, user: holders.UserFixture) -> dict:
         apikey = self.fixture_manager.get_fixture('apikeys', user.site_id)
