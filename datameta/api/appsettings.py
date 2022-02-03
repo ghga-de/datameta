@@ -24,7 +24,6 @@ from .. import resource, security, errors
 from ..security import authz
 from ..resource import resource_by_id
 from ..settings import get_setting_value_type, set_setting
-import datetime
 
 
 @dataclass
