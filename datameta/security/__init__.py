@@ -166,7 +166,9 @@ def get_user_by_credentials(request, email: str, password: str):
                 User.id == user.id,
                 User.enabled.is_(True))).all()
 
-            [db.delete(attempt) for attempt in failed_attempts]
+            for attempt in failed_attempts:
+                db.delete(attempt)
+
             return user
 
         register_failed_login_attempt(db, user)
