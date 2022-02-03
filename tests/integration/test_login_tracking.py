@@ -18,9 +18,6 @@ from parameterized import parameterized
 
 from . import BaseIntegrationTest
 
-from datameta.models import User
-from datameta.settings import get_setting
-
 
 class TestLoginTracking(BaseIntegrationTest):
 
@@ -30,17 +27,17 @@ class TestLoginTracking(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('users')
 
     @parameterized.expand([
-        # TEST_NAME                 EXEC_USER SUCCESS?  EXPECTED_OUTCOME
-        ("login_fail_with_block"  , "user_a", False   , (302, "login", False)),
-        ("login_success_after_n-1", "user_a", True    , (302, "home", True)),
+        # TEST_NAME                    EXEC_USER   SUCCESS?  EXPECTED_OUTCOME
+        ("login_failure_with_block"  , "user_a"  , False   , (302, "login", False)),
+        ("login_success_after_n-1"   , "user_a"  , True    , (302, "home", True)),
     ])
     def test_login_tracking(self, _, executing_user: str, success: bool, expected_outcome):
 
         user = self.fixture_manager.get_fixture('users', executing_user)
-        n_attempts = get_setting(self.fixture_manager.get_db(), "security_max_failed_login_attempts")
+        n_attempts = 5
+        self.set_application_setting("security_max_failed_login_attempts", n_attempts)
 
         for attempt in range(1, n_attempts + 1):
-
             form = self.testapp.get("/login").forms[0]
             form["input_email"] = user.email
             form["input_password"] = user.password + ("_somenonsense" if attempt < n_attempts or not success else "")
@@ -51,6 +48,6 @@ class TestLoginTracking(BaseIntegrationTest):
         form["input_password"] = user.password
         response = form.submit("form.submitted")
 
-        user_db = self.fixture_manager.get_db().query(User).filter(User.email == user.email).one_or_none()
+        db_user = self.fixture_manager.get_fixture_db("users", executing_user)
 
-        assert (response.status_int, response.location.split("/")[-1], user_db.enabled) == expected_outcome
+        assert (response.status_int, response.location.split("/")[-1], db_user.enabled) == expected_outcome
