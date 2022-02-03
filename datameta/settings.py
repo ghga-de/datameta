@@ -91,12 +91,13 @@ VALUE_CASTS = {
     "time": {
         "function": lambda value: datetime.datetime.strptime(value, "%H:%M:%S"),
         "error_msg": "The time value has to specified in the form '%H:%M:%S'.",
-        "target": "date_value"
+        "target": "time_value"  # @lkuchenb: this was date_value in the original code - on purpose?
     }
 }
 
 
 def set_setting(db, name, value):
+
     target_setting = db.query(ApplicationSetting).filter(ApplicationSetting.key == name).one_or_none()
     _, value_type = get_setting_value_type(target_setting)
 
