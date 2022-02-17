@@ -93,6 +93,6 @@ def put(request: Request):
     try:
         set_setting(db, target_setting.key, value)
     except SettingUpdateError as e:
-        raise errors.get_validation_error(str(e))
+        raise errors.get_validation_error([str(e)])
 
     return HTTPNoContent()
