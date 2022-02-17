@@ -23,7 +23,7 @@ from ..models import ApplicationSetting
 from .. import resource, security, errors
 from ..security import authz
 from ..resource import resource_by_id
-from ..settings import get_setting_value_type, set_setting
+from ..settings import get_setting_value_type, set_setting, SettingUpdateError
 
 
 @dataclass
@@ -90,8 +90,9 @@ def put(request: Request):
     target_setting = resource_by_id(db, ApplicationSetting, settings_id)
     value = request.openapi_validated.body["value"]
 
-    error = set_setting(db, target_setting.key, value)
-    if error is not None:
-        raise errors.get_validation_error([error])
+    try:
+        error = set_setting(db, target_setting.key, value)
+    except SettingUpdateError as e:
+        raise errors.get_validation_error(str(e))
 
     return HTTPNoContent()

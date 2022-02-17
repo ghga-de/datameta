@@ -67,6 +67,9 @@ def get_setting(db, name):
     return None
 
 
+class SettingUpdateError(RuntimeError):
+    pass
+
 VALUE_CASTS = {
     "int": {
         "function": int,
@@ -91,7 +94,7 @@ VALUE_CASTS = {
     "time": {
         "function": lambda value: datetime.datetime.strptime(value, "%H:%M:%S"),
         "error_msg": "The time value has to specified in the form '%H:%M:%S'.",
-        "target": "time_value"  # @lkuchenb: this was date_value in the original code - on purpose?
+        "target": "time_value"
     }
 }
 
@@ -108,7 +111,7 @@ def set_setting(db, name, value):
         try:
             casted_value = cast_params["function"](value)
         except ValueError:
-            return cast_params["error_msg"]
+            raise SettingUpdateError(cast_params["error_msg"])
 
         setattr(target_setting, cast_params["target"], casted_value)
 
