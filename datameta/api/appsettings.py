@@ -91,7 +91,7 @@ def put(request: Request):
     value = request.openapi_validated.body["value"]
 
     try:
-        error = set_setting(db, target_setting.key, value)
+        set_setting(db, target_setting.key, value)
     except SettingUpdateError as e:
         raise errors.get_validation_error(str(e))
 

@@ -70,6 +70,7 @@ def get_setting(db, name):
 class SettingUpdateError(RuntimeError):
     pass
 
+
 VALUE_CASTS = {
     "int": {
         "function": int,
