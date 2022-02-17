@@ -161,14 +161,7 @@ def get_user_by_credentials(request, email: str, password: str):
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
     if user:
         if check_password_by_hash(password, user.pwhash):
-
-            failed_attempts = db.query(LoginAttempt).join(User).filter(and_(
-                User.id == user.id,
-                User.enabled.is_(True))).all()
-
-            for attempt in failed_attempts:
-                db.delete(attempt)
-
+            user.login_attempts.clear()
             return user
 
         register_failed_login_attempt(db, user)

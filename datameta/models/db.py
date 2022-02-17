@@ -90,7 +90,7 @@ class User(Base):
     apikeys              = relationship('ApiKey', back_populates='user')
     services             = relationship('Service', secondary=user_service_table, back_populates='users')
     service_executions   = relationship('ServiceExecution', back_populates='user')
-    login_attempts       = relationship("LoginAttempt", back_populates='user')
+    login_attempts       = relationship("LoginAttempt", back_populates='user', cascade="all, delete-orphan")
 
 
 class LoginAttempt(Base):
