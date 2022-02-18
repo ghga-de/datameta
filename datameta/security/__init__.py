@@ -208,7 +208,9 @@ def revalidate_user(request):
             )).one_or_none()
         if apikey is not None:
             if check_expiration(apikey.expires):
+                register_failed_login_attempt(request.dbsession, apikey.user)
                 raise HTTPUnauthorized()
+            apikey.user.login_attempts.clear()
             return apikey.user
         else:
             raise HTTPUnauthorized()
@@ -223,10 +225,13 @@ def revalidate_user(request):
         )).one_or_none()
     # Check if the user still exists and their group hasn't changed
     if user is None or user.group_id != request.session['user_gid']:
+        if user.group_id != request.session['user_gid']:
+            register_failed_login_attempt(request.dbsession, user)
         request.session.invalidate()
         raise HTTPUnauthorized()
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
+    user.login_attempts.clear()
     return user
 
 
