@@ -90,6 +90,7 @@ class User(Base):
     apikeys              = relationship('ApiKey', back_populates='user')
     services             = relationship('Service', secondary=user_service_table, back_populates='users')
     service_executions   = relationship('ServiceExecution', back_populates='user')
+    used_passwords       = relationship('UsedPassword', back_populates='user')
 
 
 class ApiKey(Base):
@@ -113,6 +114,17 @@ class PasswordToken(Base):
     expires          = Column(DateTime, nullable=False)
     # Relationships
     user             = relationship('User', back_populates='passwordtokens')
+
+
+class UsedPassword(Base):
+    __tablename__ = 'usedpasswords'
+    id            = Column(Integer, primary_key=True)
+    uuid          = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
+    user_id       = Column(Integer, ForeignKey('users.id'), nullable=False)
+    pwhash        = Column(Text, nullable=False, unique=True)
+
+    # Relationships
+    user          = relationship('User', back_populates='used_passwords')
 
 
 class RegRequest(Base):
