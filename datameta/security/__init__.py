@@ -22,6 +22,7 @@ from sqlalchemy import and_
 from ..models import User, ApiKey, PasswordToken, Session, LoginAttempt
 from ..settings import get_setting
 
+from pyramid_tm import create_tm
 import bcrypt
 import hashlib
 import logging
@@ -132,23 +133,29 @@ def hash_token(token):
     return hashed_token
 
 
-def register_failed_login_attempt(db, user):
+def register_failed_login_attempt(request, user):
     """ Registers a failed login attempt and disables user if this has happened too often in the last hour."""
+
+    db = request.dbsession
+    txn =  create_tm(request)
 
     now = datetime.utcnow()
     max_allowed_failed_logins = get_setting(db, "security_max_failed_login_attempts")
-    db.add(LoginAttempt(user_id=user.id, timestamp=now))
 
+    db.add(LoginAttempt(user_id=user.id, timestamp=now))
     n_failed_logins = sum(
         now - attempt.timestamp <= timedelta(hours=1)
         for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
     )
+    db.flush()
 
     log.warning(f"FAILED LOGIN ATTEMPT USER id={user.id} n={n_failed_logins} within one hour.")
     if n_failed_logins >= max_allowed_failed_logins:
         user.enabled = False
         log.warning(f"BLOCKED USER id={user.id} enabled={user.enabled} reason={n_failed_logins} failed login attempts within one hour.")
-    db.flush()
+
+    txn.commit()
+    txn.begin()
 
     return None
 
@@ -161,10 +168,11 @@ def get_user_by_credentials(request, email: str, password: str):
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
     if user:
         if check_password_by_hash(password, user.pwhash):
+            log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR gubc USER {user}")
             user.login_attempts.clear()
             return user
 
-        register_failed_login_attempt(db, user)
+        register_failed_login_attempt(request, user)
 
     return None
 
@@ -194,45 +202,65 @@ def get_password_reset_token(db: Session, token: str):
         )).one_or_none()
 
 
-def revalidate_user(request):
-    """Revalidate the currently logged in user and return the corresponding user object. On failure,
-    raise a 401"""
+def revalidate_user_token_based(request, token):
     db = request.dbsession
-    # Check for token based auth
-    token = get_bearer_token(request)
-    if token is not None:
-        token_hash = hash_token(token)
-        apikey = db.query(ApiKey).join(User).filter(and_(
-            ApiKey.value == token_hash,
-            User.enabled.is_(True)
-            )).one_or_none()
-        if apikey is not None:
-            if check_expiration(apikey.expires):
-                register_failed_login_attempt(request.dbsession, apikey.user)
-                raise HTTPUnauthorized()
-            apikey.user.login_attempts.clear()
-            return apikey.user
-        else:
-            raise HTTPUnauthorized()
 
+    token_hash = hash_token(token)
+    apikey = db.query(ApiKey).join(User).filter(and_(
+        ApiKey.value == token_hash,
+        User.enabled.is_(True)
+    )).one_or_none()
+
+    if apikey is not None:
+        apikey_expired = check_expiration(apikey.expires)
+        user = apikey.user
+
+        if apikey_expired:
+            register_failed_login_attempt(request, user)
+        else:
+            log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR APIKEY.USER {user.id}")
+            user.login_attempts.clear()
+            return user
+
+    raise HTTPUnauthorized()
+
+
+def revalidate_user_session_based(request):
     # Check for session based auth
     if 'user_uid' not in request.session:
         request.session.invalidate()
         raise HTTPUnauthorized()
+
     user = request.dbsession.query(User).filter(and_(
         User.id == request.session['user_uid'],
         User.enabled.is_(True)
         )).one_or_none()
+
     # Check if the user still exists and their group hasn't changed
     if user is None or user.group_id != request.session['user_gid']:
         if user.group_id != request.session['user_gid']:
-            register_failed_login_attempt(request.dbsession, user)
+            register_failed_login_attempt(request, user)
         request.session.invalidate()
         raise HTTPUnauthorized()
+
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
+
+    log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR USER {user}")
     user.login_attempts.clear()
     return user
+
+
+def revalidate_user(request):
+    """Revalidate the currently logged in user and return the corresponding user object. On failure,
+    raise a 401"""
+
+    # Check for token based auth
+    token = get_bearer_token(request)
+    if token is not None:
+        return revalidate_user_token_based(request, token)
+
+    return revalidate_user_session_based(request)
 
 
 def revalidate_user_or_login(request):
