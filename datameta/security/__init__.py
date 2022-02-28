@@ -168,7 +168,7 @@ def register_failed_login_attempt(request, user):
     """ Registers a failed login attempt and disables user if this has happened too often in the last hour."""
 
     db = request.dbsession
-    txn =  create_tm(request)
+    txn = create_tm(request)
 
     now = datetime.utcnow()
     max_allowed_failed_logins = get_setting(db, "security_max_failed_login_attempts")
