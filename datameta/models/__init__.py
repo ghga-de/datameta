@@ -36,7 +36,7 @@ from .db import (
         DownloadToken,
         Service,
         ServiceExecution,
-        LoginAttempt
+        LoginAttempt,
         UsedPassword
         )
 
