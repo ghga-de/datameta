@@ -19,7 +19,7 @@ from random import choice
 from string import ascii_letters, digits, punctuation
 from sqlalchemy import and_
 
-from ..models import User, ApiKey, PasswordToken, Session, LoginAttempt
+from ..models import User, ApiKey, PasswordToken, Session, UsedPassword, LoginAttempt
 from ..settings import get_setting
 
 from pyramid_tm import create_tm
@@ -28,6 +28,34 @@ import hashlib
 import logging
 import secrets
 log = logging.getLogger(__name__)
+
+
+def register_password(db, user_id, password):
+    """ Hashes an accepted password string, adds the hash to the user's password hash history.
+
+     Returns:
+         - the hashed password
+    """
+    hashed_pw = hash_password(password)
+    db.add(UsedPassword(user_id=user_id, pwhash=hashed_pw))
+
+    return hashed_pw
+
+
+def is_used_password(db, user_id, password):
+    """ Checks a password string against a user's password hash history.
+
+    Returns:
+        - True, if password has been used before by the user
+        - False, otherwise
+    """
+
+    used_passwords = db.query(UsedPassword).filter(UsedPassword.user_id == user_id).all()
+    for pw in used_passwords:
+        if check_password_by_hash(password, pw.pwhash):
+            return True
+
+    return False
 
 
 def generate_token():
@@ -85,7 +113,10 @@ def check_expiration(expiration_datetime: Optional[datetime]):
     return expiration_datetime is not None and datetime.now() >= expiration_datetime
 
 
-def verify_password(db, password):
+def verify_password(db, user_id, password):
+    if is_used_password(db, user_id, password):
+        return "The password has already been used."
+
     pw_min_length = get_setting(db, "security_password_minimum_length")
     pw_min_ucase = get_setting(db, "security_password_minimum_uppercase_characters")
     pw_min_lcase = get_setting(db, "security_password_minimum_lowercase_characters")

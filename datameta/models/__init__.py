@@ -37,6 +37,7 @@ from .db import (
         Service,
         ServiceExecution,
         LoginAttempt
+        UsedPassword
         )
 
 # run configure_mappers after defining all of the models to ensure
