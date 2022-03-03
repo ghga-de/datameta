@@ -12,21 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
+import bcrypt
+import hashlib
+import logging
+import secrets
+
 from datetime import datetime, timedelta
-from typing import Optional
 from random import choice
 from string import ascii_letters, digits, punctuation
+from typing import Optional
+
+from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from sqlalchemy import and_
 
 from ..models import User, ApiKey, PasswordToken, Session, UsedPassword, LoginAttempt
 from ..settings import get_setting
 
-from pyramid_tm import create_tm
-import bcrypt
-import hashlib
-import logging
-import secrets
 log = logging.getLogger(__name__)
 
 
@@ -164,29 +165,24 @@ def hash_token(token):
     return hashed_token
 
 
-def register_failed_login_attempt(request, user):
+def register_failed_login_attempt(db, user):
     """ Registers a failed login attempt and disables user if this has happened too often in the last hour."""
-
-    db = request.dbsession
-    txn = create_tm(request)
 
     now = datetime.utcnow()
     max_allowed_failed_logins = get_setting(db, "security_max_failed_login_attempts")
 
     db.add(LoginAttempt(user_id=user.id, timestamp=now))
+    db.flush()
     n_failed_logins = sum(
         now - attempt.timestamp <= timedelta(hours=1)
         for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
     )
-    db.flush()
 
     log.warning(f"FAILED LOGIN ATTEMPT USER id={user.id} n={n_failed_logins} within one hour.")
     if n_failed_logins >= max_allowed_failed_logins:
-        user.enabled = False
+        db.query(User).filter(user.id == User.id).update({User.enabled: False})
+        db.flush()
         log.warning(f"BLOCKED USER id={user.id} enabled={user.enabled} reason={n_failed_logins} failed login attempts within one hour.")
-
-    txn.commit()
-    txn.begin()
 
     return None
 
@@ -203,7 +199,7 @@ def get_user_by_credentials(request, email: str, password: str):
             user.login_attempts.clear()
             return user
 
-        register_failed_login_attempt(request, user)
+        register_failed_login_attempt(db, user)
 
     return None
 
@@ -247,7 +243,11 @@ def revalidate_user_token_based(request, token):
         user = apikey.user
 
         if apikey_expired:
-            register_failed_login_attempt(request, user)
+            request.tm.abort()
+            request.tm.begin()
+            register_failed_login_attempt(db, user)
+            request.tm.commit()
+            request.tm.begin()
         else:
             log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR APIKEY.USER {user.id}")
             user.login_attempts.clear()
@@ -262,7 +262,9 @@ def revalidate_user_session_based(request):
         request.session.invalidate()
         raise HTTPUnauthorized()
 
-    user = request.dbsession.query(User).filter(and_(
+    db = request.dbsession
+
+    user = db.query(User).filter(and_(
         User.id == request.session['user_uid'],
         User.enabled.is_(True)
         )).one_or_none()
@@ -270,7 +272,11 @@ def revalidate_user_session_based(request):
     # Check if the user still exists and their group hasn't changed
     if user is None or user.group_id != request.session['user_gid']:
         if user.group_id != request.session['user_gid']:
-            register_failed_login_attempt(request, user)
+            request.tm.abort()
+            request.tm.begin()
+            register_failed_login_attempt(db, user)
+            request.tm.commit()
+            request.tm.begin()
         request.session.invalidate()
         raise HTTPUnauthorized()
 
