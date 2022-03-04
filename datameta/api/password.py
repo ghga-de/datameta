@@ -17,7 +17,7 @@ from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, H
 from pyramid.view import view_config
 
 from .. import security, errors
-from ..security import authz
+from ..security import authz, tokenz, pwdz
 from ..models import User
 from datetime import datetime
 
@@ -41,7 +41,7 @@ def put(request):
     token = None
     if request_id == '0':
         # Try to find the token
-        token = security.get_password_reset_token(db, request_credential)
+        token = tokenz.get_password_reset_token(db, request_credential)
         if token is None:
             raise HTTPNotFound()  # 404 Token not found
 
@@ -64,16 +64,16 @@ def put(request):
             raise HTTPForbidden()  # 403 User ID not found, hidden from the user intentionally
 
         # Only changing the user's own password is allowed
-        if not authz.update_user_password(auth_user, target_user) or not security.check_password_by_hash(request_credential, auth_user.pwhash):
+        if not authz.update_user_password(auth_user, target_user) or not pwdz.check_password_by_hash(request_credential, auth_user.pwhash):
             raise HTTPForbidden()  # 403 Not authorized to change this user's password
 
     # Verify the password quality
-    error = security.verify_password(db, auth_user.id, request_newPassword)
+    error = pwdz.verify_password(db, auth_user.id, request_newPassword)
     if error:
         raise errors.get_validation_error([error])
 
     # Set the new password
-    auth_user.pwhash = security.register_password(db, auth_user.id, request_newPassword)
+    auth_user.pwhash = pwdz.register_password(db, auth_user.id, request_newPassword)
 
     # Delete the password token if any
     if token:

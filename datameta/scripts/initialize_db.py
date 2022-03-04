@@ -18,7 +18,8 @@ import sys
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
-from ..security import register_password, hash_token
+from ..security.pwdz import register_password
+from ..security.tokenz import hash_token
 from ..models import User, Group, MetaDatum, DateTimeMode, ApiKey
 
 

@@ -14,7 +14,8 @@
 
 from pyramid.view import view_config
 
-from ... import security, email
+from ... import email
+from ...security import tokenz
 from ...settings import get_setting
 
 import re
@@ -51,7 +52,7 @@ def v_forgot_api(request):
         return { 'success' : False, 'error' : 'MALFORMED_EMAIL' }
 
     try:
-        db_token_obj, clear_token = security.get_new_password_reset_token_from_email(db, req_email)
+        db_token_obj, clear_token = tokenz.get_new_password_reset_token_from_email(db, req_email)
     except KeyError:
         # User not found
         log.debug(f"DURING RECOVERY TOKEN REQUEST: USER COULD NOT BE RESOLVED FROM EMAIL: {req_email}")

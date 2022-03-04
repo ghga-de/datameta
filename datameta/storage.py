@@ -19,7 +19,8 @@ import hashlib
 from datetime import datetime, timedelta
 from pyramid.request import Request
 from typing import Optional
-from . import security, models
+from . import models
+from .security import tokenz
 from .api import base_url
 
 log = logging.getLogger(__name__)
@@ -77,8 +78,8 @@ def create_and_annotate_storage(request, db_file):
     # Currently, only local storage is supported
     db_file.storage_uri = f"file://{db_file.uuid}__{db_file.checksum}"
 
-    token = security.generate_token()
-    db_file.access_token = security.hash_token(token)
+    token = tokenz.generate_token()
+    db_file.access_token = tokenz.hash_token(token)
 
     # Create empty file
     open(get_local_storage_path(request, db_file.storage_uri), 'w').close()
@@ -162,8 +163,8 @@ def _get_download_url_local(request: Request, db_file: models.File, expires_afte
     if expires_after is None:
         expires_after = 1
 
-    token = security.generate_token()
-    token_hash = security.hash_token(token)
+    token = tokenz.generate_token()
+    token_hash = tokenz.hash_token(token)
     expires = datetime.utcnow() + timedelta(minutes = float(expires_after))
 
     db = request.dbsession
