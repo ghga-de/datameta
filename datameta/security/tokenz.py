@@ -18,7 +18,7 @@ import secrets
 
 from datetime import datetime, timedelta
 from random import choice
-from string import ascii_letters, digits, punctuation
+from string import ascii_letters, digits
 
 from sqlalchemy import and_
 

@@ -23,10 +23,21 @@ from sqlalchemy import and_
 from ..models import User, ApiKey, LoginAttempt
 from ..settings import get_setting
 
-from . import tokenz, pwdz
+from .pwdz import (  # noqa: F401
+    register_password,
+    is_used_password,
+    verify_password,
+    hash_password,
+    check_password_by_hash
+    )
 
-from .tokenz import *
-from .pwdz import *
+from .tokenz import (  # noqa: F401
+    generate_token,
+    get_new_password_reset_token,
+    get_new_password_reset_token_from_email,
+    hash_token, get_bearer_token,
+    get_password_reset_token
+    )
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +78,7 @@ def get_user_by_credentials(request, email: str, password: str):
     db = request.dbsession
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
     if user:
-        if pwdz.check_password_by_hash(password, user.pwhash):
+        if check_password_by_hash(password, user.pwhash):
             log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR gubc USER {user}")
             user.login_attempts.clear()
             return user
@@ -80,7 +91,7 @@ def get_user_by_credentials(request, email: str, password: str):
 def revalidate_user_token_based(request, token):
     db = request.dbsession
 
-    token_hash = tokenz.hash_token(token)
+    token_hash = hash_token(token)
     apikey = db.query(ApiKey).join(User).filter(and_(
         ApiKey.value == token_hash,
         User.enabled.is_(True)
@@ -141,7 +152,7 @@ def revalidate_user(request):
     raise a 401"""
 
     # Check for token based auth
-    token = tokenz.get_bearer_token(request)
+    token = get_bearer_token(request)
     if token is not None:
         return revalidate_user_token_based(request, token)
 

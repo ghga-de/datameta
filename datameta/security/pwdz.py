@@ -17,9 +17,6 @@ import logging
 
 from string import punctuation
 
-from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
-from sqlalchemy import and_
-
 from ..models import UsedPassword
 from ..settings import get_setting
 
