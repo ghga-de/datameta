@@ -108,13 +108,14 @@ def get_new_password_reset_token_from_email(db: Session, email: str):
 
 
 def check_expiration(expiration_datetime: Optional[datetime]):
-    """
-    Checks if an expiration date was exceeded. Returns true if expired.
-    """
+    """Checks if an expiration date was exceeded. Returns true if expired."""
     return expiration_datetime is not None and datetime.now() >= expiration_datetime
 
 
 def verify_password(db, user_id, password):
+    """Checks if password matches security criteria
+    as described in the application settings."""
+
     if is_used_password(db, user_id, password):
         return "The password has already been used."
 
@@ -148,19 +149,19 @@ def verify_password(db, user_id, password):
 
 
 def hash_password(pw):
-    """Hash a password and return the salted hash"""
+    """Hash a password and return the salted hash."""
     pwhash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
     return pwhash.decode('utf8')
 
 
 def check_password_by_hash(pw, hashed_pw):
-    """Check a password against a salted hash"""
+    """Check a password against a salted hash."""
     expected_hash = hashed_pw.encode('utf8')
     return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
 
 
 def hash_token(token):
-    """Hash a token and return the unsalted hash"""
+    """Hash a token and return the unsalted hash."""
     hashed_token = hashlib.sha256(token.encode('utf-8')).hexdigest()
     return hashed_token
 
@@ -188,8 +189,7 @@ def register_failed_login_attempt(db, user):
 
 
 def get_user_by_credentials(request, email: str, password: str):
-
-    """Check a combination of email and password, returns a user object if valid"""
+    """Check a combination of email and password, returns a user object if valid."""
 
     db = request.dbsession
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
@@ -230,6 +230,7 @@ def get_password_reset_token(db: Session, token: str):
 
 
 def revalidate_user_token_based(request, token):
+    """Revalidates user during token-based operations."""
     db = request.dbsession
 
     token_hash = hash_token(token)
@@ -257,6 +258,8 @@ def revalidate_user_token_based(request, token):
 
 
 def revalidate_user_session_based(request):
+    """Revalidates user authentication in the current session."""
+
     # Check for session based auth
     if 'user_uid' not in request.session:
         request.session.invalidate()
