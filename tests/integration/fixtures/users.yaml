@@ -64,6 +64,7 @@ user_a:
     site_admin: false
     site_read: false
     enabled: true
+    tfa_secret: blargh
   references:
     group:
       fixtureset: groups
