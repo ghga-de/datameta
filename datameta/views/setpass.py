@@ -14,7 +14,7 @@
 
 from pyramid.view import view_config
 
-from .. import security
+from ..security import tokenz
 from ..api.ui.forgot import send_forgot_token
 
 import datetime
@@ -23,14 +23,14 @@ import datetime
 @view_config(route_name='setpass', renderer='../templates/setpass.pt')
 def v_setpass(request):
     # Validate token
-    dbtoken = security.get_password_reset_token(request.dbsession, request.matchdict['token'])
+    dbtoken = tokenz.get_password_reset_token(request.dbsession, request.matchdict['token'])
 
     unknown_token = dbtoken is None
     expired_token = dbtoken is not None and dbtoken.expires < datetime.datetime.now()
 
     # Token expired? Send new one.
     if expired_token:
-        db_token_obj, clear_token = security.get_new_password_reset_token(request.dbsession, dbtoken.user)
+        db_token_obj, clear_token = tokenz.get_new_password_reset_token(request.dbsession, dbtoken.user)
         send_forgot_token(request, db_token_obj, clear_token)
 
     return {

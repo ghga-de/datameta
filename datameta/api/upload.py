@@ -18,7 +18,8 @@ from pyramid.view import view_config
 import webob
 import logging
 from datetime import datetime
-from .. import resource, models, storage, security
+from .. import resource, models, storage
+from ..security import tokenz
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ def post(request) -> HTTPNoContent:
     db_file = resource.resource_by_id(db, models.File, req_file_id)
 
     # Validate access token match
-    db_file = db_file if db_file and req_token and db_file.upload_expires > datetime.now() and db_file.access_token == security.hash_token(req_token) else None
+    db_file = db_file if db_file and req_token and db_file.upload_expires > datetime.now() and db_file.access_token == tokenz.hash_token(req_token) else None
 
     if db_file is None:  # Includes token mismatch
         raise HTTPNotFound(json=None)

@@ -18,7 +18,7 @@ from pyramid.request import Request
 from typing import Optional, List
 from .. import models
 from .. import security
-from ..security import authz
+from ..security import authz, tokenz
 from pyramid.httpexceptions import HTTPOk, HTTPUnauthorized, HTTPForbidden
 from ..resource import resource_by_id, get_identifier
 from ..errors import get_validation_error
@@ -95,8 +95,8 @@ def generate_api_key(request: Request, user: models.User, label: str, expires: O
     """
     Generate API Token and store unsalted hash in db.
     """
-    token = security.generate_token()
-    token_hash = security.hash_token(token)
+    token = tokenz.generate_token()
+    token_hash = tokenz.hash_token(token)
 
     db = request.dbsession
     apikey = models.ApiKey(

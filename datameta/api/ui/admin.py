@@ -18,6 +18,7 @@ from pyramid.view import view_config
 from ...models import User, Group, RegRequest
 from ...settings import get_setting
 from ... import email, security, siteid, errors
+from ...security import tokenz
 from ...resource import resource_by_id, get_identifier
 from sqlalchemy.exc import IntegrityError
 
@@ -98,7 +99,7 @@ def v_admin_put_request(request):
         db.delete(reg_req)
 
         # Obtain a new token
-        _, clear_token = security.get_new_password_reset_token(db, new_user)
+        _, clear_token = tokenz.get_new_password_reset_token(db, new_user)
 
         # Generate the token url
         token_url = request.route_url('setpass', token = clear_token)

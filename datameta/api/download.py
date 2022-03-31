@@ -18,6 +18,7 @@ from pyramid.request import Request
 from pyramid.response import FileResponse
 from datetime import datetime
 from .. import security, models, storage
+from ..security import tokenz
 from ..resource import get_identifier
 from .files import access_file_by_user
 from sqlalchemy import and_
@@ -75,7 +76,7 @@ def download_by_token(request: Request) -> HTTPOk:
     Usage: /download/{download_token}
     """
     token = request.matchdict['token']
-    hashed_token = security.hash_token(token)
+    hashed_token = tokenz.hash_token(token)
 
     # get download token from db
     db = request.dbsession

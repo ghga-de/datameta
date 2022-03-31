@@ -41,7 +41,6 @@ template_welcome_token:
             
             Best regards,
             The Support Team
-            },
 
 subject_reject:
   str_value : Your registration request was rejected
@@ -85,6 +84,9 @@ logo_html:
 user_agreement:
   str_value: ""
     
+security_max_failed_login_attempts:
+  int_value: 5
+
 security_password_minimum_length:
   int_value: 10
 
