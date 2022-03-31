@@ -67,12 +67,12 @@ def put(request):
             raise HTTPForbidden()  # 403 Not authorized to change this user's password
 
     # Verify the password quality
-    error = security.verify_password(request_newPassword)
+    error = security.verify_password(db, auth_user.id, request_newPassword)
     if error:
         raise errors.get_validation_error([error])
 
     # Set the new password
-    auth_user.pwhash = security.hash_password(request_newPassword)
+    auth_user.pwhash = security.register_password(db, auth_user.id, request_newPassword)
 
     # Delete the password token if any
     if token:

@@ -89,6 +89,25 @@ user_b:
       fixtureset: groups
       name: group_x
 
+user_d:
+  class: User
+  attributes:
+    email: user_d@user.group_x
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: Xy.012345678910
+    fullname: user_d
+    site_id: user_d
+    group_admin: false
+    site_admin: false
+    site_read: false
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x
+
 group_y_admin:
   class: User
   attributes:
