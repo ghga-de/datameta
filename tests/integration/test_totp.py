@@ -39,10 +39,10 @@ class TestTotpSecretDeletion(BaseIntegrationTest):
     def test_totp_secret_deletion(self, _, executing_user: str, target_user: str, expected_response: int):
 
         user = self.fixture_manager.get_fixture('users', executing_user)
-        target_user_before, target_user_after = None, None
+        tfa_secret_before, tfa_secret_after = None, None
 
         if expected_response != 404:
-            target_user_before = self.fixture_manager.get_fixture_db('users', target_user)
+            tfa_secret_before = self.fixture_manager.get_fixture_db('users', target_user).tfa_secret
 
         self.testapp.delete(
             f"{base_url}/users/{target_user}/totp-secret",
@@ -51,9 +51,9 @@ class TestTotpSecretDeletion(BaseIntegrationTest):
         )
 
         if expected_response != 404:
-            target_user_after = self.fixture_manager.get_fixture_db('users', target_user)
+            tfa_secret_after = self.fixture_manager.get_fixture_db('users', target_user).tfa_secret
 
         if expected_response == 200:
-            assert target_user_after.tfa_secret is None
+            assert tfa_secret_after is None
         else:
-            assert target_user_before is None or target_user_after.tfa_secret == target_user_before.tfa_secret
+            assert tfa_secret_before == tfa_secret_after
