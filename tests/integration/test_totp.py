@@ -29,30 +29,31 @@ class TestTotpSecretDeletion(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('apikeys')
 
     @parameterized.expand([
-        # TEST_NAME              EXEC_USER            RESP
-        ("site_admin"          , "admin"            , 200),
-        ("group_admin"         , "group_x_admin"    , 403),
-        ("regular_user_self"    , "user_a"           , 403),
-        ("regular_user_other"   , "user_b"           , 403),
+        # TEST_NAME              EXEC_USER           TARGET_USER        RESP
+        ("site_admin"           , "admin"            , "user_a"       , 200),
+        ("group_admin"          , "group_x_admin"    , "user_a"       , 403),
+        ("regular_user_self"    , "user_a"           , "user_a"       , 403),
+        ("regular_user_other"   , "user_b"           , "user_a"       , 403),
+        ("non_existing_user"    , "admin"            , "nihilist"     , 404),
         ])
-    def test_totp_secret_deletion(self, _, executing_user: str, expected_response: int):
+    def test_totp_secret_deletion(self, _, executing_user: str, target_user: str, expected_response: int):
 
         user = self.fixture_manager.get_fixture('users', executing_user)
-        target_user_before = self.fixture_manager.get_fixture_db('users', 'user_a')
+        target_user_before, target_user_after = None, None
 
-        req_json = {
-            "status": expected_response,
-            "headers": self.apikey_auth(user)
-        }
+        if expected_response != 404:
+            target_user_before = self.fixture_manager.get_fixture_db('users', target_user)
 
-        self.testapp.delete_json(
-            f"{base_url}/totp-secret/{target_user_before.site_id}",
-            **req_json
+        self.testapp.delete(
+            f"{base_url}/users/{target_user}/totp-secret",
+            status=expected_response,
+            headers=self.apikey_auth(user)
         )
 
-        target_user_after = self.fixture_manager.get_fixture_db('users', 'user_a')
+        if expected_response != 404:
+            target_user_after = self.fixture_manager.get_fixture_db('users', target_user)
 
         if expected_response == 200:
             assert target_user_after.tfa_secret is None
         else:
-            assert target_user_after.tfa_secret == target_user_before.tfa_secret
+            assert target_user_before is None or target_user_after.tfa_secret == target_user_before.tfa_secret

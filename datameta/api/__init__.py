@@ -46,6 +46,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("apikeys_id", base_url + "/keys/{id}")
     config.add_route("user_id_keys", base_url + "/users/{id}/keys")
     config.add_route("SetUserPassword", base_url + "/users/{id}/password")
+    config.add_route("totp_secret_id", base_url + "/users/{id}/totp-secret")
     config.add_route("rpc_whoami", base_url + "/rpc/whoami")
     config.add_route("user_id", base_url + "/users/{id}")
     config.add_route("metadata", base_url + "/metadata")
@@ -68,7 +69,6 @@ def includeme(config: Configurator) -> None:
     config.add_route("services", base_url + "/services")
     config.add_route("services_id", base_url + "/services/{id}")
     config.add_route("service_execution", base_url + "/service-execution/{serviceId}/{metadatasetId}")
-    config.add_route("totp_secret_id", base_url + "/totp-secret/{id}")
 
     # Endpoint outside of openapi
     config.add_route("upload", base_url + "/upload/{id}")

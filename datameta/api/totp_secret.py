@@ -17,7 +17,7 @@ from pyramid.request import Request
 from .. import models
 from .. import security
 from ..security import authz
-from pyramid.httpexceptions import HTTPOk, HTTPForbidden
+from pyramid.httpexceptions import HTTPOk, HTTPForbidden, HTTPNotFound
 from ..resource import resource_by_id
 
 
@@ -33,7 +33,9 @@ def delete_totp_secret(request: Request):
 
     db = request.dbsession
     target_user = resource_by_id(db, models.User, request.matchdict['id'])
-    if not target_user or not authz.delete_totp_secret(auth_user):
+    if not target_user:
+        raise HTTPNotFound()
+    if not authz.delete_totp_secret(auth_user):
         raise HTTPForbidden()
 
     target_user.tfa_secret = None
