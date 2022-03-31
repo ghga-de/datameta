@@ -34,8 +34,8 @@ class TestPasswordUpdate(BaseIntegrationTest):
 
     @parameterized.expand([
         # TEST_NAME                           EXEC_USER    TGT_USER_ID    TOKEN_FIXTURE            NEW_PW                EXPIRED  RESP
-        ("self_pw_update_oldpass"           , "user_a"   , None         , None                   , "Xy.012345678910"   , False   , 204),
-        ("self_pw_update_reset_token"       , "user_a"   , None         , "user_a_reset_token"   , "Xy.012345678910"   , False   , 204),
+        ("self_pw_update_oldpass"           , "user_a"   , None         , None                   , "Xy.012345678910"   , False   , 200),
+        ("self_pw_update_reset_token"       , "user_a"   , None         , "user_a_reset_token"   , "Xy.012345678910"   , False   , 200),
         ("self_pw_update_reset_exp_token"   , "user_a"   , None         , "user_a_reset_token"   , "Xy.012345678910"   , True    , 410),
         ("self_expired_auth"                , "user_a"   , None         , None                   , "Xy.012345678910"   , True    , 401),
         ("self_invalid_password"            , "user_a"   , None         , None                   , "*meep*"            , False   , 400),
