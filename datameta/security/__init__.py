@@ -274,12 +274,6 @@ def revalidate_user_session_based(request):
 
     # Check if the user still exists and their group hasn't changed
     if user is None or user.group_id != request.session['user_gid']:
-        if user.group_id != request.session['user_gid']:
-            request.tm.abort()
-            request.tm.begin()
-            register_failed_login_attempt(db, user)
-            request.tm.commit()
-            request.tm.begin()
         request.session.invalidate()
         raise HTTPUnauthorized()
 
