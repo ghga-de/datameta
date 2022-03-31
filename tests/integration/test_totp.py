@@ -16,10 +16,8 @@
 """
 from parameterized import parameterized
 
-from .utils import get_auth_header
 from . import BaseIntegrationTest
 from datameta.api import base_url
-from .fixtures import FixtureNotFoundError
 
 
 class TestTotpSecretDeletion(BaseIntegrationTest):
@@ -29,7 +27,7 @@ class TestTotpSecretDeletion(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('groups')
         self.fixture_manager.load_fixtureset('users')
         self.fixture_manager.load_fixtureset('apikeys')
-        
+
     @parameterized.expand([
         # TEST_NAME              EXEC_USER            RESP
         ("site_admin"          , "admin"            , 200),
@@ -38,7 +36,7 @@ class TestTotpSecretDeletion(BaseIntegrationTest):
         ("regular_user_other"   , "user_b"           , 403),
         ])
     def test_totp_secret_deletion(self, _, executing_user: str, expected_response: int):
-        
+
         user = self.fixture_manager.get_fixture('users', executing_user)
         target_user_before = self.fixture_manager.get_fixture_db('users', 'user_a')
 
@@ -58,4 +56,3 @@ class TestTotpSecretDeletion(BaseIntegrationTest):
             assert target_user_after.tfa_secret is None
         else:
             assert target_user_after.tfa_secret == target_user_before.tfa_secret
-
