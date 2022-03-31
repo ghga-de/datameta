@@ -34,8 +34,8 @@ class TestTotpSecretDeletion(BaseIntegrationTest):
         # TEST_NAME              EXEC_USER            RESP
         ("site_admin"          , "admin"            , 200),
         ("group_admin"         , "group_x_admin"    , 403),
-        ("normal_user_self"    , "user_a"           , 403),
-        ("normal_user_other"   , "user_b"           , 403),
+        ("regular_user_self"    , "user_a"           , 403),
+        ("regular_user_other"   , "user_b"           , 403),
         ])
     def test_totp_secret_deletion(self, _, executing_user: str, expected_response: int):
         
