@@ -18,11 +18,14 @@ from random import choice
 from string import ascii_letters, digits, punctuation
 
 import bcrypt
-import hashlib
 import secrets
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 
 from sqlalchemy import and_
+
+from .tfaz import is_2fa_enabled
+from .tokenz import hash_token
+
 
 from ..models import User, ApiKey, PasswordToken, Session, UsedPassword, LoginAttempt
 from ..settings import get_setting
@@ -160,12 +163,6 @@ def check_password_by_hash(pw, hashed_pw):
     return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
 
 
-def hash_token(token):
-    """Hash a token and return the unsalted hash."""
-    hashed_token = hashlib.sha256(token.encode('utf-8')).hexdigest()
-    return hashed_token
-
-
 def register_failed_login_attempt(db, user):
     """ Registers a failed login attempt and disables user if this has happened too often in the last hour."""
 
@@ -190,13 +187,13 @@ def register_failed_login_attempt(db, user):
 
 def get_user_by_credentials(request, email: str, password: str):
     """Check a combination of email and password, returns a user object if valid."""
-
     db = request.dbsession
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
     if user:
         if check_password_by_hash(password, user.pwhash):
-            log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR gubc USER {user}")
-            user.login_attempts.clear()
+            if not is_2fa_enabled():
+                log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR gubc USER {user}")
+                user.login_attempts.clear()
             return user
 
         register_failed_login_attempt(db, user)

@@ -23,7 +23,7 @@ from sqlalchemy import and_
 from pyramid import threadlocal
 from pyramid.settings import asbool
 
-from . import hash_token
+from .tokenz import hash_token
 from ..models import User, Session, TfaToken
 
 import logging
@@ -39,40 +39,42 @@ def is_2fa_enabled():
     return asbool(threadlocal.get_current_registry().settings['datameta.tfa.enabled'])
 
 
-def get_2fa_crypto_function():
+def get_2fa_crypto_function(settings=None):
     """Get the encrypt/decrypt function based on the system's master key.
 
     Returns:
         - a Fernet crypto function object
 
     """
-    encrypt_key = str(threadlocal.get_current_registry().settings['datameta.tfa.encrypt_key'])
+    if settings is None:
+        settings = threadlocal.get_current_registry().settings
+    encrypt_key = str(settings['datameta.tfa.encrypt_key'])
     return Fernet(encrypt_key.encode())
 
 
-def generate_2fa_secret(db):
+def generate_2fa_secret(db, settings=None):
     """Generate and encrypt a 2fa secret.
 
     Returns:
           - the encrypted 2fa secret as a string
     """
 
-    encrypt_f = get_2fa_crypto_function().encrypt
+    encrypt_f = get_2fa_crypto_function(settings=settings).encrypt
     return encrypt_f(pyotp.random_base32().encode()).decode()
 
 
-def unpack_2fa_secret(db, secret):
+def unpack_2fa_secret(secret, settings=None):
     """Decrypt and decode a 2fa secret.
 
     Returns:
         - the decrypted and decoded secret
     """
 
-    decrypt_f = get_2fa_crypto_function().decrypt
+    decrypt_f = get_2fa_crypto_function(settings=settings).decrypt
     return decrypt_f(secret.encode()).decode()
 
 
-def generate_totp_uri(db, user, secret):
+def generate_totp_uri(user, secret):
     """Generates a totp uri for the given user.
 
     Returns:
@@ -80,25 +82,30 @@ def generate_totp_uri(db, user, secret):
     """
 
     issuer = str(threadlocal.get_current_registry().settings['datameta.tfa.otp_issuer'])
-    return pyotp.totp.TOTP(unpack_2fa_secret(db, secret)).provisioning_uri(
+    return pyotp.totp.TOTP(unpack_2fa_secret(secret)).provisioning_uri(
         name=user.email,
         issuer_name=issuer
     )
 
 
-def generate_2fa_qrcode(db, user, secret):
+def generate_otp(secret):
+    """Generates the current OTP based on a given TOTP-secret."""
+    return pyotp.TOTP(secret).now()
+
+
+def generate_2fa_qrcode(user, secret):
     """Generates a qr code in svg format encoding the totp uri for the given user.
 
     Returns:
         - a string containing the svg d-attribute encoding the qr code
     """
 
-    totp_uri = generate_totp_uri(db, user, secret)
+    totp_uri = generate_totp_uri(user, secret)
     qr_code = qrcode.make(totp_uri, image_factory=qrcode.image.svg.SvgPathFillImage)
     return qr_code.make_path().get("d")
 
 
-def get_user_2fa_secret(user):
+def get_user_2fa_secret(user, settings=None):
     """Decrypts and returns the 2fa secret for the given user.
 
     Returns:
@@ -109,12 +116,12 @@ def get_user_2fa_secret(user):
     if user.tfa_secret is None:
         return None
 
-    decrypt_f = get_2fa_crypto_function()
+    decrypt_f = get_2fa_crypto_function(settings=settings)
     secret = decrypt_f.decrypt(user.tfa_secret.encode())
     return secret.decode()
 
 
-def verify_otp(db, secret, otp_token):
+def verify_otp(secret, otp_token, settings=None):
     """Verifies an otp token against a secret.
 
     Returns:
@@ -122,7 +129,7 @@ def verify_otp(db, secret, otp_token):
     - a message string if not
     """
 
-    if not pyotp.TOTP(unpack_2fa_secret(db, secret)).verify(otp_token):
+    if not pyotp.TOTP(unpack_2fa_secret(secret, settings=settings)).verify(otp_token):
         return "The OTP does not match the expected value."
     return None
 
@@ -153,7 +160,7 @@ def create_2fa_token(db: Session, user: User, expires=None):
 
 
 def check_2fa_token(db: Session, token: str):
-    """Tries to find the corresponding password reset token in the database.
+    """Tries to find the corresponding 2fa setup token in the database.
     Returns the token only if it can be found and if the corresponding user is
     enabled, otherwise no checking is performed, most importantly expiration
     checks are not performed.
