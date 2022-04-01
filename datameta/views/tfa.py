@@ -21,7 +21,7 @@ from pyramid.view import view_config
 from sqlalchemy import and_
 
 from .. import errors
-from ..security import tfa
+from ..security import register_failed_login_attempt, tfaz
 from ..models import User
 
 import logging
@@ -34,7 +34,7 @@ def setup_tfa(request):
 
     if body['token'] != "0":
         # Validate token
-        dbtoken = tfa.check_2fa_token(request.dbsession, body['token'])
+        dbtoken = tfaz.check_2fa_token(request.dbsession, body['token'])
 
         if dbtoken is None:
             return HTTPNotFound()
@@ -44,7 +44,7 @@ def setup_tfa(request):
             raise errors.get_validation_error(['The 2fa setup session has expired. Please reset your password.'])
 
         in_otp = body['inputOTP']
-        error = tfa.verify_otp(request.dbsession, dbtoken.secret, in_otp)
+        error = tfaz.verify_otp(dbtoken.secret, in_otp)
 
         if error:
             raise errors.get_validation_error([error])
@@ -71,17 +71,25 @@ def my_view(request):
             if user is None:
                 raise HTTPForbidden()
 
-            if user.tfa_secret is None and tfa.is_2fa_enabled():
+            if user.tfa_secret is None and tfaz.is_2fa_enabled():
                 raise errors.get_validation_error(['Please reset your password and set up two-factor authorisation.'])
 
-            error = tfa.verify_otp(request.dbsession, user.tfa_secret, in_otp)
-            if not error:
+            error = tfaz.verify_otp(user.tfa_secret, in_otp)
+            if error:
+                register_failed_login_attempt(request.dbsession, user)
+                if not user.enabled:
+                    return HTTPFound(location="/login")
+
+            else:
 
                 if datetime.utcnow() < request.session["auth_expires"]:
                     request.session["user_uid"] = request.session["preauth_uid"]
                     request.session["user_gid"] = request.session["preauth_gid"]
                     del request.session["preauth_uid"]
                     del request.session["preauth_gid"]
+
+                    log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR 2fa USER {user}")
+                    user.login_attempts.clear()
 
                     return HTTPFound(location="/home")
                 else:
