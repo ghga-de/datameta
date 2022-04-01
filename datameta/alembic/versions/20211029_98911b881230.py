@@ -1,7 +1,7 @@
 """added failed_login_attempt tracking
 
 Revision ID: 98911b881230
-Revises: 7fdc829db18d
+Revises: 6a9f0bec38e6
 Create Date: 2021-10-29 15:01:29.844727
 
 """
