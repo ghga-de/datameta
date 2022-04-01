@@ -37,7 +37,8 @@ from .db import (
         Service,
         ServiceExecution,
         TfaToken,
-        UsedPassword,
+        LoginAttempt,
+        UsedPassword
         )
 
 # run configure_mappers after defining all of the models to ensure
