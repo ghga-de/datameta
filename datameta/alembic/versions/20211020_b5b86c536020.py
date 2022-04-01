@@ -1,7 +1,7 @@
 """add 2fa functionality
 
 Revision ID: b5b86c536020
-Revises: 7fdc829db18d
+Revises: 98911b881230
 Create Date: 2021-10-20 01:10:15.944795
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'b5b86c536020'
-down_revision = '7fdc829db18d'
+down_revision = '98911b881230'
 branch_labels = None
 depends_on = None
 
