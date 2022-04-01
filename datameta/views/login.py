@@ -16,7 +16,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from .. import security, errors
-from ..security import tfa
+from ..security import tfaz
 
 from datetime import datetime, timedelta
 import logging
@@ -37,7 +37,7 @@ def my_view(request):
             if auth_user:
                 log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
 
-                tfa_enabled = tfa.is_2fa_enabled()
+                tfa_enabled = tfaz.is_2fa_enabled()
                 if tfa_enabled and auth_user.tfa_secret is None:
                     raise errors.get_validation_error(
                         ['Please reset your password and set up two-factor authorisation.'])

@@ -14,7 +14,7 @@
 
 from pyramid.view import view_config
 
-from ..security import tfa
+from ..security import tfaz
 import datetime
 
 
@@ -25,13 +25,13 @@ def v_settfa(request):
     unknown_token, expired_token = False, False
     if request.matchdict['token'] != "0":
         # Validate token
-        dbtoken = tfa.check_2fa_token(request.dbsession, request.matchdict['token'])
+        dbtoken = tfaz.check_2fa_token(request.dbsession, request.matchdict['token'])
 
         unknown_token = dbtoken is None
         expired_token = not unknown_token and dbtoken.expires < datetime.datetime.now()
 
         if not expired_token and not unknown_token:
-            tfa_qrcode = tfa.generate_2fa_qrcode(request.dbsession, dbtoken.user, dbtoken.secret)
+            tfa_qrcode = tfaz.generate_2fa_qrcode(dbtoken.user, dbtoken.secret)
 
     return {
         'pagetitle' : 'DataMeta - Set 2FA',
