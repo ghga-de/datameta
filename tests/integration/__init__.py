@@ -38,9 +38,9 @@ class BaseIntegrationTest(unittest.TestCase):
         # create database from scratch:
         if database_exists(db_url):
             drop_database(db_url)
-        
+
         # handling encoding error
-        # (psycopg2.errors.InvalidParameterValue) new encoding (UTF8) 
+        # (psycopg2.errors.InvalidParameterValue) new encoding (UTF8)
         # is incompatible with the encoding of the template database (SQL_ASCII)
         try:
             create_database(db_url, template="template1", encoding="utf8")
