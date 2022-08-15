@@ -6,7 +6,7 @@ import tempfile
 
 import transaction
 from sqlalchemy_utils import create_database, drop_database, database_exists
-from sqlalchemy.exc import DataError
+
 from datameta.models import (
     get_engine,
     get_session_factory,
@@ -40,16 +40,7 @@ class BaseIntegrationTest(unittest.TestCase):
             drop_database(db_url)
 
         # handling encoding error
-        # (psycopg2.errors.InvalidParameterValue) new encoding (UTF8)
-        # is incompatible with the encoding of the template database (SQL_ASCII)
-        try:
-            create_database(db_url, template="template1", encoding="utf8")
-        except DataError:
-            pass
-        try:
-            create_database(db_url, template="template1", encoding="SQL_ASCII")
-        except DataError:
-            print('Error while creating database (potentially an encoding problem)')
+        create_database(db_url, template="template0", encoding="utf8")
 
         # get engine and session factory
         self.engine = get_engine(self.settings)
