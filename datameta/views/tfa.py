@@ -57,7 +57,7 @@ def setup_tfa(request):
 
 
 @view_config(route_name='tfa', renderer='../templates/tfa.pt')
-def my_view(request):
+def tfa_view(request):
     if request.POST:
         try:
             # Obtain submitted data
