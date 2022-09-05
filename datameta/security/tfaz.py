@@ -52,7 +52,7 @@ def get_2fa_crypto_function(settings=None):
     return Fernet(encrypt_key.encode())
 
 
-def generate_2fa_secret(db, settings=None):
+def generate_2fa_secret(settings=None):
     """Generate and encrypt a 2fa secret.
 
     Returns:
