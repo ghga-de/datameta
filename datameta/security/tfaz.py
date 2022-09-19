@@ -152,7 +152,7 @@ def create_2fa_token(db: Session, user: User, expires=None):
         user_id=user.id,
         value=hash_token(clear_token),
         expires=expires if expires else datetime.now() + timedelta(minutes=10),
-        secret=generate_2fa_secret(db)
+        secret=generate_2fa_secret()
     )
     db.add(token)
 
