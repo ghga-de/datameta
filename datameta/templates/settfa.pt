@@ -55,18 +55,17 @@
             }
 </style>
 <main metal:fill-slot="content" class="form-signin">
+    <div tal:replace="structure logo_html"></div>
     <div tal:condition="unknown_token" id="unknowntoken">
         <div class="alert alert-danger" role="alert">
-            This password recovery token is unknown. Make sure you are using
-            the correct URL and that the URL has not been previously used or
-            superseded by a new token request.
+            An error occurred.
         </div>
         <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
     </div>
     <div tal:condition="expired_token" id="expiredtoken">
         <div class="alert alert-warning" role="alert">
-            This password recovery URL has expired. A new recovery link has
-            been sent, please check your inbox.
+            The token used to set up two-factor authentication has expired.
+            <a type="button" class="btn btn-warning" href="/forgot">Please reset your password.</a>
         </div>
     </div>
     <div tal:condition="token_ok">
@@ -74,38 +73,46 @@
         </div>
         <div id="success" class="collapse">
             <div class="alert alert-success" role="alert" >
-                The new password has been set successfully!
+                Two-factor authentication has been set up successfully!
             </div>
                 <a type="button" class="btn btn-warning" href="/login">Return to Login</a>
         </div>
-        <div id="passentry" class="collapse show">
-            <div class="mb-3" style="text-align:left">
-                <h4>Please choose a new password</h4>
+        <div tal:condition="tfa_setup_required">
+
+            <div id="tfa_qrcode" class="collapse show">
+                <div class="mb-3">
+                    <svg width="200" height="200" version="1.1" viewBox="0 0 45 45" xlmns="http://www.w3.org/2000/svg">
+                        <path d="${tfa_qrcode}" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none" />
+                    </svg>
+                </div>
+                <div class="card text-dark bg-info mb-3 w-100 text-start">
+                    <div class="card-header">
+                        <h5 class="card-title my-0">Two-factor authentication required</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                        This site has two-factor authentication enabled. Please scan the QR code with a suitable OTP authenticator app and provide a valid OTP token to continue.
+                        </p>
+                    </div>
+                </div>
+                <p class="text-start">
+                </p>
+                <form action="#" id="otp_setup_form" data-datameta-tfa="${token}">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="desc_input_otpkey">
+                            <i class="bi bi-key"></i>
+                        </span>
+                        <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP Token" aria-describedby="desc_input_otpkey" required autofocus>
+                    </div>
+                    <div class="input-group mb-3">
+                        <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
+                    </div>
+                </form>
+
             </div>
-            <form action="#" id="newpassform" data-datameta-setpass="${token}">
-                <div class="input-group mb-3">
-                    <span class="input-group-text" id="desc_input_password">
-                        <i class="bi bi-key"></i>
-                    </span>
-                    <input id="new_password" name="new_password" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Enter new password..." aria-label="New Password" aria-describedby="desc_input_password">
-                    <div class="invalid-feedback" id="pw_invalid">
-                    </div>
-                </div>
-                <div class="input-group mb-3" id="org_new">
-                    <span class="input-group-text" id="desc_input_password_repeat">
-                        <i class="bi bi-key"></i>
-                    </span>
-                    <input id="new_password_repeat" name="new_password_repeat" type="password" autocomplete="new-password" class="mb-0 form-control" placeholder="Repeat new password..." aria-label="Repeat new password" aria-describedby="desc_input_password_repeat">
-                    <div class="invalid-feedback">
-                        The two passwords do not match.
-                    </div>
-                </div>
-                <div class="input-group mb-3">
-                    <button class="w-100 btn  btn-warning" type="submit" name="form.submitted">Save</button>
-                </div>
-            </form>
+
         </div>
-        <script type="module" src="${request.static_url('datameta:static/js/setpass.js')}"></script>
+        <script type="module" src="${request.static_url('datameta:static/js/settfa.js')}"></script>
     </div>
 </main>
 </metal:block>

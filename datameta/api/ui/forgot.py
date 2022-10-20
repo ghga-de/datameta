@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from pyramid.view import view_config
+from pyramid import threadlocal
+from pyramid.settings import asbool
 
 from ... import security, email
 from ...settings import get_setting
@@ -26,15 +28,19 @@ def send_forgot_token(request, db_token_obj, clear_token):
     """Sends a password reset token email to the corresponding user"""
     db = request.dbsession
 
+    token_url = request.route_url('setpass', token = clear_token)
     email.send(
         recipients = (db_token_obj.user.fullname, db_token_obj.user.email),
         subject = get_setting(db, "subject_forgot_token"),
         template = get_setting(db, "template_forgot_token"),
         values={
             'fullname' : db_token_obj.user.fullname,
-            'token_url' : request.route_url('setpass', token = clear_token)
+            'token_url' : token_url
             }
         )
+
+    if asbool(threadlocal.get_current_registry().settings['datameta.logging.log_token_urls']):
+        log.debug(f"USER REQUESTED RECOVERY TOKEN: '{token_url}'")
 
 
 @view_config(route_name='forgot_api', renderer='json')

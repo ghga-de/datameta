@@ -42,6 +42,7 @@ class UserFixture(Entity):
     site_admin    : bool
     site_read     : bool
     enabled       : bool
+    tfa_secret    : Optional[str] = None
 
 
 @dataclass

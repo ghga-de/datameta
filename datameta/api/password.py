@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.httpexceptions import HTTPNoContent, HTTPNotFound, HTTPForbidden, HTTPGone
+from pyramid.httpexceptions import HTTPNotFound, HTTPForbidden, HTTPGone
 
 from pyramid.view import view_config
 
 from .. import security, errors
-from ..security import authz
+from ..security import authz, tfaz
 from ..models import User
 from datetime import datetime
 
@@ -51,7 +51,6 @@ def put(request):
 
         # Fetch the user corresponding to the token
         auth_user = token.user
-        target_user = auth_user
     # Case B: Authenticated user changing their own password
     else:
         # Obtain authorized user
@@ -79,4 +78,10 @@ def put(request):
     if token:
         db.delete(token)
 
-    return HTTPNoContent()  # 204 all went well
+    tfa_token = ""
+    if tfaz.is_2fa_enabled() and auth_user.tfa_secret is None:
+        tfa_token, _ = tfaz.create_2fa_token(db, auth_user)
+
+    return {
+        "tfaToken": tfa_token
+    }
