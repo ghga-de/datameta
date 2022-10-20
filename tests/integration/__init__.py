@@ -38,7 +38,9 @@ class BaseIntegrationTest(unittest.TestCase):
         # create database from scratch:
         if database_exists(db_url):
             drop_database(db_url)
-        create_database(db_url)
+
+        # handling encoding error
+        create_database(db_url, template="template0", encoding="utf8")
 
         # get engine and session factory
         self.engine = get_engine(self.settings)
