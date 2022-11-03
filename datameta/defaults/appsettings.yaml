@@ -45,7 +45,6 @@ template_welcome_token:
 subject_reject:
   str_value : Your registration request was rejected
 
-
 template_reject:
   str_value : |
             Dear {fullname},

@@ -12,19 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def includeme(config):
+import hashlib
 
-    # Ui view endpoints
-    config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('root', '/')
-    config.add_route('login', '/login')
-    config.add_route('register', '/register')
-    config.add_route('setpass', '/setpass/{token}')
-    config.add_route('forgot', '/forgot')
-    config.add_route('home', '/home')
-    config.add_route('submit', '/submit')
-    config.add_route('account', '/account')
-    config.add_route('view', '/view')
-    config.add_route('admin', '/admin')
-    config.add_route('tfa', '/tfa')
-    config.add_route('settfa', '/settfa/{token}')
+
+def hash_token(token):
+    """Hash a token and return the unsalted hash."""
+    hashed_token = hashlib.sha256(token.encode('utf-8')).hexdigest()
+    return hashed_token
