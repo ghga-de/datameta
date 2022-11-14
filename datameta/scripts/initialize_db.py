@@ -149,8 +149,8 @@ def main(argv=sys.argv):
             if args.initial_api_key:
                 create_api_key(env['request'], args.initial_api_key)
 
-            # Create example sample sheet columns
-            create_example_metadata(dbsession)
+            # Uncomment to create example sample sheet columns
+            # create_example_metadata(dbsession)
 
     except OperationalError:
         print('''
