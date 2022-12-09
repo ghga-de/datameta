@@ -22,6 +22,8 @@ from .. import security, resource, validation, siteid
 from ..models import Submission
 from . import DataHolderBase
 
+import logging
+log = logging.getLogger(__name__)
 
 @dataclass
 class SubmissionBase(DataHolderBase):
@@ -100,6 +102,8 @@ def post(request: Request) -> SubmissionResponse:
             )
     db.add(submission)
     db.flush()
+
+    log.info(f"[submissions][POST][][siteid='{submission.site_id}',group_id='{submission.group_id}']")
 
     return SubmissionResponse(
             id = resource.get_identifier(submission),

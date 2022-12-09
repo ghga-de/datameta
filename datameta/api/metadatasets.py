@@ -31,6 +31,8 @@ from . import DataHolderBase
 from .. import errors
 from .metadata import get_all_metadata, get_service_metadata, get_metadata_with_access
 
+import logging
+log = logging.getLogger(__name__)
 
 @dataclass
 class MetaDataSetServiceExecution(DataHolderBase):
@@ -292,6 +294,8 @@ def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
     if not mdata_sets:
         raise HTTPNotFound()
 
+    log.info(f"[metadatasets][GET][][]")
+
     return [
             MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
             for mdata_set in mdata_sets
@@ -333,6 +337,8 @@ def get_metadataset(request: Request) -> MetaDataSetResponse:
     else:
         metadata_with_access = get_metadata_with_access(db, auth_user)
 
+    log.info(f"[metadatasets_id][GET][][id='{request.matchdict['id']}']")
+
     # Check and annotate service executions
     return MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
 
@@ -350,6 +356,8 @@ def delete_metadataset(request: Request) -> HTTPNoContent:
     db = request.dbsession
 
     delete_staged_metadataset_from_db(request.matchdict['id'], db, auth_user, request)
+
+    log.info(f"[metadatasets_id][DELETE][][id='{request.matchdict['id']}']")
 
     return HTTPNoContent()
 
