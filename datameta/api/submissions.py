@@ -25,6 +25,7 @@ from . import DataHolderBase
 import logging
 log = logging.getLogger(__name__)
 
+
 @dataclass
 class SubmissionBase(DataHolderBase):
     """Base class for Submission communication to OpenApi"""

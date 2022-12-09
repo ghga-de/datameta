@@ -34,6 +34,7 @@ from .metadata import get_all_metadata, get_service_metadata, get_metadata_with_
 import logging
 log = logging.getLogger(__name__)
 
+
 @dataclass
 class MetaDataSetServiceExecution(DataHolderBase):
     service_execution_id   : dict
@@ -294,7 +295,7 @@ def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
     if not mdata_sets:
         raise HTTPNotFound()
 
-    log.info(f"[metadatasets][GET][][]")
+    log.info("[metadatasets][GET][][]")
 
     return [
             MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
