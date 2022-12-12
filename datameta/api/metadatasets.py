@@ -338,7 +338,7 @@ def get_metadataset(request: Request) -> MetaDataSetResponse:
     else:
         metadata_with_access = get_metadata_with_access(db, auth_user)
 
-    log.info(f"[metadatasets_id][GET][][id='{request.matchdict['id']}']")
+    log.info(f"[id='{request.matchdict['id']}']")
 
     # Check and annotate service executions
     return MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
