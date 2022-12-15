@@ -41,6 +41,7 @@ def add_global(event):
     else:
         event['legal_notice'] = appsetting_legal_notice
 
+
 @view_config(route_name='root')
 def root_view(request):
     security.revalidate_user_or_login(request)
