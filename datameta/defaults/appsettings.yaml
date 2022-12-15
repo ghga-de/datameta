@@ -80,6 +80,10 @@ logo_html:
       <a href="/" class="link-bare"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</a>
     </p>
 
+legal_notice:
+  str_value : |
+      <a href="/" class="link-bare">Legal Notice</a>
+
 user_agreement:
   str_value: ""
     

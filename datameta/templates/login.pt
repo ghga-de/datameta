@@ -72,5 +72,8 @@
     <p class="mt-2">
     <a href="/forgot">Forgot password?</a>
     </p>
+    <p>
+    <span tal:replace="structure legal_notice"></span>
+    </p>
 </main>
 </metal:block>

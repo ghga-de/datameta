@@ -65,6 +65,9 @@
                 <button class="w-100 btn btn-warning" type="submit" name="form.submitted">Sign in with OTP</button>
             </div>
         </div>
+        <p>
+        <span tal:replace="structure legal_notice"></span>
+        </p>
 
     </form>    
 </main>

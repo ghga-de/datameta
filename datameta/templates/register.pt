@@ -131,7 +131,9 @@
                 </div>
             </fieldset>
 	</form>
-
+	<p>
+		<span tal:replace="structure legal_notice"></span>
+	</p>
 	<script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/register.js')}"></script>
 </main>
 </metal:block>
