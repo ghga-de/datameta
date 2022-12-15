@@ -72,7 +72,7 @@
     <p class="mt-2">
     <a href="/forgot">Forgot password?</a>
     </p>
-    <p>
+    <p class="mt-2">
     <span tal:replace="structure legal_notice"></span>
     </p>
 </main>

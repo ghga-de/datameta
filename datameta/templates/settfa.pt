@@ -108,11 +108,11 @@
                         <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
                     </div>
                 </form>
-                <p>
-		        <span tal:replace="structure legal_notice"></span>
-	            </p>
             </div>
         </div>
+        <p class="mt-2">
+        <span tal:replace="structure legal_notice"></span>
+        </p>
         <script type="module" src="${request.static_url('datameta:static/js/settfa.js')}"></script>
     </div>
 </main>

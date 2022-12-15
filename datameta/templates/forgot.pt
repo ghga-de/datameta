@@ -80,7 +80,7 @@
             </div>
         </fieldset>
     </form>
-    <p>
+    <p class="mt-2">
     <span tal:replace="structure legal_notice"></span>
     </p>
     <script src="${request.static_url('datameta:static/js/forgot.js')}"></script>
