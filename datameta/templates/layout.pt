@@ -131,7 +131,7 @@
                 </div>
             </div>
             <div class="container mb-1" style="font-size:7pt">
-                <span>DataMeta Version </span><span id="datameta_version"></span><span> - API Version </span><span id="datameta_api_version"></span>
+                <span>DataMeta Version </span><span id="datameta_version"></span><span> - API Version </span><span id="datameta_api_version"></span><span> - </span><span tal:replace="structure legal_notice"></span>
                 <span class="text-danger" tal:condition="request.registry.settings.get('datameta.demo_mode') in [True, 'true', 'True']">
                     - [DEMO MODE]
                 </span>
