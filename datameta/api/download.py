@@ -100,6 +100,6 @@ def download_by_token(request: Request) -> HTTPOk:
     )
     response.content_disposition = f"attachment; filename=\"{db_token.file.name}\""
 
-    log.info(f"File downloaded; filename={db_token.file.name},ip_from={request.client_addr}")
+    log.info(f"File downloaded; file_name={db_token.file.name},client_addr={request.client_addr}")
 
     return response

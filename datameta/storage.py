@@ -99,9 +99,9 @@ def write_file(request, db_file, file):
         file.seek(0)
         with open(out_path, 'wb') as outfile:
             shutil.copyfileobj(file, outfile)
-        log.info(f"New file in storage; user={db_file.user.uuid},file={db_file.uuid}")
+        log.info(f"New file in storage; user_uuid={db_file.user.uuid},file_uuid={db_file.uuid}")
     else:
-        log.info(f"Demomode, new file in storage; user={db_file.user.uuid},file={db_file.uuid}")
+        log.info(f"Demomode, new file in storage; user_uuid={db_file.user.uuid},file_uuid={db_file.uuid}")
 
 
 def _freeze_local(request, db_file):
