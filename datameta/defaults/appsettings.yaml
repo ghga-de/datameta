@@ -82,7 +82,7 @@ logo_html:
 
 legal_notice:
   str_value : |
-      <a href="/" class="link-bare">Legal Notice</a>
+      <a href="#" class="link-bare">Legal Notice</a>
 
 user_agreement:
   str_value: ""
