@@ -88,7 +88,7 @@ def tfa_view(request):
                     del request.session["preauth_uid"]
                     del request.session["preauth_gid"]
 
-                    log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR 2fa USER {user}")
+                    log.warning(f"Clear failed login attempts for 2fa; user_id={user.id}")
                     user.login_attempts.clear()
 
                     return HTTPFound(location="/home")

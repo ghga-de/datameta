@@ -176,11 +176,11 @@ def register_failed_login_attempt(db, user):
         for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
     )
 
-    log.warning(f"FAILED LOGIN ATTEMPT USER id={user.id} n={n_failed_logins} within one hour.")
+    log.warning(f"Failed logins within one hour; user_id={user.id},n_failed_logins={n_failed_logins}")
     if n_failed_logins >= max_allowed_failed_logins:
         db.query(User).filter(user.id == User.id).update({User.enabled: False})
         db.flush()
-        log.warning(f"BLOCKED USER id={user.id} enabled={user.enabled} reason={n_failed_logins} failed login attempts within one hour.")
+        log.warning(f"Blocked user due to failed logins within one hour; user_id={user.id},user_enabled={user.enabled},n_failed_logins={n_failed_logins}")
 
     return None
 
@@ -192,7 +192,7 @@ def get_user_by_credentials(request, email: str, password: str):
     if user:
         if check_password_by_hash(password, user.pwhash):
             if not is_2fa_enabled():
-                log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR gubc USER {user}")
+                log.warning(f"Clear failed login attempts; user_id={user.id}")
                 user.login_attempts.clear()
             return user
 
@@ -247,7 +247,7 @@ def revalidate_user_token_based(request, token):
             request.tm.commit()
             request.tm.begin()
         else:
-            log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR APIKEY.USER {user.id}")
+            log.warning(f"Clear failed login attempts for apikey; user_id={user.id}")
             user.login_attempts.clear()
             return user
 
@@ -277,7 +277,7 @@ def revalidate_user_session_based(request):
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
 
-    log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR USER {user}")
+    log.warning(f"Clear failed login attempts; user_id={user.id}")
     user.login_attempts.clear()
     return user
 

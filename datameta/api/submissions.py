@@ -104,7 +104,7 @@ def post(request: Request) -> SubmissionResponse:
     db.add(submission)
     db.flush()
 
-    log.info(f"[user_id='{auth_user.id}',siteid='{submission.site_id}',group_id='{submission.group_id}']")
+    log.info(f"Submission created; auth_user_id={auth_user.id},submission_site_id={submission.site_id},auth_user_group_id={auth_user.group.id}")
 
     return SubmissionResponse(
             id = resource.get_identifier(submission),

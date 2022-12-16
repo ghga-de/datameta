@@ -131,4 +131,4 @@ def includeme(config):
         for key, value in defaults.items():
             if key not in existing:
                 db.add(ApplicationSetting(key=key, **value))
-                log.info(f"No application setting found for '{key}'. Inserting default value.")
+                log.info(f"No application setting found, set default value; key={key}")

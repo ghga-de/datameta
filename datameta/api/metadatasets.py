@@ -295,7 +295,7 @@ def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
     if not mdata_sets:
         raise HTTPNotFound()
 
-    log.info(f"[user_id='{auth_user.id}',ip_from='{request.client_addr}']")
+    log.info(f"Queried metadatasets; auth_user_id={auth_user.id},client_addr={request.client_addr}")
 
     return [
             MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
@@ -338,7 +338,7 @@ def get_metadataset(request: Request) -> MetaDataSetResponse:
     else:
         metadata_with_access = get_metadata_with_access(db, auth_user)
 
-    log.info(f"[id='{request.matchdict['id']}']")
+    log.info(f"Delivered metadataset; id={request.matchdict['id']},client_addr={request.client_addr}")
 
     # Check and annotate service executions
     return MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
@@ -358,7 +358,7 @@ def delete_metadataset(request: Request) -> HTTPNoContent:
 
     delete_staged_metadataset_from_db(request.matchdict['id'], db, auth_user, request)
 
-    log.info(f"[user_id='{auth_user.id}',ip_from='{request.client_addr}']")
+    log.info(f"Deleted staged metadataset; auth_user_id={auth_user.id},client_addr={request.client_addr}")
 
     return HTTPNoContent()
 

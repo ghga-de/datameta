@@ -118,13 +118,13 @@ def delete_files(request: Request) -> HTTPNoContent:
     request.tm.begin()
 
     # Log the deletions from db
-    for user_uuid, file_uuid, storage_uri in deleted_files:
-        log.info(f"[DB_FILE][DELETE][user={user_uuid}][file={file_uuid}]")
+    for user_uuid, file_uuid, _ in deleted_files:
+        log.info(f"Staged file deleted from database; user_uuid={user_uuid},file_uuid={file_uuid}")
 
     # Delete the files from storage
     for user_uuid, file_uuid, storage_uri in deleted_files:
         storage.rm(request, storage_uri)
-        log.info(f"[STORAGE][DELETE][user={user_uuid}][file={file_uuid}]")
+        log.info(f"Staged file deleted from storage; user_uuid={user_uuid},file_uuid={file_uuid},storage_uri={storage_uri}")
 
     return HTTPNoContent()
 
@@ -261,7 +261,7 @@ def update_file(request: Request) -> HTTPOk:
         except storage.ChecksumMismatchError:
             # Checksum of uploaded data does not match announcement
             raise HTTPConflict(json=None)  # 409
-        log.info(f"[STORAGE][FREEZE][user={db_file.user.uuid}][file={db_file.uuid}]")
+        log.info(f"Storage freeze file; user_uuid={db_file.user.uuid},file_uuid={db_file.uuid}")
 
     return FileResponse(
             id                = resource.get_identifier(db_file),
@@ -317,10 +317,10 @@ def delete_file(request: Request) -> HTTPNoContent:
     # Commit transaction
     request.tm.commit()
     request.tm.begin()
-    log.info(f"[DB_FILE][DELETE][user={user_uuid}][file={file_uuid}]")
+    log.info(f"Staged file deleted from database; user_uuid={user_uuid},file_uuid={file_uuid}")
 
     # Delete the file in storage if exists
     storage.rm(request, storage_uri)
-    log.info(f"[STORAGE][DELETE][user={user_uuid}][file={file_uuid}]")
+    log.info(f"Staged file deleted from storage; user_uuid={user_uuid},file_uuid={file_uuid},storage_uri={storage_uri}")
 
     return HTTPNoContent()

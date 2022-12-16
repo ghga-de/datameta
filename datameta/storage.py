@@ -50,7 +50,7 @@ def rm(request, storage_path):
         else:
             raise NotImplementedError()
     else:
-        log.debug("DID NOT DELETE. DEMO MODE.")
+        log.debug("Did not delete, demo mode;")
 
 
 def get_local_storage_path(request, storage_uri):
@@ -99,9 +99,9 @@ def write_file(request, db_file, file):
         file.seek(0)
         with open(out_path, 'wb') as outfile:
             shutil.copyfileobj(file, outfile)
-        log.info(f"[STORAGE][NEWFILE][user={db_file.user.uuid}][file={db_file.uuid}]")
+        log.info(f"New file in storage; user={db_file.user.uuid},file={db_file.uuid}")
     else:
-        log.info(f"[!!DEMOMODE!!][STORAGE][NEWFILE][user={db_file.user.uuid}][file={db_file.uuid}]")
+        log.info(f"Demomode, new file in storage; user={db_file.user.uuid},file={db_file.uuid}")
 
 
 def _freeze_local(request, db_file):
