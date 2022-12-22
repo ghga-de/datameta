@@ -64,7 +64,7 @@
             If this email address is registered with us, it will receive a recovery link shortly. Please check your inbox.
         </div>
     </div>
-    <form action="#" id="forgotform">
+    <form action="#" id="forgotform" class="mt-3">
         <fieldset id="forgotfieldset">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="desc_input_email">
