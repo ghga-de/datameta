@@ -53,5 +53,5 @@ def my_view(request):
             pass
         return HTTPFound(location="/login")
     return {
-            'pagetitle' : 'DataMeta - Login'
+            'page_title_current_page' : 'Login'
             }
