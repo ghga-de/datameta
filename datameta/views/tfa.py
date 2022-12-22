@@ -99,5 +99,5 @@ def tfa_view(request):
             pass
         return HTTPFound(location="/tfa")
     return {
-            'pagetitle' : 'DataMeta - Login'
+            'page_title_current_page' : 'Login'
             }

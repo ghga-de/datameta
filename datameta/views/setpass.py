@@ -37,7 +37,7 @@ def v_setpass(request):
         send_forgot_token(request, db_token_obj, clear_token)
 
     return {
-        'pagetitle' : 'DataMeta - Set Password',
+        'page_title_current_page' : 'Set Password',
         'unknown_token' : unknown_token,
         'expired_token' : expired_token,
         'token_ok' : not unknown_token and not expired_token,
