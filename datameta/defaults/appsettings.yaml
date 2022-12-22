@@ -84,6 +84,9 @@ legal_notice:
   str_value : |
       <a href="#" class="link-bare">Legal Notice</a>
 
+page_title:
+  str_value : DataMeta
+
 user_agreement:
   str_value: ""
     
