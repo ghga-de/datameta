@@ -21,5 +21,5 @@ def v_forgot(request):
     request.session.invalidate()
 
     return {
-            'pagetitle' : 'DataMeta - Recover Password',
+            'page_title_current_page' : 'Recover Password',
             }

@@ -36,6 +36,7 @@ def add_global(event):
 
     add_appsetting_with_default("logo_html", "")
     add_appsetting_with_default("legal_notice", "")
+    add_appsetting_with_default("page_title", "")
 
 
 @view_config(route_name='root')
