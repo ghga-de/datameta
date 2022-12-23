@@ -37,10 +37,10 @@ def add_renderer_appsettings_globals(event):
             event[appsetting_key] = appsetting
 
     renderer_appsettings = settings.get_settings_startswith(event['request'].dbsession, "renderer_")
-   
+
     for renderer_appsetting in renderer_appsettings:
         add_appsetting_with_default(renderer_appsetting, "")
-    
+
 
 @view_config(route_name='root')
 def root_view(request):
