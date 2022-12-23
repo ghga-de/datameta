@@ -67,14 +67,16 @@ def get_setting(db, name):
         return setting.time_value
     return None
 
+
 def get_settings_startswith(
-    db, 
+    db,
     prefix: str,
-    ) -> List[str]:
+) -> List[str]:
     """Return all appsettings which starts with given prefix."""
     settings = db.query(ApplicationSetting).filter(ApplicationSetting.key.startswith(prefix)).all()
     return [setting.key for setting in settings]
-    
+
+
 class SettingUpdateError(RuntimeError):
     pass
 
