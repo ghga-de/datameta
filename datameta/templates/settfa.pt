@@ -55,7 +55,7 @@
             }
 </style>
 <main metal:fill-slot="content" class="form-signin">
-    <div tal:replace="structure logo_html"></div>
+    <div tal:replace="structure renderer_logo_html"></div>
     <div tal:condition="unknown_token" id="unknowntoken">
         <div class="alert alert-danger" role="alert">
             An error occurred.
@@ -111,7 +111,7 @@
             </div>
         </div>
         <p class="mt-2">
-        <span tal:replace="structure legal_notice"></span>
+        <span tal:replace="structure renderer_legal_notice"></span>
         </p>
         <script type="module" src="${request.static_url('datameta:static/js/settfa.js')}"></script>
     </div>

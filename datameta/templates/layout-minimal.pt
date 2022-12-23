@@ -5,10 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 	    
         <title tal:condition="exists:page_title_current_page">
-            ${page_title + " - " + page_title_current_page}
+            ${renderer_page_title + " - " + page_title_current_page}
         </title>    
         <title tal:condition="not:exists:page_title_current_page">
-            ${page_title}
+            ${renderer_page_title}
         </title>
 
         <link rel="preconnect" href="https://fonts.gstatic.com">
