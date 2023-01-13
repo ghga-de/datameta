@@ -26,6 +26,7 @@ from sqlalchemy import and_
 from .tfaz import is_2fa_enabled
 from .tokenz import hash_token
 
+from ..log_event import LogEvent
 
 from ..models import User, ApiKey, PasswordToken, Session, UsedPassword, LoginAttempt
 from ..settings import get_setting
@@ -277,7 +278,7 @@ def revalidate_user_session_based(request):
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
 
-    log.warning(f"Clear failed login attempts; user_id={user.id}")
+    log.warning(str(LogEvent(msg="clear failed login attempts for apikey", user_id=user.id)))
     user.login_attempts.clear()
     return user
 
