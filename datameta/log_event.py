@@ -18,4 +18,4 @@ class LogEvent:
         self.d = kwargs
 
     def __str__(self):
-        return " ".join(f'{k}={v}' if k != "msg" else f'{k}=\"{v}\"' for k,v in self.d.items())
+        return " ".join(f'{k}={v}' if k != "msg" else f'{k}=\"{v}\"' for k, v in self.d.items())
