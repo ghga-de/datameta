@@ -47,7 +47,7 @@ def datetime_iso_or_empty(x):
     try:
         return "" if pd.isna(x) else x.isoformat()
     except Exception as e:
-        log.error(f"Unexpected exception: {e}")
+        log.error({"exception": e})
         return ""
 
 
