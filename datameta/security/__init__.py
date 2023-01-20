@@ -191,9 +191,6 @@ def get_user_by_credentials(request, email: str, password: str):
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
     if user:
         if check_password_by_hash(password, user.pwhash):
-            if not is_2fa_enabled():
-                log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR gubc USER {user}")
-                user.login_attempts.clear()
             return user
 
         register_failed_login_attempt(db, user)
@@ -247,8 +244,7 @@ def revalidate_user_token_based(request, token):
             request.tm.commit()
             request.tm.begin()
         else:
-            log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR APIKEY.USER {user.id}")
-            user.login_attempts.clear()
+            successful_authenticated(user=user, request=request, credential="apikey")
             return user
 
     raise HTTPUnauthorized()
@@ -277,8 +273,7 @@ def revalidate_user_session_based(request):
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
 
-    log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR USER {user}")
-    user.login_attempts.clear()
+    successful_authenticated(user=user, request=request, credentials="session")
     return user
 
 
@@ -309,3 +304,29 @@ def revalidate_admin(request):
     if user.site_admin or user.group_admin:
         return user
     raise HTTPUnauthorized()
+
+def successful_authenticated(**kwargs) -> None:
+    """Function to invoke side effects after successful authentications."""
+    
+    def clear_login_attemtps(kwargs):
+        """Sets number of login attempts to 0."""
+        
+        def get_failed_logins_within_hour(db) -> int:
+            attempts = db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
+            return len([now - attempt.timestamp <= timedelta(hours=1) for attempt in attempts])
+            
+        if "request" and "user" in kwargs.keys():
+            request = kwargs["request"]
+            user = kwargs["user"]
+            db = request.dbsession
+            now = datetime.utcnow()
+
+            if get_failed_logins_within_hour(db) > 0:
+                log.warning("Cleared login attempts.", extra={"user_id": user.id})
+                user.login_attempts.clear() 
+
+        else:
+            pass
+        
+    clear_login_attemtps(kwargs)
+    return
