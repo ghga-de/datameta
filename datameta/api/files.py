@@ -260,7 +260,7 @@ def update_file(request: Request) -> HTTPOk:
         except storage.ChecksumMismatchError:
             # Checksum of uploaded data does not match announcement
             raise HTTPConflict(json=None)  # 409
-        log.info("Storage file freezed.", extra={"user_uuid": db_file.user.uuid, "file_uuid": db_file.uuid})
+        log.info("Storage file frozen.", extra={"user_uuid": db_file.user.uuid, "file_uuid": db_file.uuid})
 
     return FileResponse(
             id                = resource.get_identifier(db_file),
