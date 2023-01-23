@@ -85,7 +85,7 @@ def convert_samplesheet(db, file_like_obj, filename, user):
         # string value is not possible through the convert API.
         return [ { mdname : None if not row[mdname] else formatted_mrec_value_str(row[mdname], metadata_datetimefmt[mdname]) for mdname in metadata_names } for _, row in submitted_metadata.iterrows() ]
     except Exception as e:
-    log.error("Unexpected error during sample sheet conversion.", extra={"file_name": filename, "error": e})
+        log.error("Unexpected error during sample sheet conversion.", extra={"file_name": filename, "error": e})
         raise samplesheet.SampleSheetReadError("Unknown error")
 
 

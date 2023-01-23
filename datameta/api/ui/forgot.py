@@ -13,8 +13,6 @@
 # limitations under the License.
 
 from pyramid.view import view_config
-from pyramid import threadlocal
-from pyramid.settings import asbool
 
 from ... import security, email
 from ...settings import get_setting
