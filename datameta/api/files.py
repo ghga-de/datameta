@@ -316,7 +316,7 @@ def delete_file(request: Request) -> HTTPNoContent:
     # Commit transaction
     request.tm.commit()
     request.tm.begin()
-    log.info("DB file deleted.", extra={"user_uuid": user_uuid, "file_uuid": file_uuid})
+    log.info("File record deleted from the database.", extra={"user_uuid": user_uuid, "file_uuid": file_uuid})
     # Delete the file in storage if exists
     storage.rm(request, storage_uri)
     log.info("Storage file deleted.", extra={"user_uuid": user_uuid, "file_uuid": file_uuid})
