@@ -44,6 +44,6 @@ def generate(request, BaseClass):
     for _ in range(10):
         new_id = prefix + str(random.randint(0, pow(10, digits))).rjust(digits, "0")
         if request.dbsession.query(BaseClass).filter(BaseClass.site_id == new_id).first():
-            log.warning("Site ID collision, ID space may saturates.", extra={"tablename": BaseClass.__tablename__})
+            log.warning("Site ID collision, ID space may be saturating.", extra={"tablename": BaseClass.__tablename__})
         else:
             return new_id
