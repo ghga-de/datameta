@@ -119,7 +119,7 @@ def delete_files(request: Request) -> HTTPNoContent:
 
     # Log the deletions from db
     for user_uuid, file_uuid, storage_uri in deleted_files:
-        log.info("DB file deleted.", extra={"user_uuid": user_uuid, "file_uuid": file_uuid})
+        log.info("File record deleted from the database.", extra={"user_uuid": user_uuid, "file_uuid": file_uuid})
     # Delete the files from storage
     for user_uuid, file_uuid, storage_uri in deleted_files:
         storage.rm(request, storage_uri)
