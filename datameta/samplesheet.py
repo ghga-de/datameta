@@ -47,7 +47,7 @@ def datetime_iso_or_empty(x):
     try:
         return "" if pd.isna(x) else x.isoformat()
     except Exception as e:
-        log.error({"exception": e})
+        log.error("Failed to convert datetime.", extra={"error": e})
         return ""
 
 

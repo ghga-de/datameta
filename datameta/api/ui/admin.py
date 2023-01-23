@@ -53,7 +53,7 @@ def v_admin_put_request(request):
         else:
             raise SyntaxError()
     except Exception as e:
-        log.error("Malformed API request.", extra={"exception": e})
+        log.error("Malformed API request.", extra={"error": e})
         raise HTTPBadRequest()
 
     # Check if the request exists

@@ -40,7 +40,7 @@ def send_forgot_token(request, db_token_obj, clear_token):
         )
 
     if asbool(threadlocal.get_current_registry().settings['datameta.logging.log_token_urls']):
-        log.debug("User requsted recovery token.", extra={"token_url": token_url})
+        log.debug("User requested recovery token.", extra={"clear_token": clear_token})
 
 
 @view_config(route_name='forgot_api', renderer='json')
@@ -64,6 +64,6 @@ def v_forgot_api(request):
     else:
         # Generate a new forgot token and send it to the user
         send_forgot_token(request, db_token_obj, clear_token)
-        log.debug("Recovery token request.", extra={"clear_token": clear_token})
+        log.debug("User requested recovery token.", extra={"clear_token": clear_token})
 
     return { 'success' : True }

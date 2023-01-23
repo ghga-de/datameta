@@ -180,7 +180,7 @@ def register_failed_login_attempt(db, user):
     if n_failed_logins >= max_allowed_failed_logins:
         db.query(User).filter(user.id == User.id).update({User.enabled: False})
         db.flush()
-        log.warning("Blocked user.", extra={"user_id": user.id, "user_enabled": user.enabled, "failed_logins_last_hour": n_failed_logins})
+        log.warning("User blocked due to repeated failed login attempts.", extra={"user_id": user.id, "user_enabled": user.enabled, "failed_logins_last_hour": n_failed_logins})
 
     return None
 
@@ -192,7 +192,7 @@ def get_user_by_credentials(request, email: str, password: str):
     if user:
         if check_password_by_hash(password, user.pwhash):
             if not is_2fa_enabled():
-                log.warning("Clear failed login attempts.", extra={"user_id": user.id, "credential": "password"})
+                log.warning("Clearing failed login attempts.", extra={"user_id": user.id, "credential": "password"})
                 user.login_attempts.clear()
             return user
 
@@ -247,7 +247,7 @@ def revalidate_user_token_based(request, token):
             request.tm.commit()
             request.tm.begin()
         else:
-            log.warning("Clear failed login attempts.", extra={"user_id": user.id, "credential": "api_key"})
+            log.warning("Clearing failed login attempts.", extra={"user_id": user.id, "credential": "api_key"})
             user.login_attempts.clear()
             return user
 
@@ -277,7 +277,7 @@ def revalidate_user_session_based(request):
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
 
-    log.warning("Clear failed login attempts.", extra={"user_id": user.id})
+    log.warning("Clearing failed login attempts.", extra={"user_id": user.id})
     user.login_attempts.clear()
     return user
 

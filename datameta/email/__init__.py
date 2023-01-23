@@ -49,4 +49,4 @@ def send(recipients, subject, template, values, bcc=None, rec_header_only=False)
     try:
         __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
     except Exception as e:
-        log.error("Email sending exception.", extra={"exception": e})
+        log.error("SMTP error.", extra={"error": e})
