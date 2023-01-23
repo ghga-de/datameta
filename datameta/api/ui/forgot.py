@@ -13,8 +13,6 @@
 # limitations under the License.
 
 from pyramid.view import view_config
-from pyramid import threadlocal
-from pyramid.settings import asbool
 
 from ... import security, email
 from ...settings import get_setting
@@ -39,8 +37,7 @@ def send_forgot_token(request, db_token_obj, clear_token):
             }
         )
 
-    if asbool(threadlocal.get_current_registry().settings['datameta.logging.log_token_urls']):
-        log.debug(f"USER REQUESTED RECOVERY TOKEN: '{token_url}'")
+    log.debug("User requested recovery token.", extra={"clear_token": clear_token})
 
 
 @view_config(route_name='forgot_api', renderer='json')
@@ -60,10 +57,10 @@ def v_forgot_api(request):
         db_token_obj, clear_token = security.get_new_password_reset_token_from_email(db, req_email)
     except KeyError:
         # User not found
-        log.debug(f"DURING RECOVERY TOKEN REQUEST: USER COULD NOT BE RESOLVED FROM EMAIL: {req_email}")
+        log.debug("Recovery token request. User could not be resolved.", extra={"req_email": req_email})
     else:
         # Generate a new forgot token and send it to the user
         send_forgot_token(request, db_token_obj, clear_token)
-        log.debug(f"USER REQUESTED RECOVERY TOKEN: {clear_token}")
+        log.debug("User requested recovery token.", extra={"clear_token": clear_token})
 
     return { 'success' : True }
