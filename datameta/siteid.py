@@ -33,7 +33,7 @@ for entity in ['users', 'groups', 'submissions', 'metadatasets', 'files', 'servi
     try:
         _digits[entity] = int(threadlocal.get_current_registry().settings[f'datameta.site_id_digits.{entity}'])
     except Exception as e:
-        log.warning("Site ID prefix not found in configuration file", extra={"entity": entity, "exception": e})
+        log.warning("Site ID prefix not found in configuration file", extra={"entity": entity, "error": e})
         raise e
 
 
