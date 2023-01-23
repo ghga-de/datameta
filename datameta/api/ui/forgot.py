@@ -39,8 +39,7 @@ def send_forgot_token(request, db_token_obj, clear_token):
             }
         )
 
-    if asbool(threadlocal.get_current_registry().settings['datameta.logging.log_token_urls']):
-        log.debug("User requested recovery token.", extra={"clear_token": clear_token})
+    log.debug("User requested recovery token.", extra={"clear_token": clear_token})
 
 
 @view_config(route_name='forgot_api', renderer='json')
