@@ -26,12 +26,17 @@ log = logging.getLogger(__name__)
 
 @subscriber(BeforeRender)
 def add_global(event):
-    appsetting = settings.get_setting(event['request'].dbsession, "logo_html")
-    if appsetting is None:
-        event['logo_html'] = ''
-        log.error("Missing application settings 'logo_html'")
-    else:
-        event['logo_html'] = appsetting
+    def add_appsetting_with_default(appsetting_name: str, default: str) -> None:
+        appsetting = settings.get_setting(event['request'].dbsession, appsetting_name)
+        if appsetting is None:
+            event[appsetting_name] = default
+            log.error("Missing application setting.", extra={"appsetting_name": appsetting_name})
+        else:
+            event[appsetting_name] = appsetting
+
+    add_appsetting_with_default("logo_html", "")
+    add_appsetting_with_default("legal_notice", "")
+    add_appsetting_with_default("page_title", "")
 
 
 @view_config(route_name='root')

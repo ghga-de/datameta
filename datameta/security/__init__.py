@@ -12,22 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import bcrypt
-import hashlib
-import logging
-import secrets
-
 from datetime import datetime, timedelta
+from typing import Optional
 from random import choice
 from string import ascii_letters, digits, punctuation
-from typing import Optional
 
+import bcrypt
+import secrets
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
+
 from sqlalchemy import and_
+
+from .tfaz import is_2fa_enabled
+from .tokenz import hash_token
+
 
 from ..models import User, ApiKey, PasswordToken, Session, UsedPassword, LoginAttempt
 from ..settings import get_setting
 
+import logging
 log = logging.getLogger(__name__)
 
 
@@ -160,12 +163,6 @@ def check_password_by_hash(pw, hashed_pw):
     return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
 
 
-def hash_token(token):
-    """Hash a token and return the unsalted hash."""
-    hashed_token = hashlib.sha256(token.encode('utf-8')).hexdigest()
-    return hashed_token
-
-
 def register_failed_login_attempt(db, user):
     """ Registers a failed login attempt and disables user if this has happened too often in the last hour."""
 
@@ -179,24 +176,24 @@ def register_failed_login_attempt(db, user):
         for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
     )
 
-    log.warning(f"FAILED LOGIN ATTEMPT USER id={user.id} n={n_failed_logins} within one hour.")
+    log.warning("Failed login attempt.", extra={"user_id": user.id, "failed_logins_last_hour": n_failed_logins})
     if n_failed_logins >= max_allowed_failed_logins:
         db.query(User).filter(user.id == User.id).update({User.enabled: False})
         db.flush()
-        log.warning(f"BLOCKED USER id={user.id} enabled={user.enabled} reason={n_failed_logins} failed login attempts within one hour.")
+        log.warning("User blocked due to repeated failed login attempts.", extra={"user_id": user.id, "user_enabled": user.enabled, "failed_logins_last_hour": n_failed_logins})
 
     return None
 
 
 def get_user_by_credentials(request, email: str, password: str):
     """Check a combination of email and password, returns a user object if valid."""
-
     db = request.dbsession
     user = db.query(User).filter(and_(User.email == email, User.enabled.is_(True))).one_or_none()
     if user:
         if check_password_by_hash(password, user.pwhash):
-            log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR gubc USER {user}")
-            user.login_attempts.clear()
+            if not is_2fa_enabled():
+                log.warning("Clearing failed login attempts.", extra={"user_id": user.id, "credential": "password"})
+                user.login_attempts.clear()
             return user
 
         register_failed_login_attempt(db, user)
@@ -250,7 +247,7 @@ def revalidate_user_token_based(request, token):
             request.tm.commit()
             request.tm.begin()
         else:
-            log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR APIKEY.USER {user.id}")
+            log.warning("Clearing failed login attempts.", extra={"user_id": user.id, "credential": "api_key"})
             user.login_attempts.clear()
             return user
 
@@ -280,7 +277,7 @@ def revalidate_user_session_based(request):
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
 
-    log.warning(f"CLEARING FAILED LOGIN ATTEMPTS FOR USER {user}")
+    log.warning("Clearing failed login attempts.", extra={"user_id": user.id})
     user.login_attempts.clear()
     return user
 

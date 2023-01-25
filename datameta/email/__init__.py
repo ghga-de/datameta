@@ -23,12 +23,12 @@ log = logging.getLogger(__name__)
 
 
 __smtp = SMTPClient(
-        hostname  =threadlocal.get_current_registry().settings['datameta.smtp_host'],
-        port      =threadlocal.get_current_registry().settings['datameta.smtp_port'],
-        user      =threadlocal.get_current_registry().settings['datameta.smtp_user'],
-        password  =threadlocal.get_current_registry().settings['datameta.smtp_pass'],
-        tls       =threadlocal.get_current_registry().settings['datameta.smtp_tls']
-        )
+    hostname  = threadlocal.get_current_registry().settings['datameta.smtp_host'],
+    port      = threadlocal.get_current_registry().settings['datameta.smtp_port'],
+    user      = threadlocal.get_current_registry().settings['datameta.smtp_user'],
+    password  = threadlocal.get_current_registry().settings['datameta.smtp_pass'],
+    tls       = threadlocal.get_current_registry().settings['datameta.smtp_tls']
+)
 
 __smtp_from = parseaddr(threadlocal.get_current_registry().settings['datameta.smtp_from'])
 
@@ -49,4 +49,4 @@ def send(recipients, subject, template, values, bcc=None, rec_header_only=False)
     try:
         __smtp.sendMessage(__smtp_from, recipients, subject, message, bcc=bcc, rec_header_only=rec_header_only)
     except Exception as e:
-        log.error(f"An error occurred when sending an email: {e}")
+        log.error("SMTP error.", extra={"error": e})

@@ -12,15 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.view import view_config
-
-from ..models import Group
+import hashlib
 
 
-@view_config(route_name='register', renderer='../templates/register.pt')
-def v_register(request):
-    groups = request.dbsession.query(Group).all()
-    return {
-            'page_title_current_page' : 'Registration',
-            'groups' : [ {'id' : g.uuid, 'name' : g.name} for g in groups ]
-            }
+def hash_token(token):
+    """Hash a token and return the unsalted hash."""
+    hashed_token = hashlib.sha256(token.encode('utf-8')).hexdigest()
+    return hashed_token

@@ -64,6 +64,7 @@ user_a:
     site_admin: false
     site_read: false
     enabled: true
+    tfa_secret: gAAAAABiRv66hVZM_h5FfCbvo7A7BxnP4M9UXHJYuVd7gFWQ4gGgciyWHPbVT6jpgtakkexFXs9jodHjD8FrXuto277pxbhD6sOPjL64RlhKo08E6QbyWV-_MRNR8kVUKBO89ffCK5nm
   references:
     group:
       fixtureset: groups

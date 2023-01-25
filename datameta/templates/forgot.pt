@@ -55,6 +55,7 @@
                             }
 </style>
 <main metal:fill-slot="content" class="form-signin">
+    <div tal:replace="structure logo_html"></div>    
     <div id="alert" class="alert alert-danger collapse" role="alert">
         An unknown error occurred.
     </div>
@@ -63,8 +64,7 @@
             If this email address is registered with us, it will receive a recovery link shortly. Please check your inbox.
         </div>
     </div>
-    <h1 class="h3 mb-3 fw-normal" style="font-family: 'Fira Sans', sans-serif;"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</h1>
-    <form action="#" id="forgotform">
+    <form action="#" id="forgotform" class="mt-3">
         <fieldset id="forgotfieldset">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="desc_input_email">
@@ -80,7 +80,9 @@
             </div>
         </fieldset>
     </form>
-
+    <p class="mt-2">
+    <span tal:replace="structure legal_notice"></span>
+    </p>
     <script src="${request.static_url('datameta:static/js/forgot.js')}"></script>
 </main>
 </metal:block>

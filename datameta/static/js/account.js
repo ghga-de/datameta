@@ -79,7 +79,7 @@ window.addEventListener("dmready", function() {
                 })
             })
             .then((response) => {
-                if (response.status == "204") {
+                if (response.status == "200") {
                     view_success();
                     return;
                 } else {

@@ -53,7 +53,7 @@ def v_admin_put_request(request):
         else:
             raise SyntaxError()
     except Exception as e:
-        log.error(f"MALFORMED API REQUEST AT /api/ui/admin/request: {e}")
+        log.error("Malformed API request.", extra={"error": e})
         raise HTTPBadRequest()
 
     # Check if the request exists
@@ -113,7 +113,7 @@ def v_admin_put_request(request):
                     'token_url' : token_url
                     }
                 )
-        log.info(f"NEW USER '{new_user.email}' [GROUP '{new_user.group.name}'] CONFIRMED BY '{req_user.email}'")
+        log.info("Registation request accepted.", extra={"email": new_user.email, "group": new_user.group.name, "admin_email": req_user.email})
     else:
         # Denote email and name before request deletion
         reg_req_email = reg_req.email
@@ -131,7 +131,7 @@ def v_admin_put_request(request):
                     'fullname' : reg_req_fullname,
                     }
                 )
-        log.info(f"REGISTRATION REQUEST BY '{reg_req_email}' REJECTED BY '{req_user.email}'")
+        log.info("Registation request rejected.", extra={"email": reg_req_email, "admin_email": req_user.email})
 
     return HTTPNoContent()
 
