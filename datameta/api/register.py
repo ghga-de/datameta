@@ -153,8 +153,7 @@ def post(request):
             )
 
     if org_create:
-        log.info(f"REGISTRATION REQUEST [email='{req_email}', name='{name}', new_org='{org_new_name}']")
+        log.info("New registration request.", extra={"email": req_email, "name": name, "group": org_new_name, "is_new_group": True})
     else:
-        log.info(f"REGISTRATION REQUEST [email='{req_email}', name='{name}', group='{group.name}']")
-
+        log.info("New registration request.", extra={"email": req_email, "name": name, "group": group.name, "is_new_group": False})
     return HTTPNoContent()
