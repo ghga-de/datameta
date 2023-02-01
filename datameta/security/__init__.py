@@ -320,9 +320,10 @@ def successful_authenticated(**kwargs) -> None:
             user = kwargs["user"]
             db = request.dbsession
             now = datetime.utcnow()
+            logins_failed = get_failed_logins_within_hour(db)
 
-            if get_failed_logins_within_hour(db) > 0:
-                log.warning("Cleared login attempts.", extra={"user_id": user.id})
-                user.login_attempts.clear() 
-      
+            if logins_failed > 0:
+                log.warning("Cleared login attempts.", extra={"user_id": user.id, "logins_failed": logins_failed})
+                user.login_attempts.clear()
+
     clear_login_attemtps(kwargs)
