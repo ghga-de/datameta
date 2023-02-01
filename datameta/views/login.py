@@ -38,7 +38,7 @@ def my_view(request):
                 log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
 
                 tfa_enabled = tfaz.is_2fa_enabled()
-                
+
                 if tfa_enabled:
                     if auth_user.tfa_secret is None:
                         raise errors.get_validation_error(
@@ -47,14 +47,13 @@ def my_view(request):
                     request.session["preauth_gid"] = auth_user.group_id
                     request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
                     return HTTPFound(location='/tfa')
-      
+
                 if not tfa_enabled:
-                    successful_authenticated(user=auth_user, request=request, credential="password")
                     request.session["user_uid"] = auth_user.id
                     request.session["user_gid"] = auth_user.group_id
                     request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
+                    successful_authenticated(user=auth_user, request=request, credential="password")
                     return HTTPFound(location='/home')
-
 
         except KeyError:
             pass
