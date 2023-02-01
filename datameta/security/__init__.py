@@ -243,7 +243,7 @@ def revalidate_user_token_based(request, token):
             request.tm.commit()
             request.tm.begin()
         else:
-            successful_authenticated(user=user, request=request, credential="apikey")
+            successfully_authenticated(user=user, request=request, credential="apikey")
             return user
 
     raise HTTPUnauthorized()
@@ -272,7 +272,7 @@ def revalidate_user_session_based(request):
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
 
-    successful_authenticated(user=user, request=request, credentials="session")
+    successfully_authenticated(user=user, request=request, credentials="session")
     return user
 
 
@@ -305,7 +305,7 @@ def revalidate_admin(request):
     raise HTTPUnauthorized()
 
 
-def successful_authenticated(**kwargs) -> None:
+def successfully_authenticated(**kwargs) -> None:
     """Function to invoke side effects after successful authentications."""
 
     def clear_login_attemtps(kwargs):
