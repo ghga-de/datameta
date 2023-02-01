@@ -30,7 +30,7 @@ def add_global(event):
         appsetting = settings.get_setting(event['request'].dbsession, appsetting_name)
         if appsetting is None:
             event[appsetting_name] = default
-            log.error(f"Missing application settings {appsetting_name}")
+            log.error("Missing application setting.", extra={"appsetting_name": appsetting_name})
         else:
             event[appsetting_name] = appsetting
 
