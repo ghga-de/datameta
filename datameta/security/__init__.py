@@ -23,7 +23,6 @@ from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 
 from sqlalchemy import and_
 
-from .tfaz import is_2fa_enabled
 from .tokenz import hash_token
 
 
