@@ -324,9 +324,5 @@ def successful_authenticated(**kwargs) -> None:
             if get_failed_logins_within_hour(db) > 0:
                 log.warning("Cleared login attempts.", extra={"user_id": user.id})
                 user.login_attempts.clear() 
-
-        else:
-            pass
-        
+      
     clear_login_attemtps(kwargs)
-    return
