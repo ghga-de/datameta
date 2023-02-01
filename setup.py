@@ -49,6 +49,7 @@ requires = [
     'pytest >= 3.7.4',
     'dataclasses-json==0.5.2',
     "pyyaml",
+    "python-json-logger",
     "gunicorn==20.0.4",
     "pyotp",
     "cryptography",

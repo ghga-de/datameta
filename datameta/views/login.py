@@ -35,7 +35,7 @@ def my_view(request):
 
             auth_user = security.get_user_by_credentials(request, in_email, in_pwd)
             if auth_user:
-                log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
+                log.info("User logged in.", extra={"user_id": auth_user.id, "email": auth_user.email, "client_addr": request.client_addr})
 
                 tfa_enabled = tfaz.is_2fa_enabled()
 

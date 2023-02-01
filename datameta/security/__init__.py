@@ -175,11 +175,11 @@ def register_failed_login_attempt(db, user):
         for attempt in db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
     )
 
-    log.warning(f"FAILED LOGIN ATTEMPT USER id={user.id} n={n_failed_logins} within one hour.")
+    log.warning("Failed login attempt.", extra={"user_id": user.id, "failed_logins_last_hour": n_failed_logins})
     if n_failed_logins >= max_allowed_failed_logins:
         db.query(User).filter(user.id == User.id).update({User.enabled: False})
         db.flush()
-        log.warning(f"BLOCKED USER id={user.id} enabled={user.enabled} reason={n_failed_logins} failed login attempts within one hour.")
+        log.warning("User blocked due to repeated failed login attempts.", extra={"user_id": user.id, "user_enabled": user.enabled, "failed_logins_last_hour": n_failed_logins})
 
     return None
 
