@@ -305,16 +305,17 @@ def revalidate_admin(request):
         return user
     raise HTTPUnauthorized()
 
+
 def successful_authenticated(**kwargs) -> None:
     """Function to invoke side effects after successful authentications."""
-    
+
     def clear_login_attemtps(kwargs):
         """Sets number of login attempts to 0."""
-        
+
         def get_failed_logins_within_hour(db) -> int:
             attempts = db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
             return len([now - attempt.timestamp <= timedelta(hours=1) for attempt in attempts])
-            
+
         if "request" and "user" in kwargs.keys():
             request = kwargs["request"]
             user = kwargs["user"]
