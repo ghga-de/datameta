@@ -88,7 +88,7 @@ def tfa_view(request):
                     del request.session["preauth_uid"]
                     del request.session["preauth_gid"]
 
-                    clear_failed_login_attempts(user=user, request=request.dbsession)
+                    clear_failed_login_attempts(user=user, dbsession=request.dbsession)
                     return HTTPFound(location="/home")
                 else:
                     return HTTPFound(location="/login")
