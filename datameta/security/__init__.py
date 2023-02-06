@@ -243,7 +243,7 @@ def revalidate_user_token_based(request, token):
             request.tm.commit()
             request.tm.begin()
         else:
-            successfully_authenticated(user=user, request=request, credential="apikey")
+            clear_failed_login_attempts(user=user, dbsession=db)
             return user
 
     raise HTTPUnauthorized()
@@ -272,7 +272,7 @@ def revalidate_user_session_based(request):
     request.session['site_admin'] = user.site_admin
     request.session['group_admin'] = user.group_admin
 
-    successfully_authenticated(user=user, request=request, credentials="session")
+    clear_failed_login_attempts(user=user, dbsession=db)
     return user
 
 
@@ -305,25 +305,12 @@ def revalidate_admin(request):
     raise HTTPUnauthorized()
 
 
-def successfully_authenticated(**kwargs) -> None:
-    """Function to invoke side effects after successful authentications."""
+def clear_failed_login_attempts(dbsession, user: User) -> None:
+    """Sets number of login attempts to 0."""
+    now = datetime.utcnow()
+    attempts = dbsession.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
+    logins_failed = len([now - attempt.timestamp <= timedelta(hours=1) for attempt in attempts])
 
-    def clear_login_attemtps(kwargs):
-        """Sets number of login attempts to 0."""
-
-        def get_failed_logins_within_hour(db) -> int:
-            attempts = db.query(LoginAttempt).filter(LoginAttempt.user_id == user.id).all()
-            return len([now - attempt.timestamp <= timedelta(hours=1) for attempt in attempts])
-
-        if "request" and "user" in kwargs.keys():
-            request = kwargs["request"]
-            user = kwargs["user"]
-            db = request.dbsession
-            now = datetime.utcnow()
-            logins_failed = get_failed_logins_within_hour(db)
-
-            if logins_failed > 0:
-                log.warning("Cleared login attempts.", extra={"user_id": user.id, "logins_failed": logins_failed})
-                user.login_attempts.clear()
-
-    clear_login_attemtps(kwargs)
+    if logins_failed > 0:
+        log.warning("Cleared login attempts.", extra={"user_id": user.id, "logins_failed": logins_failed})
+        user.login_attempts.clear()

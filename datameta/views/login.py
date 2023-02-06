@@ -16,7 +16,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from .. import security, errors
-from ..security import tfaz, successfully_authenticated
+from ..security import tfaz, clear_failed_login_attempts
 
 from datetime import datetime, timedelta
 import logging
@@ -52,7 +52,7 @@ def my_view(request):
                     request.session["user_uid"] = auth_user.id
                     request.session["user_gid"] = auth_user.group_id
                     request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
-                    successfully_authenticated(user=auth_user, request=request, credential="password")
+                    clear_failed_login_attempts(user=auth_user, dbsession=request.dbsession)
                     return HTTPFound(location='/home')
 
         except KeyError:

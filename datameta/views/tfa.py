@@ -21,7 +21,7 @@ from pyramid.view import view_config
 from sqlalchemy import and_
 
 from .. import errors
-from ..security import register_failed_login_attempt, tfaz, successfully_authenticated
+from ..security import register_failed_login_attempt, tfaz, clear_failed_login_attempts
 from ..models import User
 
 import logging
@@ -88,7 +88,7 @@ def tfa_view(request):
                     del request.session["preauth_uid"]
                     del request.session["preauth_gid"]
 
-                    successfully_authenticated(user=user, request=request, credential="password/otp")
+                    clear_failed_login_attempts(user=user, request=request.dbsession)
                     return HTTPFound(location="/home")
                 else:
                     return HTTPFound(location="/login")
