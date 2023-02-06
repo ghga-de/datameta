@@ -312,5 +312,5 @@ def clear_failed_login_attempts(dbsession, user: User) -> None:
     logins_failed = len([now - attempt.timestamp <= timedelta(hours=1) for attempt in attempts])
 
     if logins_failed > 0:
-        log.warning("Cleared login attempts.", extra={"user_id": user.id, "logins_failed": logins_failed})
+        log.warning("Clearing failed login attempts.", extra={"user_id": user.id, "logins_failed": logins_failed})
         user.login_attempts.clear()
