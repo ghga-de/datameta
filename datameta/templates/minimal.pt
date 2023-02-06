@@ -3,12 +3,25 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>DataMeta - Login</title>
+       
+        <title tal:condition="exists:page_title_current_page">
+            ${page_title + " - " + page_title_current_page}
+        </title>    
+        <title tal:condition="not:exists:page_title_current_page">
+            ${page_title}
+        </title>
 
         <link rel="preconnect" href="https://fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@500&display=swap" rel="stylesheet"> 
 
+
+        <!-- Bootstrap core CSS -->
         <link href="${request.static_url('datameta:static/node_modules/bootstrap/dist/css/bootstrap.min.css')}" rel="stylesheet">
+        <!-- Bootstrap icon CSS -->
+        <link href="${request.static_url('datameta:static/node_modules/bootstrap-icons/font/bootstrap-icons.css')}" rel="stylesheet">
+        <!-- DataMeta CSS -->
+        <link href="${request.static_url('datameta:static/css/datameta.css')}" rel="stylesheet">
+
 
         <style>
             .bd-placeholder-img {
@@ -45,9 +58,6 @@
     </head>
     <body class="text-center">
         <script>0</script>
-        <main class="form-signin">
-            <h1 class="h3 mb-3 fw-normal" style="font-family: 'Fira Sans', sans-serif;"><span style="color:#ffca2c">D</span>ata<span style="color:#ffca2c">M</span>eta</h1>
-            <div metal:define-slot="content">No content</div>
-        </main>
+	<div metal:define-slot="content">No content</div>
     </body>
 </html>
