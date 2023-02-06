@@ -34,6 +34,7 @@ from .metadata import get_all_metadata, get_service_metadata, get_metadata_with_
 
 log = logging.getLogger(__name__)
 
+
 @dataclass
 class MetaDataSetServiceExecution(DataHolderBase):
     service_execution_id   : dict
@@ -191,7 +192,7 @@ def post(request: Request) -> MetaDataSetResponse:
             value            = value
         )
         db.add(mdatum_rec)
-    
+
     log.info("Created new MetaDataSet.", extra={"user_id": auth_user.id})
     return MetaDataSetResponse(
         id              = get_identifier(mdata_set),
