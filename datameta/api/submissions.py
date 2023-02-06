@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from datetime import datetime
 from dataclasses import dataclass
 from pyramid.view import view_config
@@ -21,6 +22,8 @@ from typing import List
 from .. import security, resource, validation, siteid
 from ..models import Submission
 from . import DataHolderBase
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -101,6 +104,7 @@ def post(request: Request) -> SubmissionResponse:
     db.add(submission)
     db.flush()
 
+    log.info("Created new Submission.", extra={"user_id": auth_user.id, "submission_label": label})
     return SubmissionResponse(
             id = resource.get_identifier(submission),
             label = label,
