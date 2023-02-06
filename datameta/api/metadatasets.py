@@ -193,7 +193,6 @@ def post(request: Request) -> MetaDataSetResponse:
         )
         db.add(mdatum_rec)
 
-    log.info("Created new MetaDataSet.", extra={"user_id": auth_user.id})
     return MetaDataSetResponse(
         id              = get_identifier(mdata_set),
         record          = record,
