@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from dataclasses import dataclass
 from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent
 from pyramid.view import view_config
@@ -31,6 +32,7 @@ from . import DataHolderBase
 from .. import errors
 from .metadata import get_all_metadata, get_service_metadata, get_metadata_with_access
 
+log = logging.getLogger(__name__)
 
 @dataclass
 class MetaDataSetServiceExecution(DataHolderBase):
@@ -189,7 +191,8 @@ def post(request: Request) -> MetaDataSetResponse:
             value            = value
         )
         db.add(mdatum_rec)
-
+    
+    log.info("Created new MetaDataSet.", extra={"user_id": auth_user.id})
     return MetaDataSetResponse(
         id              = get_identifier(mdata_set),
         record          = record,
@@ -292,6 +295,7 @@ def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
     if not mdata_sets:
         raise HTTPNotFound()
 
+    log.info("User queried MetaDataSets.", extra={"user_id": auth_user.id})
     return [
             MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
             for mdata_set in mdata_sets
@@ -333,6 +337,7 @@ def get_metadataset(request: Request) -> MetaDataSetResponse:
     else:
         metadata_with_access = get_metadata_with_access(db, auth_user)
 
+    log.info("Returned a MetaDataSet by its ID.", extra={"user_id": auth_user.id, "metadataset_id": request.matchdict['id']})
     # Check and annotate service executions
     return MetaDataSetResponse.from_metadataset(mdata_set, metadata_with_access)
 
