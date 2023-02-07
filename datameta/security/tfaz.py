@@ -101,8 +101,13 @@ def generate_2fa_qrcode(user, secret):
     """
 
     totp_uri = generate_totp_uri(user, secret)
-    qr_code = qrcode.make(totp_uri, image_factory=qrcode.image.svg.SvgPathFillImage)
-    return qr_code.make_path().get("d")
+    qrc = qrcode.QRCode(image_factory=qrcode.image.svg.SvgPathFillImage)
+    qrc.add_data(totp_uri)
+    qrc.make(fit=True)
+
+    svg = qrc.make_image().get_image()
+    
+    return svg.find("path").get("d")
 
 
 def get_user_2fa_secret(user, settings=None):
