@@ -106,6 +106,7 @@ def generate_2fa_qrcode(user, secret):
     qrc.make(fit=True)
 
     # maybe needs to be in try/except block in case image generation fails?
+    
     svg = qrc.make_image().get_image()
     
     return svg.find("path").get("d")
