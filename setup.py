@@ -53,7 +53,7 @@ requires = [
     "gunicorn==20.0.4",
     "pyotp",
     "cryptography",
-    "qrcode[pil]"
+    "qrcode[pil]==7.3.1"
 ]
 
 tests_require = [
