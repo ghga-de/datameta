@@ -19,6 +19,10 @@
     "datameta.smtp_from": "",
     "datameta.apikeys.max_expiration_period": 30,
 
+    "datameta.tfa.enabled": true,
+    "datameta.tfa.encrypt_key": "n-ZFySJn6Td0VwE0LLcuN68WQmIZxDdvac9XztPr394=",
+    "datameta.tfa.otp_issuer": "CoGDat",
+
     "pyramid.reload_templates": true,
     "pyramid.debug_authorization": false,
     "pyramid.debug_notfound": false,

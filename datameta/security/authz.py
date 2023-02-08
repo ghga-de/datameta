@@ -55,7 +55,7 @@ def view_group(user, group):
 
 
 def has_data_access(user, data_user_id, data_group_id=None, was_submitted=False):
-    # if dataset was already submitted, the group must match, or the user must have site_read priviledges
+    # if dataset was already submitted, the group must match, or the user must have site_read privileges
     # if dataset was not yet submitted, the user must match
     return any((
         (was_submitted and (user.site_read or data_group_id == user.group_id)),
@@ -69,6 +69,10 @@ def view_apikey(user, target_user):
 
 def delete_apikey(user, target_user):
     return user_is_target(user, target_user)
+
+
+def delete_totp_secret(user):
+    return user.site_admin
 
 
 def view_appsettings(user):

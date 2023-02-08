@@ -61,7 +61,7 @@ def convert_samplesheet(db, file_like_obj, filename, user):
         reader = get_samplesheet_reader(file_like_obj)
         submitted_metadata = reader(file_like_obj)
     except Exception as e:
-        log.info(f"submitted sample sheet '{filename}' triggered exception {e}")
+        log.info("Sample sheet conversion failed.", extra={"file_name": filename, "error": e})
         raise samplesheet.SampleSheetReadError("Unable to parse the sample sheet.")
 
     # Query column names that we expect to see in the sample sheet (intra-submission duplicates)
@@ -85,7 +85,7 @@ def convert_samplesheet(db, file_like_obj, filename, user):
         # string value is not possible through the convert API.
         return [ { mdname : None if not row[mdname] else formatted_mrec_value_str(row[mdname], metadata_datetimefmt[mdname]) for mdname in metadata_names } for _, row in submitted_metadata.iterrows() ]
     except Exception as e:
-        log.error(e)
+        log.error("Unexpected error during sample sheet conversion.", extra={"file_name": filename, "error": e})
         raise samplesheet.SampleSheetReadError("Unknown error")
 
 
@@ -113,5 +113,5 @@ def post(request: Request) -> HTTPOk:
     try:
         return convert_samplesheet(db, input_file.file, input_file.filename, auth_user)
     except samplesheet.SampleSheetReadError as e:
-        log.warning(f"Sample sheet '{input_file.filename}' could not be read: {e}")
+        log.warning("Unable to read sample sheet.", extra={"file_name": input_file.filename, "error": e})
         raise errors.get_validation_error(messages = [ str(e) ])

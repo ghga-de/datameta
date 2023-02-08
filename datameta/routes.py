@@ -26,3 +26,5 @@ def includeme(config):
     config.add_route('account', '/account')
     config.add_route('view', '/view')
     config.add_route('admin', '/admin')
+    config.add_route('tfa', '/tfa')
+    config.add_route('settfa', '/settfa/{token}')

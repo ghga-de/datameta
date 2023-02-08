@@ -23,8 +23,7 @@ from ..models import ApplicationSetting
 from .. import resource, security, errors
 from ..security import authz
 from ..resource import resource_by_id
-from ..settings import get_setting_value_type
-import datetime
+from ..settings import get_setting_value_type, set_setting, SettingUpdateError
 
 
 @dataclass
@@ -64,8 +63,8 @@ def get(request: Request) -> List[AppSettingsResponseElement]:
             AppSettingsResponseElement(
                 id                    =  resource.get_identifier(setting),
                 key                   =  setting.key,
-                value_type             =  value_type,
-                value                 =  value
+                value_type            =  value_type,
+                value                 =  str(value)
             )
         )
 
@@ -89,43 +88,11 @@ def put(request: Request):
         raise HTTPForbidden()
 
     target_setting = resource_by_id(db, ApplicationSetting, settings_id)
-
-    temp, value_type = get_setting_value_type(target_setting)
     value = request.openapi_validated.body["value"]
 
-    if value_type == 'int':
-        try:
-            value_int = int(value)
-        except ValueError:
-            raise errors.get_validation_error(["You have to provide an integer."])
-
-        target_setting.int_value = value_int
-
-    elif value_type == 'string':
-        target_setting.str_value = value
-
-    elif value_type == 'float':
-        try:
-            value_float = float(value)
-        except ValueError:
-            raise errors.get_validation_error(["You have to provide a float."])
-
-        target_setting.float_value = value_float
-
-    elif value_type == 'date':
-        try:
-            datetime.datetime.strptime(value, "%Y-%m-%d")
-        except ValueError:
-            raise errors.get_validation_error(["The date value has to specified in the form '%Y-%m-%d'."])
-
-        target_setting.date_value = value
-
-    elif value_type == 'time':
-        try:
-            datetime.datetime.strptime(value, "%H:%M:%S")
-        except ValueError:
-            raise errors.get_validation_error(["The time value has to specified in the form '%H:%M:%S'."])
-
-        target_setting.date_value = value
+    try:
+        set_setting(db, target_setting.key, value)
+    except SettingUpdateError as e:
+        raise errors.get_validation_error([str(e)])
 
     return HTTPNoContent()
