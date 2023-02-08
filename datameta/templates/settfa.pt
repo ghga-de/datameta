@@ -81,9 +81,7 @@
 
             <div id="tfa_qrcode" class="collapse show">
                 <div class="mb-3">
-                    <svg width="200" height="200" version="1.1" viewBox="0 0 45 45" xlmns="http://www.w3.org/2000/svg">
-                        <path d="${tfa_qrcode}" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none" />
-                    </svg>
+                    <span tal:replace="structure tfa_qrcode"></span>
                 </div>
                 <div class="card text-dark bg-info mb-3 w-100 text-start">
                     <div class="card-header">
