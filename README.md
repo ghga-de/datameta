@@ -18,7 +18,7 @@ users!
 
 1. Edit the configuration file
 
-   The fields that require changing are marked with `# CHANGEME`. You may want
+   The fields that require changing are marked with `# CHANGE THIS`. You may want
    to perform additional adjustments to the compose file to fit your needs.
 
 1. Download the Docker compose file
