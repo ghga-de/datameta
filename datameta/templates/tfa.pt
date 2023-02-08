@@ -58,7 +58,7 @@
     <form action="/tfa" method="POST" class="mt-3">
         <div class="input-group mb-3">
             <label for="inputOtp" class="visually-hidden">OTP</label>
-            <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP Token" required autofocus>
+            <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" autocomplete="off" placeholder="OTP Token" required autofocus>
         </div>
         <div class="row mt-2">
             <div class="input-group mb-3">

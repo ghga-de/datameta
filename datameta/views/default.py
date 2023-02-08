@@ -31,8 +31,8 @@ def add_renderer_appsettings_globals(event):
     def add_appsetting_with_default(appsetting_key: str, default: str) -> None:
         appsetting = settings.get_setting(event['request'].dbsession, appsetting_key)
         if appsetting is None:
-            event[appsetting_key] = default
-            log.error(f"Missing application settings {appsetting_key}")
+            event[appsetting_name] = default
+            log.error("Missing application setting.", extra={"appsetting_name": appsetting_name})
         else:
             event[appsetting_key] = appsetting
 

@@ -102,7 +102,7 @@
                         <span class="input-group-text" id="desc_input_otpkey">
                             <i class="bi bi-key"></i>
                         </span>
-                        <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP Token" aria-describedby="desc_input_otpkey" required autofocus>
+                        <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" autocomplete="off" placeholder="OTP Token" aria-describedby="desc_input_otpkey" required autofocus>
                     </div>
                     <div class="input-group mb-3">
                         <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
