@@ -31,7 +31,7 @@ services:
       DATAMETA_INITIAL_FULLNAME: Joe User # CHANGE THIS: Insert initial user fullname here
       DATAMETA_INITIAL_EMAIL: joe@user # CHANGE THIS: Insert initial user email address here
       DATAMETA_INITIAL_PASS: j03us3r # CHANGE THIS: Insert initial user password here
-      DATAMETA_INITIAL_GROUPNAME: Joe's ab # CHANGE THIS: Insert intial user group name here
+      DATAMETA_INITIAL_GROUPNAME: Joe's lab # CHANGE THIS: Insert intial user group name here
 
       # The maximum number of days an API key can be valid
       DATAMETA_API_KEYS_MAX_EXPIRE_DAYS: 365
