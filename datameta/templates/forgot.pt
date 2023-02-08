@@ -55,7 +55,7 @@
                             }
 </style>
 <main metal:fill-slot="content" class="form-signin">
-    <div tal:replace="structure logo_html"></div>    
+    <div tal:replace="structure renderer_logo_html"></div>    
     <div id="alert" class="alert alert-danger collapse" role="alert">
         An unknown error occurred.
     </div>
@@ -81,7 +81,7 @@
         </fieldset>
     </form>
     <p class="mt-2">
-    <span tal:replace="structure legal_notice"></span>
+    <span tal:replace="structure renderer_legal_notice"></span>
     </p>
     <script src="${request.static_url('datameta:static/js/forgot.js')}"></script>
 </main>
