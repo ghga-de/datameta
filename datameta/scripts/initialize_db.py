@@ -18,7 +18,7 @@ import sys
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.exc import OperationalError
 
-from ..security import hash_password, hash_token
+from ..security import register_password, hash_token
 from ..models import User, Group, MetaDatum, DateTimeMode, ApiKey
 
 
@@ -63,12 +63,12 @@ def create_initial_user(request, email, fullname, password, groupname):
                 site_id=siteid.generate(request, User),
                 enabled=True,
                 email=email,
-                pwhash=hash_password(password),
+                pwhash=register_password(db, 0, password),
                 fullname=fullname,
                 group=init_group,
                 group_admin=True,
                 site_admin=True,
-                site_read=True
+                site_read=True,
                 )
         db.add(root)
 
@@ -149,8 +149,8 @@ def main(argv=sys.argv):
             if args.initial_api_key:
                 create_api_key(env['request'], args.initial_api_key)
 
-            # Create example sample sheet columns
-            create_example_metadata(dbsession)
+            # Uncomment to create example sample sheet columns
+            # create_example_metadata(dbsession)
 
     except OperationalError:
         print('''

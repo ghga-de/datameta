@@ -44,10 +44,16 @@ requires = [
     'pyramid_openapi3==0.11',
     'jsonschema<4',
     'openapi-core<0.14',
+    'openapi-schema-validator==0.1.5',
+    'openapi-spec-validator==0.3.1',
     'pytest >= 3.7.4',
     'dataclasses-json==0.5.2',
     "pyyaml",
+    "python-json-logger",
     "gunicorn==20.0.4",
+    "pyotp",
+    "cryptography",
+    "qrcode[pil]"
 ]
 
 tests_require = [
@@ -61,7 +67,7 @@ tests_require = [
 
 setup(
     name                   = 'datameta',
-    version                = '1.0.6',
+    version                = '1.1.0',
     description            = 'DataMeta - submission server for data and associated metadata',
     long_description       = README + '\n\n' + CHANGES,
     author                 = 'Leon Kuchenbecker',

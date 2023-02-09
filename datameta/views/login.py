@@ -15,8 +15,10 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-from .. import security
+from .. import security, errors
+from ..security import tfaz, clear_failed_login_attempts
 
+from datetime import datetime, timedelta
 import logging
 log = logging.getLogger(__name__)
 
@@ -33,16 +35,29 @@ def my_view(request):
 
             auth_user = security.get_user_by_credentials(request, in_email, in_pwd)
             if auth_user:
-                request.session['user_uid'] = auth_user.id
-                request.session['user_gid'] = auth_user.group.id
-                request.session['user_email'] = auth_user.email
-                request.session['user_fullname'] = auth_user.fullname
-                request.session['user_groupname'] = auth_user.group.name
-                log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
-                return HTTPFound(location="/home")
+                log.info("User logged in.", extra={"user_id": auth_user.id, "email": auth_user.email, "client_addr": request.client_addr})
+
+                tfa_enabled = tfaz.is_2fa_enabled()
+
+                if tfa_enabled:
+                    if auth_user.tfa_secret is None:
+                        raise errors.get_validation_error(
+                            ['Please reset your password and set up two-factor authorisation.'])
+                    request.session["preauth_uid"] = auth_user.id
+                    request.session["preauth_gid"] = auth_user.group_id
+                    request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
+                    return HTTPFound(location='/tfa')
+
+                if not tfa_enabled:
+                    request.session["user_uid"] = auth_user.id
+                    request.session["user_gid"] = auth_user.group_id
+                    request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
+                    clear_failed_login_attempts(user=auth_user, dbsession=request.dbsession)
+                    return HTTPFound(location='/home')
+
         except KeyError:
             pass
         return HTTPFound(location="/login")
     return {
-            'pagetitle' : 'DataMeta - Login'
+            'page_title_current_page' : 'Login'
             }

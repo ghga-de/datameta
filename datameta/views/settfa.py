@@ -14,32 +14,31 @@
 
 from pyramid.view import view_config
 
-from .. import security
-from ..api.ui.forgot import send_forgot_token
-
+from ..security import tfaz
 import datetime
 
-import logging
-log = logging.getLogger(__name__)
 
+@view_config(route_name='settfa', renderer='../templates/settfa.pt')
+def v_settfa(request):
 
-@view_config(route_name='setpass', renderer='../templates/setpass.pt')
-def v_setpass(request):
-    # Validate token
-    dbtoken = security.get_password_reset_token(request.dbsession, request.matchdict['token'])
+    tfa_qrcode = ""
+    unknown_token, expired_token = False, False
+    if request.matchdict['token'] != "0":
+        # Validate token
+        dbtoken = tfaz.check_2fa_token(request.dbsession, request.matchdict['token'])
 
-    unknown_token = dbtoken is None
-    expired_token = not unknown_token and dbtoken.expires < datetime.datetime.now()
+        unknown_token = dbtoken is None
+        expired_token = not unknown_token and dbtoken.expires < datetime.datetime.now()
 
-    # Token expired? Send new one.
-    if expired_token:
-        db_token_obj, clear_token = security.get_new_password_reset_token(request.dbsession, dbtoken.user)
-        send_forgot_token(request, db_token_obj, clear_token)
+        if not expired_token and not unknown_token:
+            tfa_qrcode = tfaz.generate_2fa_qrcode(dbtoken.user, dbtoken.secret)
 
     return {
-        'page_title_current_page' : 'Set Password',
+        'page_title_current_page' : 'Set 2FA',
         'unknown_token' : unknown_token,
-        'expired_token' : expired_token,
+        'expired_token': expired_token,
         'token_ok' : not unknown_token and not expired_token,
         'token' : request.matchdict['token'],
+        'tfa_qrcode' : tfa_qrcode,
+        'tfa_setup_required' : request.matchdict['token'] != "0",
     }

@@ -64,6 +64,7 @@ user_a:
     site_admin: false
     site_read: false
     enabled: true
+    tfa_secret: gAAAAABiRv66hVZM_h5FfCbvo7A7BxnP4M9UXHJYuVd7gFWQ4gGgciyWHPbVT6jpgtakkexFXs9jodHjD8FrXuto277pxbhD6sOPjL64RlhKo08E6QbyWV-_MRNR8kVUKBO89ffCK5nm
   references:
     group:
       fixtureset: groups
@@ -79,6 +80,25 @@ user_b:
       value: user_b
     fullname: user_b
     site_id: user_b
+    group_admin: false
+    site_admin: false
+    site_read: false
+    enabled: true
+  references:
+    group:
+      fixtureset: groups
+      name: group_x
+
+user_d:
+  class: User
+  attributes:
+    email: user_d@user.group_x
+    password:
+      func: datameta.security.hash_password
+      newname: pwhash
+      value: Xy.012345678910
+    fullname: user_d
+    site_id: user_d
     group_admin: false
     site_admin: false
     site_read: false

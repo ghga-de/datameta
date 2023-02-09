@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import transaction
-from .models import ApplicationSetting, get_engine, get_tm_session, get_session_factory
+import datetime
 import pkgutil
 import yaml
+from typing import List
+
+import transaction
+from .models import ApplicationSetting, get_engine, get_tm_session, get_session_factory
 
 import logging
 log = logging.getLogger(__name__)
@@ -65,6 +68,67 @@ def get_setting(db, name):
     return None
 
 
+def get_settings_startswith(
+    db,
+    prefix: str,
+) -> List[str]:
+    """Return all appsettings which starts with given prefix."""
+    settings = db.query(ApplicationSetting).filter(ApplicationSetting.key.startswith(prefix)).all()
+    return [setting.key for setting in settings]
+
+
+class SettingUpdateError(RuntimeError):
+    pass
+
+
+VALUE_CASTS = {
+    "int": {
+        "function": int,
+        "error_msg": "You have to provide an integer.",
+        "target": "int_value"
+    },
+    "string": {
+        "function": lambda value: value,
+        "error_msg": "",
+        "target": "str_value"
+    },
+    "float": {
+        "function": float,
+        "error_msg": "You have to provide an integer.",
+        "target": "float_value"
+    },
+    "date": {
+        "function": lambda value: datetime.datetime.strptime(value, "%Y-%m-%d"),
+        "error_msg": "The date value has to specified in the form '%Y-%m-%d'.",
+        "target": "date_value"
+    },
+    "time": {
+        "function": lambda value: datetime.datetime.strptime(value, "%H:%M:%S"),
+        "error_msg": "The time value has to specified in the form '%H:%M:%S'.",
+        "target": "time_value"
+    }
+}
+
+
+def set_setting(db, name, value):
+
+    target_setting = db.query(ApplicationSetting).filter(ApplicationSetting.key == name).one_or_none()
+    _, value_type = get_setting_value_type(target_setting)
+
+    cast_params = VALUE_CASTS.get(value_type)
+
+    if cast_params is not None:
+
+        try:
+            casted_value = cast_params["function"](value)
+        except ValueError:
+            raise SettingUpdateError(cast_params["error_msg"])
+
+        setattr(target_setting, cast_params["target"], casted_value)
+
+    return None
+
+
 def includeme(config):
     """Initializes the default values for applications settings"""
     # Load the app setting defaults from the packaged yaml file
@@ -77,4 +141,4 @@ def includeme(config):
         for key, value in defaults.items():
             if key not in existing:
                 db.add(ApplicationSetting(key=key, **value))
-                log.info(f"No application setting found for '{key}'. Inserting default value.")
+                log.info("No application setting found, inserting default value", extra={"key": key})

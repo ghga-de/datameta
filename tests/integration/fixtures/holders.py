@@ -42,6 +42,7 @@ class UserFixture(Entity):
     site_admin    : bool
     site_read     : bool
     enabled       : bool
+    tfa_secret    : Optional[str] = None
 
 
 @dataclass
@@ -112,3 +113,10 @@ class ServiceExecutionFixture(Entity):
     user          : dict
     metadataset   : dict
     datetime      : datetime
+
+
+@dataclass
+class UsedPasswordFixture(Entity):
+    password: str
+    pwhash: str
+    user: str
