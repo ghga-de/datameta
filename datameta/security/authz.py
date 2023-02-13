@@ -157,6 +157,10 @@ def update_user_siteread(user):
     return user.site_admin
 
 
+def delete_submitted_metadataset(user):
+    return user.site_admin
+
+
 def update_user_siteadmin(user, target_user):
     return user.site_admin and not user_is_target(user, target_user)
 
