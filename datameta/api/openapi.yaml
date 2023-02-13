@@ -2016,6 +2016,15 @@ components:
         - value
       additionalProperties: false
 
+    MetaDataSetSubmittedDeleteResponse:
+      type: object
+      properties:
+        metadataset_id:
+          type: string
+      required:
+        - metadataset_id
+      additionalProperties: false
+
     Identifier:
       type: object
       properties:
