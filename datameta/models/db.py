@@ -178,6 +178,7 @@ class File(Base):
     filesize         = Column(BigInteger, nullable=True)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     upload_expires   = Column(DateTime, nullable=True)
+    metadatumrecord_id          = Column(Integer, ForeignKey('metadatumrecords.id'), nullable=True)
     # Relationships
     metadatumrecord  = relationship('MetaDatumRecord', back_populates='file', uselist=False)
     user             = relationship('User', back_populates='files')
@@ -236,7 +237,7 @@ class MetaDatumRecord(Base):
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     metadatum_id     = Column(Integer, ForeignKey('metadata.id'), nullable=False)
     metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
-    file_id          = Column(Integer, ForeignKey('files.id'), nullable=True)
+#    file_id          = Column(Integer, ForeignKey('files.id'), nullable=True)
     value            = Column(Text, nullable=True)
     # Relationships
     metadatum        = relationship('MetaDatum', back_populates='metadatumrecords')
