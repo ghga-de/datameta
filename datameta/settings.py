@@ -15,6 +15,7 @@
 import datetime
 import pkgutil
 import yaml
+from typing import List
 
 import transaction
 from .models import ApplicationSetting, get_engine, get_tm_session, get_session_factory
@@ -65,6 +66,15 @@ def get_setting(db, name):
     elif setting.time_value is not None:
         return setting.time_value
     return None
+
+
+def get_settings_startswith(
+    db,
+    prefix: str,
+) -> List[str]:
+    """Return all appsettings which starts with given prefix."""
+    settings = db.query(ApplicationSetting).filter(ApplicationSetting.key.startswith(prefix)).all()
+    return [setting.key for setting in settings]
 
 
 class SettingUpdateError(RuntimeError):
@@ -131,4 +141,4 @@ def includeme(config):
         for key, value in defaults.items():
             if key not in existing:
                 db.add(ApplicationSetting(key=key, **value))
-                log.info(f"No application setting found for '{key}'. Inserting default value.")
+                log.info("No application setting found, inserting default value", extra={"key": key})

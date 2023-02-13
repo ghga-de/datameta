@@ -25,17 +25,21 @@ log = logging.getLogger(__name__)
 
 
 @subscriber(BeforeRender)
-def add_global(event):
-    def add_appsetting_with_default(appsetting_name: str, default: str) -> None:
-        appsetting = settings.get_setting(event['request'].dbsession, appsetting_name)
+def add_renderer_appsettings_globals(event):
+    """Add appsettings in the top-level namespace of the pyramid renderer templating system.
+    """
+    def add_appsetting_with_default(appsetting_key: str, default: str) -> None:
+        appsetting = settings.get_setting(event['request'].dbsession, appsetting_key)
         if appsetting is None:
-            event[appsetting_name] = default
-            log.error(f"Missing application settings {appsetting_name}")
+            event[appsetting_key] = default
+            log.error("Missing application setting.", extra={"appsetting_name": appsetting_key})
         else:
-            event[appsetting_name] = appsetting
+            event[appsetting_key] = appsetting
 
-    add_appsetting_with_default("logo_html", "")
-    add_appsetting_with_default("legal_notice", "")
+    renderer_appsettings = settings.get_settings_startswith(event['request'].dbsession, "renderer_")
+
+    for renderer_appsetting in renderer_appsettings:
+        add_appsetting_with_default(renderer_appsetting, "")
 
 
 @view_config(route_name='root')

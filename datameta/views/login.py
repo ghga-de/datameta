@@ -16,7 +16,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from .. import security, errors
-from ..security import tfaz
+from ..security import tfaz, clear_failed_login_attempts
 
 from datetime import datetime, timedelta
 import logging
@@ -35,23 +35,29 @@ def my_view(request):
 
             auth_user = security.get_user_by_credentials(request, in_email, in_pwd)
             if auth_user:
-                log.info(f"LOGIN [uid={auth_user.id},email={auth_user.email}] FROM [{request.client_addr}]")
+                log.info("User logged in.", extra={"user_id": auth_user.id, "email": auth_user.email, "client_addr": request.client_addr})
 
                 tfa_enabled = tfaz.is_2fa_enabled()
-                if tfa_enabled and auth_user.tfa_secret is None:
-                    raise errors.get_validation_error(
-                        ['Please reset your password and set up two-factor authorisation.'])
-                uid_key, gid_key, site = [
-                    ('user_uid', 'user_gid', '/home'),
-                    ('preauth_uid', 'preauth_gid', '/tfa')][tfa_enabled]
-                request.session[uid_key] = auth_user.id
-                request.session[gid_key] = auth_user.group_id
-                request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
-                return HTTPFound(location=site)
+
+                if tfa_enabled:
+                    if auth_user.tfa_secret is None:
+                        raise errors.get_validation_error(
+                            ['Please reset your password and set up two-factor authorisation.'])
+                    request.session["preauth_uid"] = auth_user.id
+                    request.session["preauth_gid"] = auth_user.group_id
+                    request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
+                    return HTTPFound(location='/tfa')
+
+                if not tfa_enabled:
+                    request.session["user_uid"] = auth_user.id
+                    request.session["user_gid"] = auth_user.group_id
+                    request.session["auth_expires"] = datetime.utcnow() + timedelta(minutes = 5)
+                    clear_failed_login_attempts(user=auth_user, dbsession=request.dbsession)
+                    return HTTPFound(location='/home')
 
         except KeyError:
             pass
         return HTTPFound(location="/login")
     return {
-            'pagetitle' : 'DataMeta - Login'
+            'page_title_current_page' : 'Login'
             }

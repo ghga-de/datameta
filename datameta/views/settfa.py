@@ -34,7 +34,7 @@ def v_settfa(request):
             tfa_qrcode = tfaz.generate_2fa_qrcode(dbtoken.user, dbtoken.secret)
 
     return {
-        'pagetitle' : 'DataMeta - Set 2FA',
+        'page_title_current_page' : 'Set 2FA',
         'unknown_token' : unknown_token,
         'expired_token': expired_token,
         'token_ok' : not unknown_token and not expired_token,

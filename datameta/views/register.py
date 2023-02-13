@@ -21,6 +21,6 @@ from ..models import Group
 def v_register(request):
     groups = request.dbsession.query(Group).all()
     return {
-            'pagetitle' : 'DataMeta - Registration',
+            'page_title_current_page' : 'Registration',
             'groups' : [ {'id' : g.uuid, 'name' : g.name} for g in groups ]
             }

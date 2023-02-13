@@ -55,7 +55,7 @@
             }
 </style>
 <main metal:fill-slot="content" class="form-signin">
-    <div tal:replace="structure logo_html"></div>
+    <div tal:replace="structure renderer_logo_html"></div>
     <div tal:condition="unknown_token" id="unknowntoken">
         <div class="alert alert-danger" role="alert">
             An error occurred.
@@ -81,9 +81,7 @@
 
             <div id="tfa_qrcode" class="collapse show">
                 <div class="mb-3">
-                    <svg width="200" height="200" version="1.1" viewBox="0 0 45 45" xlmns="http://www.w3.org/2000/svg">
-                        <path d="${tfa_qrcode}" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none" />
-                    </svg>
+                    <span tal:replace="structure tfa_qrcode"></span>
                 </div>
                 <div class="card text-dark bg-info mb-3 w-100 text-start">
                     <div class="card-header">
@@ -102,7 +100,7 @@
                         <span class="input-group-text" id="desc_input_otpkey">
                             <i class="bi bi-key"></i>
                         </span>
-                        <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" placeholder="OTP Token" aria-describedby="desc_input_otpkey" required autofocus>
+                        <input name="input_otp" id="inputOtp" type="text" maxlength="6" class="form-control" autocomplete="off" placeholder="OTP Token" aria-describedby="desc_input_otpkey" required autofocus>
                     </div>
                     <div class="input-group mb-3">
                         <button class="w-100 btn  btn-warning" type="submit" name="tf_form.submitted">Continue</button>
@@ -111,7 +109,7 @@
             </div>
         </div>
         <p class="mt-2">
-        <span tal:replace="structure legal_notice"></span>
+        <span tal:replace="structure renderer_legal_notice"></span>
         </p>
         <script type="module" src="${request.static_url('datameta:static/js/settfa.js')}"></script>
     </div>

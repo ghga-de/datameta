@@ -55,7 +55,7 @@
 		}
 </style>
 <main metal:fill-slot="content" class="form-signin">
-        <div tal:replace="structure logo_html"></div>
+        <div tal:replace="structure renderer_logo_html"></div>
 	<div id="alert" class="alert alert-danger mt-2 alert-dismissible" role="alert" style="display:none">
 	</div>
 	<div id="success" class="alert alert-success mt-2" role="alert" style="display:none">
@@ -132,7 +132,7 @@
             </fieldset>
 	</form>
 	<p class="mt-2">
-	<span tal:replace="structure legal_notice"></span>
+	<span tal:replace="structure renderer_legal_notice"></span>
 	</p>
 	<script type="text/javascript" charset="utf8" src="${request.static_url('datameta:static/js/register.js')}"></script>
 </main>

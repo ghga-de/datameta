@@ -1,5 +1,6 @@
 <div metal:use-macro="load: minimal.pt">
     <div metal:fill-slot="content" class="container">
+            <div tal:replace="structure renderer_logo_html"></div>
             <p class="lead"><span class="font-semi-bold">404</span> Page Not Found</p>
     </div>
 </div>
