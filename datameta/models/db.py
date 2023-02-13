@@ -258,7 +258,7 @@ class MetaDataSet(Base):
     # Relationships
     user                 = relationship('User', back_populates='metadatasets')
     submission           = relationship('Submission', back_populates='metadatasets')
-    metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset')
+    metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset', cascade="all, delete, delete-orphan")
     replaces             = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
     service_executions   = relationship('ServiceExecution', back_populates = 'metadataset')
 
