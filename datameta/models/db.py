@@ -241,7 +241,7 @@ class MetaDatumRecord(Base):
     # Relationships
     metadatum        = relationship('MetaDatum', back_populates='metadatumrecords')
     metadataset      = relationship('MetaDataSet', back_populates='metadatumrecords')
-    file             = relationship('File', back_populates='metadatumrecord')
+    file             = relationship('File', back_populates='metadatumrecord', cascade="all, delete, delete-orphan")
 
 
 class MetaDataSet(Base):
