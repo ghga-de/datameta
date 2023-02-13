@@ -53,6 +53,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("metadata_id", base_url + "/metadata/{id}")
     config.add_route("metadatasets", base_url + "/metadatasets")
     config.add_route("metadatasets_id", base_url + "/metadatasets/{id}")
+    config.add_route("metadatasets_submitted_id", base_url + "/metadatasets/submitted/{id}")
     config.add_route("appsettings", base_url + "/appsettings")
     config.add_route("appsettings_id", base_url + "/appsettings/{id}")
     config.add_route("files", base_url + "/files")
