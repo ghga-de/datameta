@@ -43,7 +43,7 @@ class MetaDataSetSubmittedDeleteBase(DataHolderBase):
 @dataclass
 class  MetaDataSetSubmittedDeleteResponse(MetaDataSetSubmittedDeleteBase):
     """Response class for MetaDataSetSubmittedDelete API response bodies"""
-    file_ids: List[str] = None
+    file_ids: List[str]
 
 
 @view_config(
