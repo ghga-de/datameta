@@ -38,6 +38,7 @@ class TestSubmittedMetaDataSetDelete(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('files_msets')
         self.fixture_manager.load_fixtureset('submissions')
         self.fixture_manager.load_fixtureset('metadatasets')
+        self.fixture_manager.load_fixtureset('metadatasets_submitted_delete')
         self.fixture_manager.load_fixtureset('serviceexecutions')
         self.fixture_manager.copy_files_to_storage()
         self.fixture_manager.populate_metadatasets()
