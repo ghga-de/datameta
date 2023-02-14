@@ -94,9 +94,9 @@ class TestSubmittedMetaDataSetDelete(BaseIntegrationTest):
 
         # If metadataset was submitted it should be in the list
         if expected_status == 403:
-            assert metadataset_id not in returned_metadataset_ids
+            assert metadataset_id not in returned_metadataset_ids, f"Metadataset {metadataset_id} was found"
         else:
-            assert metadataset_id in returned_metadataset_ids
+            assert metadataset_id in returned_metadataset_ids, f"Metadataset {metadataset_id} was not found"
 
         response_delete = self.testapp.delete(
             url       = f"{base_url}/metadatasets/submitted/{metadataset_id}",
@@ -118,4 +118,4 @@ class TestSubmittedMetaDataSetDelete(BaseIntegrationTest):
             if response_delete.json["fileIds"]:
                 for file in response_delete.json["fileIds"]:
                     fixture_file = self.fixture_manager.get_fixture('files_msets', file["site"])
-                    self.file_exists_in_storage(file["uuid"], fixture_file.checksum)
+                    assert not self.file_exists_in_storage(file["uuid"], fixture_file.checksum), f"File {file['site']} was not deleted"
