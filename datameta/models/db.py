@@ -178,7 +178,7 @@ class File(Base):
     filesize         = Column(BigInteger, nullable=True)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     upload_expires   = Column(DateTime, nullable=True)
-    metadatumrecord_id          = Column(Integer, ForeignKey('metadatumrecords.id'), nullable=True)
+#    metadatumrecord_id          = Column(Integer, ForeignKey('metadatumrecords.id'), nullable=True)
     # Relationships
     metadatumrecord  = relationship('MetaDatumRecord', back_populates='file', uselist=False)
     user             = relationship('User', back_populates='files')
@@ -237,12 +237,12 @@ class MetaDatumRecord(Base):
     uuid             = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, nullable=False)
     metadatum_id     = Column(Integer, ForeignKey('metadata.id'), nullable=False)
     metadataset_id   = Column(Integer, ForeignKey('metadatasets.id'), nullable=False)
-#    file_id          = Column(Integer, ForeignKey('files.id'), nullable=True)
+    file_id          = Column(Integer, ForeignKey('files.id'), nullable=True)
     value            = Column(Text, nullable=True)
     # Relationships
     metadatum        = relationship('MetaDatum', back_populates='metadatumrecords')
     metadataset      = relationship('MetaDataSet', back_populates='metadatumrecords')
-    file             = relationship('File', back_populates='metadatumrecord', cascade="all, delete, delete-orphan")
+    file             = relationship('File', back_populates='metadatumrecord')
 
 
 class MetaDataSet(Base):
@@ -261,7 +261,7 @@ class MetaDataSet(Base):
     submission           = relationship('Submission', back_populates='metadatasets')
     metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset', cascade="all, delete, delete-orphan")
     replaces             = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
-    service_executions   = relationship('ServiceExecution', back_populates = 'metadataset')
+    service_executions   = relationship('ServiceExecution', back_populates = 'metadataset', cascade="all, delete, delete-orphan")
 
 
 class ApplicationSetting(Base):
