@@ -1,8 +1,8 @@
 name: Push to Dockerhub (release)
 
-on: [workflow_dispatch]
-  #release:
-  #  types: [published]
+on:
+  release:
+    types: [published]
 
 jobs:
   docker_release:
@@ -19,7 +19,6 @@ jobs:
       - name: Verify Package Version vs Tag Version
         run: |
           tag_ver="${GITHUB_REF##*/}"
-          tag_ver="v1.1.0"
           echo "Package version is $PKG_VER" >&2
           echo "Tag version is $tag_ver" >&2
           if [ "v$PKG_VER" != "$tag_ver" ]; then
