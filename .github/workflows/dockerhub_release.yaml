@@ -1,8 +1,8 @@
 name: Push to Dockerhub (release)
 
-on:
-  release:
-    types: [published]
+on: [workflow_dispatch]
+  #release:
+  #  types: [published]
 
 jobs:
   docker_release:
