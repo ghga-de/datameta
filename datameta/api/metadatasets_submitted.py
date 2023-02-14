@@ -14,33 +14,36 @@
 
 import logging
 from dataclasses import dataclass
-from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPNoContent, HTTPInternalServerError
+from pyramid.httpexceptions import HTTPNotFound, HTTPInternalServerError, HTTPUnauthorized
 from pyramid.view import view_config
 from pyramid.request import Request
 from typing import List
 from ..models import MetaDataSet, MetaDatumRecord
+from .. import security
 from ..security import authz
-from ..resource import resource_by_id
+from ..resource import resource_by_id, get_identifier
 from . import DataHolderBase
 from .. import errors
 from ..storage import rm
 
+
 log = logging.getLogger(__name__)
 
 """
+This module contains API enpoints for submitted metadatasets.
 """
 
 
 @dataclass
 class MetaDataSetSubmittedDeleteBase(DataHolderBase):
-    """Base class for File communication to OpenApi"""
-    id: str
+    """Base class for MetaDataSetSubmittedDelete API response bodies"""
+    metadataset_id: str
 
 
 @dataclass
 class  MetaDataSetSubmittedDeleteResponse(MetaDataSetSubmittedDeleteBase):
-    """"""
-    pass
+    """Response class for MetaDataSetSubmittedDelete API response bodies"""
+    file_ids: List[str] = None
 
 
 @view_config(
@@ -49,28 +52,22 @@ class  MetaDataSetSubmittedDeleteResponse(MetaDataSetSubmittedDeleteBase):
     request_method="DELETE",
     openapi=True
 )
-def delete_metadataset(request: Request) -> HTTPNoContent:
-    auth_user = authz.revalidate_user(request)
+def delete_submitted_metadataset(request: Request) -> MetaDataSetSubmittedDeleteResponse:
+    """"Delete a submitted metadataset and all associated files"""
+    auth_user = security.revalidate_user(request)
+    # Authorization 401
+    if not authz.delete_submitted_metadataset(auth_user):
+        raise HTTPUnauthorized()
+
     db_session = request.dbsession
     metadataset_id = request.matchdict['id']
     target_metadataset = resource_by_id(db_session, MetaDataSet, metadataset_id)
 
-    #
-    # Checks
-    #
-
-    # Authorization
-    # 401
-    if not authz.delete_submitted_metadataset(auth_user):
-        raise HTTPForbidden()
-
-    # Metadataset exists
     # 404
     if not target_metadataset:
         raise HTTPNotFound()
 
-    # Only operate on submitted metadatasets
-    # 403
+    # Only ubmitted metadatasets 403
     if not target_metadataset.submission:
         raise errors.get_not_modifiable_error()
 
@@ -78,37 +75,37 @@ def delete_metadataset(request: Request) -> HTTPNoContent:
     target_metadatarecords_files: List[MetaDatumRecord] = [
         metadatum_record
         for metadatum_record in target_metadataset.metadatumrecords
-        if metadatum_record.metadatum.isfile
+        if metadatum_record.metadatum.isfile and metadatum_record.value
+    ]
+    # Get the File identifiers
+    target_metadatarecords_files_ids: List[str] = [
+        get_identifier(metadatum_record.file)
+        for metadatum_record in target_metadatarecords_files
     ]
 
     #
-    # Delete the files
+    # Delete the files from storage and the File objects (File is parent of MetaDatumRecord)
     #
     if target_metadatarecords_files:
         for metadatum_record in target_metadatarecords_files:
             try:
-                rm(request=request, file_id=metadatum_record.file_id)
+                log.info("Deleting file.", extra={"file_site_id": metadatum_record.file.site_id, "user_site_id": auth_user.site_id})
+                rm(request=request, storage_path=metadatum_record.file.storage_uri)
+                db_session.delete(metadatum_record.file)
             except Exception as e:
                 raise HTTPInternalServerError(json_body={'error': str(e)})
 
     #
     # Delete the metadataset
     #
-
+    log.info("Deleting metadataset.", extra={"metadataset_id": metadataset_id, "user_site_id": auth_user.site_id})
     db_session.delete(target_metadataset)
 
     #
-    # Submission has no other metadatasets
+    # TODO: Submission has no other metadatasets
     #
-
-    # not implemented yet
-
-    #
-    # Service executions?
-    #
-
-    # not implemented yet
 
     return MetaDataSetSubmittedDeleteResponse(
-        metadataset_id=metadataset_id,
+        metadataset_id=get_identifier(target_metadataset),
+        file_ids=target_metadatarecords_files_ids,
     )
