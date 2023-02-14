@@ -98,3 +98,21 @@ mset_b_sexec:
       name: submission_b
   fixtureOnly:
     - records
+
+mset_no_files:
+  class: MetaDataSet
+  attributes:
+    site_id: mset_no_files
+    records:
+      ID: MD05
+      Date: "2021-03-05"
+      ZIP Code: "456"
+  references:
+    user:
+      fixtureset: users
+      name: user_b
+    submission:
+      fixtureset: submissions
+      name: submission_b
+  fixtureOnly:
+    - records
