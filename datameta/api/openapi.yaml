@@ -716,8 +716,12 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: Deletion successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetaDataSetSubmittedDeleteResponse"
         '401':
           description: Unauthorized
         '403':
@@ -726,7 +730,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
-        "404":
+        '404':
           description: The specified metadataset does not exist.
         '500':
           description: Internal Server Error
@@ -2019,10 +2023,15 @@ components:
     MetaDataSetSubmittedDeleteResponse:
       type: object
       properties:
-        metadataset_id:
-          type: string
+        metadatasetId:
+          $ref: "#/components/schemas/Identifier"
+        fileIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/Identifier"
+          nullable: true
       required:
-        - metadataset_id
+        - metadatasetId
       additionalProperties: false
 
     Identifier:
