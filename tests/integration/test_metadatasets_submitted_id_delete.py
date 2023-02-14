@@ -71,7 +71,7 @@ class TestGetMetaDataSets(BaseIntegrationTest):
         ('Unauthorized', 'group_x_admin', 'mset_a', 401),
         ('Unauthorized', 'user_site_read', 'mset_a', 401),
         ])
-    def test_query_metadatasets(self,
+    def test_delete_submitted_metadatasets(self,
             _: str,
             executing_user: str,
             metadataset_id: str,
