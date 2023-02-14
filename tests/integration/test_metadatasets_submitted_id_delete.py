@@ -26,7 +26,7 @@ def calc_checksum(file_path: str) -> str:
         return hashlib.md5(byte_content).hexdigest()
 
 
-class TestGetMetaDataSets(BaseIntegrationTest):
+class TestSubmittedMetaDataSetDelete(BaseIntegrationTest):
 
     def setUp(self):
         super().setUp()
