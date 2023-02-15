@@ -12,39 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-mset_no_files:
-  class: MetaDataSet
+test_file_not_exists:
+  class: File
   attributes:
-    site_id: mset_no_files
-    records:
-      ID: MDSD01
-      Date: "2021-03-05"
-      ZIP Code: "456"
+    site_id: test_file_not_exists
+    name: test_file_not_exists.txt
+    content_uploaded: True
+    checksum: 04ca5e2ec8a849852560a08bc0a6046e
   references:
     user:
       fixtureset: users
-      name: user_b
-    submission:
-      fixtureset: submissions
-      name: submission_b
-  fixtureOnly:
-    - records
-
-mset_file_not_exists:
-  class: MetaDataSet
-  attributes:
-    site_id: mset_file_not_exists
-    records:
-      ID: MDSD02
-      Date: "2021-03-05"
-      ZIP Code: "456"
-      FileR1: test_file_not_exists.txt
-  references:
-    user:
-      fixtureset: users
-      name: user_b
-    submission:
-      fixtureset: submissions
-      name: submission_b
-  fixtureOnly:
-    - records
+      name: user_a
