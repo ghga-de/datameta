@@ -142,9 +142,9 @@ def validate_submission_uniquekeys(
                     if mdatrec.value is not None:
                         value_msets[mdatrec.value].append(db_mset)
         # Reduce to those values that occur in more than one metadatast
-        none_unique = [ v for v in value_msets.values() if len(v) > 1 ]
+        not_unique = [ v for v in value_msets.values() if len(v) > 1 ]
         # Produce errrors
-        errors += [ (db_mset, key, "Violation of intra-submission unique constraint") for msets in none_unique for db_mset in msets ]
+        errors += [ (db_mset, key, "Violation of intra-submission unique constraint") for msets in not_unique for db_mset in msets ]
 
     # Validate the set of metadatasets with regard to site-wise unique key constraints
     for key in keys_site_unique:
