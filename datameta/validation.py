@@ -120,7 +120,7 @@ def validate_submission_association(db_files, db_msets, ignore_submitted_metadat
     return f_names_obj, ref_fnames, errors
 
 
-def validate_submission_uniquekeys(db, db_files, db_msets):
+def validate_submission_uniquekeys(db, db_msets):
     errors = []
 
     # Submission unique keys (includes those that are globally unique)
@@ -196,7 +196,7 @@ def validate_submission(request, auth_user):
         val_errors += [ (db_msets[mset_id], mset_error['field'], mset_error['message']) for mset_error in mset_errors ]
 
     # Validate unique field constraints
-    val_errors += validate_submission_uniquekeys(db, db_files, db_msets)
+    val_errors += validate_submission_uniquekeys(db, db_msets)
 
     # If we collected any val_errors, raise 400
     if val_errors:
