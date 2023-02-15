@@ -92,6 +92,9 @@ def delete_submitted_metadataset(request: Request) -> MetaDataSetSubmittedDelete
                 log.info("Deleting file.", extra={"file_site_id": metadatum_record.file.site_id, "user_site_id": auth_user.site_id})
                 rm(request=request, storage_path=metadatum_record.file.storage_uri)
                 db_session.delete(metadatum_record.file)
+            except FileNotFoundError as e:
+                log.warning("File not found in storage. Skipping deletion.", extra={"file_site_id": metadatum_record.file.site_id, "user_site_id": auth_user.site_id})
+                raise HTTPInternalServerError(json_body={'error': str(e)})
             except Exception as e:
                 raise HTTPInternalServerError(json_body={'error': str(e)})
 
