@@ -21,7 +21,7 @@ from .models import File, MetaDataSet, MetaDatumRecord, MetaDatum
 from .security import authz
 from .api.metadata import get_all_metadata
 from .utils import get_record_from_metadataset
-
+from typing import Dict
 
 def validate_submission_access(db, db_files, db_msets, auth_user):
     """Validates a submission with regard to
@@ -120,11 +120,14 @@ def validate_submission_association(db_files, db_msets, ignore_submitted_metadat
     return f_names_obj, ref_fnames, errors
 
 
-def validate_submission_uniquekeys(db, db_msets):
+def validate_submission_uniquekeys(
+        db,
+        db_msets: Dict[str, MetaDataSet],
+        ):
     errors = []
 
     # Submission unique keys (includes those that are globally unique)
-    keys_submission_unique  = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique.is_(True), MetaDatum.site_unique.is_(True))) ]
+    keys_submission_unique = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique.is_(True), MetaDatum.site_unique.is_(True))) ]
     # Globally unique keys
     keys_site_unique        = [ md.name for md in db.query(MetaDatum).filter(MetaDatum.site_unique.is_(True)) ]
 
@@ -135,7 +138,8 @@ def validate_submission_uniquekeys(db, db_msets):
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
                 if mdatrec.metadatum.name == key:
-                    value_msets[mdatrec.value].append(db_mset)
+                    if mdatrec.value is not None:
+                        value_msets[mdatrec.value].append(db_mset)
         # Reduce to those values that occur in more than one metadatast
         value_msets = { k: v for k, v in value_msets.items() if len(v) > 1 }
         # Produce errrors
@@ -148,7 +152,8 @@ def validate_submission_uniquekeys(db, db_msets):
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
                 if mdatrec.metadatum.name == key:
-                    value_msets[mdatrec.value].append(db_mset)
+                    if mdatrec.value is not None:
+                        value_msets[mdatrec.value].append(db_mset)
 
         # Query the database for the supplied values
         q = db.query(MetaDatumRecord)\
