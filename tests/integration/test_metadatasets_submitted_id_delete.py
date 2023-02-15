@@ -36,11 +36,12 @@ class TestSubmittedMetaDataSetDelete(BaseIntegrationTest):
         self.fixture_manager.load_fixtureset('services')
         self.fixture_manager.load_fixtureset('metadata')
         self.fixture_manager.load_fixtureset('files_msets')
+        self.fixture_manager.load_fixtureset('files_metadatasets_submitted_delete')
         self.fixture_manager.load_fixtureset('submissions')
         self.fixture_manager.load_fixtureset('metadatasets')
         self.fixture_manager.load_fixtureset('metadatasets_submitted_delete')
         self.fixture_manager.load_fixtureset('serviceexecutions')
-        self.fixture_manager.copy_files_to_storage()
+        self.fixture_manager.copy_files_to_storage(exclude=['test_file_not_exists'])
         self.fixture_manager.populate_metadatasets()
 
     def file_exists_in_storage(
@@ -68,6 +69,7 @@ class TestSubmittedMetaDataSetDelete(BaseIntegrationTest):
         ('Success', 'admin', 'mset_a_sexec', 200),
         ('Success', 'admin', 'mset_b_sexec', 200),
         ('Not submitted', 'admin', 'mset_b', 403),
+        ('File not exists', 'admin', 'mset_file_not_exists', 500),
         ('Unauthorized', 'user_a', 'mset_a', 401),
         ('Unauthorized', 'group_x_admin', 'mset_a', 401),
         ('Unauthorized', 'user_site_read', 'mset_a', 401),
@@ -113,10 +115,19 @@ class TestSubmittedMetaDataSetDelete(BaseIntegrationTest):
                 status    = 200
             )
             returned_mset_ids = { mset['id']['site'] for mset in response.json }
-            assert metadataset_id not in returned_mset_ids
+            assert metadataset_id not in returned_mset_ids, f"Metadataset {metadataset_id} was found"
 
             # Check if files are deleted
             if response_delete.json["fileIds"]:
                 for file in response_delete.json["fileIds"]:
                     fixture_file = self.fixture_manager.get_fixture('files_msets', file["site"])
                     assert not self.file_exists_in_storage(file["uuid"], fixture_file.checksum), f"File {file['site']} was not deleted"
+
+        if response_delete.status == 500:
+            response = self.testapp.get(
+                url       = f"{base_url}/metadatasets",
+                headers   = auth_headers_admin,
+                status    = 200
+            )
+            returned_mset_ids = { mset['id']['site'] for mset in response.json }
+            assert metadataset_id in returned_mset_ids, f"Metadataset {metadataset_id} was not found"
