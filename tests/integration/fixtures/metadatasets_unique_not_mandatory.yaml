@@ -56,6 +56,6 @@ metadataset_unique_not_mandatory_2:
       name: user_a
     submission:
       fixtureset: submissions
-      name: submission_a
+      name: submission_b
   fixtureOnly:
     - records
