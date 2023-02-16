@@ -21,9 +21,11 @@ from pyramid.httpexceptions import HTTPServiceUnavailable
 
 def maintenance_mode_tween_factory(handler, registry):
     """Returns a tween that checks if the application is in maintenance mode."""
+
     def maintenance_mode(request):
         enabled = request.registry.settings.get('datameta.maintenance_mode.path', None)
-        exclude_request_paths = aslist(request.registry.settings.get('datameta.maintenance_mode.exclude_request_paths', []))
+        exclude_request_paths = aslist(request.registry.settings.get('datameta.maintenance_mode.path', []))
+
         if enabled:
             # If request path is excluded, return response
             if request.path in exclude_request_paths:
