@@ -38,9 +38,6 @@ def main(global_config, **settings):
         session_factory = session_factory_from_settings(settings)
         config.set_session_factory(session_factory)
 
-        # Tweens
-        config.add_tween('datameta.tweens.maintenance_mode_tween_factory')
-
         config.include("pyramid_openapi3")
         config.pyramid_openapi3_spec(
             os.path.join(os.path.dirname(__file__), "api", "openapi.yaml")
