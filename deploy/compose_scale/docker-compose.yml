@@ -16,6 +16,11 @@ services:
       # The maximum number of days an API key can be valid
       DATAMETA_API_KEYS_MAX_EXPIRE_DAYS: 365
 
+      # Two factor authentication settings
+      DATAMETA_TFA_ENABLED: # CHANGE THIS: Insert bool to enable
+      DATAMETA_TFA_ENCRYPT_KEY: # CHANGE THIS: Insert secret here
+      DATAMETA_TFA_OTP_ISSUER: # CHANGE THIS: Insert OTP issuer name here
+
       LETSENCRYPT_HOST:   # Picked up by nginx-proxy / letsencrypt. Comma separated list of hostnames.
       VIRTUAL_HOST:       # Picked up by nginx-proxy / letsencrypt. Comma separated list of hostnames. Every hostname in LETSENCRYPT_HOST must appear also here, otherwise cert acquisition will fail
       WAITRESS_MAX_REQUEST_BODY_SIZE: 10737418240 # 10 GB
