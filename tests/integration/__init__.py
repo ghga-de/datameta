@@ -3,7 +3,6 @@
 import unittest
 from webtest import TestApp
 import tempfile
-import os
 
 import transaction
 from sqlalchemy_utils import create_database, drop_database, database_exists
@@ -58,7 +57,6 @@ class BaseIntegrationTest(unittest.TestCase):
         self.storage_path_obj = tempfile.TemporaryDirectory()
         self.storage_path = self.storage_path_obj.name
         self.settings["datameta.storage_path"] = self.storage_path
-        self.settings["datameta.maintenance_mode.path"] = os.path.join(self.storage_path, "maintenance_mode")
 
         # initialize DB
         self.initDb()
