@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, time
 from typing import Optional
 
 
@@ -120,3 +120,13 @@ class UsedPasswordFixture(Entity):
     password: str
     pwhash: str
     user: str
+
+
+@dataclass
+class ApplicationSettingFixture(Entity):
+    key: str
+    int_value: int
+    str_value: str
+    float_value: float
+    date_value: datetime
+    time_value: time
