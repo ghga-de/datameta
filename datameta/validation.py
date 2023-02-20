@@ -138,9 +138,8 @@ def validate_submission_uniquekeys(
         # Associate all values for that key with the metadatasets it occurs in
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
-                if mdatrec.metadatum.name == key:
-                    if mdatrec.value is not None:
-                        value_msets[mdatrec.value].append(db_mset)
+                if mdatrec.metadatum.name == key and mdatrec.value:
+                    value_msets[mdatrec.value].append(db_mset)
         # Reduce to those values that occur in more than one metadatast
         not_unique = ( v for v in value_msets.values() if len(v) > 1 )
         # Produce errrors
@@ -152,9 +151,8 @@ def validate_submission_uniquekeys(
         # Associate all values for that key with the metadatasets it occurs in
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
-                if mdatrec.metadatum.name == key:
-                    if mdatrec.value is not None:
-                        value_msets[mdatrec.value].append(db_mset)
+                if mdatrec.metadatum.name == key and mdatrec.value:
+                    value_msets[mdatrec.value].append(db_mset)
 
         # Query the database for the supplied values
         q = db.query(MetaDatumRecord)\
