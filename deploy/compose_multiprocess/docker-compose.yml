@@ -71,6 +71,11 @@ services:
       DATAMETA_SITE_ID_PREFIX_FILES: "DMF-"
       DATAMETA_SITE_ID_PREFIX_SERVICES: "DMP-"
 
+      # Two factor authentication settings
+      DATAMETA_TFA_ENABLED: # CHANGE THIS: Insert bool to enable
+      DATAMETA_TFA_ENCRYPT_KEY: # CHANGE THIS: Insert secret here
+      DATAMETA_TFA_OTP_ISSUER: # CHANGE THIS: Insert OTP issuer name here
+      
       GUNICORN_WORKERS: 75 # Adjust to your needs. 2-4x #CPUs
       GUNICORN_PROC_NAME: datameta
       GUNICORN_FORWARDED_ALLOW_IPS: "*"
