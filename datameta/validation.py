@@ -21,6 +21,7 @@ from .models import File, MetaDataSet, MetaDatumRecord, MetaDatum
 from .security import authz
 from .api.metadata import get_all_metadata
 from .utils import get_record_from_metadataset
+from typing import Dict
 
 
 def validate_submission_access(db, db_files, db_msets, auth_user):
@@ -120,11 +121,14 @@ def validate_submission_association(db_files, db_msets, ignore_submitted_metadat
     return f_names_obj, ref_fnames, errors
 
 
-def validate_submission_uniquekeys(db, db_files, db_msets):
+def validate_submission_uniquekeys(
+        db,
+        db_msets: Dict[str, MetaDataSet],
+        ):
     errors = []
 
     # Submission unique keys (includes those that are globally unique)
-    keys_submission_unique  = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique.is_(True), MetaDatum.site_unique.is_(True))) ]
+    keys_submission_unique = [ md.name for md in db.query(MetaDatum).filter(or_(MetaDatum.submission_unique.is_(True), MetaDatum.site_unique.is_(True))) ]
     # Globally unique keys
     keys_site_unique        = [ md.name for md in db.query(MetaDatum).filter(MetaDatum.site_unique.is_(True)) ]
 
@@ -134,12 +138,12 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         # Associate all values for that key with the metadatasets it occurs in
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
-                if mdatrec.metadatum.name == key:
+                if mdatrec.metadatum.name == key and mdatrec.value:
                     value_msets[mdatrec.value].append(db_mset)
         # Reduce to those values that occur in more than one metadatast
-        value_msets = { k: v for k, v in value_msets.items() if len(v) > 1 }
+        not_unique = ( v for v in value_msets.values() if len(v) > 1 )
         # Produce errrors
-        errors += [ (db_mset, key, "Violation of intra-submission unique constraint") for msets in value_msets.values() for db_mset in msets ]
+        errors += [ (db_mset, key, "Violation of intra-submission unique constraint") for msets in not_unique for db_mset in msets ]
 
     # Validate the set of metadatasets with regard to site-wise unique key constraints
     for key in keys_site_unique:
@@ -147,7 +151,7 @@ def validate_submission_uniquekeys(db, db_files, db_msets):
         # Associate all values for that key with the metadatasets it occurs in
         for db_mset in db_msets.values():
             for mdatrec in db_mset.metadatumrecords:
-                if mdatrec.metadatum.name == key:
+                if mdatrec.metadatum.name == key and mdatrec.value:
                     value_msets[mdatrec.value].append(db_mset)
 
         # Query the database for the supplied values
@@ -196,7 +200,7 @@ def validate_submission(request, auth_user):
         val_errors += [ (db_msets[mset_id], mset_error['field'], mset_error['message']) for mset_error in mset_errors ]
 
     # Validate unique field constraints
-    val_errors += validate_submission_uniquekeys(db, db_files, db_msets)
+    val_errors += validate_submission_uniquekeys(db, db_msets)
 
     # If we collected any val_errors, raise 400
     if val_errors:
