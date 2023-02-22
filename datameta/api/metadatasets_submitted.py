@@ -109,6 +109,8 @@ def delete_submitted_metadataset(request: Request) -> MetaDataSetSubmittedDelete
     # TODO: Submission has no other metadatasets
     #
 
+    db_session.commit()
+
     return MetaDataSetSubmittedDeleteResponse(
         metadataset_id=get_identifier(target_metadataset),
         file_ids=target_metadatarecords_files_ids,
