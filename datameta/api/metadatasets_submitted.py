@@ -14,18 +14,19 @@
 
 import logging
 from dataclasses import dataclass
-from pyramid.httpexceptions import HTTPNotFound, HTTPInternalServerError, HTTPUnauthorized
-from pyramid.view import view_config
-from pyramid.request import Request
 from typing import List
-from ..models import MetaDataSet, MetaDatumRecord
-from .. import security
-from ..security import authz
-from ..resource import resource_by_id, get_identifier
-from . import DataHolderBase
-from .. import errors
-from ..storage import rm
 
+from pyramid.httpexceptions import (HTTPInternalServerError, HTTPNotFound,
+                                    HTTPUnauthorized)
+from pyramid.request import Request
+from pyramid.view import view_config
+
+from .. import errors, security
+from ..models import MetaDataSet, MetaDatumRecord
+from ..resource import get_identifier, resource_by_id
+from ..security import authz
+from ..storage import rm
+from . import DataHolderBase
 
 log = logging.getLogger(__name__)
 
