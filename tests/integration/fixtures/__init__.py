@@ -18,7 +18,7 @@ import json
 import yaml
 from importlib import import_module
 import shutil
-
+from typing import Optional, List
 import datetime
 
 from datameta.models import get_tm_session
@@ -208,12 +208,17 @@ class FixtureManager:
                                 rec.file_id = files[rec.value].id
                     db.add_all(mdat_records.values())
 
-    def copy_files_to_storage(self):
+    def copy_files_to_storage(self, exclude: List[str] = []):
         with transaction.manager:
             db = get_tm_session(self.session_factory, transaction.manager, expire_on_commit=False)
 
             for file in db.query(File):
-                storage_name =  f"{str(file.uuid)}__{file.checksum}"
-                shutil.copy(get_file_path(file.name), os.path.join(self.storage_path, storage_name))
-                file.storage_uri = f"file://{storage_name}"
-                db.add(file)
+                if file.site_id not in exclude:
+                    storage_name =  f"{str(file.uuid)}__{file.checksum}"
+                    shutil.copy(get_file_path(file.name), os.path.join(self.storage_path, storage_name))
+                    file.storage_uri = f"file://{storage_name}"
+                    db.add(file)
+                else:
+                    storage_name =  f"{str(file.uuid)}__{file.checksum}"
+                    file.storage_uri = f"file://{storage_name}"
+                    db.add(file)

@@ -178,6 +178,7 @@ class File(Base):
     filesize         = Column(BigInteger, nullable=True)
     user_id          = Column(Integer, ForeignKey('users.id'), nullable=False)
     upload_expires   = Column(DateTime, nullable=True)
+#    metadatumrecord_id          = Column(Integer, ForeignKey('metadatumrecords.id'), nullable=True)
     # Relationships
     metadatumrecord  = relationship('MetaDatumRecord', back_populates='file', uselist=False)
     user             = relationship('User', back_populates='files')
@@ -258,9 +259,9 @@ class MetaDataSet(Base):
     # Relationships
     user                 = relationship('User', back_populates='metadatasets')
     submission           = relationship('Submission', back_populates='metadatasets')
-    metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset')
+    metadatumrecords     = relationship('MetaDatumRecord', back_populates='metadataset', cascade="all, delete, delete-orphan")
     replaces             = relationship('MetaDataSet', backref=backref('replaced_by', remote_side=[id]))
-    service_executions   = relationship('ServiceExecution', back_populates = 'metadataset')
+    service_executions   = relationship('ServiceExecution', back_populates = 'metadataset', cascade="all, delete, delete-orphan")
 
 
 class ApplicationSetting(Base):
