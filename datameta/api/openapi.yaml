@@ -15,7 +15,7 @@
 openapi: 3.0.0
 info:
   description: DataMeta
-  version: 1.5.0
+  version: 1.5.1
   title: DataMeta
 
 servers:
@@ -1242,6 +1242,23 @@ paths:
                 $ref: "#/components/schemas/ServerInfoResponse"
         "500":
           description: Internal Server Error
+  
+  /metrics:
+    get:
+      summary: Get server metrics
+      description: Get metrics of the DataMeta server serving this API
+      tags:
+        - Server
+      operationId: GetMetrics
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricsResponse"
+        "500":
+          description: Internal Server Error
 
   /registrations:
     post:
@@ -1894,6 +1911,15 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/MetaDataResponse"
+
+    MetricsResponse:
+      type: object
+      properties:
+        metadatasetsSubmittedCount:
+          type: integer
+      required:
+        - metadatasetsSubmittedCount
+      additionalProperties: false
 
     ServerInfoResponse:
       type: object

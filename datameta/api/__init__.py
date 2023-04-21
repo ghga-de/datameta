@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyramid.config import Configurator
-from pyramid.view import view_config
-from pyramid.request import Request
-from pyramid.httpexceptions import HTTPFound
-
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json, LetterCase
 import os
+from dataclasses import dataclass
+
 import yaml
+from dataclasses_json import LetterCase, dataclass_json
+from pyramid.config import Configurator
+from pyramid.httpexceptions import HTTPFound
+from pyramid.request import Request
+from pyramid.view import view_config
 
 openapi_spec_path = os.path.join(os.path.dirname(__file__), "openapi.yaml")
 # read base url from openapi.yaml:
@@ -34,6 +34,7 @@ api_version = openapi_spec["info"]["version"]
 @dataclass
 class DataHolderBase:
     """Base class for data classes intended to be used as API response bodies"""
+
     def __json__(self, request):
         return self.to_dict()
 
@@ -49,6 +50,7 @@ def includeme(config: Configurator) -> None:
     config.add_route("totp_secret_id", base_url + "/users/{id}/totp-secret")
     config.add_route("rpc_whoami", base_url + "/rpc/whoami")
     config.add_route("user_id", base_url + "/users/{id}")
+    config.add_route("metrics", base_url + "/metrics")
     config.add_route("metadata", base_url + "/metadata")
     config.add_route("metadata_id", base_url + "/metadata/{id}")
     config.add_route("metadatasets", base_url + "/metadatasets")
@@ -64,11 +66,13 @@ def includeme(config: Configurator) -> None:
     config.add_route("rpc_delete_files", base_url + "/rpc/delete-files")
     config.add_route("rpc_delete_metadatasets", base_url + "/rpc/delete-metadatasets")
     config.add_route("rpc_get_file_url", base_url + "/rpc/get-file-url/{id}")
-    config.add_route('register_submit', base_url + "/registrations")
+    config.add_route("register_submit", base_url + "/registrations")
     config.add_route("register_settings", base_url + "/registrationsettings")
     config.add_route("services", base_url + "/services")
     config.add_route("services_id", base_url + "/services/{id}")
-    config.add_route("service_execution", base_url + "/service-execution/{serviceId}/{metadatasetId}")
+    config.add_route(
+        "service_execution", base_url + "/service-execution/{serviceId}/{metadatasetId}"
+    )
 
     # Endpoint outside of openapi
     config.add_route("upload", base_url + "/upload/{id}")
@@ -77,7 +81,7 @@ def includeme(config: Configurator) -> None:
 
 @view_config(
     route_name="api",
-    renderer='json',
+    renderer="json",
     request_method="GET",
 )
 def get(request: Request):
