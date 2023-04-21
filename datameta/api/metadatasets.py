@@ -253,6 +253,9 @@ def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
     submitted_before = request.openapi_validated.parameters.query.get('submittedBefore')
     awaiting_service = request.openapi_validated.parameters.query.get('awaitingService')
 
+    if not authz.view_mset_own(auth_user):
+        return []
+
     # Query metadata sets and join entities that we are going to use.
     # NOTE: JOINing 'Submission' reduces to submitted metadatasets and enables
     # filtering on Submission attributes
