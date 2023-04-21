@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Dict
+
 from ..models import MetaDatum, User
 
 
@@ -137,6 +138,13 @@ def delete_mset(user, mdata_set):
 
 def view_mset_any(user):
     return user.site_read
+
+
+def view_mset_own(user):
+    if user.site_read:
+        return user.site_read
+    else:
+        return False
 
 
 def view_mset(user, mds_obj):
