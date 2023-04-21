@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pyramid.request import Request
 from pyramid.view import view_config
 
-from ..models import MetaDataSet, Submission
+from ..models import MetaDataSet
 from . import DataHolderBase
 
 log = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ def metrics(request: Request) -> MetricsResponse:
     """Get metrics of the server."""
     db = request.dbsession
 
-    query = db.query(MetaDataSet).join(Submission)
+    query = db.query(MetaDataSet).filter(MetaDataSet.submission_id.isnot(None))
 
     metadatasets_submitted_count = int(query.count())
 
