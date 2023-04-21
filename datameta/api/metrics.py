@@ -48,7 +48,7 @@ def metrics(request: Request) -> MetricsResponse:
     """Get metrics of the server."""
     db = request.dbsession
 
-    query = db.query(MetaDataSet).join(Submission)
+    query = db.query(MetaDataSet).filter(MetaDataSet.submission_id.isnot(None))
 
     metadatasets_submitted_count = int(query.count())
 
