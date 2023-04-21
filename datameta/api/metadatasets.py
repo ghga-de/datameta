@@ -38,7 +38,6 @@ from .metadata import (get_all_metadata, get_metadata_with_access,
 log = logging.getLogger(__name__)
 
 
-
 @dataclass
 class MetaDataSetServiceExecution(DataHolderBase):
     service_execution_id   : dict
