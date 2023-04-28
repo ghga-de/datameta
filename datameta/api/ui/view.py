@@ -91,7 +91,7 @@ def post(request: Request):
 
     if not authz.view_mset_own(auth_user):
         return {
-                "draw"              : 0,
+                "draw"              : draw,
                 "recordsTotal"      : 0,
                 "recordsFiltered"   : 0,
                 "data"              : [],
