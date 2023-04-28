@@ -12,23 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlalchemy.orm import joinedload, aliased
-from sqlalchemy import func, and_, or_, desc, asc
+import logging
+import shlex
+from dataclasses import dataclass
+from typing import Optional
 
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.request import Request
 from pyramid.view import view_config
-from dataclasses import dataclass
-from typing import Optional
-import shlex
-import logging
+from sqlalchemy import and_, asc, desc, func, or_
+from sqlalchemy.orm import aliased, joinedload
 
-from ... import security, errors, resource
-from ...security import authz
+from ... import errors, resource, security
+from ...models import (Group, MetaDataSet, MetaDatum, MetaDatumRecord, Service,
+                       ServiceExecution, Submission, User)
 from ...resource import get_identifier
-from ...models import MetaDatum, MetaDataSet, MetaDatumRecord, User, Group, Submission, ServiceExecution, Service
+from ...security import authz
+from ...settings import get_setting
 from ...utils import get_record_from_metadataset
-
 from ..metadata import get_all_metadata
 from ..metadatasets import MetaDataSetResponse, collect_service_executions
 
@@ -88,6 +89,14 @@ def post(request: Request):
         sort_asc = request.POST['order[0][dir]'] == 'asc'
     except (KeyError, ValueError):
         raise HTTPBadRequest()
+
+    if get_setting(db, "data_view_restricted") and not authz.view_mset_own(auth_user):
+        return {
+                "draw"              : draw,
+                "recordsTotal"      : 0,
+                "recordsFiltered"   : 0,
+                "data"              : [],
+                }
 
     direction = asc if sort_asc else desc
 
