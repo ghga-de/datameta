@@ -28,6 +28,7 @@ from ...models import (Group, MetaDataSet, MetaDatum, MetaDatumRecord, Service,
                        ServiceExecution, Submission, User)
 from ...resource import get_identifier
 from ...security import authz
+from ...settings import get_setting
 from ...utils import get_record_from_metadataset
 from ..metadata import get_all_metadata
 from ..metadatasets import MetaDataSetResponse, collect_service_executions
@@ -89,7 +90,7 @@ def post(request: Request):
     except (KeyError, ValueError):
         raise HTTPBadRequest()
 
-    if not authz.view_mset_own(auth_user):
+    if get_setting(db, "data_view_restricted") and not authz.view_mset_own(auth_user):
         return {
                 "draw"              : draw,
                 "recordsTotal"      : 0,

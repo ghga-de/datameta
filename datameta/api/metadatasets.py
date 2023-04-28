@@ -30,6 +30,7 @@ from ..models import (File, MetaDataSet, MetaDatum, MetaDatumRecord, Service,
                       ServiceExecution, Submission)
 from ..resource import get_identifier, resource_by_id, resource_query_by_id
 from ..security import authz
+from ..settings import get_setting
 from ..utils import get_record_from_metadataset
 from . import DataHolderBase
 from .metadata import (get_all_metadata, get_metadata_with_access,
@@ -253,7 +254,7 @@ def get_metadatasets(request: Request) -> List[MetaDataSetResponse]:
     submitted_before = request.openapi_validated.parameters.query.get('submittedBefore')
     awaiting_service = request.openapi_validated.parameters.query.get('awaitingService')
 
-    if not authz.view_mset_own(auth_user):
+    if get_setting(db, "data_view_restricted") and not authz.view_mset_own(auth_user):
         return []
 
     # Query metadata sets and join entities that we are going to use.
