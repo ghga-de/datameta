@@ -72,7 +72,7 @@ def get_settings_startswith(
     db,
     prefix: str,
 ) -> List[str]:
-    """Return all appsettings which starts with given prefix."""
+    """Return all appsettings which start with a given prefix."""
     settings = db.query(ApplicationSetting).filter(ApplicationSetting.key.startswith(prefix)).all()
     return [setting.key for setting in settings]
 
